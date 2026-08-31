@@ -1,92 +1,98 @@
 @import "tailwindcss";
 
+@font-face {
+  font-family: "Peony";
+  src: url("/fonts/Peony-Regular.otf") format("opentype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
 :root {
-  --desk: #3a2a1c;
-  --desk-grain: #2d2016;
-  --cover: #4a1c28;
-  --cover-deep: #2e1018;
-  --gold: #d4af37;
+  --desk: #ffffff;
+  --paper: #f3e6c9;
+  --paper-edge: #e4d4b0;
+  --paper-shadow: #d4c49a;
+  --ink: #2f2e2c;
+  --ink-muted: #6a6864;
+  --stitch: #b08958;
+  --gold: #b08d3e;
   --gold-dim: #9a7b24;
-  --paper: #f4ead4;
-  --paper-rule: #d5c8ae;
-  --ink: #2a2118;
 }
 
 @theme inline {
   --color-background: var(--desk);
-  --color-foreground: var(--paper);
-  --font-serif: var(--font-cormorant);
+  --color-foreground: var(--ink);
+  --font-sans: var(--font-lato);
 }
 
 body {
   min-height: 100vh;
   margin: 0;
   color: var(--ink);
-  font-family: var(--font-cormorant), "Palatino Linotype", Palatino, serif;
-  background:
-    radial-gradient(ellipse at 50% 30%, #4a3626 0%, transparent 55%),
-    repeating-linear-gradient(
-      90deg,
-      var(--desk) 0 3px,
-      var(--desk-grain) 3px 4px
-    ),
-    var(--desk);
+  font-family: var(--font-lato), Lato, sans-serif;
+  background: #ffffff;
 }
 
 .stage {
+  --page-side: min(38vw, 70vh);
   --book-width: 60%;
-  --book-height: min(72vh, calc(60vw * 0.72));
-  --pen-length: calc(var(--book-height) * 0.82);
+  --pen-length: calc(var(--page-side) * 0.82);
   --pen-thickness: calc(var(--pen-length) * 64 / 320);
   min-height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 2vw;
-  padding: 2rem 1.25rem;
-  perspective: 1600px;
+  gap: 2.5vw;
+  padding: 2.5rem 1.5rem;
+  perspective: 1800px;
 }
 
 .stage.is-open {
   flex-direction: column;
-  gap: 1.75rem;
+  gap: 2rem;
 }
 
 .book-scene {
   position: relative;
-  width: var(--book-width);
-  flex: 0 0 var(--book-width);
+  width: var(--page-side);
+  height: var(--page-side);
+  flex: 0 0 auto;
+  transition:
+    width 1.05s cubic-bezier(0.4, 0, 0.2, 1),
+    height 1.05s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.stage.is-open .book-scene {
+  width: min(var(--book-width), calc(var(--page-side) * 2));
 }
 
 .book {
   position: relative;
   width: 100%;
-  height: var(--book-height);
-  transform: rotateX(7deg) rotateY(-16deg);
+  height: 100%;
+  transform: rotateX(5deg) rotateY(-9deg);
   transform-style: preserve-3d;
-  transition: transform 1.05s cubic-bezier(0.4, 0, 0.2, 1);
+  background: var(--paper);
+  box-shadow:
+    1px 1px 0 var(--paper-edge),
+    2px 2px 0 #efece5,
+    3px 3px 0 var(--paper-edge),
+    4px 4px 0 #e9e6df,
+    5px 5px 0 var(--paper-shadow),
+    12px 18px 32px rgb(40 38 34 / 0.16);
+  transition:
+    transform 1.05s cubic-bezier(0.4, 0, 0.2, 1),
+    box-shadow 1.05s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .book.is-open {
-  transform: rotateX(8deg) rotateY(0deg);
-}
-
-.book-shadow {
-  position: absolute;
-  left: 8%;
-  right: 4%;
-  bottom: -1.1rem;
-  height: 1.6rem;
-  border-radius: 50%;
-  background: rgb(0 0 0 / 0.38);
-  filter: blur(10px);
-  transform: scaleX(0.92);
-  transition: left 1.05s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.book.is-open .book-shadow {
-  left: 4%;
-  right: 4%;
+  transform: rotateX(4deg) rotateY(0deg);
+  box-shadow:
+    0 2px 0 var(--paper-edge),
+    0 4px 0 #efece5,
+    0 6px 0 var(--paper-shadow),
+    10px 18px 36px rgb(40 38 34 / 0.14);
 }
 
 .cover {
@@ -116,65 +122,50 @@ body {
   inset: 0;
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
-  border-radius: 0 4px 4px 0;
 }
 
 .cover-front {
-  background:
-    linear-gradient(90deg, #2a1016 0 10px, transparent 10px),
-    linear-gradient(145deg, #5a2432 0%, var(--cover) 42%, var(--cover-deep) 100%);
-  box-shadow:
-    inset 0 0 0 1px rgb(212 175 55 / 0.28),
-    4px 0 10px rgb(0 0 0 / 0.25);
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 1.4rem;
+  padding: 12%;
+  background:
+    linear-gradient(165deg, #f8eed8 0%, var(--paper) 55%, #ead9b4 100%);
 }
 
-.cover-border {
-  width: 100%;
-  height: 100%;
-  border: 1px solid rgb(212 175 55 / 0.55);
-  box-shadow: inset 0 0 0 6px rgb(74 28 40 / 0.4), inset 0 0 0 7px rgb(212 175 55 / 0.25);
+.cover-copy {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  gap: 1.1rem;
-  padding: 1.25rem;
+  gap: 0.85rem;
+  text-align: center;
+  font-family: Peony, cursive;
 }
 
 .cover-title {
   margin: 0;
-  color: var(--gold);
-  font-size: clamp(1.85rem, 4.2vw, 4.2rem);
-  font-weight: 600;
-  letter-spacing: 0.06em;
+  color: var(--ink);
+  font-family: Peony, cursive;
+  font-size: clamp(3.2rem, 6.5vw, 6rem);
+  font-weight: 400;
+  letter-spacing: 0.02em;
   line-height: 1.15;
-  text-align: center;
   text-wrap: balance;
 }
 
 .cover-author {
-  margin: 0.15rem 0 0;
-  color: var(--gold);
-  font-size: clamp(1rem, 2.1vw, 1.7rem);
-  font-style: italic;
-  font-weight: 500;
-  letter-spacing: 0.08em;
-}
-
-.cover-ornament {
   margin: 0;
-  color: var(--gold-dim);
-  font-size: clamp(1.1rem, 2vw, 2rem);
+  color: var(--ink-muted);
+  font-family: inherit;
+  font-size: clamp(1.15rem, 2.2vw, 1.8rem);
+  font-style: normal;
+  font-weight: 400;
+  letter-spacing: 0.04em;
 }
 
 .cover-inside {
   transform: rotateY(180deg);
-  background: var(--cover-deep);
-  padding: 0.45rem 0.45rem 0.45rem 0.35rem;
+  background: var(--paper);
 }
 
 .page-left,
@@ -183,20 +174,16 @@ body {
   top: 0;
   width: 50%;
   height: 100%;
-  background: var(--cover-deep);
+  background: var(--paper);
   z-index: 1;
 }
 
 .page-left {
   left: 0;
-  border-radius: 4px 0 0 4px;
-  padding: 0.45rem 0.45rem 0.45rem 0.35rem;
 }
 
 .page-right {
   right: 0;
-  border-radius: 0 4px 4px 0;
-  padding: 0.45rem 0.35rem 0.45rem 0.45rem;
 }
 
 .leaf {
@@ -204,49 +191,67 @@ body {
   width: 100%;
   height: 100%;
   overflow: hidden;
-  background:
-    linear-gradient(90deg, rgb(80 60 40 / 0.08), transparent 18%),
-    repeating-linear-gradient(
-      0deg,
-      transparent,
-      transparent 27px,
-      var(--paper-rule) 27px,
-      var(--paper-rule) 28px
-    ),
-    linear-gradient(180deg, #f8f1de 0%, var(--paper) 55%, #efe4c8 100%);
-  background-position: 0 2.4rem;
-  border-radius: 1px 3px 3px 1px;
-  box-shadow: inset 0 0 18px rgb(90 70 40 / 0.08);
+  --dog-ear-size: min(11rem, 46%);
+  background: var(--paper);
 }
 
-.leaf::before {
+.page-left .leaf {
+  box-shadow: inset -22px 0 28px rgb(70 60 50 / 0.07);
+}
+
+.page-right .leaf {
+  box-shadow: inset 22px 0 28px rgb(70 60 50 / 0.07);
+  clip-path: polygon(
+    0 0,
+    100% 0,
+    100% calc(100% - var(--dog-ear-size)),
+    calc(100% - var(--dog-ear-size)) 100%,
+    0 100%
+  );
+}
+
+.spine {
+  display: none;
+}
+
+.book.is-open .spine {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-evenly;
+  position: absolute;
+  top: 7%;
+  left: 50%;
+  z-index: 5;
+  width: 12px;
+  height: 86%;
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+
+.spine::before {
   content: "";
   position: absolute;
-  top: 2.6rem;
-  left: 2.6rem;
+  inset: 0 auto 0 50%;
   width: 1px;
-  height: calc(100% - 4.6rem);
-  background: rgb(176 80 80 / 0.28);
+  background: rgb(180 160 130 / 0.35);
+  transform: translateX(-50%);
 }
 
-.leaf-left {
-  border-radius: 3px 1px 1px 3px;
-  background:
-    linear-gradient(270deg, rgb(80 60 40 / 0.08), transparent 18%),
-    repeating-linear-gradient(
-      0deg,
-      transparent,
-      transparent 27px,
-      var(--paper-rule) 27px,
-      var(--paper-rule) 28px
-    ),
-    linear-gradient(180deg, #f8f1de 0%, var(--paper) 55%, #efe4c8 100%);
-  background-position: 0 2.4rem;
-}
-
-.leaf-left::before {
-  left: auto;
-  right: 2.6rem;
+.spine span {
+  position: relative;
+  z-index: 1;
+  display: block;
+  width: 2.5px;
+  height: 2.6rem;
+  border-radius: 1px;
+  background: linear-gradient(
+    90deg,
+    #c9a06a 0%,
+    #8f6a3e 45%,
+    #d4b07a 100%
+  );
+  box-shadow: 0 1px 1px rgb(80 55 25 / 0.25);
 }
 
 .leaf-copy {
@@ -254,19 +259,20 @@ body {
   z-index: 1;
   height: 100%;
   overflow: auto;
-  padding: 2.6rem 2.8rem 6.5rem 3.4rem;
+  padding: 3.75rem 3.4rem 7.5rem 4.4rem;
   color: var(--ink);
+  font-family: var(--font-lato), Lato, sans-serif;
 }
 
 .leaf-left .leaf-copy {
-  padding: 2.6rem 3.4rem 2.6rem 2.8rem;
+  padding: 3.75rem 4.4rem 3.75rem 3.4rem;
 }
 
 .easter-heading {
   margin: 0 0 1.15rem;
-  font-size: clamp(1rem, 1.7vw, 1.45rem);
-  font-weight: 600;
-  line-height: 1.35;
+  font-family: Peony, cursive;
+  font-size: clamp(1.35rem, 2vw, 1.85rem);
+  font-weight: 400;
 }
 
 .easter-body {
@@ -275,15 +281,40 @@ body {
   line-height: 1.55;
 }
 
-.easter-body:last-child {
+.easter-body:last-of-type {
   margin-bottom: 0;
+}
+
+.portfolio-link {
+  display: block;
+  width: fit-content;
+  margin: 2.75rem auto 0;
+  padding: 0.5rem 1.1rem;
+  border: 1px solid #c9c5bc;
+  border-radius: 1px;
+  background: transparent;
+  color: var(--ink);
+  font-family: Peony, cursive;
+  font-size: clamp(1.15rem, 1.7vw, 1.45rem);
+  font-weight: 400;
+  letter-spacing: 0.04em;
+  text-align: center;
+  text-decoration: none;
+}
+
+.portfolio-link:hover {
+  background: rgb(47 46 44 / 0.05);
+}
+
+.portfolio-link:focus-visible {
+  outline: 2px solid var(--ink-muted);
+  outline-offset: 3px;
 }
 
 .poem-title {
   margin: 0 0 0.9rem;
   font-size: clamp(1rem, 1.8vw, 1.5rem);
-  font-weight: 600;
-  letter-spacing: 0.03em;
+  font-weight: 400;
 }
 
 .poem-body {
@@ -296,7 +327,7 @@ body {
   right: 0;
   bottom: 0;
   z-index: 4;
-  width: min(10.5rem, 44%);
+  width: var(--dog-ear-size);
   aspect-ratio: 1;
   height: auto;
   padding: 0;
@@ -313,66 +344,35 @@ body {
 .dog-ear-flap {
   position: absolute;
   inset: 0;
-  background: linear-gradient(
-    315deg,
-    #fbf6ea 0%,
-    #f3ead6 68%,
-    #cbb892 100%
-  );
-  clip-path: polygon(100% 0, 100% 100%, 0 100%);
-  filter: drop-shadow(-6px -7px 8px rgb(30 18 8 / 0.38));
+  background: linear-gradient(135deg, #f8eed8 0%, #ead9b4 62%, #d4c49a 100%);
+  clip-path: polygon(0 0, 100% 0, 0 100%);
+  filter: drop-shadow(-10px 1px 7px rgb(40 38 34 / 0.22));
   pointer-events: none;
 }
 
 .dog-ear:hover:not(:disabled) .dog-ear-flap {
-  background: linear-gradient(
-    315deg,
-    #fffaf0 0%,
-    #f7eedc 68%,
-    #d4c199 100%
-  );
+  background: linear-gradient(135deg, #faf0dc 0%, #f0e2c4 62%, #dccaa0 100%);
 }
 
 .dog-ear:focus-visible {
-  outline: 2px solid var(--gold-dim);
+  outline: 2px solid var(--ink-muted);
   outline-offset: 3px;
 }
 
 .dog-ear-label {
   position: absolute;
-  right: 8%;
-  bottom: 22%;
-  width: 78%;
-  color: #2a2118;
-  font-family: inherit;
-  font-size: clamp(0.72rem, 1.55vw, 1rem);
-  font-weight: 700;
+  left: 36%;
+  top: 36%;
+  width: 90%;
+  color: var(--ink);
+  font-family: Peony, cursive;
+  font-weight: 400;
   letter-spacing: 0.12em;
   line-height: 1;
   text-align: center;
   text-transform: uppercase;
-  transform: rotate(-45deg);
+  transform: translate(-50%, -50%) rotate(-45deg);
   pointer-events: none;
-}
-
-.page-edges {
-  position: absolute;
-  top: 0.35rem;
-  right: -0.55rem;
-  width: 0.55rem;
-  height: calc(100% - 0.7rem);
-  background: repeating-linear-gradient(
-    180deg,
-    #f3e6c8 0 2px,
-    #d9cba8 2px 3px
-  );
-  border-radius: 0 2px 2px 0;
-  z-index: 2;
-  transition: opacity 0.4s ease;
-}
-
-.book.is-open .page-edges {
-  opacity: 0;
 }
 
 .pen-control {
@@ -406,8 +406,8 @@ body {
 
 .pen-inscription {
   fill: var(--gold);
-  font-family: var(--font-cormorant), "Palatino Linotype", Palatino, serif;
-  font-weight: 600;
+  font-family: Peony, cursive;
+  font-weight: 400;
 }
 
 .pen-glyph {
@@ -423,7 +423,7 @@ body {
 .pen-svg {
   width: 100%;
   height: 100%;
-  filter: drop-shadow(2px 6px 6px rgb(0 0 0 / 0.4));
+  filter: drop-shadow(2px 8px 8px rgb(40 38 34 / 0.22));
   transform-origin: center;
   transition: transform 0.45s ease;
 }
@@ -449,20 +449,23 @@ body {
     gap: 1.5rem;
   }
 
+  .stage {
+    --page-side: min(78vw, 58vh);
+  }
+
   .book {
-    transform: rotateX(5deg) rotateY(-10deg);
+    transform: rotateX(4deg) rotateY(-6deg);
   }
 
   .book.is-open {
-    transform: rotateX(6deg) rotateY(0deg);
+    transform: rotateX(3deg) rotateY(0deg);
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .book,
   .cover,
-  .book-shadow,
-  .page-edges,
+  .book-scene,
   .pen-control,
   .pen-glyph,
   .pen-svg {

@@ -11,7 +11,7 @@ const EASTER_EGG = {
   paragraphs: [
     "I am a human that hates talking about myself, which you wouldn’t believe if you managed to corner me into an interview.",
     "The best I can do is some original poetry, some of which may or may not be autobiographical.",
-    "Turn the page to receive a different one, y’know, in honour of the ephemeral. No, I will not be taking any feedback, thank you very kindly.",
+    "Turn the page to receive a slightly-randomized one, y’know, in honour of the ephemeral. No, I will not be taking any feedback, thank you very kindly.",
   ],
 };
 
@@ -24,6 +24,14 @@ function EasterEgg() {
           {paragraph}
         </p>
       ))}
+      <a
+        className="portfolio-link"
+        href="https://beck-chan.github.io/"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        Beck&apos;s Portfolio
+      </a>
     </div>
   );
 }
@@ -32,7 +40,6 @@ export function Book({ isOpen, poem, onTurnPage }: BookProps) {
   return (
     <div className="book-scene" data-open={isOpen}>
       <div className={`book${isOpen ? " is-open" : ""}`}>
-        <div className="book-shadow" />
         <div className="page-left" aria-hidden="true">
           <div className="leaf leaf-left">
             <EasterEgg />
@@ -64,15 +71,9 @@ export function Book({ isOpen, poem, onTurnPage }: BookProps) {
         </div>
         <div className="cover">
           <div className="cover-front">
-            <div className="cover-border">
-              <p className="cover-ornament" aria-hidden="true">
-                ❦
-              </p>
-              <h1 className="cover-title">Original Poetry</h1>
+            <div className="cover-copy">
+              <h1 className="cover-title">ORIGINAL POETRY</h1>
               <p className="cover-author">by Beck Chan</p>
-              <p className="cover-ornament" aria-hidden="true">
-                ❦
-              </p>
             </div>
           </div>
           <div className="cover-inside" aria-hidden={!isOpen}>
@@ -81,7 +82,13 @@ export function Book({ isOpen, poem, onTurnPage }: BookProps) {
             </div>
           </div>
         </div>
-        <div className="page-edges" aria-hidden="true" />
+        <div className="spine" aria-hidden="true">
+          <span />
+          <span />
+          <span />
+          <span />
+          <span />
+        </div>
       </div>
     </div>
   );

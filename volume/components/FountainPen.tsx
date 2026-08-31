@@ -41,9 +41,10 @@ export function FountainPen({ isOpen, onToggle }: FountainPenProps) {
           <rect x="17" y="50" width="30" height="148" rx="6" fill="url(#pen-barrel)" />
           <text
             className="pen-inscription"
-            fontSize={9}
-            letterSpacing={1.1}
-            fontWeight={600}
+            fontSize={13}
+            letterSpacing={0.6}
+            fontFamily="Peony"
+            fontWeight={400}
           >
             <textPath
               href="#barrel-label-path"
