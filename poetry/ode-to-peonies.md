@@ -7,7 +7,7 @@ bashful nascent sun<br>
 before her ascent into that vast firmament<br>
 for which your aureate arms<br><br>
 
-ache
+ache<br><br><br>
 
 
 **お牡丹へ**
