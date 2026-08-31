@@ -1,7 +1,12 @@
+export type PoemSection = {
+  title: string;
+  html: string;
+};
+
 export type Poem = {
   id: string;
   title: string;
-  html: string;
+  sections: PoemSection[];
 };
 
 export function pickPoemIndex(count: number, except?: number): number {

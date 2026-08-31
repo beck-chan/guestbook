@@ -1,14 +1,17 @@
 import type { Poem } from "@/lib/poems";
+import { StickyNote } from "@/components/StickyNote";
 
 type BookProps = {
   isOpen: boolean;
   poem?: Poem;
   onTurnPage: () => void;
+  onToggle: () => void;
 };
 
 const EASTER_EGG = {
-  heading: "Congrats! You found the silly little Easter egg.",
+  heading: "Congrats!",
   paragraphs: [
+    "You found the silly little Easter egg.",
     "I am a human that hates talking about myself, which you wouldn’t believe if you managed to corner me into an interview.",
     "The best I can do is some original poetry, some of which may or may not be autobiographical.",
     "Turn the page to receive a slightly-randomized one, y’know, in honour of the ephemeral. No, I will not be taking any feedback, thank you very kindly.",
@@ -36,7 +39,7 @@ function EasterEgg() {
   );
 }
 
-export function Book({ isOpen, poem, onTurnPage }: BookProps) {
+export function Book({ isOpen, poem, onTurnPage, onToggle }: BookProps) {
   return (
     <div className="book-scene" data-open={isOpen}>
       <div className={`book${isOpen ? " is-open" : ""}`}>
@@ -49,11 +52,15 @@ export function Book({ isOpen, poem, onTurnPage }: BookProps) {
           <div className="leaf">
             {poem ? (
               <article className="leaf-copy" aria-hidden={!isOpen}>
-                <h2 className="poem-title">{poem.title}</h2>
-                <div
-                  className="poem-body"
-                  dangerouslySetInnerHTML={{ __html: poem.html }}
-                />
+                {poem.sections.map((section) => (
+                  <section key={section.title} className="poem-piece">
+                    <h2 className="poem-title">{section.title}</h2>
+                    <div
+                      className="poem-body"
+                      dangerouslySetInnerHTML={{ __html: section.html }}
+                    />
+                  </section>
+                ))}
               </article>
             ) : null}
             <button
@@ -65,7 +72,11 @@ export function Book({ isOpen, poem, onTurnPage }: BookProps) {
               aria-label="Turn Page"
             >
               <span className="dog-ear-flap" />
-              <span className="dog-ear-label">Turn Page</span>
+              <span className="dog-ear-label">
+                Turn
+                <br />
+                Page
+              </span>
             </button>
           </div>
         </div>
@@ -89,6 +100,7 @@ export function Book({ isOpen, poem, onTurnPage }: BookProps) {
           <span />
           <span />
         </div>
+        <StickyNote isOpen={isOpen} onToggle={onToggle} />
       </div>
     </div>
   );

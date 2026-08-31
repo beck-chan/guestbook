@@ -1,4 +1,4 @@
-**Ode to Peonies**
+## Ode to Peonies
 
 you burst with breath&mdash;<br>
 taking life<br>
@@ -10,7 +10,7 @@ for which your aureate arms<br><br>
 ache<br><br><br>
 
 
-**お牡丹へ**<br><br>
+## お牡丹へ
 
 息を呑むほどの精彩<br>
 で<br>

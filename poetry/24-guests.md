@@ -1,4 +1,4 @@
-**24 guests**
+## 24 guests
 
 We sit wanting in staid Summer,<br>
 Waiting under that scorched sun.<br>
