@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Book } from "@/components/Book";
+import { CommentBubbles } from "@/components/CommentBubbles";
 import { pickPoemIndex, type Poem } from "@/lib/poems";
 
 type PoetryDeskProps = {
@@ -18,6 +19,10 @@ export function PoetryDesk({ poems, initialIndex }: PoetryDeskProps) {
   return (
     <div className={`desk-split${isOpen ? " is-open" : ""}`}>
       <div className={`stage${isOpen ? " is-open" : ""}`}>
+        <a className="desk-bookmark" href="/admin" aria-label="admin login">
+          <span className="desk-bookmark-ribbon" aria-hidden="true" />
+          <span className="desk-bookmark-label">admin login</span>
+        </a>
         <Book
           isOpen={isOpen}
           poem={poem}
@@ -25,7 +30,7 @@ export function PoetryDesk({ poems, initialIndex }: PoetryDeskProps) {
           onToggle={() => setIsOpen((open) => !open)}
         />
       </div>
-      <aside className="desk-side" />
+      <CommentBubbles />
     </div>
   );
 }
