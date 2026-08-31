@@ -1,6 +1,5 @@
 **Taken**
 
-::: {.poetry}
 At seven-teen,<br>
 I read what was taken from Arabella<br>
 Later,<br>
@@ -45,4 +44,3 @@ a city-state<br>
 &emsp;that never quite was <br>
 and will never be again.<br><br><br>
 
-:::

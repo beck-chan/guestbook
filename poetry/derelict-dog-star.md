@@ -1,6 +1,5 @@
 **derelict dog star**
 
-::: {.poetry}
 just beyond <br>
 the stratosphere<br>
 &emsp;lies <br>
@@ -17,4 +16,3 @@ howling <br>
 
 &emsp;&emsp;&emsp;Home. <br><br><br>
 
-:::

@@ -1,6 +1,5 @@
 **past**
 
-::: {.poetry}
 
 It seems so far away, this memory of mine: <br>
 just shy of a decade <br>
@@ -84,4 +83,3 @@ the vestiges <br>
 
 &emsp;&emsp;&emsp;&emsp;bygone<br><br><br>
 
-:::

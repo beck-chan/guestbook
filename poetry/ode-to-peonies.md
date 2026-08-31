@@ -1,6 +1,5 @@
 **Ode to Peonies**
 
-::: {.poetry}
 you burst with breath&mdash;<br>
 taking life<br>
 stained by the hue of a<br>
@@ -10,11 +9,9 @@ for which your aureate arms<br><br>
 
 ache
 
-:::
 
 **お牡丹へ**
 
-::: {.poetry}
 息を呑むほどの精彩<br>
 で<br>
 燃え上がっている<br>
@@ -26,4 +23,3 @@ ache
 
 届きにいく<br><br><br>
 
-:::

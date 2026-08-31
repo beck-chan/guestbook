@@ -1,6 +1,5 @@
 **future**
 
-::: {.poetry}
 How cruel it is<br>
 that tomorrow always comes<br><br>
 
@@ -17,4 +16,3 @@ all <br>
 
 END<br><br><br>
 
-:::

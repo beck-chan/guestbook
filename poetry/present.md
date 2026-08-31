@@ -1,6 +1,5 @@
 **present**
 
-::: {.poetry}
 
 I search for you: <br>
 in the clouds that frolic in the cerulean firmament <br>
@@ -15,4 +14,3 @@ I reach you in one heartbeat <br>
 
 &emsp;&emsp;&emsp;I let you go.<br><br><br>
 
-:::

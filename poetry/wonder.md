@@ -1,6 +1,5 @@
 **Wonder**
 
-::: {.poetry}
 what a Wonder it is<br>
 to Know<br><br>
 the sunrises You were always meant to see<br>
@@ -40,4 +39,3 @@ how?<br>
 To be?<br><br>
 &emsp;&emsp;&emsp;A Wonder.<br><br><br>
 
-:::

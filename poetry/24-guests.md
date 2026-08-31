@@ -1,6 +1,5 @@
 **24 guests**
 
-::: {.poetry}
 We sit wanting in staid Summer,<br>
 Waiting under that scorched sun.<br>
 When the wolfberries dangle so<br>
@@ -44,4 +43,3 @@ Of a gander in the garden I once shared with you.<br>
 Across the pond too shallow to sink my wistful, wretched form&mdash;<br>
 Floats a flurry of felled peach blossoms, and a reflection of that aching, azure sky. <br><br><br>
 
-:::

@@ -1,6 +1,5 @@
 **Persimmons**
 
-::: {.poetry}
 I do not know how old I am<br>
 When I first taste their putrid pulp<br>
 Only that I already know by then<br>
@@ -49,4 +48,3 @@ And unravel our tangled<br>
 Heritage.<br><br><br>
 
 
-:::
