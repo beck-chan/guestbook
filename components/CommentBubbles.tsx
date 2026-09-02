@@ -1,34 +1,4 @@
-type MockNote = {
-  name: string;
-  body: string;
-  time: string;
-  nested?: boolean;
-};
-
-const MOCK_NOTES: MockNote[] = [
-  {
-    name: "a guest",
-    body: "this one stopped me in the doorway.",
-    time: "just now",
-  },
-  {
-    name: "m.",
-    body: "turning the page felt like exhaling.",
-    time: "2h ago",
-    nested: true,
-  },
-  {
-    name: "anon",
-    body: "i keep coming back to the last line.",
-    time: "yesterday",
-  },
-  {
-    name: "june",
-    body: "left it open on the kitchen table. the peonies did the rest.",
-    time: "Aug 28",
-    nested: true,
-  },
-];
+import { MOCK_COMMENTS } from "@/lib/comments";
 
 export function CommentBubbles() {
   return (
@@ -75,9 +45,9 @@ export function CommentBubbles() {
         </button>
       </form>
       <div className="comment-thread">
-        {MOCK_NOTES.map((note) => (
+        {MOCK_COMMENTS.slice(0, 4).map((note) => (
           <figure
-            key={`${note.name}-${note.body}`}
+            key={note.id}
             className={`comment-bubble${note.nested ? " is-nested" : ""}`}
           >
             <figcaption className="comment-meta">
