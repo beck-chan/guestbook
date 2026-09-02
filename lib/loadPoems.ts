@@ -4,8 +4,8 @@ import type { Poem } from "@/lib/poems";
 
 function poetryDir(): string {
   const candidates = [
-    path.resolve(process.cwd(), "..", "poetry"),
     path.resolve(process.cwd(), "poetry"),
+    path.resolve(process.cwd(), "..", "poetry"),
   ];
   const found = candidates.find((dir) => fs.existsSync(dir));
   if (!found) {

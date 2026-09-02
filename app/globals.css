@@ -77,14 +77,31 @@ body {
   perspective: 1800px;
 }
 
-.desk-bookmark {
+.desk-bookmarks {
   position: absolute;
   top: 0;
   left: 2.5rem;
   z-index: 3;
+  display: flex;
+  align-items: flex-start;
+  gap: 1.65rem;
+}
+
+.desk-bookmark {
+  --bookmark-height: 6.9rem;
+  position: relative;
   width: 6.125rem;
-  height: 6.9rem;
+  height: var(--bookmark-height);
   text-decoration: none;
+  transition: height 0.22s ease;
+}
+
+.desk-bookmark-short {
+  --bookmark-height: 5.8rem;
+}
+
+.desk-bookmark-labeled {
+  --bookmark-height: 8.8rem;
 }
 
 .desk-bookmark-ribbon {
@@ -94,12 +111,13 @@ body {
   background: var(--foil);
   clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 78%, 0 100%);
   box-shadow: 1px 3px 8px rgb(80 55 25 / 0.22);
+  transition: background 0.22s ease, box-shadow 0.22s ease;
 }
 
 .desk-bookmark-label {
   position: absolute;
   left: 50%;
-  top: 36%;
+  top: 38%;
   width: 88%;
   color: var(--cover);
   font-family: Peony, cursive;
@@ -111,6 +129,50 @@ body {
   transform: translate(-50%, -50%);
   opacity: 0;
   pointer-events: none;
+}
+
+.desk-bookmark-labeled .desk-bookmark-label {
+  opacity: 1;
+  font-size: 1.55rem;
+}
+
+.desk-bookmark:hover,
+.desk-bookmark:focus-visible {
+  height: calc(var(--bookmark-height) + 0.4rem);
+}
+
+.desk-bookmark:hover .desk-bookmark-ribbon,
+.desk-bookmark:focus-visible .desk-bookmark-ribbon {
+  background: #e8b85a;
+  box-shadow: 1px 5px 12px rgb(80 55 25 / 0.28);
+}
+
+.desk-bookmark-admin .desk-bookmark-ribbon {
+  background: none;
+  box-shadow: none;
+  clip-path: none;
+}
+
+.desk-bookmark-admin .desk-bookmark-ribbon svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.desk-bookmark-admin .desk-bookmark-ribbon polyline {
+  fill: none;
+  stroke: var(--cover);
+  stroke-width: 1.4;
+  stroke-linejoin: miter;
+  stroke-linecap: butt;
+  vector-effect: non-scaling-stroke;
+}
+
+.desk-bookmark-admin:hover .desk-bookmark-ribbon,
+.desk-bookmark-admin:focus-visible .desk-bookmark-ribbon {
+  background: none;
+  box-shadow: none;
 }
 
 .desk-bookmark:hover .desk-bookmark-label,
@@ -490,7 +552,7 @@ body {
 
 .hit-counter-label {
   margin: 0;
-  color: #ff6162;
+  color: #ffb3ba;
   font-family: Peony, cursive;
   font-size: clamp(0.95rem, 1.4vw, 1.15rem);
   font-weight: 400;
@@ -510,9 +572,9 @@ body {
   box-sizing: border-box;
   width: 1.25em;
   height: 1.5em;
-  border: 2px solid #ff6162;
-  background: #fee3e5;
-  color: #ff6162;
+  border: 2px solid #ffb3ba;
+  background: #fff8f9;
+  color: #ffb3ba;
   font-family: Peony, cursive;
   font-size: clamp(1.45rem, 2.4vw, 1.95rem);
   font-weight: 400;
@@ -578,7 +640,7 @@ body {
 .poem-heart-count {
   color: #ff6162;
   font-family: Peony, cursive;
-  font-size: 0.95rem;
+  font-size: 1.4rem;
   font-weight: 400;
   line-height: 1;
 }
@@ -770,7 +832,7 @@ body {
   padding: 1.25rem 1.35rem 1.55rem;
   min-height: 6.5rem;
   border: 2px solid #ffb3ba;
-  border-radius: 1.35rem;
+  border-radius: 1.35rem 1.35rem 0 1.35rem;
   background: #fff8f9;
   color: var(--cover);
 }
@@ -794,6 +856,7 @@ body {
 
 .comment-bubble.is-compose {
   border-width: 4px;
+  border-radius: 0 1.35rem 1.35rem 1.35rem;
 }
 
 .comment-action {
@@ -850,6 +913,11 @@ body {
   pointer-events: none;
 }
 
+.comment-page.is-ellipsis {
+  color: #0b2a1290;
+  pointer-events: none;
+}
+
 .comment-page.is-disabled {
   color: rgb(255 97 98 / 0.35);
   pointer-events: none;
@@ -860,12 +928,49 @@ body {
   outline-offset: 3px;
 }
 
+.comment-meta {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin: 0 0 0.45rem;
+}
+
 .comment-name {
   display: block;
-  margin: 0 0 0.45rem;
+  margin: 0;
   color: #0b2a1290;
   font-family: Peony, cursive;
   font-size: 1.5rem;
+}
+
+.comment-time {
+  flex: 0 0 auto;
+  color: #0b2a1290;
+  font-family: "futura-pt", var(--font-jost), Jost, sans-serif;
+  font-size: 0.82rem;
+  font-weight: 400;
+  letter-spacing: 0.02em;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+.comment-compose .comment-name-input {
+  display: block;
+  width: 100%;
+  margin: 0 0 0.45rem;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #0b2a1290;
+  font-family: Peony, cursive;
+  font-size: 1.5rem;
+  font-weight: 400;
+  outline: none;
+}
+
+.comment-name-input::placeholder {
+  color: #0b2a1290;
 }
 
 .comment-body {
@@ -875,6 +980,25 @@ body {
   font-size: 1.12rem;
   font-weight: 400;
   line-height: 1.5;
+}
+
+.comment-email {
+  display: block;
+  width: 100%;
+  margin: 0 0 0.65rem;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--cover);
+  font-family: "futura-pt", var(--font-jost), Jost, sans-serif;
+  font-size: 0.95rem;
+  font-weight: 400;
+  line-height: 1.4;
+  outline: none;
+}
+
+.comment-email::placeholder {
+  color: #0b2a1290;
 }
 
 .comment-input {
@@ -895,7 +1019,7 @@ body {
 }
 
 .comment-input::placeholder {
-  color: rgb(11 42 18 / 0.4);
+  color: #0b2a12;
 }
 
 @media (max-width: 900px) {
