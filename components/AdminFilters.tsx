@@ -1,27 +1,39 @@
 "use client";
 
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { adminHref, type AdminFilters } from "@/lib/comments";
 
-export function AdminFilters({ filters }: { filters: AdminFilters }) {
+export function AdminFilters({
+  filters,
+  basePath = "/admin",
+}: {
+  filters: AdminFilters;
+  basePath?: string;
+}) {
   const router = useRouter();
+  const [toolsOpen, setToolsOpen] = useState(false);
 
   function apply(form: HTMLFormElement) {
     const data = new FormData(form);
     const emailValue = String(data.get("email") ?? "all");
     const statusValue = String(data.get("status") ?? "all");
     router.push(
-      adminHref(1, {
-        q: String(data.get("q") ?? "").trim(),
-        status:
-          statusValue === "unread" || statusValue === "read"
-            ? statusValue
-            : "all",
-        email:
-          emailValue === "has" || emailValue === "none" ? emailValue : "all",
-        from: String(data.get("from") ?? ""),
-        to: String(data.get("to") ?? ""),
-      }),
+      adminHref(
+        1,
+        {
+          q: String(data.get("q") ?? "").trim(),
+          status:
+            statusValue === "unread" || statusValue === "read"
+              ? statusValue
+              : "all",
+          email:
+            emailValue === "has" || emailValue === "none" ? emailValue : "all",
+          from: String(data.get("from") ?? ""),
+          to: String(data.get("to") ?? ""),
+        },
+        basePath,
+      ),
     );
   }
 
@@ -34,81 +46,96 @@ export function AdminFilters({ filters }: { filters: AdminFilters }) {
         apply(event.currentTarget);
       }}
     >
-      <div className="admin-header">
-        <h1 className="admin-title">admin</h1>
-        <div className="admin-filter-row">
-          <select
-            className="admin-filter admin-filter-select"
-            name="status"
-            defaultValue={filters.status}
-            aria-label="filter by status"
-            onChange={(event) => {
-              if (event.currentTarget.form) {
-                apply(event.currentTarget.form);
-              }
-            }}
-          >
-            <option value="all">status</option>
-            <option value="unread">unread</option>
-            <option value="read">read</option>
-          </select>
-          <select
-            className="admin-filter admin-filter-select"
-            name="email"
-            defaultValue={filters.email}
-            aria-label="filter by contact"
-            onChange={(event) => {
-              if (event.currentTarget.form) {
-                apply(event.currentTarget.form);
-              }
-            }}
-          >
-            <option value="all">contact</option>
-            <option value="has">has email</option>
-            <option value="none">no email</option>
-          </select>
-          <div className="admin-date-range">
+      <div className={`admin-tools${toolsOpen ? " is-open" : ""}`}>
+        <button
+          type="button"
+          className="admin-tools-toggle"
+          aria-expanded={toolsOpen}
+          aria-controls="admin-tools-panel"
+          onMouseDown={(event) => event.preventDefault()}
+          onClick={() => setToolsOpen((open) => !open)}
+        >
+          search & filters
+          <span className="admin-tools-caret" aria-hidden="true" />
+        </button>
+        <div id="admin-tools-panel" className="admin-tools-panel">
+          <div className="admin-tools-panel-inner">
+            <div className="admin-filter-row">
+              <select
+                className="admin-filter admin-filter-select"
+                name="status"
+                defaultValue={filters.status}
+                aria-label="filter by status"
+                onChange={(event) => {
+                  if (event.currentTarget.form) {
+                    apply(event.currentTarget.form);
+                  }
+                }}
+              >
+                <option value="all">status</option>
+                <option value="unread">unread</option>
+                <option value="read">read</option>
+              </select>
+              <select
+                className="admin-filter admin-filter-select"
+                name="email"
+                defaultValue={filters.email}
+                aria-label="filter by contact"
+                onChange={(event) => {
+                  if (event.currentTarget.form) {
+                    apply(event.currentTarget.form);
+                  }
+                }}
+              >
+                <option value="all">contact</option>
+                <option value="has">has email</option>
+                <option value="none">no email</option>
+              </select>
+              <div className="admin-date-range">
+                <input
+                  className="admin-filter admin-filter-date"
+                  type="date"
+                  name="from"
+                  defaultValue={filters.from}
+                  aria-label="from date"
+                  onChange={(event) => {
+                    if (event.currentTarget.form) {
+                      apply(event.currentTarget.form);
+                    }
+                  }}
+                />
+                <span className="admin-date-range-sep" aria-hidden="true">
+                  –
+                </span>
+                <input
+                  className="admin-filter admin-filter-date"
+                  type="date"
+                  name="to"
+                  defaultValue={filters.to}
+                  aria-label="to date"
+                  onChange={(event) => {
+                    if (event.currentTarget.form) {
+                      apply(event.currentTarget.form);
+                    }
+                  }}
+                />
+              </div>
+            </div>
             <input
-              className="admin-filter admin-filter-date"
-              type="date"
-              name="from"
-              defaultValue={filters.from}
-              aria-label="from date"
-              onChange={(event) => {
-                if (event.currentTarget.form) {
-                  apply(event.currentTarget.form);
-                }
-              }}
-            />
-            <span className="admin-date-range-sep" aria-hidden="true">
-              –
-            </span>
-            <input
-              className="admin-filter admin-filter-date"
-              type="date"
-              name="to"
-              defaultValue={filters.to}
-              aria-label="to date"
-              onChange={(event) => {
-                if (event.currentTarget.form) {
-                  apply(event.currentTarget.form);
-                }
-              }}
+              className="admin-filter admin-filter-search"
+              type="search"
+              name="q"
+              defaultValue={filters.q}
+              placeholder="search"
+              aria-label="search comments"
             />
           </div>
         </div>
       </div>
-      <div className="admin-search-row">
-        <p className="admin-lede">posted comments, newest first.</p>
-        <input
-          className="admin-filter admin-filter-search"
-          type="search"
-          name="q"
-          defaultValue={filters.q}
-          placeholder="search"
-          aria-label="search comments"
-        />
+      <div className="admin-header">
+        <h1 className="admin-title">admin</h1>
       </div>
+      <p className="admin-lede">posted comments, newest first.</p>
     </form>
   );
 }

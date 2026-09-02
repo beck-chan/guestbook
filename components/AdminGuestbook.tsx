@@ -11,6 +11,9 @@ type AdminGuestbookProps = {
   page: number;
   totalPages: number;
   filters: FilterState;
+  variant?: "default" | "demobook";
+  basePath?: string;
+  homeHref?: string;
 };
 
 function pageItems(page: number, totalPages: number) {
@@ -39,25 +42,48 @@ export function AdminGuestbook({
   page,
   totalPages,
   filters,
+  variant = "default",
+  basePath = "/admin",
+  homeHref = "/",
 }: AdminGuestbookProps) {
+  const isDemo = variant === "demobook";
+
   return (
-    <main className="admin-page">
-      <div className="desk-bookmarks">
-        <a
-          className="desk-bookmark desk-bookmark-labeled"
-          href="/"
-          aria-label="view book"
-        >
-          <span className="desk-bookmark-ribbon" aria-hidden="true" />
-          <span className="desk-bookmark-label">
-            view
-            <br />
-            book
-          </span>
+    <main
+      className={`admin-page${isDemo ? " guestbook-page guestbook-mono" : ""}`}
+    >
+      {isDemo ? (
+        <a className="demobook-login" href={homeHref}>
+          view guestbook
         </a>
-      </div>
+      ) : (
+        <>
+          <div className="desk-bookmarks">
+            <a
+              className="desk-bookmark desk-bookmark-labeled"
+              href={homeHref}
+              aria-label="view book"
+            >
+              <span className="desk-bookmark-ribbon" aria-hidden="true" />
+              <span className="desk-bookmark-label">
+                view
+                <br />
+                book
+              </span>
+            </a>
+          </div>
+          <a className="admin-book-tab" href={homeHref} aria-label="return to book">
+            <span className="admin-book-tab-ribbon" aria-hidden="true">
+              <svg viewBox="0 0 100 40" preserveAspectRatio="none">
+                <path d="M1.5,40 V9.5 Q1.5,1.5 9.5,1.5 H90.5 Q98.5,1.5 98.5,9.5 V40 Z" />
+              </svg>
+            </span>
+            <span className="admin-book-tab-label">return</span>
+          </a>
+        </>
+      )}
       <div className="admin-shell">
-        <AdminFilters filters={filters} />
+        <AdminFilters filters={filters} basePath={basePath} />
         <div className="comment-thread">
           {comments.length === 0 ? (
             <p className="admin-empty">no comments match.</p>
@@ -102,7 +128,7 @@ export function AdminGuestbook({
         </div>
         <nav className="comment-pages" aria-label="Admin comment pages">
           {page > 1 ? (
-            <a className="comment-page" href={adminHref(page - 1, filters)}>
+            <a className="comment-page" href={adminHref(page - 1, filters, basePath)}>
               prev
             </a>
           ) : (
@@ -129,14 +155,14 @@ export function AdminGuestbook({
               <a
                 key={item.n}
                 className="comment-page"
-                href={adminHref(item.n, filters)}
+                href={adminHref(item.n, filters, basePath)}
               >
                 {item.n}
               </a>
             ),
           )}
           {page < totalPages ? (
-            <a className="comment-page" href={adminHref(page + 1, filters)}>
+            <a className="comment-page" href={adminHref(page + 1, filters, basePath)}>
               next
             </a>
           ) : (

@@ -269,7 +269,11 @@ export function filterComments(
   });
 }
 
-export function adminHref(page: number, filters: AdminFilters) {
+export function adminHref(
+  page: number,
+  filters: AdminFilters,
+  basePath = "/admin",
+) {
   const params = new URLSearchParams();
   if (filters.q) {
     params.set("q", filters.q);
@@ -290,7 +294,7 @@ export function adminHref(page: number, filters: AdminFilters) {
     params.set("page", String(page));
   }
   const query = params.toString();
-  return query ? `/admin?${query}` : "/admin";
+  return query ? `${basePath}?${query}` : basePath;
 }
 
 export function paginateComments(comments: GuestbookComment[], page: number) {

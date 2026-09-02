@@ -1,23 +1,34 @@
-import { MOCK_COMMENTS } from "@/lib/comments";
+"use client";
 
-export function CommentBubbles() {
+import { MOCK_COMMENTS } from "@/lib/comments";
+import { HitCounter } from "@/components/HitCounter";
+
+type CommentBubblesProps = {
+  showHits?: boolean;
+  idPrefix?: string;
+  sectionId?: string;
+  limit?: number;
+};
+
+export function CommentBubbles({
+  showHits = true,
+  idPrefix = "",
+  sectionId,
+  limit = 4,
+}: CommentBubblesProps) {
+  const nameId = `${idPrefix}comment-name`;
+  const inputId = `${idPrefix}comment-input`;
+
   return (
-    <aside className="desk-side">
-      <div className="hit-counter" aria-hidden="true">
-        <p className="hit-counter-digits">
-          {"000481".split("").map((digit, index) => (
-            <span key={`${digit}-${index}`}>{digit}</span>
-          ))}
-        </p>
-        <p className="hit-counter-label">hits</p>
-      </div>
+    <aside className="desk-side" id={sectionId}>
+      {showHits ? <HitCounter /> : null}
       <form
         className="comment-compose"
         onSubmit={(event) => event.preventDefault()}
       >
         <div className="comment-bubble is-compose">
           <input
-            id="comment-name"
+            id={nameId}
             className="comment-name-input"
             name="name"
             type="text"
@@ -33,7 +44,7 @@ export function CommentBubbles() {
             autoComplete="email"
           />
           <textarea
-            id="comment-input"
+            id={inputId}
             className="comment-input"
             name="comment"
             rows={4}
@@ -45,7 +56,7 @@ export function CommentBubbles() {
         </button>
       </form>
       <div className="comment-thread">
-        {MOCK_COMMENTS.slice(0, 4).map((note) => (
+        {MOCK_COMMENTS.slice(0, limit).map((note) => (
           <figure
             key={note.id}
             className={`comment-bubble${note.nested ? " is-nested" : ""}`}
