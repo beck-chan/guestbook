@@ -15,6 +15,7 @@ Mark the repo as a template. Someone clicks “Use this template,” copies .env
 
 - Prerequisites
 - Install with Node Package Manager (`npm`)
+- Add hit counter with PostHog
 
 ## Administration
 
