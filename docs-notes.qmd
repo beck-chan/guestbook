@@ -1,0 +1,4 @@
+# Prerequisites
+
+- Supabase
+- Google Cloud Platform

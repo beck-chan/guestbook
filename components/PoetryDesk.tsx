@@ -5,6 +5,7 @@ import { Book } from "@/components/Book";
 import { CommentBubbles } from "@/components/CommentBubbles";
 import { DeskBookmarks } from "@/components/DeskBookmarks";
 import { MobileReading } from "@/components/MobileReading";
+import { ReportIssueLink } from "@/components/ReportIssueLink";
 import { pickPoemIndex, type Poem } from "@/lib/poems";
 
 type PoetryDeskProps = {
@@ -44,6 +45,7 @@ export function PoetryDesk({ poems, initialIndex }: PoetryDeskProps) {
     <>
       <div className="desk-desktop">
         <DeskBookmarks />
+        <ReportIssueLink />
         <div className={`desk-split${isOpen ? " is-open" : ""}`}>
           <div className={`stage${isOpen ? " is-open" : ""}`}>
             <Book

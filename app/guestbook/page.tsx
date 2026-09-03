@@ -3,6 +3,7 @@ import { DeskBookmarks } from "@/components/DeskBookmarks";
 import { GuestbookBoard } from "@/components/GuestbookBoard";
 import { HitCounter } from "@/components/HitCounter";
 import { MobileMenu } from "@/components/MobileMenu";
+import { ReportIssueLink } from "@/components/ReportIssueLink";
 
 export const metadata: Metadata = {
   title: "Guestbook",
@@ -14,6 +15,7 @@ export default function GuestbookPage() {
     <main className="admin-page guestbook-page">
       <DeskBookmarks />
       <MobileMenu />
+      <ReportIssueLink />
       <HitCounter />
       <div className="admin-shell">
         <GuestbookBoard />
