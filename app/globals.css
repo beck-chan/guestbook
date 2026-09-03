@@ -19,14 +19,16 @@
 :root {
   --desk: #fff4f5;
   --cover: #0b2a12;
+  --cover-soft: #0b2a1290;
   --foil: #df9a49;
+  --foil-lit: #e8b85a;
   --foil-sheen: linear-gradient(
     118deg,
     #8a5518 0%,
     #d4a04a 12%,
     #f3d78a 20%,
     #fff8dc 26%,
-    #e8b85a 36%,
+    var(--foil-lit) 36%,
     #c48432 48%,
     #f0c96e 58%,
     #a86c20 72%,
@@ -34,12 +36,22 @@
     #b87a28 100%
   );
   --paper: #faf6ea;
+  --paper-hi: #f7f1e4;
+  --paper-mid: #efece5;
+  --paper-warm: #f3eee3;
+  --paper-dim: #e9e6df;
   --paper-edge: #f0e8d4;
   --paper-shadow: #e8dcc4;
   --ink: #2f2e2c;
   --ink-muted: #6a6864;
   --gold: #b08d3e;
   --gold-dim: #9a7b24;
+  --peony: #ff6162;
+  --peony-hot: #ff8586;
+  --peony-soft: #ffb3ba;
+  --bubble: #fff8f9;
+  --bubble-nested: #fee3e5;
+  --black: #000;
 }
 
 @theme inline {
@@ -147,7 +159,7 @@ body {
 
 .desk-bookmark:hover .desk-bookmark-ribbon,
 .desk-bookmark:focus-visible .desk-bookmark-ribbon {
-  background: #e8b85a;
+  background: var(--foil-lit);
   box-shadow: 1px 5px 12px rgb(80 55 25 / 0.28);
 }
 
@@ -219,24 +231,24 @@ body {
   background: var(--paper);
   box-shadow:
     1px 1px 0 var(--paper-edge),
-    2px 1px 0 #f7f1e4,
+    2px 1px 0 var(--paper-hi),
     3px 2px 0 var(--paper-edge),
-    4px 2px 0 #efece5,
+    4px 2px 0 var(--paper-mid),
     5px 3px 0 var(--paper-shadow),
     6px 3px 0 var(--paper-edge),
-    7px 4px 0 #f3eee3,
-    8px 4px 0 #e9e6df,
+    7px 4px 0 var(--paper-warm),
+    8px 4px 0 var(--paper-dim),
     9px 5px 0 var(--paper-shadow),
     10px 5px 0 var(--paper-edge),
-    11px 6px 0 #efece5,
+    11px 6px 0 var(--paper-mid),
     12px 6px 0 var(--paper-shadow),
     13px 7px 0 var(--paper-edge),
     14px 7px 0 var(--paper-shadow),
     15px 8px 0 var(--paper-edge),
-    16px 8px 0 #f7f1e4,
+    16px 8px 0 var(--paper-hi),
     17px 9px 0 var(--paper-shadow),
     18px 9px 0 var(--paper-edge),
-    19px 10px 0 #efece5,
+    19px 10px 0 var(--paper-mid),
     20px 10px 0 var(--paper-shadow),
     21px 11px 0 var(--paper-edge),
     22px 11px 0 var(--paper-shadow),
@@ -251,46 +263,46 @@ body {
   transform: rotateX(4deg) rotateY(0deg);
   box-shadow:
     -1px 1px 0 var(--paper-edge),
-    -2px 1px 0 #f7f1e4,
+    -2px 1px 0 var(--paper-hi),
     -3px 2px 0 var(--paper-edge),
-    -4px 2px 0 #efece5,
+    -4px 2px 0 var(--paper-mid),
     -5px 3px 0 var(--paper-shadow),
     -6px 3px 0 var(--paper-edge),
-    -7px 4px 0 #f3eee3,
-    -8px 4px 0 #e9e6df,
+    -7px 4px 0 var(--paper-warm),
+    -8px 4px 0 var(--paper-dim),
     -9px 5px 0 var(--paper-shadow),
     -10px 5px 0 var(--paper-edge),
-    -11px 6px 0 #efece5,
+    -11px 6px 0 var(--paper-mid),
     -12px 6px 0 var(--paper-shadow),
     -13px 7px 0 var(--paper-edge),
     -14px 7px 0 var(--paper-shadow),
     -15px 8px 0 var(--paper-edge),
-    -16px 8px 0 #f7f1e4,
+    -16px 8px 0 var(--paper-hi),
     -17px 9px 0 var(--paper-shadow),
     -18px 9px 0 var(--paper-edge),
-    -19px 10px 0 #efece5,
+    -19px 10px 0 var(--paper-mid),
     -20px 10px 0 var(--paper-shadow),
     -22px 11px 0 var(--paper-edge),
     -24px 12px 0 var(--paper-shadow),
     1px 1px 0 var(--paper-edge),
-    2px 1px 0 #f7f1e4,
+    2px 1px 0 var(--paper-hi),
     3px 2px 0 var(--paper-edge),
-    4px 2px 0 #efece5,
+    4px 2px 0 var(--paper-mid),
     5px 3px 0 var(--paper-shadow),
     6px 3px 0 var(--paper-edge),
-    7px 4px 0 #f3eee3,
-    8px 4px 0 #e9e6df,
+    7px 4px 0 var(--paper-warm),
+    8px 4px 0 var(--paper-dim),
     9px 5px 0 var(--paper-shadow),
     10px 5px 0 var(--paper-edge),
-    11px 6px 0 #efece5,
+    11px 6px 0 var(--paper-mid),
     12px 6px 0 var(--paper-shadow),
     13px 7px 0 var(--paper-edge),
     14px 7px 0 var(--paper-shadow),
     15px 8px 0 var(--paper-edge),
-    16px 8px 0 #f7f1e4,
+    16px 8px 0 var(--paper-hi),
     17px 9px 0 var(--paper-shadow),
     18px 9px 0 var(--paper-edge),
-    19px 10px 0 #efece5,
+    19px 10px 0 var(--paper-mid),
     20px 10px 0 var(--paper-shadow),
     22px 11px 0 var(--paper-edge),
     24px 12px 0 var(--paper-shadow),
@@ -345,12 +357,12 @@ body {
   background: var(--foil-sheen);
   pointer-events: none;
   -webkit-mask:
-    linear-gradient(#000 0 0) content-box,
-    linear-gradient(#000 0 0);
+    linear-gradient(var(--black) 0 0) content-box,
+    linear-gradient(var(--black) 0 0);
   -webkit-mask-composite: xor;
   mask:
-    linear-gradient(#000 0 0) content-box,
-    linear-gradient(#000 0 0);
+    linear-gradient(var(--black) 0 0) content-box,
+    linear-gradient(var(--black) 0 0);
   mask-composite: exclude;
 }
 
@@ -515,7 +527,7 @@ body {
 
 .easter-signoff-name {
   padding-left: 1.15em;
-  color: #ffb3ba;
+  color: var(--peony-soft);
   font-family: "Hello Honey", cursive;
   font-size: clamp(4.4rem, 6.8vw, 6rem);
   font-weight: 400;
@@ -525,10 +537,10 @@ body {
 .easter-signoff-heart {
   background-image: linear-gradient(
     90deg,
-    #ffb3ba 0%,
+    var(--peony-soft) 0%,
     #ff8a90 40%,
-    #ff6162 78%,
-    #ff6162 100%
+    var(--peony) 78%,
+    var(--peony) 100%
   );
   background-clip: text;
   -webkit-background-clip: text;
@@ -544,7 +556,7 @@ body {
   border: 1px solid #c9c5bc;
   border-radius: 1px;
   background: transparent;
-  color: #0b2a1290;
+  color: var(--cover-soft);
   font-family: Peony, cursive;
   font-size: clamp(1.3rem, 1.9vw, 1.65rem);
   font-weight: 400;
@@ -573,7 +585,7 @@ body {
 
 .hit-counter-label {
   margin: 0;
-  color: #ffb3ba;
+  color: var(--peony-soft);
   font-family: Peony, cursive;
   font-size: clamp(0.95rem, 1.4vw, 1.15rem);
   font-weight: 400;
@@ -593,9 +605,9 @@ body {
   box-sizing: border-box;
   width: 1.25em;
   height: 1.5em;
-  border: 2px solid #ffb3ba;
-  background: #fff8f9;
-  color: #ffb3ba;
+  border: 2px solid var(--peony-soft);
+  background: var(--bubble);
+  color: var(--peony-soft);
   font-family: Peony, cursive;
   font-size: clamp(1.45rem, 2.4vw, 1.95rem);
   font-weight: 400;
@@ -632,7 +644,7 @@ body {
 
 .leaf-copy a,
 .poem-body a {
-  color: #0b2a1290;
+  color: var(--cover-soft);
 }
 
 .poem-heart-stack {
@@ -654,12 +666,12 @@ body {
   padding: 0;
   border: 0;
   background: transparent;
-  color: #ff6162;
+  color: var(--peony);
   cursor: pointer;
 }
 
 .poem-heart-count {
-  color: #ff6162;
+  color: var(--peony);
   font-family: Peony, cursive;
   font-size: 1.4rem;
   font-weight: 400;
@@ -706,7 +718,7 @@ body {
 .dog-ear-flap {
   position: absolute;
   inset: 0;
-  background: linear-gradient(135deg, #fdfaf2 0%, #f3ead8 62%, #e8dcc4 100%);
+  background: linear-gradient(135deg, #fdfaf2 0%, #f3ead8 62%, var(--paper-shadow) 100%);
   clip-path: polygon(0 0, 100% 0, 0 100%);
   filter: drop-shadow(-10px 1px 7px rgb(70 50 55 / 0.12));
   pointer-events: none;
@@ -727,7 +739,7 @@ body {
   top: 32%;
   width: max-content;
   padding-bottom: 0.4em;
-  color: #0b2a1290;
+  color: var(--cover-soft);
   font-family: Peony, cursive;
   font-size: clamp(0.82rem, 1.3vw, 1.05rem);
   font-weight: 400;
@@ -755,7 +767,7 @@ body {
   border: 0;
   cursor: pointer;
   color: var(--cover);
-  background: #ffb3ba;
+  background: var(--peony-soft);
   box-shadow:
     1px 1px 0 rgb(210 160 165 / 0.45),
     3px 6px 14px rgb(40 38 34 / 0.14);
@@ -963,16 +975,16 @@ body {
   margin: 0;
   padding: 1.25rem 1.35rem 1.55rem;
   min-height: 6.5rem;
-  border: 2px solid #ffb3ba;
+  border: 2px solid var(--peony-soft);
   border-radius: 1.35rem 1.35rem 0 1.35rem;
-  background: #fff8f9;
+  background: var(--bubble);
   color: var(--cover);
 }
 
 .comment-bubble.is-nested {
   width: calc(100% - 1.65rem);
   margin-left: 1.65rem;
-  background: #fee3e5;
+  background: var(--bubble-nested);
 }
 
 .comment-compose {
@@ -995,7 +1007,7 @@ body {
   padding: 0;
   border: 0;
   background: transparent;
-  color: #ff6162;
+  color: var(--peony);
   font-family: Peony, cursive;
   font-size: 1.45rem;
   font-weight: 400;
@@ -1005,7 +1017,7 @@ body {
 }
 
 .comment-action:hover {
-  color: #ff6162;
+  color: var(--peony);
 }
 
 .comment-action:focus-visible {
@@ -1026,7 +1038,7 @@ body {
   padding: 0;
   border: 0;
   background: transparent;
-  color: #ff6162;
+  color: var(--peony);
   font-family: Peony, cursive;
   font-size: 1.45rem;
   font-weight: 400;
@@ -1037,7 +1049,7 @@ body {
 }
 
 .comment-page:hover {
-  color: #ff8586;
+  color: var(--peony-hot);
 }
 
 .comment-page.is-current {
@@ -1046,7 +1058,7 @@ body {
 }
 
 .comment-page.is-ellipsis {
-  color: #0b2a1290;
+  color: var(--cover-soft);
   pointer-events: none;
 }
 
@@ -1071,14 +1083,14 @@ body {
 .comment-name {
   display: block;
   margin: 0;
-  color: #0b2a1290;
+  color: var(--cover-soft);
   font-family: Peony, cursive;
   font-size: 1.5rem;
 }
 
 .comment-time {
   flex: 0 0 auto;
-  color: #0b2a1290;
+  color: var(--cover-soft);
   font-family: "futura-pt", var(--font-jost), Jost, sans-serif;
   font-size: 0.82rem;
   font-weight: 400;
@@ -1094,7 +1106,7 @@ body {
   padding: 0;
   border: 0;
   background: transparent;
-  color: #0b2a1290;
+  color: var(--cover-soft);
   font-family: Peony, cursive;
   font-size: 1.5rem;
   font-weight: 400;
@@ -1102,7 +1114,7 @@ body {
 }
 
 .comment-name-input::placeholder {
-  color: #0b2a1290;
+  color: var(--cover-soft);
 }
 
 .comment-body {
@@ -1130,7 +1142,7 @@ body {
 }
 
 .comment-email::placeholder {
-  color: #0b2a1290;
+  color: var(--cover-soft);
 }
 
 .comment-input {
@@ -1151,7 +1163,7 @@ body {
 }
 
 .comment-input::placeholder {
-  color: #0b2a12;
+  color: var(--cover);
 }
 
 .admin-page {
@@ -1230,7 +1242,7 @@ body {
 }
 
 .admin-setting-label {
-  color: #0b2a1290;
+  color: var(--cover-soft);
   font-family: Peony, cursive;
   font-size: 1.15rem;
   font-weight: 400;
@@ -1252,9 +1264,9 @@ body {
   flex: 1;
   margin: 0;
   padding: 0.28rem 0.55rem;
-  border: 2px solid #ffb3ba;
-  background: #fff8f9;
-  color: #ff6162;
+  border: 2px solid var(--peony-soft);
+  background: var(--bubble);
+  color: var(--peony);
   font-family: Peony, cursive;
   font-size: 1.15rem;
   font-weight: 400;
@@ -1274,9 +1286,9 @@ body {
 
 .admin-setting-toggle button.is-active {
   z-index: 1;
-  border-color: #ff6162;
-  background: #ff6162;
-  color: #fff8f9;
+  border-color: var(--peony);
+  background: var(--peony);
+  color: var(--bubble);
 }
 
 .admin-setting-toggle button:focus-visible {
@@ -1292,7 +1304,7 @@ body {
 }
 
 .admin-setting-theme::placeholder {
-  color: #0b2a12;
+  color: var(--cover);
 }
 
 .admin-mark-read input {
@@ -1301,15 +1313,15 @@ body {
   width: 0.95rem;
   height: 0.95rem;
   margin: 0;
-  border: 2px solid #ffb3ba;
+  border: 2px solid var(--peony-soft);
   border-radius: 0.2rem;
-  background: #fff8f9;
+  background: var(--bubble);
   cursor: pointer;
 }
 
 .admin-mark-read input:checked {
-  border-color: #ff6162;
-  background-color: #ff6162;
+  border-color: var(--peony);
+  background-color: var(--peony);
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath fill='none' stroke='%23fff8f9' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round' d='M2.4 6.3 5 8.8 9.6 3.4'/%3E%3C/svg%3E");
   background-position: center;
   background-repeat: no-repeat;
@@ -1532,7 +1544,7 @@ body {
   grid-row: 2;
   align-self: center;
   margin: 0;
-  color: #0b2a1290;
+  color: var(--cover-soft);
   font-family: "futura-pt", var(--font-jost), Jost, sans-serif;
   font-size: 1.15rem;
   font-weight: 400;
@@ -1542,9 +1554,9 @@ body {
 .admin-filter {
   margin: 0;
   padding: 0.28rem 0.55rem;
-  border: 2px solid #ffb3ba;
+  border: 2px solid var(--peony-soft);
   border-radius: 0.45rem;
-  background: #fff8f9;
+  background: var(--bubble);
   color: var(--cover);
   font-family: "futura-pt", var(--font-jost), Jost, sans-serif;
   font-size: 0.92rem;
@@ -1570,7 +1582,7 @@ body {
 }
 
 .admin-filter-search::placeholder {
-  color: #0b2a1290;
+  color: var(--cover-soft);
 }
 
 .admin-filter-select {
@@ -1585,7 +1597,7 @@ body {
 }
 
 .admin-date-range-sep {
-  color: #0b2a1290;
+  color: var(--cover-soft);
   font-family: "futura-pt", var(--font-jost), Jost, sans-serif;
   line-height: 1;
 }
@@ -1601,7 +1613,7 @@ body {
 
 .admin-empty {
   margin: 0;
-  color: #0b2a1290;
+  color: var(--cover-soft);
   font-family: "futura-pt", var(--font-jost), Jost, sans-serif;
   font-size: 1.05rem;
   font-style: italic;
@@ -1609,7 +1621,7 @@ body {
 
 .admin-comment-email {
   margin: 0 0 0.55rem;
-  color: #0b2a1290;
+  color: var(--cover-soft);
   font-family: "futura-pt", var(--font-jost), Jost, sans-serif;
   font-size: 0.95rem;
   font-weight: 400;
@@ -1638,7 +1650,7 @@ body {
   display: flex;
   align-items: center;
   gap: 0.4rem;
-  color: #0b2a1290;
+  color: var(--cover-soft);
   font-family: Peony, cursive;
   font-size: 1.15rem;
   font-weight: 400;
@@ -1682,7 +1694,7 @@ body {
 }
 
 .admin-comment-link {
-  color: #ff6162;
+  color: var(--peony);
   font-family: Peony, cursive;
   font-size: 1.45rem;
   font-weight: 400;
@@ -1692,7 +1704,7 @@ body {
 }
 
 .admin-comment-link:hover {
-  color: #ff8586;
+  color: var(--peony-hot);
 }
 
 .admin-comment-link:focus-visible {
@@ -2110,12 +2122,12 @@ body {
 
   .mobile-cover .hit-counter-label,
   .mobile-cover .hit-counter-digits span {
-    color: #ff6162;
+    color: var(--peony);
   }
 
   .mobile-cover .hit-counter-digits span {
-    border-color: #ff6162;
-    background: #fee3e5;
+    border-color: var(--peony);
+    background: var(--bubble-nested);
     font-size: clamp(1.15rem, 7cqi, 1.7rem);
   }
 
@@ -2177,7 +2189,7 @@ body {
     flex-direction: column;
     align-items: center;
     gap: 0.02rem;
-    color: #0b2a1290;
+    color: var(--cover-soft);
     -webkit-tap-highlight-color: transparent;
   }
 
@@ -2389,7 +2401,7 @@ body {
     padding: 0;
     border: 0;
     background: transparent;
-    color: #ff6162;
+    color: var(--peony);
     cursor: pointer;
   }
 
@@ -2401,14 +2413,14 @@ body {
 
   .mobile-comments-bubble {
     fill: currentColor;
-    stroke: #fff4f5;
+    stroke: var(--desk);
     stroke-width: 1.35;
     stroke-linejoin: round;
     paint-order: stroke fill;
   }
 
   .mobile-comments-dot {
-    fill: #fff4f5;
+    fill: var(--desk);
   }
 
   .mobile-comments-fab[aria-expanded="true"] {
@@ -2439,7 +2451,7 @@ body {
 
   .mobile-comments-title {
     margin: 0;
-    color: #ff6162;
+    color: var(--peony);
     font-family: Peony, cursive;
     font-size: 1.7rem;
     font-weight: 400;
