@@ -133,7 +133,7 @@ export function AdminFilters({
         </div>
       </div>
       <div className="admin-header">
-        <h1 className="admin-title">admin</h1>
+        <h1 className="admin-title">comments</h1>
       </div>
       <p className="admin-lede">posted comments, newest first.</p>
     </form>

@@ -40,6 +40,9 @@ export default function GuestbookPage() {
       <MobileMenu />
       <HitCounter />
       <div className="admin-shell">
+        <h1 className="guestbook-title">
+          <span className="demobook-marquee">guestbook</span>
+        </h1>
         <CommentBubbles showHits={false} limit={6} />
       </div>
     </main>

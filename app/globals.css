@@ -846,6 +846,23 @@ body {
     min-height: auto;
   }
 
+  .admin-desk .admin-main {
+    min-height: 0;
+    padding: 6.25rem 2rem 2rem;
+  }
+
+  .admin-desk .admin-shell {
+    max-width: 56rem;
+    margin: 0 auto;
+  }
+
+  .admin-desk .admin-settings {
+    position: static;
+    height: auto;
+    max-height: none;
+    padding: 1.25rem 2rem 3.5rem;
+  }
+
   .stage {
     flex: 0 0 auto;
     width: 100%;
@@ -1144,6 +1161,167 @@ body {
   background: var(--desk);
 }
 
+.admin-page.admin-desk {
+  padding: 0;
+}
+
+.admin-main {
+  position: relative;
+  min-height: 100vh;
+  padding: 6.25rem 2.5rem 4rem 11.5rem;
+}
+
+.admin-desk .admin-shell {
+  max-width: none;
+  margin: 0;
+}
+
+.admin-desk .admin-settings {
+  justify-content: flex-start;
+  align-items: stretch;
+  position: sticky;
+  top: 0;
+  align-self: start;
+  height: 100vh;
+  max-height: 100vh;
+  padding: 6.25rem 2.75rem 2.5rem 1.25rem;
+  box-sizing: border-box;
+}
+
+.admin-settings-panel {
+  width: 100%;
+}
+
+.admin-settings .admin-title,
+.admin-settings .admin-lede {
+  width: 100%;
+  text-align: right;
+}
+
+.admin-settings .admin-lede {
+  align-self: stretch;
+  margin-top: 0.85rem;
+}
+
+.admin-settings-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin: 1.5rem 0 0;
+}
+
+.admin-setting-field {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.35rem;
+}
+
+.admin-setting-label {
+  color: #0b2a1290;
+  font-family: Peony, cursive;
+  font-size: 1.15rem;
+  font-weight: 400;
+  letter-spacing: 0.03em;
+  line-height: 1;
+}
+
+.admin-setting-field .admin-filter {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.admin-setting-toggle {
+  display: flex;
+  width: 100%;
+}
+
+.admin-setting-toggle button {
+  flex: 1;
+  margin: 0;
+  padding: 0.28rem 0.55rem;
+  border: 2px solid #ffb3ba;
+  background: #fff8f9;
+  color: #ff6162;
+  font-family: Peony, cursive;
+  font-size: 1.15rem;
+  font-weight: 400;
+  letter-spacing: 0.03em;
+  line-height: 1.3;
+  cursor: pointer;
+}
+
+.admin-setting-toggle button:first-child {
+  border-radius: 0.45rem 0 0 0.45rem;
+}
+
+.admin-setting-toggle button:last-child {
+  margin-left: -2px;
+  border-radius: 0 0.45rem 0.45rem 0;
+}
+
+.admin-setting-toggle button.is-active {
+  z-index: 1;
+  border-color: #ff6162;
+  background: #ff6162;
+  color: #fff8f9;
+}
+
+.admin-setting-toggle button:focus-visible {
+  z-index: 2;
+  outline: 2px solid var(--ink-muted);
+  outline-offset: 2px;
+}
+
+.admin-setting-theme {
+  min-height: 9rem;
+  resize: vertical;
+  line-height: 1.45;
+}
+
+.admin-setting {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: #0b2a1290;
+  font-family: Peony, cursive;
+  font-size: 1.15rem;
+  font-weight: 400;
+  letter-spacing: 0.03em;
+  line-height: 1;
+  cursor: pointer;
+  user-select: none;
+}
+
+.admin-setting input,
+.admin-mark-read input {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 0.95rem;
+  height: 0.95rem;
+  margin: 0;
+  border: 2px solid #ffb3ba;
+  border-radius: 0.2rem;
+  background: #fff8f9;
+  cursor: pointer;
+}
+
+.admin-setting input:checked,
+.admin-mark-read input:checked {
+  border-color: #ff6162;
+  background-color: #ff6162;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath fill='none' stroke='%23fff8f9' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round' d='M2.4 6.3 5 8.8 9.6 3.4'/%3E%3C/svg%3E");
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: 0.7rem;
+}
+
+.admin-setting input:focus-visible,
+.admin-mark-read input:focus-visible {
+  outline: 2px solid var(--ink-muted);
+  outline-offset: 2px;
+}
+
 .admin-shell {
   max-width: 56rem;
   margin: 0 auto;
@@ -1167,8 +1345,20 @@ body {
   padding-top: 6.25rem;
 }
 
+.guestbook-title {
+  margin: 1.15rem 0 0.2rem;
+  overflow: hidden;
+  color: var(--cover);
+  font-family: Peony, cursive;
+  font-size: 3rem;
+  font-weight: 400;
+  letter-spacing: 0.04em;
+  line-height: 1.15;
+  white-space: nowrap;
+}
+
 .guestbook-page:not(.guestbook-mono) .comment-compose {
-  margin-top: 0.65rem;
+  margin-top: 0.2rem;
 }
 
 .guestbook-mono {
@@ -1339,6 +1529,9 @@ body {
 .guestbook-mono .admin-title,
 .guestbook-mono .admin-filter-search,
 .guestbook-mono .admin-mark-read,
+.guestbook-mono .admin-setting,
+.guestbook-mono .admin-setting-label,
+.guestbook-mono .admin-setting-toggle button,
 .guestbook-mono .admin-comment-link,
 .guestbook-mono .admin-tools-toggle {
   font-family: "Comic Sans MS", "Comic Sans", cursive;
@@ -1364,6 +1557,8 @@ body {
 .guestbook-mono .admin-empty,
 .guestbook-mono .admin-comment-email,
 .guestbook-mono .admin-mark-read,
+.guestbook-mono .admin-setting,
+.guestbook-mono .admin-setting-label,
 .guestbook-mono .admin-filter-search::placeholder,
 .guestbook-mono .admin-date-range-sep {
   color: #555555;
@@ -1373,6 +1568,17 @@ body {
   border-color: #000000;
   background: #fafafa;
   color: #000000;
+}
+
+.guestbook-mono .admin-setting-toggle button {
+  border-color: #000000;
+  background: #fafafa;
+  color: #000000;
+}
+
+.guestbook-mono .admin-setting-toggle button.is-active {
+  background: #000000;
+  color: #ffffff;
 }
 
 .guestbook-mono .admin-comment-link {
@@ -1429,7 +1635,7 @@ body {
   margin: 0;
   color: var(--cover);
   font-family: Peony, cursive;
-  font-size: 4.3rem;
+  font-size: 3rem;
   font-weight: 400;
   letter-spacing: 0.04em;
   line-height: 1;
@@ -1450,7 +1656,7 @@ body {
   margin: 0;
   color: #0b2a1290;
   font-family: "futura-pt", var(--font-jost), Jost, sans-serif;
-  font-size: 1.9rem;
+  font-size: 1.15rem;
   font-weight: 400;
   line-height: 1.2;
 }
@@ -1557,14 +1763,6 @@ body {
   user-select: none;
 }
 
-.admin-mark-read input {
-  width: 0.95rem;
-  height: 0.95rem;
-  margin: 0;
-  accent-color: var(--cover);
-  cursor: pointer;
-}
-
 .admin-comment.is-nested .comment-bubble {
   width: 100%;
   margin-left: 0;
@@ -1575,11 +1773,19 @@ body {
   margin-left: 1.65rem;
 }
 
+.admin-bulk-actions,
 .admin-comment-actions {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
   width: 100%;
+}
+
+.admin-bulk-actions .admin-comment-link {
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
 }
 
 .admin-comment-link {
@@ -1613,6 +1819,18 @@ body {
 @media (max-width: 1280px) {
   .admin-page {
     padding: 4.4rem 1.25rem 5.5rem;
+  }
+
+  .admin-page.admin-desk {
+    padding: 0;
+  }
+
+  .admin-desk .admin-main {
+    padding: 4.4rem 1.25rem 2rem;
+  }
+
+  .admin-desk .admin-settings {
+    padding: 1.25rem 1.25rem 5.5rem;
   }
 
   .admin-page.guestbook-mono:not(.demobook-public) {
@@ -1703,7 +1921,8 @@ body {
     text-align: left;
   }
 
-  .admin-title {
+  .admin-title,
+  .guestbook-title {
     font-size: 2.6rem;
   }
 

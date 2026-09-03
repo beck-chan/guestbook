@@ -1,25 +1,23 @@
 "use client";
 
-import { useState } from "react";
-
 type MarkReadCheckboxProps = {
   commentId: string;
-  defaultRead: boolean;
+  read: boolean;
+  onReadChange: (read: boolean) => void;
 };
 
 export function MarkReadCheckbox({
   commentId,
-  defaultRead,
+  read,
+  onReadChange,
 }: MarkReadCheckboxProps) {
-  const [read, setRead] = useState(defaultRead);
-
   return (
     <label className="admin-mark-read">
       <input
         type="checkbox"
         name={`read-${commentId}`}
         checked={read}
-        onChange={(event) => setRead(event.target.checked)}
+        onChange={(event) => onReadChange(event.target.checked)}
       />
       mark as read
     </label>
