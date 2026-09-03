@@ -94,10 +94,10 @@ body {
 }
 
 .desk-bookmarks {
-  position: absolute;
+  position: fixed;
   top: 0;
   left: 2.5rem;
-  z-index: 3;
+  z-index: 5;
   display: flex;
   align-items: flex-start;
   gap: 1.65rem;
