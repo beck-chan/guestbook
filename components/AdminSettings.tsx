@@ -1,6 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import {
+  useGuestbookSettings,
+  type FontSize,
+  type GuestbookSettings,
+} from "@/lib/guestbookSettings";
 
 const MAIN_FONTS = [
   { value: "futura-pt", label: "futura pt" },
@@ -25,16 +30,59 @@ const FONT_SIZES = [
   { value: "larger", label: "larger" },
 ] as const;
 
+function OnOffToggle({
+  id,
+  label,
+  value,
+  onChange,
+}: {
+  id: string;
+  label: string;
+  value: boolean;
+  onChange: (value: boolean) => void;
+}) {
+  return (
+    <div className="admin-setting-field">
+      <span className="admin-setting-label" id={`${id}-label`}>
+        {label}
+      </span>
+      <div
+        className="admin-setting-toggle"
+        role="group"
+        aria-labelledby={`${id}-label`}
+      >
+        <button
+          type="button"
+          className={value ? "is-active" : ""}
+          aria-pressed={value}
+          onClick={() => onChange(true)}
+        >
+          on
+        </button>
+        <button
+          type="button"
+          className={value ? "" : "is-active"}
+          aria-pressed={!value}
+          onClick={() => onChange(false)}
+        >
+          off
+        </button>
+      </div>
+    </div>
+  );
+}
+
 export function AdminSettings() {
-  const [title, setTitle] = useState("");
-  const [marquee, setMarquee] = useState(true);
-  const [mainFont, setMainFont] = useState("futura-pt");
-  const [mainFontSize, setMainFontSize] = useState("regular");
-  const [accentFont, setAccentFont] = useState("peony");
-  const [accentFontSize, setAccentFontSize] = useState("regular");
-  const [pageSize, setPageSize] = useState("10");
-  const [captureEmail, setCaptureEmail] = useState(true);
-  const [customTheme, setCustomTheme] = useState("");
+  const [saved, save] = useGuestbookSettings();
+  const [draft, setDraft] = useState<GuestbookSettings>(saved);
+
+  useEffect(() => {
+    setDraft(saved);
+  }, [saved]);
+
+  function patch(next: Partial<GuestbookSettings>) {
+    setDraft((current) => ({ ...current, ...next }));
+  }
 
   return (
     <div className="admin-settings-panel">
@@ -42,7 +90,10 @@ export function AdminSettings() {
       <p className="admin-lede">guestbook options.</p>
       <form
         className="admin-settings-list"
-        onSubmit={(event) => event.preventDefault()}
+        onSubmit={(event) => {
+          event.preventDefault();
+          save(draft);
+        }}
       >
         <label className="admin-setting-field">
           <span className="admin-setting-label">title</span>
@@ -50,45 +101,24 @@ export function AdminSettings() {
             className="admin-filter"
             type="text"
             name="title"
-            value={title}
+            value={draft.title}
             placeholder="guestbook"
-            onChange={(event) => setTitle(event.target.value)}
+            onChange={(event) => patch({ title: event.target.value })}
           />
         </label>
-        <div className="admin-setting-field">
-          <span className="admin-setting-label" id="marquee-label">
-            marquee
-          </span>
-          <div
-            className="admin-setting-toggle"
-            role="group"
-            aria-labelledby="marquee-label"
-          >
-            <button
-              type="button"
-              className={marquee ? "is-active" : ""}
-              aria-pressed={marquee}
-              onClick={() => setMarquee(true)}
-            >
-              on
-            </button>
-            <button
-              type="button"
-              className={marquee ? "" : "is-active"}
-              aria-pressed={!marquee}
-              onClick={() => setMarquee(false)}
-            >
-              off
-            </button>
-          </div>
-        </div>
+        <OnOffToggle
+          id="marquee"
+          label="marquee"
+          value={draft.marquee}
+          onChange={(value) => patch({ marquee: value })}
+        />
         <label className="admin-setting-field">
           <span className="admin-setting-label">main font</span>
           <select
             className="admin-filter admin-filter-select"
             name="main-font"
-            value={mainFont}
-            onChange={(event) => setMainFont(event.target.value)}
+            value={draft.mainFont}
+            onChange={(event) => patch({ mainFont: event.target.value })}
           >
             {MAIN_FONTS.map((font) => (
               <option key={font.value} value={font.value}>
@@ -102,8 +132,10 @@ export function AdminSettings() {
           <select
             className="admin-filter admin-filter-select"
             name="main-font-size"
-            value={mainFontSize}
-            onChange={(event) => setMainFontSize(event.target.value)}
+            value={draft.mainFontSize}
+            onChange={(event) =>
+              patch({ mainFontSize: event.target.value as FontSize })
+            }
           >
             {FONT_SIZES.map((size) => (
               <option key={size.value} value={size.value}>
@@ -117,8 +149,8 @@ export function AdminSettings() {
           <select
             className="admin-filter admin-filter-select"
             name="accent-font"
-            value={accentFont}
-            onChange={(event) => setAccentFont(event.target.value)}
+            value={draft.accentFont}
+            onChange={(event) => patch({ accentFont: event.target.value })}
           >
             {ACCENT_FONTS.map((font) => (
               <option key={font.value} value={font.value}>
@@ -132,8 +164,10 @@ export function AdminSettings() {
           <select
             className="admin-filter admin-filter-select"
             name="accent-font-size"
-            value={accentFontSize}
-            onChange={(event) => setAccentFontSize(event.target.value)}
+            value={draft.accentFontSize}
+            onChange={(event) =>
+              patch({ accentFontSize: event.target.value as FontSize })
+            }
           >
             {FONT_SIZES.map((size) => (
               <option key={size.value} value={size.value}>
@@ -147,8 +181,8 @@ export function AdminSettings() {
           <select
             className="admin-filter admin-filter-select"
             name="comments-per-page"
-            value={pageSize}
-            onChange={(event) => setPageSize(event.target.value)}
+            value={draft.pageSize}
+            onChange={(event) => patch({ pageSize: event.target.value })}
           >
             {PAGE_SIZES.map((size) => (
               <option key={size} value={size}>
@@ -157,26 +191,35 @@ export function AdminSettings() {
             ))}
           </select>
         </label>
-        <label className="admin-setting">
-          <input
-            type="checkbox"
-            name="capture-email"
-            checked={captureEmail}
-            onChange={(event) => setCaptureEmail(event.target.checked)}
-          />
-          capture email
-        </label>
+        <OnOffToggle
+          id="capture-email"
+          label="capture email"
+          value={draft.captureEmail}
+          onChange={(value) => patch({ captureEmail: value })}
+        />
         <label className="admin-setting-field">
           <span className="admin-setting-label">custom theme</span>
           <textarea
             className="admin-filter admin-setting-theme"
             name="custom-theme"
             rows={8}
-            value={customTheme}
+            value={draft.customTheme}
             placeholder="paste css…"
-            onChange={(event) => setCustomTheme(event.target.value)}
+            onChange={(event) => patch({ customTheme: event.target.value })}
           />
         </label>
+        <nav className="admin-settings-actions" aria-label="Save settings">
+          <button
+            type="button"
+            className="admin-comment-link"
+            onClick={() => setDraft(saved)}
+          >
+            undo changes
+          </button>
+          <button type="submit" className="admin-comment-link">
+            save changes
+          </button>
+        </nav>
       </form>
     </div>
   );

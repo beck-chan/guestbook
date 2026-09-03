@@ -1357,6 +1357,97 @@ body {
   white-space: nowrap;
 }
 
+.guestbook-title.is-static {
+  overflow: visible;
+  white-space: normal;
+}
+
+.guestbook-themed {
+  --guestbook-main-font: "futura-pt", var(--font-jost), Jost, sans-serif;
+  --guestbook-accent-font: Peony, cursive;
+  --guestbook-main-scale: 1;
+  --guestbook-accent-scale: 1;
+}
+
+.guestbook-themed .comment-body,
+.guestbook-themed .comment-email,
+.guestbook-themed .comment-input,
+.guestbook-themed .comment-time,
+.guestbook-themed .admin-lede,
+.guestbook-themed .admin-comment-email,
+.guestbook-themed .admin-empty,
+.guestbook-themed .admin-filter,
+.guestbook-themed .admin-date-range-sep {
+  font-family: var(--guestbook-main-font);
+}
+
+.guestbook-themed .comment-body,
+.guestbook-themed .comment-input {
+  font-size: calc(1.12rem * var(--guestbook-main-scale));
+}
+
+.guestbook-themed .comment-email,
+.guestbook-themed .admin-comment-email {
+  font-size: calc(0.95rem * var(--guestbook-main-scale));
+}
+
+.guestbook-themed .comment-time {
+  font-size: calc(0.82rem * var(--guestbook-main-scale));
+}
+
+.guestbook-themed .admin-lede {
+  font-size: calc(1.15rem * var(--guestbook-main-scale));
+}
+
+.guestbook-themed .admin-empty {
+  font-size: calc(1.05rem * var(--guestbook-main-scale));
+}
+
+.guestbook-themed .admin-filter {
+  font-size: calc(0.92rem * var(--guestbook-main-scale));
+}
+
+.guestbook-themed .guestbook-title,
+.guestbook-themed .admin-title,
+.guestbook-themed .comment-name,
+.guestbook-themed .comment-compose .comment-name-input,
+.guestbook-themed .comment-action,
+.guestbook-themed .comment-page,
+.guestbook-themed .admin-comment-link,
+.guestbook-themed .admin-mark-read,
+.guestbook-themed .admin-setting-label,
+.guestbook-themed .admin-setting-toggle button,
+.guestbook-themed .admin-filter-search,
+.guestbook-themed .admin-tools-toggle {
+  font-family: var(--guestbook-accent-font);
+}
+
+.guestbook-themed .guestbook-title,
+.guestbook-themed .admin-title {
+  font-size: calc(3rem * var(--guestbook-accent-scale));
+}
+
+.guestbook-themed .comment-name,
+.guestbook-themed .comment-compose .comment-name-input {
+  font-size: calc(1.5rem * var(--guestbook-accent-scale));
+}
+
+.guestbook-themed .comment-action,
+.guestbook-themed .comment-page,
+.guestbook-themed .admin-comment-link {
+  font-size: calc(1.45rem * var(--guestbook-accent-scale));
+}
+
+.guestbook-themed .admin-mark-read,
+.guestbook-themed .admin-setting-label,
+.guestbook-themed .admin-setting-toggle button {
+  font-size: calc(1.15rem * var(--guestbook-accent-scale));
+}
+
+.guestbook-themed .admin-filter-search {
+  font-size: calc(1.2rem * var(--guestbook-accent-scale));
+}
+
 .guestbook-page:not(.guestbook-mono) .comment-compose {
   margin-top: 0.2rem;
 }
@@ -1774,6 +1865,7 @@ body {
 }
 
 .admin-bulk-actions,
+.admin-settings-actions,
 .admin-comment-actions {
   display: flex;
   align-items: baseline;
@@ -1781,7 +1873,8 @@ body {
   width: 100%;
 }
 
-.admin-bulk-actions .admin-comment-link {
+.admin-bulk-actions .admin-comment-link,
+.admin-settings-actions .admin-comment-link {
   padding: 0;
   border: 0;
   background: none;
@@ -1924,6 +2017,11 @@ body {
   .admin-title,
   .guestbook-title {
     font-size: 2.6rem;
+  }
+
+  .guestbook-themed .guestbook-title,
+  .guestbook-themed .admin-title {
+    font-size: calc(2.6rem * var(--guestbook-accent-scale));
   }
 
   .admin-lede {

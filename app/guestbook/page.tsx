@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { CommentBubbles } from "@/components/CommentBubbles";
+import { GuestbookBoard } from "@/components/GuestbookBoard";
 import { HitCounter } from "@/components/HitCounter";
 import { MobileMenu } from "@/components/MobileMenu";
 
@@ -40,10 +40,7 @@ export default function GuestbookPage() {
       <MobileMenu />
       <HitCounter />
       <div className="admin-shell">
-        <h1 className="guestbook-title">
-          <span className="demobook-marquee">guestbook</span>
-        </h1>
-        <CommentBubbles showHits={false} limit={6} />
+        <GuestbookBoard />
       </div>
     </main>
   );

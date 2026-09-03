@@ -2,6 +2,7 @@
 
 import { MOCK_COMMENTS } from "@/lib/comments";
 import { HitCounter } from "@/components/HitCounter";
+import { useGuestbookSettings } from "@/lib/guestbookSettings";
 
 type CommentBubblesProps = {
   showHits?: boolean;
@@ -16,6 +17,7 @@ export function CommentBubbles({
   sectionId,
   limit = 4,
 }: CommentBubblesProps) {
+  const [{ captureEmail }] = useGuestbookSettings();
   const nameId = `${idPrefix}comment-name`;
   const inputId = `${idPrefix}comment-input`;
 
@@ -36,13 +38,15 @@ export function CommentBubbles({
             autoComplete="nickname"
             aria-label="display name"
           />
-          <input
-            type="email"
-            className="comment-email"
-            name="email"
-            placeholder="email (optional, only visible to admin)"
-            autoComplete="email"
-          />
+          {captureEmail ? (
+            <input
+              type="email"
+              className="comment-email"
+              name="email"
+              placeholder="email (optional, only visible to admin)"
+              autoComplete="email"
+            />
+          ) : null}
           <textarea
             id={inputId}
             className="comment-input"

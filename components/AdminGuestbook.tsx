@@ -1,5 +1,6 @@
 import { AdminCommentThread } from "@/components/AdminCommentThread";
 import { AdminFilters } from "@/components/AdminFilters";
+import { AdminPageFrame } from "@/components/AdminPageFrame";
 import { AdminSettings } from "@/components/AdminSettings";
 import {
   adminHref,
@@ -50,7 +51,7 @@ export function AdminGuestbook({
   const isDemo = variant === "demobook";
 
   return (
-    <main
+    <AdminPageFrame
       className={`admin-page${isDemo ? " guestbook-page guestbook-mono" : " admin-desk"}`}
     >
       {isDemo ? (
@@ -146,6 +147,6 @@ export function AdminGuestbook({
           <AdminSettings />
         </aside>
       </div>
-    </main>
+    </AdminPageFrame>
   );
 }
