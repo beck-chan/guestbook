@@ -1,16 +1,26 @@
 "use client";
 
 import { useState } from "react";
+import { docsUrl, flags } from "@/lib/flags";
 
 type MobileMenuLink = {
   href: string;
   label: string;
+  target?: string;
+  rel?: string;
 };
 
-const DEFAULT_LINKS: MobileMenuLink[] = [
-  { href: "/docs", label: "view docs" },
-  { href: "/admin", label: "admin login" },
-];
+const DEFAULT_LINKS: MobileMenuLink[] = flags.docs
+  ? [
+      {
+        href: docsUrl,
+        label: "view docs",
+        target: "_blank",
+        rel: "noopener noreferrer",
+      },
+      { href: "/admin", label: "admin login" },
+    ]
+  : [{ href: "/admin", label: "admin login" }];
 
 type MobileMenuProps = {
   links?: MobileMenuLink[];
@@ -38,7 +48,13 @@ export function MobileMenu({
       <div id={panelId} className="mobile-nav-panel">
         <div className="mobile-nav-panel-inner">
           {links.map((link) => (
-            <a key={link.href} className="mobile-nav-link" href={link.href}>
+            <a
+              key={link.href}
+              className="mobile-nav-link"
+              href={link.href}
+              target={link.target}
+              rel={link.rel}
+            >
               {link.label}
             </a>
           ))}

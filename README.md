@@ -58,3 +58,20 @@ npm run dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000).
+
+## Feature flags
+
+Flags are compile-time values in [`lib/flags.ts`](lib/flags.ts). Change a flag, then restart `npm run dev` or run `npm run build` again.
+
+`docs` (default `false`) controls the desk bookmarks on the home and guestbook pages:
+
+- **Off:** the labeled bookmark is **admin login** and goes to `/admin`. The short admin ribbon is hidden.
+- **On:** the labeled bookmark is **view docs** and the short **admin login** ribbon is shown. Docs open in a new window.
+
+When `docs` is on, `docsUrl` in the same file sets the docs href (default `/docs`).
+
+To add another flag, add a key on `flags` in [`lib/flags.ts`](lib/flags.ts) and branch on it in the UI.
+
+```
+taskkill //F //PID {id}
+```
