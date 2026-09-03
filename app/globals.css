@@ -1775,6 +1775,13 @@ body {
   line-height: 1.1;
 }
 
+.admin-search-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: flex-end;
+  gap: 0.85rem;
+}
+
 .admin-filter-search::placeholder {
   color: #0b2a1290;
 }
@@ -1874,11 +1881,17 @@ body {
 }
 
 .admin-bulk-actions .admin-comment-link,
-.admin-settings-actions .admin-comment-link {
+.admin-settings-actions .admin-comment-link,
+.admin-search-row .admin-comment-link {
   padding: 0;
   border: 0;
   background: none;
   cursor: pointer;
+}
+
+.admin-search-row .admin-comment-link {
+  flex: none;
+  white-space: nowrap;
 }
 
 .admin-comment-link {
@@ -2146,9 +2159,16 @@ body {
 
   .admin-filter-select,
   .admin-filter-search,
-  .admin-date-range {
+  .admin-date-range,
+  .admin-search-row {
     width: 100%;
     flex: none;
+  }
+
+  .admin-search-row .admin-filter-search {
+    width: auto;
+    flex: 1 1 0;
+    min-width: 0;
   }
 
   .admin-filter-search {

@@ -37,6 +37,10 @@ export function AdminFilters({
     );
   }
 
+  function clearAll() {
+    router.push(basePath);
+  }
+
   return (
     <form
       className="admin-filters"
@@ -121,14 +125,23 @@ export function AdminFilters({
                 />
               </div>
             </div>
-            <input
-              className="admin-filter admin-filter-search"
-              type="search"
-              name="q"
-              defaultValue={filters.q}
-              placeholder="search"
-              aria-label="search comments"
-            />
+            <div className="admin-search-row">
+              <button
+                type="button"
+                className="admin-comment-link"
+                onClick={clearAll}
+              >
+                clear all
+              </button>
+              <input
+                className="admin-filter admin-filter-search"
+                type="search"
+                name="q"
+                defaultValue={filters.q}
+                placeholder="search"
+                aria-label="search comments"
+              />
+            </div>
           </div>
         </div>
       </div>
