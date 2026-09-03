@@ -66,6 +66,7 @@ const MOCK_COMMENT_SEED: GuestbookComment[] = [
     email: "lea@example.com",
     body: "the cream pages feel like a held breath.",
     time: "Jul 29",
+    nested: true,
   },
   {
     id: "n-corner",
@@ -171,6 +172,7 @@ const MOCK_COMMENT_SEED: GuestbookComment[] = [
     email: "stillhere@example.com",
     body: "found this the way one finds a letter in a coat pocket.",
     time: "Mar 9",
+    nested: true,
   },
 ];
 

@@ -2,25 +2,12 @@
 
 import { useEffect, useState } from "react";
 import {
+  ACCENT_FONTS,
+  MAIN_FONTS,
   useGuestbookSettings,
   type FontSize,
   type GuestbookSettings,
 } from "@/lib/guestbookSettings";
-
-const MAIN_FONTS = [
-  { value: "futura-pt", label: "futura pt" },
-  { value: "jost", label: "jost" },
-  { value: "baskerville", label: "libre baskerville" },
-  { value: "kaisei", label: "kaisei haruno umi" },
-  { value: "times", label: "times new roman" },
-];
-
-const ACCENT_FONTS = [
-  { value: "peony", label: "peony" },
-  { value: "hello-honey", label: "hello honey" },
-  { value: "comic-sans", label: "comic sans" },
-  { value: "futura-pt", label: "futura pt" },
-];
 
 const PAGE_SIZES = [4, 5, 6, 7, 8, 9, 10] as const;
 
@@ -197,17 +184,27 @@ export function AdminSettings() {
           value={draft.captureEmail}
           onChange={(value) => patch({ captureEmail: value })}
         />
-        <label className="admin-setting-field">
-          <span className="admin-setting-label">custom theme</span>
+        <div className="admin-setting-field">
+          <div className="admin-setting-heading">
+            <span className="admin-setting-label">custom theme</span>
+            <a
+              className="admin-comment-link"
+              href="/admin/example.css"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              view example
+            </a>
+          </div>
           <textarea
             className="admin-filter admin-setting-theme"
             name="custom-theme"
             rows={8}
             value={draft.customTheme}
-            placeholder="paste css…"
+            placeholder="Paste CSS overrides. Uses Tailwind."
             onChange={(event) => patch({ customTheme: event.target.value })}
           />
-        </label>
+        </div>
         <nav className="admin-settings-actions" aria-label="Save settings">
           <button
             type="button"

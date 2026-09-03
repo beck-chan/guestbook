@@ -1217,6 +1217,18 @@ body {
   gap: 0.35rem;
 }
 
+.admin-setting-heading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.85rem;
+  width: 100%;
+}
+
+.admin-setting-heading .admin-comment-link {
+  font-size: 1.15rem;
+}
+
 .admin-setting-label {
   color: #0b2a1290;
   font-family: Peony, cursive;
@@ -1277,6 +1289,10 @@ body {
   min-height: 9rem;
   resize: vertical;
   line-height: 1.45;
+}
+
+.admin-setting-theme::placeholder {
+  color: #0b2a12;
 }
 
 .admin-mark-read input {
@@ -1403,6 +1419,10 @@ body {
 .guestbook-themed .admin-filter-search,
 .guestbook-themed .admin-tools-toggle {
   font-family: var(--guestbook-accent-font);
+}
+
+.guestbook-themed .admin-setting-heading .admin-comment-link {
+  font-size: calc(1.15rem * var(--guestbook-accent-scale));
 }
 
 .guestbook-themed .guestbook-title,

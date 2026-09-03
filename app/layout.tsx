@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Jost, Kaisei_HarunoUmi, Libre_Baskerville } from "next/font/google";
+import { CustomTheme } from "@/components/CustomTheme";
 import "./globals.css";
 
 const jost = Jost({
@@ -35,7 +36,10 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       lang="en"
       className={`${jost.variable} ${baskerville.variable} ${kaisei.variable} h-full antialiased`}
     >
-      <body className="min-h-full">{children}</body>
+      <body className="min-h-full">
+        {children}
+        <CustomTheme />
+      </body>
     </html>
   );
 }

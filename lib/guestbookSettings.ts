@@ -16,6 +16,19 @@ export type GuestbookSettings = {
   customTheme: string;
 };
 
+export const MAIN_FONTS = [
+  { value: "futura-pt", label: "futura pt" },
+  { value: "jost", label: "jost" },
+  { value: "baskerville", label: "libre baskerville" },
+  { value: "kaisei", label: "kaisei haruno umi" },
+] as const;
+
+export const ACCENT_FONTS = [
+  { value: "peony", label: "peony" },
+  { value: "hello-honey", label: "hello honey" },
+  { value: "futura-pt", label: "futura pt" },
+] as const;
+
 export const DEFAULT_GUESTBOOK_SETTINGS: GuestbookSettings = {
   title: "",
   marquee: true,
@@ -28,6 +41,11 @@ export const DEFAULT_GUESTBOOK_SETTINGS: GuestbookSettings = {
   customTheme: "",
 };
 
+const MAIN_FONT_VALUES = new Set<string>(MAIN_FONTS.map((font) => font.value));
+const ACCENT_FONT_VALUES = new Set<string>(
+  ACCENT_FONTS.map((font) => font.value),
+);
+
 const STORAGE_KEY = "guestbook-settings";
 const CHANGE_EVENT = "guestbook-settings-change";
 
@@ -37,7 +55,14 @@ function parse(raw: string | null): GuestbookSettings {
   }
   try {
     const parsed = JSON.parse(raw) as Partial<GuestbookSettings>;
-    return { ...DEFAULT_GUESTBOOK_SETTINGS, ...parsed };
+    const next = { ...DEFAULT_GUESTBOOK_SETTINGS, ...parsed };
+    if (!MAIN_FONT_VALUES.has(next.mainFont)) {
+      next.mainFont = DEFAULT_GUESTBOOK_SETTINGS.mainFont;
+    }
+    if (!ACCENT_FONT_VALUES.has(next.accentFont)) {
+      next.accentFont = DEFAULT_GUESTBOOK_SETTINGS.accentFont;
+    }
+    return next;
   } catch {
     return { ...DEFAULT_GUESTBOOK_SETTINGS };
   }
@@ -84,10 +109,8 @@ const FONT_STACKS: Record<string, string> = {
   jost: "var(--font-jost), Jost, sans-serif",
   baskerville: 'var(--font-baskerville), "Libre Baskerville", serif',
   kaisei: 'var(--font-kaisei), "Kaisei HarunoUmi", serif',
-  times: '"Times New Roman", Times, serif',
   peony: "Peony, cursive",
   "hello-honey": '"Hello Honey", cursive',
-  "comic-sans": '"Comic Sans MS", "Comic Sans", cursive',
 };
 
 const SIZE_SCALE: Record<FontSize, string> = {
