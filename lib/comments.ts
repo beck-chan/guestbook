@@ -186,9 +186,11 @@ export const ADMIN_PAGE_SIZE = 10;
 
 export type EmailFilter = "all" | "has" | "none";
 export type StatusFilter = "all" | "unread" | "read";
+export type SortOrder = "newest" | "oldest";
 
 export type AdminFilters = {
   q: string;
+  sort: SortOrder;
   status: StatusFilter;
   email: EmailFilter;
   from: string;
@@ -270,6 +272,16 @@ export function filterComments(
   });
 }
 
+export function sortComments(
+  comments: GuestbookComment[],
+  sort: SortOrder,
+): GuestbookComment[] {
+  return [...comments].sort((a, b) => {
+    const delta = commentDate(a).getTime() - commentDate(b).getTime();
+    return sort === "oldest" ? delta : -delta;
+  });
+}
+
 export function adminHref(
   page: number,
   filters: AdminFilters,
@@ -278,6 +290,9 @@ export function adminHref(
   const params = new URLSearchParams();
   if (filters.q) {
     params.set("q", filters.q);
+  }
+  if (filters.sort === "oldest") {
+    params.set("sort", "oldest");
   }
   if (filters.status !== "all") {
     params.set("status", filters.status);

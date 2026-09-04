@@ -1741,7 +1741,7 @@ body {
 }
 
 .admin-filter-select {
-  min-width: 7.5rem;
+  min-width: 8.5rem;
   cursor: pointer;
 }
 
@@ -1878,7 +1878,7 @@ body {
 
 @media (max-width: 1280px) {
   .admin-page {
-    padding: 4.4rem 1.25rem 5.5rem;
+    padding: 6.25rem 1.25rem 5.5rem;
   }
 
   .admin-page.admin-desk {
@@ -1886,11 +1886,17 @@ body {
   }
 
   .admin-desk .admin-main {
-    padding: 4.4rem 1.25rem 2rem;
+    padding: 6.25rem 1.25rem 2rem;
   }
 
   .admin-desk .admin-settings {
     padding: 1.25rem 1.25rem 5.5rem;
+  }
+
+  .admin-setting-rate-row {
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: flex-start;
   }
 
   .admin-page .desk-bookmarks {
@@ -1934,7 +1940,9 @@ body {
   }
 
   .admin-lede {
+    align-self: stretch;
     font-size: 1.15rem;
+    text-align: left;
   }
 
   .admin-tools {

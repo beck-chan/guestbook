@@ -18,11 +18,13 @@ export function AdminFilters({
     const data = new FormData(form);
     const emailValue = String(data.get("email") ?? "all");
     const statusValue = String(data.get("status") ?? "all");
+    const sortValue = String(data.get("sort") ?? "newest");
     router.push(
       adminHref(
         1,
         {
           q: String(data.get("q") ?? "").trim(),
+          sort: sortValue === "oldest" ? "oldest" : "newest",
           status:
             statusValue === "unread" || statusValue === "read"
               ? statusValue
@@ -44,7 +46,7 @@ export function AdminFilters({
   return (
     <form
       className="admin-filters"
-      key={`${filters.q}|${filters.status}|${filters.email}|${filters.from}|${filters.to}`}
+      key={`${filters.q}|${filters.sort}|${filters.status}|${filters.email}|${filters.from}|${filters.to}`}
       onSubmit={(event) => {
         event.preventDefault();
         apply(event.currentTarget);
@@ -59,12 +61,26 @@ export function AdminFilters({
           onMouseDown={(event) => event.preventDefault()}
           onClick={() => setToolsOpen((open) => !open)}
         >
-          search & filters
+          comments menu
           <span className="admin-tools-caret" aria-hidden="true" />
         </button>
         <div id="admin-tools-panel" className="admin-tools-panel">
           <div className="admin-tools-panel-inner">
             <div className="admin-filter-row">
+              <select
+                className="admin-filter admin-filter-select"
+                name="sort"
+                defaultValue={filters.sort}
+                aria-label="sort comments"
+                onChange={(event) => {
+                  if (event.currentTarget.form) {
+                    apply(event.currentTarget.form);
+                  }
+                }}
+              >
+                <option value="oldest">oldest first</option>
+                <option value="newest">newest first</option>
+              </select>
               <select
                 className="admin-filter admin-filter-select"
                 name="status"
@@ -148,7 +164,9 @@ export function AdminFilters({
       <div className="admin-header">
         <h1 className="admin-title">comments</h1>
       </div>
-      <p className="admin-lede">posted comments, newest first.</p>
+      <p className="admin-lede">
+        posted comments, {filters.sort === "oldest" ? "oldest first" : "newest first"}.
+      </p>
     </form>
   );
 }

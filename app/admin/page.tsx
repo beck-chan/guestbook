@@ -4,12 +4,13 @@ import {
   MOCK_COMMENTS,
   filterComments,
   paginateComments,
+  sortComments,
   type AdminFilters,
 } from "@/lib/comments";
 
 export const metadata: Metadata = {
   title: "Admin",
-  description: "Guestbook comments, newest first.",
+  description: "Guestbook comments.",
 };
 
 function first(value: string | string[] | undefined) {
@@ -21,8 +22,10 @@ function filtersFrom(
 ): AdminFilters {
   const email = first(searchParams.email);
   const status = first(searchParams.status);
+  const sort = first(searchParams.sort);
   return {
     q: first(searchParams.q) ?? "",
+    sort: sort === "oldest" ? "oldest" : "newest",
     status: status === "unread" || status === "read" ? status : "all",
     email: email === "has" || email === "none" ? email : "all",
     from: first(searchParams.from) ?? "",
@@ -39,7 +42,7 @@ export default async function AdminPage({ searchParams }: PageProps<"/admin">) {
   const params = await searchParams;
   const filters = filtersFrom(params);
   const { comments, page, totalPages } = paginateComments(
-    filterComments(MOCK_COMMENTS, filters),
+    sortComments(filterComments(MOCK_COMMENTS, filters), filters.sort),
     pageFrom(params),
   );
 
