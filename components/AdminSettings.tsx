@@ -205,6 +205,72 @@ export function AdminSettings() {
             onChange={(event) => patch({ customTheme: event.target.value })}
           />
         </div>
+        <div className="admin-setting-field admin-setting-rate-row">
+          <span className="admin-setting-label" id="rate-limits-label">
+            rate limits
+          </span>
+          <div
+            className="admin-setting-rate-limits"
+            role="group"
+            aria-labelledby="rate-limits-label"
+          >
+            <input
+              className="admin-filter admin-setting-rate"
+              type="number"
+              inputMode="numeric"
+              min={1}
+              step={1}
+              name="rate-limit-count"
+              value={draft.rateLimitCount}
+              aria-label="comments per interval"
+              onChange={(event) =>
+                patch({ rateLimitCount: event.target.value })
+              }
+            />
+            <span>per</span>
+            <input
+              className="admin-filter admin-setting-rate"
+              type="number"
+              inputMode="numeric"
+              min={1}
+              step={1}
+              name="rate-limit-minutes"
+              value={draft.rateLimitMinutes}
+              aria-label="interval in minutes"
+              onChange={(event) =>
+                patch({ rateLimitMinutes: event.target.value })
+              }
+            />
+            <span>min.,</span>
+            <input
+              className="admin-filter admin-setting-rate"
+              type="number"
+              inputMode="numeric"
+              min={1}
+              step={1}
+              name="rate-limit-daily"
+              value={draft.rateLimitDaily}
+              aria-label="comments per day"
+              onChange={(event) =>
+                patch({ rateLimitDaily: event.target.value })
+              }
+            />
+            <span>total / day</span>
+          </div>
+        </div>
+        <label className="admin-setting-field">
+          <span className="admin-setting-label">profanity allow-list</span>
+          <textarea
+            className="admin-filter admin-setting-allowlist"
+            name="profanity-allow-list"
+            rows={4}
+            value={draft.profanityAllowList}
+            placeholder="Words to allow through the filter."
+            onChange={(event) =>
+              patch({ profanityAllowList: event.target.value })
+            }
+          />
+        </label>
         <nav className="admin-settings-actions" aria-label="Save settings">
           <button
             type="button"

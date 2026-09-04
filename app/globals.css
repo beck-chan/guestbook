@@ -52,6 +52,10 @@
   --bubble: #fff8f9;
   --bubble-nested: #fee3e5;
   --black: #000;
+  --peony-font: Peony, cursive;
+  --futura-font: "futura-pt", var(--font-jost), Jost, sans-serif;
+  --body-font: "futura-pt", var(--font-jost), Jost, var(--font-kaisei), sans-serif;
+  --poem-font: var(--font-baskerville), "Libre Baskerville", Baskerville, var(--font-kaisei), serif;
 }
 
 @theme inline {
@@ -64,7 +68,7 @@ body {
   min-height: 100vh;
   margin: 0;
   color: var(--ink);
-  font-family: "futura-pt", var(--font-jost), Jost, var(--font-kaisei), sans-serif;
+  font-family: var(--body-font);
   background: var(--desk);
 }
 
@@ -137,7 +141,7 @@ body {
   top: 38%;
   width: 88%;
   color: var(--cover);
-  font-family: Peony, cursive;
+  font-family: var(--peony-font);
   font-size: 1.15rem;
   font-weight: 400;
   letter-spacing: 0.03em;
@@ -209,7 +213,7 @@ body {
   z-index: 5;
   isolation: isolate;
   color: var(--cover-soft);
-  font-family: Peony, cursive;
+  font-family: var(--peony-font);
   font-size: 1rem;
   font-weight: 400;
   letter-spacing: 0.03em;
@@ -426,7 +430,7 @@ body {
   width: 100%;
   max-width: 100%;
   text-align: center;
-  font-family: Peony, cursive;
+  font-family: var(--peony-font);
 }
 
 .cover-title,
@@ -440,7 +444,7 @@ body {
 
 .cover-title {
   margin: 0;
-  font-family: Peony, cursive;
+  font-family: var(--peony-font);
   font-size: clamp(2.4rem, 16cqi, 5.2rem);
   font-weight: 400;
   letter-spacing: 0.02em;
@@ -511,7 +515,7 @@ body {
   overflow: auto;
   padding: 4.75rem 4.6rem 9rem 5.6rem;
   color: color-mix(in srgb, #6f4e37 80%, white);
-  font-family: "futura-pt", var(--font-jost), Jost, var(--font-kaisei), sans-serif;
+  font-family: var(--body-font);
   scrollbar-width: thin;
   scrollbar-color: var(--paper-shadow) transparent;
 }
@@ -545,7 +549,7 @@ body {
 
 .easter-heading {
   margin: 0 0 1.15rem;
-  font-family: Peony, cursive;
+  font-family: var(--peony-font);
   font-size: clamp(1.5rem, 2.25vw, 2.1rem);
   font-weight: 400;
   animation: easter-heading-float 4.6s cubic-bezier(0.42, 0, 0.22, 1.28) infinite;
@@ -572,7 +576,7 @@ body {
 
 .easter-signoff-mark {
   padding-left: 0.55em;
-  font-family: Peony, cursive;
+  font-family: var(--peony-font);
   font-size: clamp(1.7rem, 2.6vw, 2.35rem);
   font-weight: 400;
 }
@@ -609,7 +613,7 @@ body {
   border-radius: 1px;
   background: transparent;
   color: var(--cover-soft);
-  font-family: Peony, cursive;
+  font-family: var(--peony-font);
   font-size: clamp(1.3rem, 1.9vw, 1.65rem);
   font-weight: 400;
   letter-spacing: 0.04em;
@@ -640,7 +644,7 @@ body {
 .hit-counter-label {
   margin: 0;
   color: var(--peony-soft);
-  font-family: Peony, cursive;
+  font-family: var(--peony-font);
   font-size: clamp(0.95rem, 1.4vw, 1.15rem);
   font-weight: 400;
   letter-spacing: 0.08em;
@@ -662,7 +666,7 @@ body {
   border: 2px solid var(--peony-soft);
   background: var(--bubble);
   color: var(--peony-soft);
-  font-family: Peony, cursive;
+  font-family: var(--peony-font);
   font-size: clamp(1.45rem, 2.4vw, 1.95rem);
   font-weight: 400;
   letter-spacing: 0;
@@ -675,19 +679,19 @@ body {
 }
 
 .poem-piece {
-  font-family: var(--font-baskerville), "Libre Baskerville", Baskerville, var(--font-kaisei), serif;
+  font-family: var(--poem-font);
 }
 
 .poem-title {
   margin: 0 0 0.9rem;
-  font-family: var(--font-baskerville), "Libre Baskerville", Baskerville, var(--font-kaisei), serif;
+  font-family: var(--poem-font);
   font-size: clamp(1.15rem, 2vw, 1.7rem);
   font-weight: 700;
   line-height: 1.3;
 }
 
 .poem-body {
-  font-family: var(--font-baskerville), "Libre Baskerville", Baskerville, var(--font-kaisei), serif;
+  font-family: var(--poem-font);
   font-size: clamp(0.9rem, 1.4vw, 1.18rem);
   line-height: 1.55;
 }
@@ -726,7 +730,7 @@ body {
 
 .poem-heart-count {
   color: var(--peony);
-  font-family: Peony, cursive;
+  font-family: var(--peony-font);
   font-size: 1.4rem;
   font-weight: 400;
   line-height: 1;
@@ -794,7 +798,7 @@ body {
   width: max-content;
   padding-bottom: 0.4em;
   color: var(--cover-soft);
-  font-family: Peony, cursive;
+  font-family: var(--peony-font);
   font-size: clamp(0.82rem, 1.3vw, 1.05rem);
   font-weight: 400;
   letter-spacing: 0.06em;
@@ -878,7 +882,7 @@ body {
   z-index: 1;
   width: max-content;
   color: var(--cover);
-  font-family: Peony, cursive;
+  font-family: var(--peony-font);
   white-space: nowrap;
   font-size: clamp(1.2rem, 1.95vw, 1.55rem);
   font-weight: 400;
@@ -985,7 +989,7 @@ body {
   }
 
   .desk-guestbook-hint-label {
-    font-family: Peony, cursive;
+    font-family: var(--peony-font);
     font-size: 1.35rem;
     font-weight: 400;
     letter-spacing: 0.04em;
@@ -1069,7 +1073,7 @@ body {
   border: 0;
   background: transparent;
   color: var(--peony);
-  font-family: Peony, cursive;
+  font-family: var(--peony-font);
   font-size: 1.45rem;
   font-weight: 400;
   letter-spacing: 0.04em;
@@ -1100,7 +1104,7 @@ body {
   border: 0;
   background: transparent;
   color: var(--peony);
-  font-family: Peony, cursive;
+  font-family: var(--peony-font);
   font-size: 1.45rem;
   font-weight: 400;
   letter-spacing: 0.04em;
@@ -1145,14 +1149,14 @@ body {
   display: block;
   margin: 0;
   color: var(--cover-soft);
-  font-family: Peony, cursive;
+  font-family: var(--peony-font);
   font-size: 1.5rem;
 }
 
 .comment-time {
   flex: 0 0 auto;
   color: var(--cover-soft);
-  font-family: "futura-pt", var(--font-jost), Jost, sans-serif;
+  font-family: var(--futura-font);
   font-size: 0.82rem;
   font-weight: 400;
   letter-spacing: 0.02em;
@@ -1168,7 +1172,7 @@ body {
   border: 0;
   background: transparent;
   color: var(--cover-soft);
-  font-family: Peony, cursive;
+  font-family: var(--peony-font);
   font-size: 1.5rem;
   font-weight: 400;
   outline: none;
@@ -1181,7 +1185,7 @@ body {
 .comment-body {
   margin: 0;
   color: var(--cover);
-  font-family: "futura-pt", var(--font-jost), Jost, sans-serif;
+  font-family: var(--futura-font);
   font-size: 1.12rem;
   font-weight: 400;
   line-height: 1.5;
@@ -1195,7 +1199,7 @@ body {
   border: 0;
   background: transparent;
   color: var(--cover);
-  font-family: "futura-pt", var(--font-jost), Jost, sans-serif;
+  font-family: var(--futura-font);
   font-size: 0.95rem;
   font-weight: 400;
   line-height: 1.4;
@@ -1216,7 +1220,7 @@ body {
   resize: none;
   background: transparent;
   color: var(--cover);
-  font-family: "futura-pt", var(--font-jost), Jost, sans-serif;
+  font-family: var(--futura-font);
   font-size: 1.12rem;
   font-weight: 400;
   line-height: 1.5;
@@ -1304,7 +1308,7 @@ body {
 
 .admin-setting-label {
   color: var(--cover-soft);
-  font-family: Peony, cursive;
+  font-family: var(--peony-font);
   font-size: 1.15rem;
   font-weight: 400;
   letter-spacing: 0.03em;
@@ -1314,6 +1318,10 @@ body {
 .admin-setting-field .admin-filter {
   width: 100%;
   box-sizing: border-box;
+}
+
+.admin-setting-field .admin-setting-rate {
+  width: calc(4ch + 1.8rem);
 }
 
 .admin-setting-toggle {
@@ -1328,7 +1336,7 @@ body {
   border: 2px solid var(--peony-soft);
   background: var(--bubble);
   color: var(--peony);
-  font-family: Peony, cursive;
+  font-family: var(--peony-font);
   font-size: 1.15rem;
   font-weight: 400;
   letter-spacing: 0.03em;
@@ -1366,6 +1374,59 @@ body {
 
 .admin-setting-theme::placeholder {
   color: var(--cover);
+}
+
+.admin-setting-allowlist {
+  min-height: 4.5rem;
+  resize: vertical;
+  line-height: 1.45;
+}
+
+.admin-setting-allowlist::placeholder {
+  color: var(--cover);
+}
+
+.admin-setting-rate-row {
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.admin-setting-rate-row .admin-setting-label {
+  flex: none;
+  white-space: nowrap;
+}
+
+.admin-setting-rate-limits {
+  display: flex;
+  flex: none;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 0.28rem;
+  color: var(--cover-soft);
+  font-family: var(--futura-font);
+  font-size: 0.92rem;
+  font-weight: 400;
+  line-height: 1.3;
+  white-space: nowrap;
+}
+
+.admin-setting-rate {
+  flex: none;
+  width: calc(4ch + 1.8rem);
+  min-width: 0;
+  padding-left: 0.18rem;
+  padding-right: 0.18rem;
+  text-align: center;
+  appearance: textfield;
+  -moz-appearance: textfield;
+}
+
+.admin-setting-rate::-webkit-outer-spin-button,
+.admin-setting-rate::-webkit-inner-spin-button {
+  appearance: none;
+  margin: 0;
 }
 
 .admin-mark-read input {
@@ -1421,7 +1482,7 @@ body {
   margin: 1.15rem 0 0.2rem;
   overflow: hidden;
   color: var(--cover);
-  font-family: Peony, cursive;
+  font-family: var(--peony-font);
   font-size: 3rem;
   font-weight: 400;
   letter-spacing: 0.04em;
@@ -1451,8 +1512,8 @@ body {
 }
 
 .guestbook-themed {
-  --guestbook-main-font: "futura-pt", var(--font-jost), Jost, sans-serif;
-  --guestbook-accent-font: Peony, cursive;
+  --guestbook-main-font: var(--futura-font);
+  --guestbook-accent-font: var(--peony-font);
   --guestbook-main-scale: 1;
   --guestbook-accent-scale: 1;
 }
@@ -1465,7 +1526,8 @@ body {
 .guestbook-themed .admin-comment-email,
 .guestbook-themed .admin-empty,
 .guestbook-themed .admin-filter,
-.guestbook-themed .admin-date-range-sep {
+.guestbook-themed .admin-date-range-sep,
+.guestbook-themed .admin-setting-rate-limits {
   font-family: var(--guestbook-main-font);
 }
 
@@ -1491,7 +1553,8 @@ body {
   font-size: calc(1.05rem * var(--guestbook-main-scale));
 }
 
-.guestbook-themed .admin-filter {
+.guestbook-themed .admin-filter,
+.guestbook-themed .admin-setting-rate-limits {
   font-size: calc(0.92rem * var(--guestbook-main-scale));
 }
 
@@ -1601,7 +1664,7 @@ body {
 .admin-title {
   margin: 0;
   color: var(--cover);
-  font-family: Peony, cursive;
+  font-family: var(--peony-font);
   font-size: 3rem;
   font-weight: 400;
   letter-spacing: 0.04em;
@@ -1622,7 +1685,7 @@ body {
   align-self: center;
   margin: 0;
   color: var(--cover-soft);
-  font-family: "futura-pt", var(--font-jost), Jost, sans-serif;
+  font-family: var(--futura-font);
   font-size: 1.15rem;
   font-weight: 400;
   line-height: 1.2;
@@ -1635,7 +1698,7 @@ body {
   border-radius: 0.45rem;
   background: var(--bubble);
   color: var(--cover);
-  font-family: "futura-pt", var(--font-jost), Jost, sans-serif;
+  font-family: var(--futura-font);
   font-size: 0.92rem;
   font-weight: 400;
   line-height: 1.3;
@@ -1646,7 +1709,7 @@ body {
   width: 22rem;
   flex: none;
   box-sizing: border-box;
-  font-family: Peony, cursive;
+  font-family: var(--peony-font);
   font-size: 1.2rem;
   line-height: 1.1;
 }
@@ -1675,7 +1738,7 @@ body {
 
 .admin-date-range-sep {
   color: var(--cover-soft);
-  font-family: "futura-pt", var(--font-jost), Jost, sans-serif;
+  font-family: var(--futura-font);
   line-height: 1;
 }
 
@@ -1691,7 +1754,7 @@ body {
 .admin-empty {
   margin: 0;
   color: var(--cover-soft);
-  font-family: "futura-pt", var(--font-jost), Jost, sans-serif;
+  font-family: var(--futura-font);
   font-size: 1.05rem;
   font-style: italic;
 }
@@ -1699,7 +1762,7 @@ body {
 .admin-comment-email {
   margin: 0 0 0.55rem;
   color: var(--cover-soft);
-  font-family: "futura-pt", var(--font-jost), Jost, sans-serif;
+  font-family: var(--futura-font);
   font-size: 0.95rem;
   font-weight: 400;
   line-height: 1.4;
@@ -1728,7 +1791,7 @@ body {
   align-items: center;
   gap: 0.4rem;
   color: var(--cover-soft);
-  font-family: Peony, cursive;
+  font-family: var(--peony-font);
   font-size: 1.15rem;
   font-weight: 400;
   letter-spacing: 0.03em;
@@ -1772,7 +1835,7 @@ body {
 
 .admin-comment-link {
   color: var(--peony);
-  font-family: Peony, cursive;
+  font-family: var(--peony-font);
   font-size: 1.45rem;
   font-weight: 400;
   letter-spacing: 0.04em;
@@ -1889,7 +1952,7 @@ body {
     border: 0;
     background: transparent;
     color: var(--cover);
-    font-family: Peony, cursive;
+    font-family: var(--peony-font);
     font-size: 1.15rem;
     font-weight: 400;
     letter-spacing: 0.04em;
@@ -2040,7 +2103,7 @@ body {
     display: grid;
     place-items: center;
     padding: 0 0 0.12rem;
-    font-family: Peony, cursive;
+    font-family: var(--peony-font);
     font-size: 1.15rem;
     font-weight: 400;
     letter-spacing: 0.04em;
@@ -2279,7 +2342,7 @@ body {
   }
 
   .mobile-font-zoom-label {
-    font-family: Peony, cursive;
+    font-family: var(--peony-font);
     font-size: 1.15rem;
     font-weight: 400;
     letter-spacing: 0.04em;
@@ -2292,7 +2355,7 @@ body {
     border: 0;
     background: transparent;
     color: inherit;
-    font-family: Peony, cursive;
+    font-family: var(--peony-font);
     font-size: 1.85rem;
     font-weight: 400;
     line-height: 0.75;
@@ -2359,7 +2422,7 @@ body {
   }
 
   .mobile-hint-label {
-    font-family: Peony, cursive;
+    font-family: var(--peony-font);
     font-size: 1.35rem;
     font-weight: 400;
     letter-spacing: 0.04em;
@@ -2419,7 +2482,7 @@ body {
     border: 0;
     background: transparent;
     color: var(--cover);
-    font-family: Peony, cursive;
+    font-family: var(--peony-font);
     font-size: 1.35rem;
     font-weight: 400;
     letter-spacing: 0.04em;
@@ -2458,7 +2521,7 @@ body {
     display: block;
     padding: 0.35rem 0.1rem;
     color: var(--cover);
-    font-family: Peony, cursive;
+    font-family: var(--peony-font);
     font-size: 1rem;
     font-weight: 400;
     letter-spacing: 0.03em;
@@ -2541,7 +2604,7 @@ body {
   .mobile-comments-title {
     margin: 0;
     color: var(--peony);
-    font-family: Peony, cursive;
+    font-family: var(--peony-font);
     font-size: 1.7rem;
     font-weight: 400;
     letter-spacing: 0.04em;
@@ -2591,7 +2654,7 @@ body {
     display: grid;
     place-items: center;
     padding-top: 0.12rem;
-    font-family: Peony, cursive;
+    font-family: var(--peony-font);
     font-size: 1.35rem;
     font-weight: 400;
     letter-spacing: 0.04em;

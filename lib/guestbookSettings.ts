@@ -13,6 +13,10 @@ export type GuestbookSettings = {
   accentFont: string;
   accentFontSize: FontSize;
   pageSize: string;
+  rateLimitCount: string;
+  rateLimitMinutes: string;
+  rateLimitDaily: string;
+  profanityAllowList: string;
   customTheme: string;
 };
 
@@ -38,6 +42,10 @@ export const DEFAULT_GUESTBOOK_SETTINGS: GuestbookSettings = {
   accentFont: "peony",
   accentFontSize: "regular",
   pageSize: "10",
+  rateLimitCount: "1",
+  rateLimitMinutes: "5",
+  rateLimitDaily: "2",
+  profanityAllowList: "",
   customTheme: "",
 };
 
