@@ -265,7 +265,7 @@ export function AdminSettings() {
             name="profanity-allow-list"
             rows={4}
             value={draft.profanityAllowList}
-            placeholder="Words to allow through the filter."
+            placeholder="Words to allow through the filter. Enter in comma separated list."
             onChange={(event) =>
               patch({ profanityAllowList: event.target.value })
             }

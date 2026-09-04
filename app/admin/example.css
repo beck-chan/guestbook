@@ -620,6 +620,16 @@ body {
     border-bottom: 1.6px solid var(--cover);
   }
 
+  .admin-search-row .admin-comment-link,
+  .admin-search-row .admin-comment-link:hover {
+    color: var(--cover);
+    font-size: 0.95rem;
+  }
+
+  .guestbook-themed .admin-search-row .admin-comment-link {
+    font-size: calc(0.95rem * var(--guestbook-accent-scale));
+  }
+
   .admin-filter-search {
     font-size: 1.05rem;
   }

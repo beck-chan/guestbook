@@ -72,6 +72,16 @@ When `docs` is on, `docsUrl` in the same file sets the docs href (default `/docs
 
 To add another flag, add a key on `flags` in [`lib/flags.ts`](lib/flags.ts) and branch on it in the UI.
 
+## Stop a running preview
+
+`npm run dev` listens on port 3000. In Git Bash, check whether anything is already bound to that port:
+
+```bash
+netstat -ano | grep :3000
 ```
+
+The last column is the PID. Stop it:
+
+```bash
 taskkill //F //PID {id}
 ```
