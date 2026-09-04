@@ -70,6 +70,8 @@ Flags are compile-time values in [`lib/flags.ts`](lib/flags.ts). Change a flag, 
 
 When `docs` is on, `docsUrl` in the same file sets the docs href (default `/docs`).
 
+`hitCounter` (default `true`) shows or hides the hit-counter display on the home cover, guestbook page, and comment sidebar.
+
 To add another flag, add a key on `flags` in [`lib/flags.ts`](lib/flags.ts) and branch on it in the UI.
 
 ## Stop a running preview
