@@ -9,10 +9,12 @@ export default function DocsPage() {
   const sections = DOCS_NAV_SECTIONS.filter((section) =>
     LANDING_TITLES.has(section.title),
   );
-  const etcLinks =
-    DOCS_NAV_SECTIONS.find((section) => section.title === "Etc.")?.items?.filter(
-      (item) => item.href,
-    ) ?? [];
+  const footerLinks = ["Etc.", "Support"].flatMap(
+    (title) =>
+      DOCS_NAV_SECTIONS.find((section) => section.title === title)?.items?.filter(
+        (item) => item.href,
+      ) ?? [],
+  );
 
   return (
     <div className="docs-index">
@@ -50,9 +52,9 @@ export default function DocsPage() {
           </section>
         ))}
       </div>
-      {etcLinks.length > 0 ? (
+      {footerLinks.length > 0 ? (
         <nav className="docs-index-etc" aria-label="More">
-          {etcLinks.map((item) => (
+          {footerLinks.map((item) => (
             <Link
               key={item.label}
               className="docs-cta"

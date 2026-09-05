@@ -37,9 +37,10 @@ export const DOCS_NAV_SECTIONS: DocsNavSection[] = [
     title: "Etc.",
     items: [
       {
-        label: "Sign Guestbook",
-        href: "/",
+        label: "LICENSE",
+        href: "https://github.com/beck-chan/y2k-guestbook/blob/main/LICENSE",
         target: "_blank",
+        rel: "noopener noreferrer",
       },
       {
         label: "Releases",
@@ -52,6 +53,16 @@ export const DOCS_NAV_SECTIONS: DocsNavSection[] = [
         href: reportIssueUrl,
         target: "_blank",
         rel: "noopener noreferrer",
+      },
+    ],
+  },
+  {
+    title: "Support",
+    items: [
+      {
+        label: "Sign Guestbook",
+        href: "/",
+        target: "_blank",
       },
       {
         label: "Donate",
