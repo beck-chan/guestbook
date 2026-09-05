@@ -3,7 +3,7 @@ import { DocsNav } from "./DocsNav";
 import "./docs.css";
 
 export const metadata: Metadata = {
-  title: "Docs",
+  title: "y2k Guestbook Docs",
   description: "Guestbook documentation.",
 };
 

@@ -2,52 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-
-type NavItem = {
-  label: string;
-  href?: string;
-  target?: string;
-  rel?: string;
-};
-
-type NavSection = {
-  title: string;
-  items?: NavItem[];
-};
-
-const SECTIONS: NavSection[] = [
-  {
-    title: "Installation",
-    items: [
-      { label: "Prerequisites" },
-      { label: "Quickstart", href: "/docs/quickstart" },
-      { label: "Install with `npm`" },
-    ],
-  },
-  {
-    title: "Guides",
-    items: [
-      { label: "Set Up Admin Users" },
-      { label: "Customize Settings" },
-      { label: "Moderate Comments" },
-      { label: "Add Analytics" },
-    ],
-  },
-  {
-    title: "Reference",
-    items: [
-      { label: "API Reference" },
-    ],
-  },
-  {
-    title: "Etc.",
-    items: [
-      { label: "Releases", href: "https://github.com/beck-chan/y2k-guestbook/releases", target: "_blank", rel: "noopener noreferrer" },
-      { label: "Report Issue", href: "https://github.com/beck-chan/y2k-guestbook/issues", target: "_blank", rel: "noopener noreferrer" },
-      { label: "Donate", href: "https://ko-fi.com/beckchan", target: "_blank", rel: "noopener noreferrer" },
-    ],
-  },
-];
+import { DOCS_NAV_SECTIONS } from "./docs-nav-data";
 
 function isActive(pathname: string, href: string) {
   return pathname === href || pathname === `${href}/`;
@@ -58,7 +13,7 @@ export function DocsNav() {
 
   return (
     <nav className="docs-nav" aria-label="Documentation">
-      {SECTIONS.map((section) => (
+      {DOCS_NAV_SECTIONS.map((section) => (
         <div key={section.title} className="docs-nav-section">
           <p className="docs-nav-heading">{section.title}</p>
           {section.items?.length ? (

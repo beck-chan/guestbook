@@ -3,12 +3,9 @@ import { flags } from "./lib/flags";
 
 const nextConfig: NextConfig = {
   async redirects() {
-    return [
-      { source: "/docs", destination: "/docs/quickstart", permanent: false },
-      ...(flags.public
-        ? [{ source: "/guestbook", destination: "/", permanent: false }]
-        : []),
-    ];
+    return flags.public
+      ? [{ source: "/guestbook", destination: "/", permanent: false }]
+      : [];
   },
   async rewrites() {
     return {

@@ -4,6 +4,6 @@ export const flags = {
   public: false, // Show public guestbook version
 } as const;
 
-export const docsUrl = "/docs/quickstart";
+export const docsUrl = "/docs";
 export const getStartedUrl = "/docs/quickstart/";
 export const reportIssueUrl = "https://github.com/beck-chan/guestbook/issues";
