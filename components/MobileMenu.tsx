@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { docsUrl, flags, reportIssueUrl } from "@/lib/flags";
+import { docsUrl, flags, getStartedUrl, reportIssueUrl } from "@/lib/flags";
 
 type MobileMenuLink = {
   href: string;
@@ -32,15 +32,34 @@ const DEFAULT_LINKS: MobileMenuLink[] = flags.docs
     ]
   : [{ href: "/admin", label: "admin login" }, REPORT_ISSUE_LINK];
 
+const PUBLIC_LINKS: MobileMenuLink[] = [
+  {
+    href: getStartedUrl,
+    label: "get started",
+    target: "_blank",
+    rel: "noopener noreferrer",
+  },
+  {
+    href: docsUrl,
+    label: "view docs",
+    target: "_blank",
+    rel: "noopener noreferrer",
+  },
+  REPORT_ISSUE_LINK,
+];
+
 type MobileMenuProps = {
   links?: MobileMenuLink[];
   panelId?: string;
+  publicMode?: boolean;
 };
 
 export function MobileMenu({
-  links = DEFAULT_LINKS,
+  links,
   panelId = "mobile-nav-panel",
+  publicMode = false,
 }: MobileMenuProps) {
+  const resolvedLinks = links ?? (publicMode ? PUBLIC_LINKS : DEFAULT_LINKS);
   const [open, setOpen] = useState(false);
 
   return (
@@ -57,7 +76,7 @@ export function MobileMenu({
       </button>
       <div id={panelId} className="mobile-nav-panel">
         <div className="mobile-nav-panel-inner">
-          {links.map((link) => (
+          {resolvedLinks.map((link) => (
             <a
               key={link.href}
               className={`mobile-nav-link${link.className ? ` ${link.className}` : ""}`}

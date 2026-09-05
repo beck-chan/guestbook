@@ -93,6 +93,17 @@ export function AdminSettings() {
             onChange={(event) => patch({ title: event.target.value })}
           />
         </label>
+        <label className="admin-setting-field">
+          <span className="admin-setting-label">placeholder</span>
+          <textarea
+            className="admin-filter admin-setting-allowlist"
+            name="placeholder"
+            rows={4}
+            value={draft.placeholder}
+            placeholder="Text shown in the comment box before someone writes."
+            onChange={(event) => patch({ placeholder: event.target.value })}
+          />
+        </label>
         <OnOffToggle
           id="marquee"
           label="marquee"

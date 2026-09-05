@@ -102,6 +102,7 @@ body {
   top: 0;
   left: 2.5rem;
   z-index: 5;
+  isolation: isolate;
   display: flex;
   align-items: flex-start;
   gap: 1.65rem;
@@ -110,7 +111,6 @@ body {
 .desk-bookmark {
   --bookmark-height: 6.9rem;
   position: relative;
-  isolation: isolate;
   width: 6.125rem;
   height: var(--bookmark-height);
   text-decoration: none;
@@ -152,8 +152,12 @@ body {
   pointer-events: none;
 }
 
-.desk-bookmark-labeled .desk-bookmark-label {
+.desk-bookmark-labeled .desk-bookmark-label,
+.desk-bookmark-visible .desk-bookmark-label {
   opacity: 1;
+}
+
+.desk-bookmark-labeled .desk-bookmark-label {
   font-size: 1.55rem;
 }
 
@@ -222,7 +226,7 @@ body {
 }
 
 .report-issue::before,
-.desk-bookmark::before,
+.desk-bookmarks::before,
 .hit-counter::before {
   content: "";
   position: absolute;
@@ -239,7 +243,7 @@ body {
   inset: -2.1rem -2.45rem;
 }
 
-.desk-bookmark::before {
+.desk-bookmarks::before {
   inset: -1.7rem -1.9rem -2.5rem;
 }
 

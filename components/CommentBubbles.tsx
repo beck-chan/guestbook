@@ -2,7 +2,10 @@
 
 import { MOCK_COMMENTS } from "@/lib/comments";
 import { HitCounter } from "@/components/HitCounter";
-import { useGuestbookSettings } from "@/lib/guestbookSettings";
+import {
+  guestbookCommentPlaceholder,
+  useGuestbookSettings,
+} from "@/lib/guestbookSettings";
 
 type CommentBubblesProps = {
   showHits?: boolean;
@@ -17,7 +20,7 @@ export function CommentBubbles({
   sectionId,
   limit = 4,
 }: CommentBubblesProps) {
-  const [{ captureEmail }] = useGuestbookSettings();
+  const [{ captureEmail, placeholder }] = useGuestbookSettings();
   const nameId = `${idPrefix}comment-name`;
   const inputId = `${idPrefix}comment-input`;
 
@@ -52,7 +55,7 @@ export function CommentBubbles({
             className="comment-input"
             name="comment"
             rows={4}
-            placeholder={"Sign the guestbook! Yes, just like it's 2001.\nNo editing, no deleting, just thoughts into the void.\n\n(Please be kind.)"}
+            placeholder={guestbookCommentPlaceholder(placeholder)}
           />
         </div>
         <button type="submit" className="comment-action">

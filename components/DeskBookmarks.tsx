@@ -1,4 +1,4 @@
-import { docsUrl, flags } from "@/lib/flags";
+import { docsUrl, flags, getStartedUrl } from "@/lib/flags";
 
 function AdminRibbon() {
   return (
@@ -10,7 +10,42 @@ function AdminRibbon() {
   );
 }
 
-export function DeskBookmarks() {
+type DeskBookmarksProps = {
+  publicMode?: boolean;
+};
+
+export function DeskBookmarks({ publicMode = false }: DeskBookmarksProps) {
+  if (publicMode) {
+    return (
+      <div className="desk-bookmarks">
+        <a
+          className="desk-bookmark desk-bookmark-labeled"
+          href={getStartedUrl}
+          aria-label="get started"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <span className="desk-bookmark-ribbon" aria-hidden="true" />
+          <span className="desk-bookmark-label">
+            get
+            <br />
+            started
+          </span>
+        </a>
+        <a
+          className="desk-bookmark desk-bookmark-short desk-bookmark-admin desk-bookmark-visible"
+          href={docsUrl}
+          aria-label="view docs"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <AdminRibbon />
+          <span className="desk-bookmark-label">view docs</span>
+        </a>
+      </div>
+    );
+  }
+
   if (flags.docs) {
     return (
       <div className="desk-bookmarks">

@@ -6,6 +6,7 @@ export type FontSize = "smaller" | "regular" | "larger";
 
 export type GuestbookSettings = {
   title: string;
+  placeholder: string;
   marquee: boolean;
   captureEmail: boolean;
   mainFont: string;
@@ -19,6 +20,9 @@ export type GuestbookSettings = {
   profanityAllowList: string;
   customTheme: string;
 };
+
+export const DEFAULT_COMMENT_PLACEHOLDER =
+  "Sign the guestbook! Yes, just like it's 2001.\nNo editing, no deleting, just thoughts into the void.\n\n(Please be kind.)";
 
 export const MAIN_FONTS = [
   { value: "futura-pt", label: "futura pt" },
@@ -35,6 +39,7 @@ export const ACCENT_FONTS = [
 
 export const DEFAULT_GUESTBOOK_SETTINGS: GuestbookSettings = {
   title: "",
+  placeholder: DEFAULT_COMMENT_PLACEHOLDER,
   marquee: true,
   captureEmail: true,
   mainFont: "futura-pt",
@@ -110,6 +115,11 @@ function getServerSnapshot() {
 export function guestbookDisplayTitle(title: string) {
   const trimmed = title.trim();
   return trimmed || "guestbook";
+}
+
+export function guestbookCommentPlaceholder(placeholder: string) {
+  const trimmed = placeholder.trim();
+  return trimmed || DEFAULT_COMMENT_PLACEHOLDER;
 }
 
 const FONT_STACKS: Record<string, string> = {
