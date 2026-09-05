@@ -26,7 +26,7 @@ const kaisei = Kaisei_HarunoUmi({
 });
 
 export const metadata: Metadata = {
-  title: "Original Poetry",
+  title: "Poetry by Beck",
   description: "A volume of original poetry.",
 };
 

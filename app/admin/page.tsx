@@ -9,8 +9,8 @@ import {
 } from "@/lib/comments";
 
 export const metadata: Metadata = {
-  title: "Admin",
-  description: "Guestbook comments.",
+  title: "Admin Dashboard",
+  description: "Comment moderation & settings.",
 };
 
 function first(value: string | string[] | undefined) {

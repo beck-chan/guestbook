@@ -1,6 +1,11 @@
 "use client";
 
-import { useMemo, useSyncExternalStore, type CSSProperties } from "react";
+import {
+  useLayoutEffect,
+  useMemo,
+  useSyncExternalStore,
+  type CSSProperties,
+} from "react";
 
 export type FontSize = "smaller" | "regular" | "larger";
 
@@ -115,6 +120,30 @@ function getServerSnapshot() {
 export function guestbookDisplayTitle(title: string) {
   const trimmed = title.trim();
   return trimmed || "guestbook";
+}
+
+export function useGuestbookDocumentTitle(title: string) {
+  useLayoutEffect(() => {
+    const apply = () => {
+      if (document.title !== title) {
+        document.title = title;
+      }
+      for (const node of document.querySelectorAll("title")) {
+        if (node.textContent !== title) {
+          node.textContent = title;
+        }
+      }
+    };
+
+    apply();
+    const observer = new MutationObserver(apply);
+    observer.observe(document.head, {
+      subtree: true,
+      childList: true,
+      characterData: true,
+    });
+    return () => observer.disconnect();
+  }, [title]);
 }
 
 export function guestbookCommentPlaceholder(placeholder: string) {

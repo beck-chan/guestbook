@@ -1,32 +1,19 @@
-import { readFile } from "node:fs/promises";
-import { join } from "node:path";
 import { flags } from "@/lib/flags";
 
 const CORAL = "#fe605a";
+const COVER = "#0b2a12";
 
-// Bootstrap Icons `book-fill` (open book), MIT License, https://icons.getbootstrap.com/icons/book-fill/
-const PUBLIC_ICON = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16">
-  <rect width="16" height="16" fill="${CORAL}"/>
-  <g fill="#fff" transform="translate(2.1 1.7) scale(0.74)">
-    <path d="M8 1.783C7.015.936 5.587.81 4.287.94c-1.514.153-3.042.672-3.994 1.105A.5.5 0 0 0 0 2.5v11a.5.5 0 0 0 .707.455c.882-.4 2.303-.881 3.68-1.02 1.409-.142 2.59.087 3.223.877a.5.5 0 0 0 .78 0c.633-.79 1.814-1.019 3.222-.877 1.378.139 2.8.62 3.681 1.02A.5.5 0 0 0 16 13.5v-11a.5.5 0 0 0-.293-.455c-.952-.433-2.48-.952-3.994-1.105C10.413.809 8.985.936 8 1.783"/>
-  </g>
-</svg>`;
+const FEATHER_PATH =
+  "M15.807.531c-.174-.177-.41-.289-.64-.363a3.8 3.8 0 0 0-.833-.15c-.62-.049-1.394 0-2.252.175C10.365.545 8.264 1.415 6.315 3.1S3.147 6.824 2.557 8.523c-.294.847-.44 1.634-.429 2.268.005.316.05.62.154.88q.025.061.056.122A68 68 0 0 0 .08 15.198a.53.53 0 0 0 .157.72.504.504 0 0 0 .705-.16 68 68 0 0 1 2.158-3.26c.285.141.616.195.958.182.513-.02 1.098-.188 1.723-.49 1.25-.605 2.744-1.787 4.303-3.642l1.518-1.55a.53.53 0 0 0 0-.739l-.729-.744 1.311.209a.5.5 0 0 0 .443-.15l.663-.684c.663-.68 1.292-1.325 1.763-1.892.314-.378.585-.752.754-1.107.163-.345.278-.773.112-1.188a.5.5 0 0 0-.112-.172M3.733 11.62C5.385 9.374 7.24 7.215 9.309 5.394l1.21 1.234-1.171 1.196-.027.03c-1.5 1.789-2.891 2.867-3.977 3.393-.544.263-.99.378-1.324.39a1.3 1.3 0 0 1-.287-.018Zm6.769-7.22c1.31-1.028 2.7-1.914 4.172-2.6a7 7 0 0 1-.4.523c-.442.533-1.028 1.134-1.681 1.804l-.51.524zm3.346-3.357C9.594 3.147 6.045 6.8 3.149 10.678c.007-.464.121-1.086.37-1.806.533-1.535 1.65-3.415 3.455-4.976 1.807-1.561 3.746-2.36 5.31-2.68a8 8 0 0 1 1.564-.173";
 
-export const size = flags.public
-  ? { width: 32, height: 32 }
-  : { width: 286, height: 286 };
+export const size = { width: 32, height: 32 };
+export const contentType = "image/svg+xml";
 
-export const contentType = flags.public ? "image/svg+xml" : "image/png";
+export default function Icon() {
+  const fill = flags.public ? COVER : CORAL;
 
-export default async function Icon() {
-  if (flags.public) {
-    return new Response(PUBLIC_ICON, {
-      headers: { "Content-Type": "image/svg+xml" },
-    });
-  }
-
-  const portrait = await readFile(join(process.cwd(), "public/icon.png"));
-  return new Response(portrait, {
-    headers: { "Content-Type": "image/png" },
-  });
+  return new Response(
+    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><path fill="${fill}" d="${FEATHER_PATH}"/></svg>`,
+    { headers: { "Content-Type": "image/svg+xml" } },
+  );
 }

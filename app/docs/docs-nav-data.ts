@@ -36,6 +36,11 @@ export const DOCS_NAV_SECTIONS: DocsNavSection[] = [
     title: "Etc.",
     items: [
       {
+        label: "Sign Guestbook",
+        href: "/",
+        target: "_blank",
+      },
+      {
         label: "Releases",
         href: "https://github.com/beck-chan/y2k-guestbook/releases",
         target: "_blank",

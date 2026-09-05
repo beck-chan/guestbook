@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { DocsNav } from "./DocsNav";
+import { DocsSidenav } from "./DocsSidenav";
 import "./docs.css";
 
 export const metadata: Metadata = {
@@ -14,16 +14,7 @@ export default function DocsLayout({
 }) {
   return (
     <div className="docs-shell">
-      <aside className="docs-sidenav">
-        <div className="docs-brand">
-          <p className="docs-brand-kicker">y2k guestbook</p>
-          <p className="docs-brand-title">
-            {/* Hello Honey s.1 (\uE019) is the ending heart flourish */}
-            Doc{"\uE019"}
-          </p>
-        </div>
-        <DocsNav />
-      </aside>
+      <DocsSidenav />
       <main className="docs-main">{children}</main>
     </div>
   );

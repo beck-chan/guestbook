@@ -8,7 +8,7 @@ function isActive(pathname: string, href: string) {
   return pathname === href || pathname === `${href}/`;
 }
 
-export function DocsNav() {
+export function DocsNav({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = usePathname();
 
   return (
@@ -26,6 +26,7 @@ export function DocsNav() {
                       href={item.href}
                       target={item.target}
                       rel={item.rel}
+                      onClick={onNavigate}
                     >
                       {item.label}
                     </Link>

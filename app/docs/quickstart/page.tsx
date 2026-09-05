@@ -1,3 +1,4 @@
+import { DocsTabset } from "../DocsTabset";
 import { DocsToc } from "../DocsToc";
 
 const TOC = [
@@ -61,6 +62,41 @@ export default function QuickstartPage() {
           <code>{`npm install
 npm run dev`}</code>
         </pre>
+        <DocsTabset
+          tabs={[
+            {
+              label: "Tab 1",
+              content: (
+                <>
+                  <p>
+                    Maecenas sed diam eget risus varius blandit sit amet non
+                    magna. Integer posuere erat a ante venenatis dapibus posuere
+                    velit aliquet.
+                  </p>
+                  <pre className="docs-code">
+                    <code>{`npm install
+npm run dev`}</code>
+                  </pre>
+                </>
+              ),
+            },
+            {
+              label: "Tab 2",
+              content: (
+                <>
+                  <p>
+                    Cras justo odio, dapibus ac facilisis in, egestas eget quam.
+                    Nullam quis risus eget urna mollis ornare vel eu leo.
+                  </p>
+                  <pre className="docs-code">
+                    <code>{`pnpm install
+pnpm dev`}</code>
+                  </pre>
+                </>
+              ),
+            },
+          ]}
+        />
         <h2 id="deploy" className="docs-heading">
           Deploy
         </h2>

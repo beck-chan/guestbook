@@ -22,6 +22,7 @@ body:has(.docs-shell) {
   --docs-ink: color-mix(in srgb, #6f4e37 80%, white);
   --docs-sidebar-width: 18rem;
   --docs-toc-width: 13.5rem;
+  --docs-topbar-height: 5.25rem;
   min-height: 100vh;
   padding-left: var(--docs-sidebar-width);
   color: var(--docs-ink);
@@ -40,16 +41,37 @@ body:has(.docs-shell) {
   color: var(--cover-soft);
 }
 
+.docs-shell a.docs-topbar-title,
+.docs-shell a.docs-brand-title {
+  text-decoration: none;
+}
+
+.docs-shell a.docs-brand-title {
+  font: inherit;
+}
+
+.docs-shell a.docs-topbar-title:hover .docs-brand-kicker,
+.docs-shell a.docs-topbar-title:hover .docs-brand-title,
+.docs-shell a.docs-topbar-title:focus-visible .docs-brand-kicker,
+.docs-shell a.docs-topbar-title:focus-visible .docs-brand-title {
+  color: var(--cover-soft);
+}
+
 .docs-sidenav {
   position: fixed;
   top: 0;
   left: 0;
   bottom: 0;
-  z-index: 1;
+  z-index: 4;
   width: var(--docs-sidebar-width);
   overflow: auto;
   padding: 2.15rem 1.55rem 3rem;
   background: var(--paper);
+}
+
+.docs-topbar,
+.docs-sidenav-backdrop {
+  display: none;
 }
 
 .docs-shell:has(.docs-index) {
@@ -81,10 +103,56 @@ body:has(.docs-shell) {
 
 .docs-shell:has(.docs-index) .docs-toc {
   --docs-toc-band: 4.59rem;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: var(--docs-toc-band) minmax(0, 1fr);
+  justify-content: stretch;
+  justify-items: stretch;
+  height: var(--docs-toc-width);
+  text-align: center;
+}
+
+.docs-shell:has(.docs-index) .docs-toc ol {
+  position: absolute;
+  top: var(--docs-toc-band);
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  box-sizing: border-box;
+  width: auto;
+  height: auto;
+  min-height: 0;
+  padding: 0.5rem 0.9rem;
+  text-align: center;
+}
+
+.docs-shell:has(.docs-index) .docs-toc li {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  text-align: center;
+}
+
+.docs-shell:has(.docs-index) .docs-toc a,
+.docs-shell:has(.docs-index) .docs-toc .docs-nav-pending {
+  display: block;
+  width: 100%;
+  text-align: center;
 }
 
 .docs-shell:has(.docs-index) .docs-toc .docs-toc-label {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  justify-self: stretch;
+  width: 100%;
   font-size: 2.77rem;
+  text-align: center;
 }
 
 .docs-shell:has(.docs-index) .docs-main .docs-toc a,
@@ -114,6 +182,7 @@ body:has(.docs-shell) {
 }
 
 .docs-brand {
+  display: block;
   margin: 0 0 1.85rem;
   color: inherit;
   font-family: "Hello Honey", cursive;
@@ -121,6 +190,7 @@ body:has(.docs-shell) {
   font-weight: 400;
   letter-spacing: 0.03em;
   line-height: 1.15;
+  text-decoration: none;
 }
 
 .docs-brand-kicker,
@@ -130,6 +200,8 @@ body:has(.docs-shell) {
 }
 
 .docs-brand-title {
+  display: block;
+  width: fit-content;
   font: inherit;
 }
 
@@ -188,7 +260,10 @@ body:has(.docs-shell) {
 }
 
 .docs-sidenav a:focus-visible,
-.docs-main a:focus-visible {
+.docs-menu-toggle:focus-visible,
+.docs-sidenav-backdrop:focus-visible,
+.docs-main a:focus-visible,
+.docs-tabset-tab:focus-visible {
   outline: 2px solid var(--ink-muted);
   outline-offset: 3px;
 }
@@ -352,11 +427,13 @@ body:has(.docs-shell) {
   display: flex;
   flex-direction: column;
   justify-content: center;
+  align-items: center;
   flex: 1;
   gap: 0.4rem;
   margin: 0;
   padding: 0.85rem 1.05rem 1.2rem;
   list-style: none;
+  text-align: center;
 }
 
 .docs-main .docs-toc a {
@@ -365,6 +442,7 @@ body:has(.docs-shell) {
   font-size: 1.02rem;
   font-weight: 400;
   line-height: 1.3;
+  text-align: center;
   text-decoration: none;
 }
 
@@ -421,6 +499,48 @@ body:has(.docs-shell) {
 
 .docs-code code {
   font: inherit;
+}
+
+.docs-tabset {
+  margin: 1.1rem 0 0;
+}
+
+.docs-tabset-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.1rem;
+  margin: 0;
+  padding: 0;
+  border-bottom: 1px solid #c9c5bc;
+}
+
+.docs-tabset-tab {
+  margin: 0 0 -1px;
+  padding: 0.45rem 0.95rem 0.4rem;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  background: transparent;
+  color: var(--cover-soft);
+  font-family: var(--peony-font);
+  font-size: clamp(1.15rem, 1.7vw, 1.4rem);
+  font-weight: 400;
+  letter-spacing: 0.03em;
+  line-height: 1.2;
+  cursor: pointer;
+}
+
+.docs-tabset-tab.is-active {
+  color: var(--docs-ink);
+  border-bottom-color: var(--cover-soft);
+}
+
+.docs-tabset-tab:hover:not(.is-active),
+.docs-tabset-tab:focus-visible:not(.is-active) {
+  color: var(--cover);
+}
+
+.docs-tabset-panel > :first-child {
+  margin-top: 0.85rem;
 }
 
 .docs-title {
@@ -490,19 +610,269 @@ body:has(.docs-shell) {
 
 @media (max-width: 720px) {
   .docs-shell {
-    --docs-sidebar-width: 12.5rem;
+    --docs-sidebar-width: 0px;
+    padding-left: 0;
+    padding-top: var(--docs-topbar-height);
+  }
+
+  .docs-shell:has(.docs-index) {
+    padding-top: 0;
   }
 
   .docs-sidenav {
-    padding: 1.5rem 1.15rem 1.35rem;
+    right: 0;
+    bottom: auto;
+    width: 100%;
+    height: auto;
+    max-height: none;
+    overflow: visible;
+    padding: 0;
+    box-shadow: 0 1px 0 rgb(180 160 140 / 0.28);
+  }
+
+  .docs-sidenav.is-open {
+    max-height: 100dvh;
+    overflow: auto;
+    box-shadow:
+      0 1px 0 rgb(180 160 140 / 0.28),
+      0 12px 28px rgb(40 38 34 / 0.16);
+  }
+
+  .docs-topbar {
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+    box-sizing: border-box;
+    height: var(--docs-topbar-height);
+    padding: 0.7rem 0.85rem 1.05rem;
+  }
+
+  .docs-menu-toggle {
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+    width: 2.35rem;
+    height: 2.35rem;
+    margin: 0 0 0 -0.35rem;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: var(--docs-ink);
+    cursor: pointer;
+  }
+
+  .docs-menu-icon {
+    position: relative;
+    display: block;
+    width: 1.2rem;
+    height: 0.85rem;
+  }
+
+  .docs-menu-icon span {
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 1.5px;
+    border-radius: 1px;
+    background: currentColor;
+    transition:
+      transform 0.2s ease,
+      opacity 0.2s ease,
+      top 0.2s ease,
+      bottom 0.2s ease;
+  }
+
+  .docs-menu-icon span:nth-child(1) {
+    top: 0;
+  }
+
+  .docs-menu-icon span:nth-child(2) {
+    top: 50%;
+    transform: translateY(-50%);
+  }
+
+  .docs-menu-icon span:nth-child(3) {
+    bottom: 0;
+  }
+
+  .docs-sidenav.is-open .docs-menu-icon span:nth-child(1) {
+    top: 50%;
+    transform: translateY(-50%) rotate(45deg);
+  }
+
+  .docs-sidenav.is-open .docs-menu-icon span:nth-child(2) {
+    opacity: 0;
+  }
+
+  .docs-sidenav.is-open .docs-menu-icon span:nth-child(3) {
+    top: 50%;
+    bottom: auto;
+    transform: translateY(-50%) rotate(-45deg);
+  }
+
+  .docs-topbar-title {
+    display: flex;
+    align-items: center;
+    gap: 1.2rem;
+    min-width: 0;
+    margin: 0;
+    color: inherit;
+    text-decoration: none;
+  }
+
+  .docs-topbar .docs-brand-kicker {
+    font-size: clamp(1.85rem, 5.8vw, 2.35rem);
+    line-height: 1;
+  }
+
+  .docs-topbar .docs-brand-title {
+    font-family: "Hello Honey", cursive;
+    font-size: clamp(2.65rem, 8.4vw, 3.45rem);
+    font-weight: 400;
+    letter-spacing: 0.03em;
+    line-height: 1.2;
+    padding: 0.06em 0 0.22em;
+  }
+
+  .docs-brand {
+    display: none;
+  }
+
+  .docs-sidenav-panel {
+    display: none;
+    padding: 0.35rem 1.15rem 1.5rem;
+  }
+
+  .docs-sidenav.is-open .docs-sidenav-panel {
+    display: block;
+  }
+
+  .docs-sidenav-backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 3;
+    border: 0;
+    background: rgb(47 46 44 / 0.18);
+    cursor: pointer;
   }
 
   .docs-main {
     padding: 1.85rem 1.25rem 3.25rem;
   }
 
+  .docs-main:has(.docs-toc-stack) {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas: "article";
+  }
+
+  .docs-toc-stack {
+    display: none;
+  }
+
+  .docs-title,
+  .docs-heading,
+  .docs-subheading {
+    scroll-margin-top: calc(var(--docs-topbar-height) + 0.75rem);
+  }
+
+  .docs-index-head {
+    flex-direction: column;
+    align-items: center;
+    gap: 0;
+    margin-bottom: 1.85rem;
+  }
+
+  .docs-index-head .docs-brand-kicker {
+    font-size: clamp(2.194rem, 3.825vw, 3.038rem);
+    line-height: 0.9;
+  }
+
+  .docs-index-head .docs-brand-title {
+    font-size: clamp(4.219rem, 7.2vw, 6.075rem);
+    line-height: 0.78;
+  }
+
+  .docs-index-etc {
+    flex-direction: column;
+    align-items: center;
+    gap: 1.15rem;
+  }
+
+  .docs-index-etc .docs-cta {
+    font-size: 1.05rem;
+    padding: 0.38rem 0.9rem;
+  }
+
   .docs-toc {
     width: min(var(--docs-toc-width), 100%);
     min-height: 0;
+  }
+
+  .docs-shell:has(.docs-index) .docs-main {
+    padding: 2.5rem 0.4rem 3.25rem;
+  }
+
+  .docs-shell:has(.docs-index) .docs-index-notes {
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    box-sizing: border-box;
+    padding: 0;
+    gap: 0;
+  }
+
+  .docs-index-notes .docs-toc:nth-child(odd) {
+    transform: rotate(-6deg);
+  }
+
+  .docs-index-notes .docs-toc:nth-child(even) {
+    transform: rotate(6deg);
+  }
+
+  .docs-index-notes .docs-toc + .docs-toc {
+    margin-top: -1.75rem;
+  }
+
+  .docs-index-notes .docs-toc:nth-child(1) {
+    z-index: 1;
+  }
+
+  .docs-index-notes .docs-toc:nth-child(2) {
+    z-index: 2;
+  }
+
+  .docs-index-notes .docs-toc:nth-child(3) {
+    z-index: 3;
+  }
+
+  .docs-shell:has(.docs-index) .docs-toc {
+    --docs-toc-band: 3.05rem;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: var(--docs-toc-band) minmax(0, 1fr);
+    justify-content: stretch;
+    justify-items: stretch;
+    width: min(18.5625rem, calc(100vw - 0.8rem));
+    height: min(18.5625rem, calc(100vw - 0.8rem));
+    max-width: min(18.5625rem, calc(100vw - 0.8rem));
+    min-height: min(18.5625rem, calc(100vw - 0.8rem));
+    flex-shrink: 0;
+  }
+
+  .docs-shell:has(.docs-index) .docs-toc ol {
+    justify-content: center;
+    align-items: center;
+    gap: 0.28rem;
+    padding: 0.45rem 0.85rem;
+  }
+
+  .docs-shell:has(.docs-index) .docs-toc .docs-toc-label {
+    font-size: 2.15rem;
+  }
+
+  .docs-shell:has(.docs-index) .docs-main .docs-toc a,
+  .docs-shell:has(.docs-index) .docs-toc .docs-nav-pending {
+    font-size: 1.5rem;
   }
 }

@@ -1,7 +1,7 @@
 export const flags = {
   docs: true, // Show docs link
   hitCounter: true, // Show hit counter
-  public: false, // Show public guestbook version
+  public: false, // Public guestbook home + dark green favicon
 } as const;
 
 export const docsUrl = "/docs";

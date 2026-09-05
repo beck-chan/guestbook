@@ -2,20 +2,25 @@
 
 import {
   guestbookDisplayTitle,
+  useGuestbookDocumentTitle,
   useGuestbookSettings,
 } from "@/lib/guestbookSettings";
 
 export function GuestbookTitle() {
   const [settings] = useGuestbookSettings();
   const title = guestbookDisplayTitle(settings.title);
+  useGuestbookDocumentTitle(title);
 
   return (
-    <h1 className={`guestbook-title${settings.marquee ? "" : " is-static"}`}>
-      {settings.marquee ? (
-        <span className="demobook-marquee">{title}</span>
-      ) : (
-        title
-      )}
-    </h1>
+    <>
+      <title>{title}</title>
+      <h1 className={`guestbook-title${settings.marquee ? "" : " is-static"}`}>
+        {settings.marquee ? (
+          <span className="demobook-marquee">{title}</span>
+        ) : (
+          title
+        )}
+      </h1>
+    </>
   );
 }
