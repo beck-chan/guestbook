@@ -6,6 +6,11 @@ import { flags } from "./lib/flags";
 const root = process.cwd(); // docs MDX plugins resolve from here
 
 const nextConfig: NextConfig = {
+  env: {
+    FLAG_DOCS: process.env.FLAG_DOCS,
+    FLAG_COUNTER: process.env.FLAG_COUNTER,
+    FLAG_PUBLIC: process.env.FLAG_PUBLIC,
+  },
   pageExtensions: ["js", "jsx", "md", "mdx", "ts", "tsx"],
   async redirects() {
     return flags.public

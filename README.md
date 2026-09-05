@@ -61,18 +61,19 @@ Open [http://localhost:3000](http://localhost:3000).
 
 ## Feature flags
 
-Flags are compile-time values in [`lib/flags.ts`](lib/flags.ts). Change a flag, then restart `npm run dev` or run `npm run build` again.
+Flags are compile-time values in [`lib/flags.ts`](lib/flags.ts). Override them with env vars, then restart `npm run dev` or run `npm run build` again. Unset vars use the defaults in `lib/flags.ts`.
 
-`docs` (default `false`) controls the desk bookmarks on the home and guestbook pages:
+| Env var | Flag | Default | Effect |
+| --- | --- | --- | --- |
+| `FLAG_DOCS` | `docs` | `true` | Desk bookmarks: **view docs** plus a short **admin login** ribbon. Off: the labeled bookmark is **admin login** only. |
+| `FLAG_COUNTER` | `hitCounter` | `true` | Hit-counter on the home cover, guestbook page, and comment sidebar. |
+| `FLAG_PUBLIC` | `public` | `false` | Public guestbook home (rewrite `/` to `/guestbook`), dark green favicon, `y2k-guestbook` GitHub links. |
 
-- **Off:** the labeled bookmark is **admin login** and goes to `/admin`. The short admin ribbon is hidden.
-- **On:** the labeled bookmark is **view docs** and the short **admin login** ribbon is shown. Docs open in a new window.
+Accepted values are `true` / `1` and `false` / `0`. When `docs` is on, `docsUrl` in the same file sets the docs href (default `/docs`).
 
-When `docs` is on, `docsUrl` in the same file sets the docs href (default `/docs`).
+A second Vercel project can deploy the same `main` branch with different `FLAG_*` values (set as that project's environment variables). Local [`.env`](.env) is gitignored and does not affect Vercel.
 
-`hitCounter` (default `true`) shows or hides the hit-counter display on the home cover, guestbook page, and comment sidebar.
-
-To add another flag, add a key on `flags` in [`lib/flags.ts`](lib/flags.ts) and branch on it in the UI.
+To add another flag, add a key on `flags` in [`lib/flags.ts`](lib/flags.ts), pass the env name through `env` in [`next.config.ts`](next.config.ts), and branch on it in the UI.
 
 ## Stop a running preview
 
