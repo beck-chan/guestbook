@@ -6,8 +6,8 @@ import { MobileMenu } from "@/components/_shared/MobileMenu";
 import { ReportIssueLink } from "@/components/_shared/ReportIssueLink";
 
 export const metadata: Metadata = {
-  title: "Guestbook",
-  description: "Sign the guestbook.",
+  title: "y2k guestbook",
+  description: "Sign the retro-inspired guestbook.",
 };
 
 export default function GuestbookPage() {

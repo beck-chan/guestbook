@@ -119,7 +119,7 @@ function getServerSnapshot() {
 
 export function guestbookDisplayTitle(title: string) {
   const trimmed = title.trim();
-  return trimmed || "guestbook";
+  return trimmed || "y2k guestbook";
 }
 
 export function useGuestbookDocumentTitle(title: string) {
