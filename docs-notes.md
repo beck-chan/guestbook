@@ -32,3 +32,5 @@ For “others run a guestbook site,” use a template repo. For “others embed 
 
 :::
 
+setting favicon etc
+

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { MarkReadCheckbox } from "@/components/MarkReadCheckbox";
+import { MarkReadCheckbox } from "@/components/_admin/MarkReadCheckbox";
 import type { GuestbookComment } from "@/lib/comments";
 
 export function AdminCommentThread({

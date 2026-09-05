@@ -6,4 +6,4 @@ export const flags = {
 
 export const docsUrl = "/docs";
 export const getStartedUrl = "/docs/quickstart/";
-export const reportIssueUrl = "https://github.com/beck-chan/guestbook/issues";
+export const reportIssueUrl = "https://github.com/beck-chan/y2k-guestbook/issues";

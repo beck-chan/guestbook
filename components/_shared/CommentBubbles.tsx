@@ -1,7 +1,7 @@
 "use client";
 
 import { MOCK_COMMENTS } from "@/lib/comments";
-import { HitCounter } from "@/components/HitCounter";
+import { HitCounter } from "@/components/_shared/HitCounter";
 import {
   guestbookCommentPlaceholder,
   useGuestbookSettings,

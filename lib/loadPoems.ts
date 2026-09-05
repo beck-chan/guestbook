@@ -21,9 +21,13 @@ function toHtml(body: string): string {
     .trim();
 }
 
+function stripHtmlComments(text: string): string {
+  return text.replace(/<!--[\s\S]*?-->/g, "");
+}
+
 function parsePoem(file: string, raw: string): Poem {
   const id = file.replace(/\.md$/i, "");
-  const text = raw.replace(/^\uFEFF/, "").trim();
+  const text = stripHtmlComments(raw.replace(/^\uFEFF/, "")).trim();
   const chunks = text.split(/^##\s+/m).filter((chunk) => chunk.trim().length > 0);
 
   const sections = chunks.map((chunk) => {

@@ -1,0 +1,140 @@
+---
+subtitle: Examples on this page will render with the proper styling.
+---
+
+import Example from "../_snippets/example.mdx"
+
+# MDX Reference
+
+Copy `example/page.tsx` next to a `content.mdx` into a directory named for the page URL slug.
+
+## YAML Frontmatter
+
+```yaml
+---
+subtitle: Set an optional subtitle
+search: false # Hide page from docs search
+
+# h1 sets the page title
+---
+```
+
+## Single-Sourcing
+
+Shared prose lives in `_snippets/`. Import a snippet to use it on a page:
+
+```markdown
+import Example from "../_snippets/example.mdx"
+
+<Example />
+```
+
+::: {.callout}
+<Example />
+:::
+
+Leave YAML and `# h1` on the host page. Snippet headings do not appear in the host page table of contents by default — merge the `toc` exports in `page.tsx` if they should:
+
+```typescript
+import Guide, { toc as guideToc } from "./content.mdx";
+import Example, { toc as exampleToc } from "../_snippets/example.mdx";
+
+const toc = [...guideToc, ...exampleToc];
+```
+
+## Content
+
+### Headings
+
+The sticky note table of contents are built from `##` and `###` headings.
+
+### Callouts
+
+::: {.callout}
+
+Use a `::: {.callout} :::` for a note that should sit apart from the main text.
+
+:::
+
+### Text & Links
+
+::: {.columns}
+
+::: {.80}
+You can write **bold** and *italic* in the same sentence as the surrounding copy, and add [links](url) as usual.
+
+Append `{.button}` to a markdown link for a bordered button.
+
+:::
+
+::: {.20}
+[Button](url){.button}
+
+:::
+
+:::
+
+
+### Code
+
+::: {.columns}
+
+::: {.70}
+
+Highlighting works for `yaml`, `bash`, `typescript`, and `markdown`.
+
+```typescript
+export const title: string = "y2k guestbook";
+```
+
+:::
+
+::: {.30}
+```bash
+# install dependencies
+npm install
+npm run dev
+```
+
+:::
+
+
+:::
+
+## Layouts
+
+### Tabsets
+
+::: {tabset}
+
+# one
+
+`::: {tabset} :::` splits on `# h1` headings. 
+
+# two
+
+Those headings become tab labels, not page titles.
+
+:::
+
+### Columns
+
+` ::: {.columns} :::` have gaps between them by default, and no margin or padding on the sides:
+
+::: {.columns}
+
+::: {.25}
+A 25/75 mobile-responsive flexbox column example.
+:::
+
+::: {.75}
+To add spacing on the top-level fence:
+
+```markdown
+::: {.columns .pa2 .ma2}
+::: {.columns .pl2 .mt2}
+```
+
+:::
+
+:::

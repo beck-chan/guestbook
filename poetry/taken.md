@@ -1,3 +1,5 @@
+<!-- © 2026 Beck Chan. All rights reserved. -->
+
 ## Taken
 
 At seven-teen,<br>

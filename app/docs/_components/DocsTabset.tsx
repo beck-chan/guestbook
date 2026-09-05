@@ -1,13 +1,41 @@
 "use client";
 
-import { useId, useState } from "react";
+import { Children, isValidElement, useId, useState } from "react";
 
 export type DocsTab = {
   label: string;
   content: React.ReactNode;
 };
 
-export function DocsTabset({ tabs }: { tabs: DocsTab[] }) {
+export function DocsTab({
+  children,
+}: {
+  label: string;
+  children: React.ReactNode;
+}) {
+  return <>{children}</>;
+}
+
+function tabsFromChildren(children: React.ReactNode): DocsTab[] {
+  return Children.toArray(children).flatMap((child) => {
+    if (!isValidElement<{ label?: string; children?: React.ReactNode }>(child)) {
+      return [];
+    }
+    if (typeof child.props.label !== "string") {
+      return [];
+    }
+    return [{ label: child.props.label, content: child.props.children }];
+  });
+}
+
+export function DocsTabset({
+  tabs,
+  children,
+}: {
+  tabs?: DocsTab[];
+  children?: React.ReactNode;
+}) {
+  const resolved = tabs ?? tabsFromChildren(children);
   const baseId = useId();
   const [active, setActive] = useState(0);
 
@@ -23,9 +51,9 @@ export function DocsTabset({ tabs }: { tabs: DocsTab[] }) {
   return (
     <div className="docs-tabset">
       <div className="docs-tabset-list" role="tablist">
-        {tabs.map((tab, index) => {
+        {resolved.map((tab, index) => {
           const selected = index === active;
-          const last = tabs.length - 1;
+          const last = resolved.length - 1;
 
           return (
             <button
@@ -55,7 +83,7 @@ export function DocsTabset({ tabs }: { tabs: DocsTab[] }) {
           );
         })}
       </div>
-      {tabs.map((tab, index) => {
+      {resolved.map((tab, index) => {
         const selected = index === active;
 
         return (

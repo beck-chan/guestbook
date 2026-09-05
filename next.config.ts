@@ -1,7 +1,12 @@
+import path from "node:path";
 import type { NextConfig } from "next";
+import createMDX from "@next/mdx";
 import { flags } from "./lib/flags";
 
+const root = process.cwd(); // docs MDX plugins resolve from here
+
 const nextConfig: NextConfig = {
+  pageExtensions: ["js", "jsx", "md", "mdx", "ts", "tsx"],
   async redirects() {
     return flags.public
       ? [{ source: "/guestbook", destination: "/", permanent: false }]
@@ -22,4 +27,14 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default nextConfig;
+const withMDX = createMDX({
+  options: {
+    remarkPlugins: [path.join(root, "lib/mdx/remark-docs-syntax.mjs")],
+    rehypePlugins: [
+      "rehype-slug",
+      path.join(root, "lib/mdx/rehype-docs-highlight.mjs"),
+    ],
+  },
+});
+
+export default withMDX(nextConfig);

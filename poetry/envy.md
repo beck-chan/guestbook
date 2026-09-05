@@ -1,3 +1,5 @@
+<!-- © 2026 Beck Chan. All rights reserved. -->
+
 ## envy
 
 eggs of an extant enemy emerging<br>

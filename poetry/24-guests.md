@@ -1,3 +1,5 @@
+<!-- © 2026 Beck Chan. All rights reserved. -->
+
 ## 24 guests
 
 We sit wanting in staid Summer,<br>

@@ -1,3 +1,5 @@
+<!-- © 2026 Beck Chan. All rights reserved. -->
+
 ## future
 
 How cruel it is<br>

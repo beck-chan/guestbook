@@ -1,11 +1,11 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Book } from "@/components/Book";
-import { CommentBubbles } from "@/components/CommentBubbles";
-import { DeskBookmarks } from "@/components/DeskBookmarks";
-import { MobileReading } from "@/components/MobileReading";
-import { ReportIssueLink } from "@/components/ReportIssueLink";
+import { Book } from "@/components/_desk/Book";
+import { CommentBubbles } from "@/components/_shared/CommentBubbles";
+import { DeskBookmarks } from "@/components/_shared/DeskBookmarks";
+import { MobileReading } from "@/components/_desk/MobileReading";
+import { ReportIssueLink } from "@/components/_shared/ReportIssueLink";
 import { pickPoemIndex, type Poem } from "@/lib/poems";
 
 type PoetryDeskProps = {

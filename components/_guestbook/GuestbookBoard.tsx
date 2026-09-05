@@ -1,7 +1,7 @@
 "use client";
 
-import { CommentBubbles } from "@/components/CommentBubbles";
-import { GuestbookTitle } from "@/components/GuestbookTitle";
+import { CommentBubbles } from "@/components/_shared/CommentBubbles";
+import { GuestbookTitle } from "@/components/_guestbook/GuestbookTitle";
 import {
   guestbookPageSize,
   guestbookThemeVars,

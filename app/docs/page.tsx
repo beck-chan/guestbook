@@ -1,5 +1,7 @@
 import Link from "next/link";
-import { DOCS_NAV_SECTIONS } from "./docs-nav-data";
+import { DocsHeart } from "./_components/DocsHeart";
+import { DocsSearch } from "./_components/DocsSearch";
+import { DOCS_NAV_SECTIONS } from "./_nav/docs-nav-data";
 
 const LANDING_TITLES = new Set(["Installation", "Guides", "Reference"]);
 
@@ -21,6 +23,7 @@ export default function DocsPage() {
           Doc{"\uE019"}
         </p>
       </header>
+      <DocsSearch variant="bar" />
       <div className="docs-index-notes">
         {sections.map((section) => (
           <section key={section.title} className="docs-toc">
@@ -30,6 +33,9 @@ export default function DocsPage() {
                 <li key={item.label}>
                   {item.href ? (
                     <Link href={item.href} target={item.target} rel={item.rel}>
+                      {item.href === "/docs/quickstart" ? (
+                        <DocsHeart filled />
+                      ) : null}
                       {item.label}
                     </Link>
                   ) : (

@@ -1,3 +1,5 @@
+<!-- © 2026 Beck Chan. All rights reserved. -->
+
 ## Wonder
 
 what a Wonder it is<br>

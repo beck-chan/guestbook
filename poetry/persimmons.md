@@ -1,3 +1,5 @@
+<!-- © 2026 Beck Chan. All rights reserved. -->
+
 ## Persimmons
 
 I do not know how old I am<br>

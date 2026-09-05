@@ -3,6 +3,7 @@
 import { useEffect, useId, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { DocsSearch } from "../_components/DocsSearch";
 import { DocsNav } from "./DocsNav";
 
 const MOBILE_QUERY = "(max-width: 720px)";
@@ -83,6 +84,7 @@ export function DocsSidenav() {
               Doc{"\uE019"}
             </span>
           </Link>
+          <DocsSearch variant="icon" />
         </div>
         <div
           id={panelId}
@@ -101,6 +103,7 @@ export function DocsSidenav() {
               Doc{"\uE019"}
             </Link>
           </div>
+          <DocsSearch variant="bar" />
           <DocsNav onNavigate={() => setOpen(false)} />
         </div>
       </aside>

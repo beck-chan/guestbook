@@ -1,6 +1,6 @@
 import type { Poem } from "@/lib/poems";
-import { EasterEgg } from "@/components/EasterEgg";
-import { StickyNote } from "@/components/StickyNote";
+import { EasterEgg } from "@/components/_desk/EasterEgg";
+import { StickyNote } from "@/components/_desk/StickyNote";
 
 type BookProps = {
   isOpen: boolean;

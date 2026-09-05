@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { AdminGuestbook } from "@/components/AdminGuestbook";
+import { AdminGuestbook } from "@/components/_admin/AdminGuestbook";
 import {
   MOCK_COMMENTS,
   filterComments,

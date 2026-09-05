@@ -1,7 +1,7 @@
-import { AdminCommentThread } from "@/components/AdminCommentThread";
-import { AdminFilters } from "@/components/AdminFilters";
-import { AdminPageFrame } from "@/components/AdminPageFrame";
-import { AdminSettings } from "@/components/AdminSettings";
+import { AdminCommentThread } from "@/components/_admin/AdminCommentThread";
+import { AdminFilters } from "@/components/_admin/AdminFilters";
+import { AdminPageFrame } from "@/components/_admin/AdminPageFrame";
+import { AdminSettings } from "@/components/_admin/AdminSettings";
 import {
   adminHref,
   type AdminFilters as FilterState,

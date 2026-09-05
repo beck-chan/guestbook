@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { DocsSidenav } from "./DocsSidenav";
+import { DocsSidenav } from "./_nav/DocsSidenav";
 import "./docs.css";
 
 export const metadata: Metadata = {

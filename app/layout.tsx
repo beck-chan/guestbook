@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Jost, Kaisei_HarunoUmi, Libre_Baskerville } from "next/font/google";
-import { CustomTheme } from "@/components/CustomTheme";
+import { CustomTheme } from "@/components/_shared/CustomTheme";
 import "./globals.css";
 
 const jost = Jost({

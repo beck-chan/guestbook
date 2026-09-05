@@ -1,10 +1,10 @@
 "use client";
 
 import { useLayoutEffect, useRef, useState } from "react";
-import { CommentBubbles } from "@/components/CommentBubbles";
-import { EasterEgg } from "@/components/EasterEgg";
-import { HitCounter } from "@/components/HitCounter";
-import { MobileMenu } from "@/components/MobileMenu";
+import { CommentBubbles } from "@/components/_shared/CommentBubbles";
+import { EasterEgg } from "@/components/_desk/EasterEgg";
+import { HitCounter } from "@/components/_shared/HitCounter";
+import { MobileMenu } from "@/components/_shared/MobileMenu";
 import { pickPoemIndex, poemMeasureLines, type Poem } from "@/lib/poems";
 
 type MobileReadingProps = {

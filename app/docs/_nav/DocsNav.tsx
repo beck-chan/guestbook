@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { DocsHeart } from "../_components/DocsHeart";
 import { DOCS_NAV_SECTIONS } from "./docs-nav-data";
 
 function isActive(pathname: string, href: string) {
@@ -29,6 +30,9 @@ export function DocsNav({ onNavigate }: { onNavigate?: () => void }) {
                       onClick={onNavigate}
                     >
                       {item.label}
+                      {isActive(pathname, item.href) ? (
+                        <DocsHeart filled className="docs-nav-heart" />
+                      ) : null}
                     </Link>
                   ) : (
                     <span className="docs-nav-pending">{item.label}</span>
