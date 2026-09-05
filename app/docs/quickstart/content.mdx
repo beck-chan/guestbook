@@ -1,3 +1,147 @@
+---
+subtitle: Get started using a GitHub fork.
+---
+
+import InstallNext from "../_snippets/install-next.mdx"
+import Preview from "../_snippets/preview.mdx"
+import Build from "../_snippets/build.mdx"
+
 # Quickstart
 
-placeholder
+::: {.callout}
+# Before You Begin
+
+- [x] You need to have completed the [Prerequisites](/docs/prerequisites) first.
+
+Already have an existing Next.js app you want to use the guestbook with? [Install with `npm`](/docs/install) instead.
+
+:::
+
+## Setting Up
+
+### Grab Guestbook Repository
+
+::: {tabset}
+
+# Via GitHub
+
+::: {.columns}
+
+::: {.80}
+
+    Fork [`https://github.com/beck-chan/y2k-guestbook/`](https://github.com/beck-chan/y2k-guestbook/){.blank} on GitHub, then clone *your* copy into your local environment:
+
+:::
+
+::: {.20}
+
+[Fork on GitHub](https://github.com/beck-chan/y2k-guestbook/fork){.button .blank}
+
+:::
+
+:::
+
+```bash
+git clone https://github.com/YOUR_USER/y2k-guestbook.git
+cd y2k-guestbook
+```
+
+# Via CLI
+
+With the [GitHub CLI](https://cli.github.com/){.blank} installed and signed in (`gh auth login`):
+
+```bash
+# Fork to your account and clone in one step
+gh repo fork beck-chan/y2k-guestbook --clone
+cd y2k-guestbook
+```
+
+:::
+
+### Set Up Environment Variables
+
+::: {tabset}
+
+# Copy Example File
+
+Copy the `.env.example` file to `.env.local`:
+
+```bash
+cp .env.example .env.local
+```
+
+Fill in values from *your* Supabase project and site origin:
+
+```bash
+# Supabase project URL
+NEXT_PUBLIC_SUPABASE_URL=
+
+# Supabase anon / public key (browser-safe, RLS still applies)
+NEXT_PUBLIC_SUPABASE_ANON_KEY=
+
+# Service role. Local ONLY — for `npm run allow-admin`
+SUPABASE_SERVICE_ROLE_KEY=
+
+# App origin for OAuth return
+SITE_URL=http://localhost:3000
+
+# Supabase pooler URI — for rate limiting
+DATABASE_URL=
+```
+
+# Enter Deployment Variables
+
+You'll need to also enter the following variables for your deployment environment if you intend to deploy your application:
+
+```bash
+# Supabase project URL
+NEXT_PUBLIC_SUPABASE_URL=
+
+# Supabase anon / public key (browser-safe, RLS still applies)
+NEXT_PUBLIC_SUPABASE_ANON_KEY=
+
+# App origin for OAuth return. For example, Vercel:
+SITE_URL=http://your-project-url.vercel.app
+```
+
+::: {.callout}
+
+For example, if you're using [Vercel](https://vercel.com/docs/environment-variables){.blank}, you'll need to enter the variables onto the project that's hooked up to your GitHub guestbook repository.
+
+:::
+
+:::
+
+## Installing
+
+### Run Installation Schema
+
+{/* 1. Open `docs/install/schema.sql` in your local clone. 
+2. In the Supabase dashboard, **SQL Editor → New query**, paste the file, **Run** once. Do not run it twice (existing objects will error). 
+3. Then **Authentication → Hooks:** attach `hook_before_user_created` as **Before User Created**. The function does nothing until that hook is connected. */}
+
+### Allow Your Admin User
+
+Run the following command in your terminal to allow-list a Google account as your admin user:
+
+```bash
+npm install
+npm run allow-admin -- you@gmail.com
+```
+
+You'll need to authorize Google to connect after your first sign in.
+
+::: {.callout }
+# Visitors cannot sign in with Google.
+
+To add another admin user later, run the same command with their address and authorize Google to connect after their first sign in.
+
+:::
+
+### Run Development Server
+
+<Preview />
+
+<Build />
+
+<InstallNext />

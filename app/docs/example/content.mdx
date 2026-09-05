@@ -1,5 +1,7 @@
 ---
 subtitle: Examples on this page will render with the proper styling.
+search: false
+public: false
 ---
 
 import Example from "../_snippets/example.mdx"
@@ -14,8 +16,9 @@ Copy `example/page.tsx` next to a `content.mdx` into a directory named for the p
 ---
 subtitle: Set an optional subtitle
 search: false # Hide page from docs search
+public: false # Hide page when FLAG_PUBLIC=true
 
-# h1 sets the page title
+# h1 sets the page title and browser tab
 ---
 ```
 
@@ -52,6 +55,8 @@ The sticky note table of contents are built from `##` and `###` headings.
 
 ::: {.callout}
 
+# A `#` heading inside a callout is styled like `###` and does not appear in the table of contents.
+
 Use a `::: {.callout} :::` for a note that should sit apart from the main text.
 
 :::
@@ -63,7 +68,7 @@ Use a `::: {.callout} :::` for a note that should sit apart from the main text.
 ::: {.80}
 You can write **bold** and *italic* in the same sentence as the surrounding copy, and add [links](url) as usual.
 
-Append `{.button}` to a markdown link for a bordered button.
+Append `{.button}` to a markdown link for a bordered button. Append `{.blank}` to open a link in a new tab.
 
 :::
 
@@ -74,6 +79,30 @@ Append `{.button}` to a markdown link for a bordered button.
 
 :::
 
+### List Items
+
+
+::: {.columns}
+
+::: {.33}
+- one
+- two
+
+:::
+
+::: {.33}
+- [x] checked items
+- [ ] unchecked items
+
+:::
+
+::: {.33}
+1. first
+2. second
+
+:::
+
+:::
 
 ### Code
 
@@ -109,11 +138,17 @@ npm run dev
 
 # one
 
-`::: {tabset} :::` splits on `# h1` headings. 
+`::: {tabset} :::` splits on `# h1` headings. Those headings become tab labels, not page titles.
 
 # two
 
-Those headings become tab labels, not page titles.
+A `#` heading inside a nested callout stays in the callout.
+
+::: {.callout}
+# Callout title
+
+This is not a third tab.
+:::
 
 :::
 

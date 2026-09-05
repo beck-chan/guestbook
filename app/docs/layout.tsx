@@ -3,7 +3,10 @@ import { DocsSidenav } from "./_nav/DocsSidenav";
 import "./docs.css";
 
 export const metadata: Metadata = {
-  title: "y2k Guestbook Docs",
+  title: {
+    default: "y2k Guestbook Docs",
+    template: "%s · y2k Guestbook Docs",
+  },
   description: "Guestbook documentation.",
 };
 

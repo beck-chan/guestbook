@@ -1,3 +1,140 @@
-# Prerequisites 
+---
+subtitle: Required to hook everything up.
+---
 
-placeholder
+# Prerequisites
+
+Installing the application ships the guestbook user interface and default Supabase wiring.
+
+You'll need to first:
+
+- [ ] Install Node.js.
+- [ ] Configure a Supabase project. 
+- [ ] Hook up Google OAuth 2.0 to enable admin.
+
+::: {.callout}
+This guide assumes:
+
+- [x] You're familiar with using your development terminal and the command line interface (CLI).
+- [x] You already have a GitHub and Google account, and know your way around the former.
+- [x] You already have a way to deploy your application. These docs cover using Vercel.
+:::
+
+## Install Node.js with npm
+
+Install from [nodejs.org](https://nodejs.org){.blank}, or via your terminal for a recommended version:
+
+::: {tabset}
+
+# nvm
+
+```bash
+nvm install 22
+nvm use 22
+
+# Confirm that you have the right versions
+node -v
+npm -v
+```
+
+# fnm
+
+```bash
+fnm install 22
+fnm use 22
+
+# Confirm that you have the right versions
+node -v
+npm -v
+```
+
+:::
+
+::: {.callout}
+Use **Node.js 20 LTS** or **22 LTS** (either includes `npm`). Next.js `16` needs `18.18+`; `20+` is the safer default.
+
+:::
+
+## Create Google Cloud Project
+
+{/* 1. Create a Google Cloud project.
+2. Configure the **OAuth consent screen** (External). While the app is in **Testing**, add your Gmail as a test user.
+3. Create an OAuth client → **Web application**.
+4. **Authorized JavaScript origins:** `http://localhost:3000` (add the Vercel / live origin when you deploy).
+5. **Authorized redirect URI:** `https://<project-ref>.supabase.co/auth/v1/callback` (exact, or you get `redirect_uri_mismatch`).
+6. Save the Client ID and Client secret for the Supabase Google provider. */}
+
+## Set up Supabase
+
+1. Create an account and a project with [Supabase](https://supabase.com/).
+2. Retrieve your API keys:
+3. Retrieve your pooler URI:
+4. Connect Google to Supabase:
+
+{/* ### API keys
+
+**Project Settings → API:**
+
+- **Project URL** → `NEXT_PUBLIC_SUPABASE_URL`
+- **anon / public** → `NEXT_PUBLIC_SUPABASE_ANON_KEY` (browser-safe; row-level security still applies)
+- **service_role** → `SUPABASE_SERVICE_ROLE_KEY` (local scripts only — never `NEXT_PUBLIC_`, never commit)
+
+The anon key is meant to ship to the browser. It is not a master key. The service role is.
+
+### Database URL
+
+**Project Settings → Database → Connect** and copy the **pooler** URI into `DATABASE_URL`. Rate limiting uses this Postgres connection. It does not belong in GitHub Actions secrets.
+
+### Auth
+
+After you have a Google client (below):
+
+1. **Authentication → Providers → Google:** on. Paste the Client ID and secret.
+2. **Email:** signups **off**. Leave other OAuth providers off.
+3. **URL Configuration:** Site URL `http://localhost:3000`. Redirect URLs must include `http://localhost:3000/auth/callback` (add the live `https://` origin later).
+
+Google’s redirect into Supabase is `https://<project-ref>.supabase.co/auth/v1/callback` — one callback per project.
+
+The SQL hook and `schema.sql` paste happen in [Quickstart](/docs/quickstart). */}
+
+## Hook up Google OAuth 2.0
+
+{/* Admin login is **Sign in with Google**. Skip billing prompts. Scopes are only `openid`, `email`, and `profile`.
+
+In [Google Cloud Console](https://console.cloud.google.com/):
+
+1. Create a Cloud project. Configure the **OAuth consent screen** (External). While the app is in **Testing**, add your Gmail as a test user.
+2. Create an OAuth client → **Web application**.
+3. **Authorized JavaScript origins:** `http://localhost:3000` (add the Vercel / live origin when you deploy).
+4. **Authorized redirect URI:** `https://<project-ref>.supabase.co/auth/v1/callback` (exact, or you get `redirect_uri_mismatch`).
+5. Save the Client ID and Client secret for the Supabase Google provider.
+
+::: {.callout}
+
+Enabling Google lets **anyone with a Google account** finish OAuth unless you gate it. Turning off “Allow new users to sign up” blocks email signup; it does **not** reliably stop first-time Google logins. The starter rejects unknown emails **before** insert (`admin_allowlist` + Before User Created). A non-allowlisted Google account creates **no** `auth.users` row.
+
+::: */}
+
+## What's Next
+
+::: {.columns}
+
+::: {.52}
+
+Once you've set everything up on this page, you can either fork the starter repository or drop the guestbook kit into your existing Next.js app.
+
+:::
+
+::: {.25}
+
+[Quickstart](/docs/quickstart){.button}
+
+:::
+
+::: {.25}
+
+[Install with npm](/docs/install){.button}
+
+:::
+
+:::

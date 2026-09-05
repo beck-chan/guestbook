@@ -1,3 +1,116 @@
+---
+subtitle: Configure your guestbook display and moderation settings.
+---
+
+import Login from "../_snippets/login.mdx"
+
 # Customize Settings
 
-placeholder
+<Login />
+
+## Configure Moderation Settings
+
+Under the **settings** panel, you can:
+
+::: {.tabset}
+
+# Set Rate Limits
+
+Under **rate limits**, set the maximum number of comments that can be submitted per time period up to a total per day.
+
+::: {.callout}
+
+# Defaults are `1` comment per `5` minutes, up to a total of `2` comments per day.
+
+Rate limiting is handled by [rate-limiter-flexible](https://github.com/animir/node-rate-limiter-flexible){.blank}.
+
+:::
+
+# Set Profanity Allow-List
+
+Under **profanity allow-list**, enter a comma-separated list of words that are allowed to be submitted within comments.
+
+::: {.callout}
+# Default is no override.
+
+Profanity filtering is handled by [obscenity](https://github.com/jo3-l/obscenity){.blank}.
+
+:::
+
+:::
+
+## Configure Display Settings
+
+Under the **settings** panel, you can configure the:
+
+::: {.tabset}
+
+# Guestbook Title
+
+Enter a **title** override for the guestbook. This will display in the header of the guestbook and on the webpage title.
+
+# Placeholder Text
+
+Enter **placeholder** text for the comment input field. This will display when the input field is empty.
+
+# Title Marquee
+
+To control **marquee** behaviour for the title, select:
+
+- **on** to display the title in a retro scrolling marquee effect.
+- **off** to display the title static.
+
+# Fonts
+
+- Select a **main font** and **accent font** for the guestbook.
+- Each font has its own **font size** setting: `smaller`, `regular`, `larger`
+
+::: {.callout}
+To apply custom fonts to your theme, use the [**custom theme** CSS override](#customize-guestbook-theme).
+
+:::
+
+:::
+
+::: {.tabset}
+
+# Comments / Page
+
+Under **commments per page**, select the number of comments to display on the guestbook submission page.
+
+You can display from `4` up to `10` comments. Comments past that amount will be paginated.
+
+# Email Capture
+
+Under **capture email**, select:
+
+- **on** to show the email address field when a comment is submitted.
+- **off** to disable the email address field when a comment is submitted.
+
+:::
+
+::: {.callout}
+Click **save changes** to apply your changes.
+
+:::
+
+## Customize Guestbook Theme
+
+Under the **settings** panel, you can override the default theme with your custom CSS.
+
+::: {.tabset}
+# View Example CSS
+
+Under *custom theme*, click **view example** for a sample CSS file with colour and font elements you can safely override without breaking the guestbook layout.
+
+# Apply Theme Override
+
+Enter your custom CSS into **custom theme** to override theme defaults.
+
+::: {.callout}
+Click **save changes** to apply your changes.
+
+:::
+
+:::
+

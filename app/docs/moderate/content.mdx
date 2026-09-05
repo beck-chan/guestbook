@@ -1,3 +1,102 @@
+---
+subtitle: View and moderate comments in the admin dashboard.
+---
+
+import Login from "../_snippets/login.mdx"
+
 # Moderate Comments
 
-placeholder
+<Login />
+
+## Searching, Sorting & Filtering
+
+From the **comments** panel:
+
+### Search & Sort
+
+::: {.tabset}
+
+# Search by Keyword
+
+- Enter text into the `search` field and press enter to return comments with matching text.
+- To clear a search, remove your text from the `search` field and press enter.
+
+# Sort by Date
+
+- Comments are sorted by `newest first` by default.
+- Switch to `oldest first` to sort comments by the oldest comments first.
+
+:::
+
+### Filter
+
+::: {.tabset}
+
+# By Status
+
+Shows all comments under **status** whether they are read or unread by default:
+
+- Switch to `read` to show only read comments.
+- Switch to `unread` to show only unread comments.
+
+# By Contact
+
+Shows all comments under **contact** whether or not an email was submitted by default:
+
+- Switch to `has email` to show only comments with an email address.
+- Switch to `no email` to show only comments without an email address.
+
+# By Date Range
+
+Select a date range to show comments submitted within that range using the date selectors.
+
+::: {.callout}
+Dates are shown in your local timezone.
+
+:::
+
+:::
+
+## Mark Read & Unread
+
+From the **comments** panel:
+
+::: {.tabset}
+
+# One Comment
+
+In the bottom right-hand corner of a comment:
+
+- Check **mark as read** to mark the comment as read.
+- Uncheck **mark as unread** to mark the comment as unread.
+
+# All Comments
+
+Above all comments, click:
+
+- **mark all read** to mark all comments as read.
+- **mark all unread** to mark all comments as unread.
+
+:::
+
+::: {.callout}
+
+Changes are saved automatically.
+
+:::
+
+## Edit & Delete
+
+You can only edit and delete one comment at a time. Under a comment, click:
+
+::: {.tabset}
+
+# Edit
+
+To edit the comment. Click away from the comment editor to save your changes.
+
+# Delete
+
+To delete the comment. After you confirm the deletion, the comment will be removed from the list.
+
+:::

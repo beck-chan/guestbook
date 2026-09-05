@@ -1,3 +1,202 @@
-# Install with `npm`
+---
+subtitle: Drop the guestbook into your existing Next.js app.
+---
 
-placeholder
+import Preview from "../_snippets/preview.mdx"
+import Build from "../_snippets/build.mdx"
+
+# Install with npm
+
+::: {.callout}
+# Before You Begin
+
+- [x] You need to have completed the [Prerequisites](/docs/prerequisites) first.
+
+Starting from scratch? Follow the [Quickstart](/docs/quickstart) instead.
+
+:::
+
+## Setting Up
+
+Ensure you have your required dependencies, which Next.js and React should already satisfy:
+
+- [x] `next`
+- [x] `react` and `react-dom`
+- [x] `@supabase/supabase-js`
+
+::: {.callout}
+
+Pages Router is not supported. Next.js 16 names the old `middleware.ts` file `proxy.ts` — put it next to `app/` (or inside `src/` if that is how your project is laid out).
+
+:::
+
+### Install Package
+
+```bash
+npm install y2k-guestbook @supabase/supabase-js
+```
+
+Tell Next to compile the kit. Merge this with whatever is already in `next.config.ts`:
+
+```typescript
+import type { NextConfig } from "next";
+
+const nextConfig: NextConfig = {
+  transpilePackages: ["y2k-guestbook"],
+  async rewrites() {
+    return [
+      {
+        source: "/admin/example.css",
+        destination: "/admin/example",
+      },
+    ];
+  },
+};
+
+export default nextConfig;
+```
+
+The rewrite is so **view example** on the settings panel can serve the reference stylesheet at `/admin/example.css`.
+
+### Add Stylesheet
+
+Kit CSS lives in `@layer guestbook`. It does not include poetry-desk styles, so it can sit next to your own globals. Import it from the root layout, and mount `CustomTheme` there so admin theme CSS can apply:
+
+```typescript
+import "y2k-guestbook/styles.css";
+import { CustomTheme } from "y2k-guestbook";
+
+export default function RootLayout({ children }: LayoutProps<"/">) {
+  return (
+    <html lang="en">
+      <body>
+        {children}
+        <CustomTheme />
+      </body>
+    </html>
+  );
+}
+```
+
+Keep `@import "tailwindcss"` in *your* `globals.css`. The package stylesheet is the guestbook layer only.
+
+### Mount Routes
+
+App Router will not pick up pages from `node_modules`. Add thin files in your `app/` tree that render the kit.
+
+```typescript
+import type { Metadata } from "next";
+import { GuestbookBoard, HitCounter } from "y2k-guestbook";
+
+export const metadata: Metadata = {
+  title: "y2k guestbook",
+  description: "Sign the guestbook.",
+};
+
+export default function GuestbookPage() {
+  return (
+    <main className="admin-page guestbook-page guestbook-public">
+      <a className="guestbook-login" href="/admin">
+        admin login
+      </a>
+      <HitCounter />
+      <div className="admin-shell">
+        <GuestbookBoard />
+      </div>
+    </main>
+  );
+}
+```
+
+::: {tabset}
+
+# `/guestbook`
+
+Save that as `app/guestbook/page.tsx` when `/` is already your site. Point admin back here with `homeHref="/guestbook"`.
+
+# `/`
+
+Save that as `app/page.tsx` when the guestbook *is* the site, same as the [starter](/docs/quickstart). Pass `homeHref="/"` on the admin page.
+
+:::
+
+Those `admin-page guestbook-page` classes are the theme scope. Custom theme CSS is rewritten to `.admin-page`, so it will not restyle the rest of your site.
+
+**Admin**
+
+```typescript
+import type { Metadata } from "next";
+import { AdminGuestbook, loadAdminComments } from "y2k-guestbook";
+
+export const metadata: Metadata = {
+  title: "Admin Dashboard",
+  description: "Comment moderation & settings.",
+};
+
+export default async function AdminPage({
+  searchParams,
+}: PageProps<"/admin">) {
+  const loaded = await loadAdminComments(await searchParams);
+
+  return (
+    <AdminGuestbook
+      variant="demobook"
+      basePath="/admin"
+      homeHref="/guestbook"
+      {...loaded}
+    />
+  );
+}
+```
+
+Save that as `app/admin/page.tsx`. `variant="demobook"` is the standalone chrome (guestbook links, no poetry-book tab). Server actions for submit, moderate, and save-settings ship in the package — you do not copy those files.
+
+Theme preview needs one more route:
+
+```typescript
+export { GET, dynamic } from "y2k-guestbook/example-css";
+```
+
+Save that as `app/admin/example/route.ts`.
+
+## Configuration
+
+### Set Environment Variables
+
+Put secrets in `.env.local`. Never commit them.
+
+```bash
+NEXT_PUBLIC_SUPABASE_URL=
+NEXT_PUBLIC_SUPABASE_ANON_KEY=
+GUESTBOOK_ADMIN_EMAILS=
+```
+
+`GUESTBOOK_ADMIN_EMAILS` is a comma-separated allowlist of Google accounts that may open `/admin`. How to mint the Supabase keys and the OAuth client is in [Prerequisites](/docs/prerequisites). After install, add those emails in [Set Up Admin Users](/docs/admin).
+
+### Auth proxy and callback
+
+The kit cannot own these files — App Router only loads `proxy.ts` and route handlers from *your* project. Re-export the kit handlers:
+
+```typescript
+export { proxy, config } from "y2k-guestbook/proxy";
+```
+
+Save that as `proxy.ts` next to `app/`. The bundled matcher covers `/admin` and refreshes the Supabase session. It does not run on static assets.
+
+```typescript
+export { GET } from "y2k-guestbook/callback";
+```
+
+Save that as `app/auth/callback/route.ts`. That is the Google OAuth redirect target. In the Google Cloud and Supabase consoles it must match exactly, including `http://localhost:3000/auth/callback` for local preview.
+
+::: {.callout}
+
+If you already have a `proxy.ts`, import `{ proxy as guestbookProxy }` from `y2k-guestbook/proxy` and call it from your existing `proxy` function instead of replacing the file. Keep `/auth/callback` reachable — do not redirect that path to login.
+
+:::
+
+## Run Development Server
+
+<Preview />
+
+<Build />

@@ -18,13 +18,12 @@ export const DOCS_NAV_SECTIONS: DocsNavSection[] = [
     items: [
       { label: "Prerequisites", href: "/docs/prerequisites" },
       { label: "Quickstart", href: "/docs/quickstart" },
-      { label: "Install with `npm`", href: "/docs/install" },
+      { label: "Install with npm", href: "/docs/install" },
     ],
   },
   {
     title: "Guides",
     items: [
-      { label: "Set Up Admin Users", href: "/docs/admin" },
       { label: "Customize Settings", href: "/docs/settings" },
       { label: "Moderate Comments", href: "/docs/moderate" },
       { label: "Add Analytics", href: "/docs/analytics" },

@@ -1,5 +1,7 @@
-import Guide, { toc } from "./content.mdx";
+import Guide, { toc, title } from "./content.mdx";
 import { DocsPage } from "../_components/DocsPage";
+
+export const metadata = { title };
 
 export default function Page() {
   return (
