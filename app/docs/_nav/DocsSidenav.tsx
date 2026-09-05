@@ -80,8 +80,11 @@ export function DocsSidenav() {
           >
             <span className="docs-brand-kicker">y2k guestbook</span>
             <span className="docs-brand-title">
-              {/* Hello Honey s.1 (\uE019) is the ending heart flourish */}
-              Doc{"\uE019"}
+              Doc
+              <span className="docs-brand-heart">
+                {/* Hello Honey s.1 (\uE019) is the ending heart flourish */}
+                {"\uE019"}
+              </span>
             </span>
           </Link>
           <DocsSearch variant="icon" />
@@ -99,8 +102,11 @@ export function DocsSidenav() {
               aria-label="y2k Guestbook Docs home"
               onClick={() => setOpen(false)}
             >
-              {/* Hello Honey s.1 (\uE019) is the ending heart flourish */}
-              Doc{"\uE019"}
+              Doc
+              <span className="docs-brand-heart">
+                {/* Hello Honey s.1 (\uE019) is the ending heart flourish */}
+                {"\uE019"}
+              </span>
             </Link>
           </div>
           <DocsSearch variant="bar" />

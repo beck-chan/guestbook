@@ -188,6 +188,7 @@ body:has(.docs-shell) {
 
 .docs-index-head .docs-brand-kicker {
   font-size: clamp(3.9rem, 6.75vw, 5.4rem);
+  animation: easter-heading-float 4.6s cubic-bezier(0.42, 0, 0.22, 1.28) infinite;
 }
 
 .docs-index-head .docs-brand-title {
@@ -220,6 +221,27 @@ body:has(.docs-shell) {
   display: block;
   width: fit-content;
   font: inherit;
+}
+
+.docs-brand-heart {
+  background-image: linear-gradient(
+    90deg,
+    var(--docs-ink) 0%,
+    var(--peony-soft) 52%,
+    var(--peony) 100%
+  );
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+}
+
+.docs-shell a.docs-topbar-title:hover .docs-brand-heart,
+.docs-shell a.docs-topbar-title:focus-visible .docs-brand-heart,
+.docs-shell a.docs-brand-title:hover .docs-brand-heart,
+.docs-shell a.docs-brand-title:focus-visible .docs-brand-heart {
+  color: transparent;
+  -webkit-text-fill-color: transparent;
 }
 
 .docs-brand-kicker {
@@ -903,11 +925,12 @@ body:has(.docs-shell) {
 
 .docs-title {
   margin: 0;
+  padding: 0.06em 0 0.18em;
   color: inherit;
-  font-family: var(--peony-font);
-  font-size: clamp(3.7rem, 6vw, 4.9rem);
+  font-family: "Hello Honey", cursive;
+  font-size: clamp(5rem, 8vw, 6.8rem);
   font-weight: 400;
-  letter-spacing: 0.02em;
+  letter-spacing: 0.03em;
   line-height: 1.15;
 }
 
@@ -1163,6 +1186,10 @@ body:has(.docs-shell) {
     scroll-margin-top: calc(var(--docs-topbar-height) + 0.75rem);
   }
 
+  .docs-title {
+    font-size: clamp(2.75rem, 12vw, 3.6rem);
+  }
+
   .docs-search-icon {
     display: grid;
     place-items: center;
@@ -1291,5 +1318,11 @@ body:has(.docs-shell) {
   .docs-shell:has(.docs-index) .docs-main .docs-toc a,
   .docs-shell:has(.docs-index) .docs-toc .docs-nav-pending {
     font-size: 1.5rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .docs-index-head .docs-brand-kicker {
+    animation: none;
   }
 }

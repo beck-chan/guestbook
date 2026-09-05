@@ -19,8 +19,11 @@ export default function DocsPage() {
       <header className="docs-index-head">
         <p className="docs-brand-kicker">y2k guestbook</p>
         <p className="docs-brand-title">
-          {/* Hello Honey s.1 (\uE019) is the ending heart flourish */}
-          Doc{"\uE019"}
+          Doc
+          <span className="docs-brand-heart">
+            {/* Hello Honey s.1 (\uE019) is the ending heart flourish */}
+            {"\uE019"}
+          </span>
         </p>
       </header>
       <DocsSearch variant="bar" />

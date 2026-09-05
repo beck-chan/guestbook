@@ -901,11 +901,11 @@ body {
   z-index: 1;
   width: max-content;
   color: var(--cover);
-  font-family: var(--peony-font);
+  font-family: "Hello Honey", cursive;
   white-space: nowrap;
-  font-size: clamp(1.2rem, 1.95vw, 1.55rem);
+  font-size: clamp(1.7rem, 2.8vw, 2.25rem);
   font-weight: 400;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.02em;
   line-height: 1.05;
   text-align: center;
   transform: translateX(-50%);
@@ -1085,6 +1085,10 @@ body {
 .comment-bubble.is-compose {
   border-width: 4px;
   border-radius: 0 1.35rem 1.35rem 1.35rem;
+}
+
+.comment-bubble.is-editing {
+  border-width: 4px;
 }
 
 .comment-action {
@@ -1840,11 +1844,17 @@ body {
 
 .admin-bulk-actions .admin-comment-link,
 .admin-settings-actions .admin-comment-link,
+.admin-comment-actions .admin-comment-link,
 .admin-search-row .admin-comment-link {
   padding: 0;
   border: 0;
   background: none;
   cursor: pointer;
+}
+
+.admin-comment-actions .admin-comment-link:disabled {
+  color: rgb(255 97 98 / 0.35);
+  cursor: default;
 }
 
 .admin-search-row .admin-comment-link {
@@ -2465,6 +2475,12 @@ body {
     letter-spacing: 0.04em;
     line-height: 1;
     white-space: nowrap;
+  }
+
+  .mobile-cover .mobile-hint-label {
+    font-family: "Hello Honey", cursive;
+    font-size: 1.85rem;
+    letter-spacing: 0.02em;
   }
 
   .mobile-chevron {
