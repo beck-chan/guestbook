@@ -1,0 +1,397 @@
+@font-face {
+  font-family: "Peony";
+  src: url("/fonts/Peony-Regular.otf") format("opentype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Hello Honey";
+  src: url("/fonts/HelloHoney.otf") format("opentype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+body:has(.docs-shell) {
+  background: #fff;
+}
+
+.docs-shell {
+  --docs-ink: color-mix(in srgb, #6f4e37 80%, white);
+  --docs-sidebar-width: 18rem;
+  --docs-toc-width: 13.5rem;
+  min-height: 100vh;
+  padding-left: var(--docs-sidebar-width);
+  color: var(--docs-ink);
+  font-family: var(--body-font);
+  background: #fff;
+}
+
+
+.docs-shell a {
+  color: inherit;
+  font-family: var(--body-font);
+}
+
+.docs-shell a:hover,
+.docs-shell a:focus-visible {
+  color: var(--cover-soft);
+}
+
+.docs-sidenav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  z-index: 1;
+  width: var(--docs-sidebar-width);
+  overflow: auto;
+  padding: 2.15rem 1.55rem 3rem;
+  background: var(--paper);
+}
+
+.docs-brand {
+  margin: 0 0 1.85rem;
+  color: inherit;
+  font-family: "Hello Honey", cursive;
+  font-size: clamp(3.6rem, 5vw, 4.8rem);
+  font-weight: 400;
+  letter-spacing: 0.03em;
+  line-height: 1.15;
+}
+
+.docs-brand-kicker,
+.docs-brand-title {
+  margin: 0;
+  white-space: nowrap;
+}
+
+.docs-brand-title {
+  font: inherit;
+}
+
+.docs-brand-kicker {
+  color: color-mix(in srgb, #6f4e37 48%, white);
+  font-family: var(--peony-font);
+  font-size: 2rem;
+  font-weight: 400;
+}
+
+.docs-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 1.35rem;
+}
+
+.docs-nav-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.docs-nav-heading {
+  margin: 0;
+  color: color-mix(in srgb, #6f4e37 48%, white);
+  font-family: var(--peony-font);
+  font-size: 1.35rem;
+  font-weight: 400;
+  letter-spacing: 0.03em;
+  line-height: 1.2;
+}
+
+.docs-nav-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.28rem;
+  margin: 0.15rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.docs-nav-link,
+.docs-nav-pending {
+  display: block;
+  width: fit-content;
+  color: inherit;
+  font-family: var(--body-font);
+  font-size: 1.2rem;
+  line-height: 1.4;
+  text-decoration: none;
+}
+
+.docs-nav-link:hover,
+.docs-nav-link:focus-visible {
+  color: var(--cover-soft);
+}
+
+.docs-sidenav a:focus-visible,
+.docs-main a:focus-visible {
+  outline: 2px solid var(--ink-muted);
+  outline-offset: 3px;
+}
+
+.docs-main {
+  background: #fff;
+  padding: 2.6rem 2.2rem 4rem;
+}
+
+.docs-main:has(.docs-toc) {
+  display: grid;
+  grid-template-columns: minmax(0, 58rem) var(--docs-toc-width);
+  grid-template-areas: "article toc";
+  column-gap: 2.75rem;
+  align-items: start;
+}
+
+.docs-article {
+  grid-area: article;
+  max-width: 58rem;
+}
+
+.docs-article p {
+  margin: 1.1rem 0 0;
+  font-size: clamp(1rem, 1.5vw, 1.28rem);
+  line-height: 1.55;
+}
+
+.docs-toc-stack {
+  grid-area: toc;
+  position: sticky;
+  top: 2.75rem;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.docs-toc {
+  --docs-toc-band: 2.75rem;
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: flex-start;
+  box-sizing: border-box;
+  width: var(--docs-toc-width);
+  min-height: var(--docs-toc-width);
+  padding: 0;
+  overflow: visible;
+  isolation: isolate;
+  color: var(--docs-ink);
+  background: var(--paper);
+  box-shadow:
+    1px 1px 0 rgb(180 160 140 / 0.35),
+    5px 10px 18px rgb(40 38 34 / 0.16);
+  transform: rotate(-6deg);
+  text-align: center;
+}
+
+.docs-toc-stack .docs-toc:nth-child(even) {
+  transform: rotate(6deg);
+}
+
+.docs-toc-stack .docs-toc + .docs-toc {
+  margin-top: -0.45rem;
+}
+
+.docs-toc:not(:has(.docs-toc-label)) ol {
+  padding-top: calc(var(--docs-toc-band) + 0.45rem);
+}
+
+.docs-toc::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.06;
+  mix-blend-mode: multiply;
+  background-color: color-mix(in srgb, #6f4e37 80%, white);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='360' height='360'%3E%3Cfilter id='docs-toc-grain'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.11 .15' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23docs-toc-grain)'/%3E%3C/svg%3E");
+  background-size: 360px 360px;
+  background-blend-mode: overlay;
+}
+
+.docs-toc::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1;
+  height: var(--docs-toc-band);
+  background: rgb(255 255 255 / 0.28);
+  pointer-events: none;
+}
+
+.docs-toc .docs-toc-label {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 var(--docs-toc-band);
+  margin: 0;
+  padding: 0 0.65rem;
+  color: var(--docs-ink);
+  font-family: var(--peony-font);
+  font-size: 1.25rem;
+  font-weight: 400;
+  letter-spacing: 0.04em;
+  line-height: 1.1;
+}
+
+.docs-toc ol {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  flex: 1;
+  gap: 0.4rem;
+  margin: 0;
+  padding: 0.85rem 1.05rem 1.2rem;
+  list-style: none;
+}
+
+.docs-main .docs-toc a {
+  color: var(--cover-soft);
+  font-family: var(--body-font);
+  font-size: 1.02rem;
+  font-weight: 400;
+  line-height: 1.3;
+  text-decoration: none;
+}
+
+.docs-main .docs-toc a:hover,
+.docs-main .docs-toc a:focus-visible {
+  color: var(--cover);
+  text-decoration: none;
+}
+
+.docs-heading,
+.docs-subheading {
+  scroll-margin-top: 1.25rem;
+  font-family: var(--peony-font);
+  font-weight: 400;
+  letter-spacing: 0.02em;
+  line-height: 1.2;
+}
+
+.docs-heading {
+  margin: 2.5rem 0 0;
+  color: inherit;
+  font-size: clamp(1.7rem, 2.6vw, 2.2rem);
+  text-decoration: none;
+}
+
+.docs-heading::after {
+  content: "";
+  display: block;
+  width: 100%;
+  height: 0.55em;
+  margin-top: 0.12em;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='8' viewBox='0 0 20 8' preserveAspectRatio='none'%3E%3Cpath d='M0 4 Q 5 0 10 4 T 20 4' fill='none' stroke='%23baaa9f' stroke-width='1.35' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: repeat-x;
+  background-position: left center;
+  background-size: 1.15em 0.55em;
+}
+
+.docs-subheading {
+  margin: 1.75rem 0 0;
+  color: color-mix(in srgb, #6f4e37 48%, white);
+  font-size: clamp(1.35rem, 2vw, 1.7rem);
+}
+
+.docs-code {
+  margin: 1.1rem 0 0;
+  padding: 1rem 1.15rem;
+  overflow-x: auto;
+  background: var(--docs-ink);
+  color: var(--paper);
+  font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+.docs-code code {
+  font: inherit;
+}
+
+.docs-title {
+  margin: 0;
+  color: inherit;
+  font-family: var(--peony-font);
+  font-size: clamp(3.7rem, 6vw, 4.9rem);
+  font-weight: 400;
+  letter-spacing: 0.02em;
+  line-height: 1.15;
+}
+
+.docs-main a {
+  color: var(--cover-soft);
+  text-decoration: underline;
+  text-underline-offset: 0.16em;
+}
+
+.docs-article p a:hover,
+.docs-article p a:focus-visible {
+  text-decoration: none;
+}
+
+.docs-article .docs-cta {
+  display: block;
+  width: fit-content;
+  margin: 2.4rem 0 0;
+  padding: 0.5rem 1.1rem;
+  border: 1px solid #c9c5bc;
+  border-radius: 1px;
+  background: transparent;
+  color: var(--cover-soft);
+  font-family: var(--peony-font);
+  font-size: clamp(1.3rem, 1.9vw, 1.65rem);
+  font-weight: 400;
+  letter-spacing: 0.04em;
+  text-align: center;
+  text-decoration: none;
+}
+
+.docs-article .docs-cta:hover,
+.docs-article .docs-cta:focus-visible {
+  color: var(--cover-soft);
+  background: rgb(47 46 44 / 0.05);
+}
+
+@media (max-width: 1100px) {
+  .docs-main:has(.docs-toc) {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas:
+      "toc"
+      "article";
+  }
+
+  .docs-toc-stack {
+    margin: 0 0 1.75rem 0.4rem;
+  }
+}
+
+@media (max-width: 720px) {
+  .docs-shell {
+    --docs-sidebar-width: 12.5rem;
+  }
+
+  .docs-sidenav {
+    padding: 1.5rem 1.15rem 1.35rem;
+  }
+
+  .docs-main {
+    padding: 1.85rem 1.25rem 3.25rem;
+  }
+
+  .docs-toc {
+    width: min(var(--docs-toc-width), 100%);
+    min-height: 0;
+  }
+}
