@@ -1,3 +1,5 @@
+import { releasesUrl, reportIssueUrl } from "@/lib/flags";
+
 export type DocsNavItem = {
   label: string;
   href?: string;
@@ -42,13 +44,13 @@ export const DOCS_NAV_SECTIONS: DocsNavSection[] = [
       },
       {
         label: "Releases",
-        href: "https://github.com/beck-chan/y2k-guestbook/releases",
+        href: releasesUrl,
         target: "_blank",
         rel: "noopener noreferrer",
       },
       {
         label: "Report Issue",
-        href: "https://github.com/beck-chan/y2k-guestbook/issues",
+        href: reportIssueUrl,
         target: "_blank",
         rel: "noopener noreferrer",
       },
