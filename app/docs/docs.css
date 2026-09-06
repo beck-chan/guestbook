@@ -475,6 +475,7 @@ body:has(.docs-shell) {
 
 .docs-article ol {
   list-style: decimal;
+  list-style-position: outside;
   padding-left: 2.35rem;
 }
 
@@ -490,25 +491,44 @@ body:has(.docs-shell) {
 .docs-article ol[type="a"],
 .docs-article ol.docs-ol-alpha {
   list-style-type: lower-alpha;
+  padding-left: 2.65rem;
 }
 
 .docs-article ol[type="i"],
 .docs-article ol.docs-ol-roman {
   list-style-type: lower-roman;
+  padding-left: 2.65rem;
 }
 
 .docs-article ol > li::marker {
   color: color-mix(in srgb, #6f4e37 55%, white);
-  font-family: var(--peony-font);
+  font-family: var(--body-font);
+  font-variant-numeric: lining-nums;
+}
+
+.docs-article ol > li {
+  padding-left: 0.2em;
 }
 
 .docs-article li + li {
   margin-top: 0.28rem;
 }
 
+/* Blank lines between a./b. or i./ii. items → looser vertical rhythm */
+.docs-article ol.docs-ol-loose > li + li {
+  margin-top: 1.15rem;
+}
+
 .docs-article li > ul,
 .docs-article li > ol {
-  margin-top: 0.28rem;
+  margin-top: 0.65rem;
+  margin-bottom: 0.25rem;
+  margin-left: 1.5rem;
+  padding-left: 2.65rem;
+}
+
+.docs-article li > ol ol {
+  margin-left: 1.1rem;
 }
 
 .docs-article li > p {
@@ -517,6 +537,14 @@ body:has(.docs-shell) {
 
 .docs-article li > p + p {
   margin-top: 0.55rem;
+}
+
+/* Extra-indented continuation under an a./i. item (blank line + deeper indent) */
+.docs-article ol.docs-ol-alpha > li > p + p,
+.docs-article ol.docs-ol-roman > li > p + p,
+.docs-article ol[type="a"] > li > p + p,
+.docs-article ol[type="i"] > li > p + p {
+  padding-left: 1.15em;
 }
 
 .docs-article .docs-list-heart {
