@@ -1,22 +1,14 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
 export function AdminAuthErrorOverlay() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const pathname = usePathname();
-  const [open, setOpen] = useState(false);
-
-  useEffect(() => {
-    if (searchParams.get("admin_error") === "1") {
-      setOpen(true);
-    }
-  }, [searchParams]);
+  const open = searchParams.get("admin_error") === "1";
 
   function dismiss() {
-    setOpen(false);
     const params = new URLSearchParams(searchParams.toString());
     params.delete("admin_error");
     const query = params.toString();

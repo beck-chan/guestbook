@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useTransition } from "react";
+import { useState, useTransition } from "react";
 import {
   loadGuestbookSettingsAction,
   saveGuestbookSettingsAction,
@@ -66,12 +66,14 @@ function OnOffToggle({
 export function AdminSettings() {
   const [saved, saveContext, setSettings] = useGuestbookSettings();
   const [draft, setDraft] = useState<GuestbookSettings>(saved);
+  const [prevSaved, setPrevSaved] = useState(saved);
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
 
-  useEffect(() => {
+  if (prevSaved !== saved) {
+    setPrevSaved(saved);
     setDraft(saved);
-  }, [saved]);
+  }
 
   function patch(next: Partial<GuestbookSettings>) {
     setDraft((current) => ({ ...current, ...next }));

@@ -3,7 +3,6 @@
 import { useEffect, useRef, useState, useTransition } from "react";
 import {
   getPoemHeartState,
-  loadPoemHearts,
   togglePoemHeart,
   type PoemHeartState,
 } from "@/lib/actions/hearts";
@@ -32,9 +31,17 @@ export function PoetryDesk({ poems, initialIndex, hitCount }: PoetryDeskProps) {
   const [hintVisible, setHintVisible] = useState(true);
   const [heart, setHeart] = useState<PoemHeartState>(EMPTY_HEART);
   const [heartPending, startHeartTransition] = useTransition();
+  const [trackedPoemId, setTrackedPoemId] = useState<string | undefined>(
+    poems[initialIndex]?.id,
+  );
   const hintClickedRef = useRef(false);
 
   const poem = poems[poemIndex];
+  const poemId = poem?.id;
+  if (trackedPoemId !== poemId) {
+    setTrackedPoemId(poemId);
+    setHeart(EMPTY_HEART);
+  }
 
   useEffect(() => {
     function syncHint() {
@@ -57,13 +64,12 @@ export function PoetryDesk({ poems, initialIndex, hitCount }: PoetryDeskProps) {
   }, []);
 
   useEffect(() => {
-    if (!poem) {
-      setHeart(EMPTY_HEART);
+    if (!poemId) {
       return;
     }
     let cancelled = false;
     startHeartTransition(async () => {
-      const next = await getPoemHeartState(poem.id);
+      const next = await getPoemHeartState(poemId);
       if (!cancelled) {
         setHeart(next);
       }
@@ -71,7 +77,7 @@ export function PoetryDesk({ poems, initialIndex, hitCount }: PoetryDeskProps) {
     return () => {
       cancelled = true;
     };
-  }, [poem?.id]);
+  }, [poemId]);
 
   function onToggleHeart() {
     if (!poem) {

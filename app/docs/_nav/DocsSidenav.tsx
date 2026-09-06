@@ -13,10 +13,12 @@ export function DocsSidenav() {
   const panelId = useId();
   const [open, setOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const [navPath, setNavPath] = useState(pathname);
 
-  useEffect(() => {
+  if (navPath !== pathname) {
+    setNavPath(pathname);
     setOpen(false);
-  }, [pathname]);
+  }
 
   useEffect(() => {
     const media = window.matchMedia(MOBILE_QUERY);

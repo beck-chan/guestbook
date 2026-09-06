@@ -6,33 +6,43 @@ import { FALLBACK_HIT_COUNT } from "@/lib/hitCount";
 
 const STORAGE_KEY = "guestbook.hit-counted";
 const POLL_MS = 45_000;
+const IS_PROD = process.env.NODE_ENV === "production";
 
 type HitCounterProps = {
   count: number;
 };
 
 export function HitCounter({ count }: HitCounterProps) {
-  const [displayed, setDisplayed] = useState(count);
+  const [displayed, setDisplayed] = useState(
+    IS_PROD ? count : FALLBACK_HIT_COUNT,
+  );
+  const [prevCount, setPrevCount] = useState(count);
+
+  if (IS_PROD && prevCount !== count) {
+    setPrevCount(count);
+    setDisplayed((current) => Math.max(current, count));
+  }
 
   useEffect(() => {
-    if (process.env.NODE_ENV !== "production") {
-      setDisplayed(FALLBACK_HIT_COUNT);
+    if (!IS_PROD) {
       return;
     }
 
-    let firstVisitBonus = 0;
-    try {
-      if (localStorage.getItem(STORAGE_KEY) !== "1") {
-        firstVisitBonus = 1;
-        localStorage.setItem(STORAGE_KEY, "1");
-      }
-    } catch {
-      // ignore storage errors (private mode, etc.)
-    }
-
-    setDisplayed((current) => Math.max(current, count + firstVisitBonus));
-
     let cancelled = false;
+
+    queueMicrotask(() => {
+      if (cancelled) return;
+      let firstVisitBonus = 0;
+      try {
+        if (localStorage.getItem(STORAGE_KEY) !== "1") {
+          firstVisitBonus = 1;
+          localStorage.setItem(STORAGE_KEY, "1");
+        }
+      } catch {
+        // ignore storage errors (private mode, etc.)
+      }
+      setDisplayed((current) => Math.max(current, count + firstVisitBonus));
+    });
 
     async function poll() {
       try {

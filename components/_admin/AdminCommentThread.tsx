@@ -38,13 +38,15 @@ export function AdminCommentThread({
   const editorRef = useRef<HTMLTextAreaElement>(null);
 
   const editingId = mode?.kind === "edit" ? mode.id : null;
+  const [prevComments, setPrevComments] = useState(comments);
 
-  useEffect(() => {
+  if (prevComments !== comments) {
+    setPrevComments(comments);
     setNotes(comments);
     setReadById(
       Object.fromEntries(comments.map((note) => [note.id, Boolean(note.read)])),
     );
-  }, [comments]);
+  }
 
   useEffect(() => {
     if (editingId) {
