@@ -82,7 +82,7 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=sb_publishable_<your-publishable-key>
 # Service role. Local ONLY — for `npm run allow-admin`
 SUPABASE_SERVICE_ROLE_KEY=<your-service-role-key>
 
-# App origin for OAuth return
+# App origin for OAuth return. Used to build redirectTo on the server.
 SITE_URL=http://localhost:3000
 
 # Supabase pooler URI — for rate limiting
@@ -100,7 +100,8 @@ NEXT_PUBLIC_SUPABASE_URL=https://<your-database-url>.supabase.co/rest/v1/<string
 # Supabase anon / public key (browser-safe, RLS still applies)
 NEXT_PUBLIC_SUPABASE_ANON_KEY=sb_publishable_<your-publishable-key>
 
-# App origin for OAuth return. For example, Vercel:
+# App origin for OAuth return. Used to build redirectTo on the server.
+# For example, Vercel:
 SITE_URL=http://your-project-url.vercel.app
 
 # Supabase pooler URI — for rate limiting
