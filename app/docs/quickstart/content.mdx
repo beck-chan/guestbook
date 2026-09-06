@@ -5,6 +5,9 @@ subtitle: Get started using a GitHub fork.
 import InstallNext from "../_snippets/install-next.mdx"
 import Preview from "../_snippets/preview.mdx"
 import Build from "../_snippets/build.mdx"
+import AuthHook from "../_snippets/auth-hook.mdx"
+import Env from "../_snippets/env.mdx"
+import AllowAdmin from "../_snippets/allow-admin.mdx"
 
 # Quickstart
 
@@ -59,103 +62,14 @@ cd y2k-guestbook
 
 :::
 
-### Set Up Environment Variables
-
-1. Copy the `.env.example` file to `.env.local`:
-
-    ```bash
-    cp .env.example .env.local
-    ```
-
-2. Fill in values from *your* Supabase project and site origin:
-
-    ```bash
-    # Supabase project URL
-    NEXT_PUBLIC_SUPABASE_URL=https://<your-database-url>.supabase.co
-
-    # Supabase anon / public key (browser-safe, RLS still applies)
-    NEXT_PUBLIC_SUPABASE_ANON_KEY=sb_publishable_<your-publishable-key>
-
-    # Service role. Local ONLY — for `npm run allow-admin`
-    SUPABASE_SERVICE_ROLE_KEY=<your-service-role-key>
-
-    # App origin for OAuth return. Used to build redirectTo on the server.
-    SITE_URL=http://localhost:3000
-
-    # Supabase pooler URI — for rate limiting
-    DATABASE_URL=postgresql://postgres.<your-database-url>:[YOUR-PASSWORD]@<your-database-region>.pooler.supabase.com:<port>/postgres
-    ```
-
+<Env />
 
 ## Installing
 
-### Enable Authentication Hook
-
-::: {tabset}
-
-# i. Run Installation Schema
-
-1. Copy the contents of [`schema.sql`](https://github.com/beck-chan/y2k-guestbook/blob/main/schema.sql){.blank} to your clipboard.
-
-2. Within Supabase, select **SQL Editor** from the left sidebar, then paste in the contents of `schema.sql`.
-
-3. Click **Run** to execute the schema.
-
-4. If you receive a Potential issue detected popup, click **Run query** to execute the schema. 
-
-::: {.callout}
-Confirm that you see `Success. No rows returned` under the Results before moving on to the next step.
-:::
-
-# ii. Set Up Auth Hook
-
-1. Within Supabase, select **Authentication** from the left sidebar, then click **Auth Hooks**.
-
-2. Click **Add hook**, then select **Before User Created hook**:
-
-    - For **Hook type** select `Postgres`.
-    - For **Postgres Schema**, select `schema.public`.
-
-3. For **Postgres funtion**, select `function: hook_before_user_created`.
-
-4. Click **Create hook**.
-
-# iii. Set Up Redirects
-
-1. Within Supabase, select **Authentication** from the left sidebar, then click **URL Configuration**.
-
-2. Confirm that `http://localhost:3000` is already entered under **Site URL** for local previews and builds.
-
-3. (Optional, for deployment builds) To enter a redirect URL for deployment:
-
-    a. Under Redirect URLs, click **Add URL**.
-
-    b. Paste in your deployment callback URL. This is your `SITE_URL` with `auth/callback` appended to the end.
-
-        For example: `https://<your-project-url>.vercel.app/auth/callback`.
-
-    c. Click **Save URLs**.
-
-:::
+<AuthHook />
 
 
-### Allow Your Admin User
-
-Run the following command in your terminal to allow-list a Google account as your admin user:
-
-```bash
-npm install
-npm run allow-admin -- you@gmail.com
-```
-
-You'll need to authorize Google to connect on your first sign in.
-
-::: {.callout }
-# Visitors cannot sign in with Google.
-
-To add another admin user later, run the same command with their address and authorize Google to connect after their first sign in.
-
-:::
+<AllowAdmin />
 
 ### Run Development Server
 

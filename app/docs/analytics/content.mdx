@@ -113,6 +113,20 @@ If you are deploying to Vercel:
 
 :::
 
+## Enable Live Counter
+
+Import `app/api/hits/route.ts` which polls `/api/hits` in production:
+
+```typescript
+import { NextResponse } from "next/server";
+import { getUniqueVisitors } from "y2k-guestbook";
+
+export async function GET() {
+  const count = await getUniqueVisitors();
+  return NextResponse.json({ count });
+}
+```
+
 ## Enable Hit Counter
 
 In `env.local` (for local development) or your Vercel environment variables (for cloud deployment):

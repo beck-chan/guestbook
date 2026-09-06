@@ -1263,7 +1263,8 @@ body {
 }
 
 .comment-input::placeholder {
-  color: var(--cover);
+  color: var(--cover-soft);
+  font-style: italic;
 }
 
 .admin-page {
@@ -2342,6 +2343,23 @@ body {
     background: var(--paper);
   }
 
+  .mobile-leaf::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 3;
+    height: 12.5rem;
+    pointer-events: none;
+    background: linear-gradient(
+      to bottom,
+      rgb(250 246 234 / 0) 0%,
+      rgb(250 246 234 / 0.55) 42%,
+      var(--paper) 100%
+    );
+  }
+
   .mobile-leaf .leaf {
     height: 100%;
     clip-path: none;
@@ -2434,23 +2452,6 @@ body {
 
   .mobile-poem {
     touch-action: pan-y;
-  }
-
-  .mobile-poem::after {
-    content: "";
-    position: absolute;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    z-index: 3;
-    height: 8.75rem;
-    pointer-events: none;
-    background: linear-gradient(
-      to bottom,
-      rgb(250 246 234 / 0) 0%,
-      rgb(250 246 234 / 0.55) 42%,
-      var(--paper) 100%
-    );
   }
 
   .mobile-scroll-hint {

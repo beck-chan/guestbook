@@ -32,7 +32,9 @@ export const DOCS_NAV_SECTIONS: DocsNavSection[] = [
   },
   {
     title: "Reference",
-    items: [{ label: "API Reference", href: "/docs/api" }],
+    items: [{ label: "API Reference", href: "/docs/api" }, 
+      { label: "Cucumber Specs", href: "/docs/specs" }
+    ],
   },
   {
     title: "Etc.",
@@ -73,20 +75,25 @@ export const DOCS_NAV_SECTIONS: DocsNavSection[] = [
       },
     ],
   },
+  {
+    title: "Fine Print",
+    items: [
+      {
+        label: "Privacy Policy",
+        href: "/docs/policy/",
+      },
+      {
+        label: "Terms of Service",
+        href: "/docs/service/",
+      },
+    ],
+  },
   ...(flags.public
     ? []
     : [
         {
           title: "Internal",
           items: [
-            {
-              label: "Privacy Policy",
-              href: "/docs/policy/",
-            },
-            {
-              label: "Terms of Service",
-              href: "/docs/service/",
-            },
             {
             label: "Search & LLM Ingestion",
             href: "/docs/search/",

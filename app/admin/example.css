@@ -284,7 +284,8 @@ body {
 }
 
 .comment-input::placeholder {
-  color: var(--cover);
+  color: var(--cover-soft);
+  font-style: italic;
 }
 
 .admin-page {

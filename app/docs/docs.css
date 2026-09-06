@@ -401,7 +401,7 @@ body:has(.docs-shell) {
 
 .docs-main:has(.docs-toc-stack) {
   display: grid;
-  grid-template-columns: minmax(0, 58rem) var(--docs-toc-width);
+  grid-template-columns: minmax(0, 58rem) minmax(var(--docs-toc-width), max-content);
   grid-template-areas: "article toc";
   column-gap: 2.75rem;
   align-items: start;
@@ -635,6 +635,13 @@ body:has(.docs-shell) {
   position: sticky;
   top: 2.75rem;
   display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  gap: 0.35rem;
+}
+
+.docs-toc-primary {
+  display: flex;
   flex-direction: column;
   align-items: flex-start;
 }
@@ -662,12 +669,50 @@ body:has(.docs-shell) {
   text-align: center;
 }
 
-.docs-toc-stack .docs-toc:nth-child(even) {
+.docs-toc-primary .docs-toc:nth-child(even) {
   transform: rotate(6deg);
 }
 
-.docs-toc-stack .docs-toc + .docs-toc {
+.docs-toc-primary .docs-toc + .docs-toc {
   margin-top: -0.45rem;
+}
+
+.docs-toc-secondary {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  margin-top: 1.35rem;
+  margin-left: -0.15rem;
+}
+
+.docs-toc-children {
+  --docs-toc-band: 2.1rem;
+  width: 11.5rem;
+  height: 11.5rem;
+  min-height: 11.5rem;
+  z-index: 4;
+  transform: rotate(7deg);
+}
+
+.docs-toc-secondary .docs-toc-children:nth-child(even) {
+  transform: rotate(-7deg);
+}
+
+.docs-toc-secondary .docs-toc-children + .docs-toc-children {
+  margin-top: -0.4rem;
+}
+
+.docs-toc-children ol {
+  gap: 0.28rem;
+  padding-right: 0.7rem;
+  padding-bottom: 0.85rem;
+  padding-left: 0.7rem;
+}
+
+.docs-toc-children .docs-toc-label {
+  font-size: 0.68rem;
+  letter-spacing: 0.02em;
+  padding: 0 0.35rem;
 }
 
 .docs-toc:not(:has(.docs-toc-label)) ol {
@@ -750,6 +795,13 @@ body:has(.docs-shell) {
   font-size: 1.02rem;
 }
 
+.docs-toc-stack .docs-toc.docs-toc-children a.docs-toc-h3 {
+  font-size: 0.78rem;
+  line-height: 1.2;
+  max-width: 100%;
+  text-wrap: balance;
+}
+
 .docs-toc-stack .docs-toc a {
   position: relative;
   display: inline-flex;
@@ -766,6 +818,11 @@ body:has(.docs-shell) {
   opacity: 0;
   overflow: visible;
   pointer-events: none;
+}
+
+.docs-toc-stack .docs-toc.docs-toc-children .docs-toc-heart {
+  width: 0.7em;
+  height: 0.75em;
 }
 
 .docs-toc-stack .docs-toc .docs-toc-heart.is-visible {

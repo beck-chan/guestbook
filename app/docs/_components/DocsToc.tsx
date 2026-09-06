@@ -24,6 +24,45 @@ function chunkItems(items: DocsTocItem[]) {
   return notes.length > 0 ? notes : [[]];
 }
 
+function itemDepth(item: DocsTocItem) {
+  return item.depth ?? 2;
+}
+
+/** Active H2 section href, if any. */
+function activeSectionHref(items: DocsTocItem[], activeHref: string) {
+  let currentH2: string | null = null;
+  for (const item of items) {
+    if (itemDepth(item) === 2) {
+      currentH2 = item.href;
+    }
+    if (item.href === activeHref) {
+      return currentH2;
+    }
+  }
+  return null;
+}
+
+/** H3s under the active H2 section only. */
+function activeSectionChildren(items: DocsTocItem[], activeHref: string) {
+  const section = activeSectionHref(items, activeHref);
+  if (!section) {
+    return [];
+  }
+
+  const children: DocsTocItem[] = [];
+  let currentH2: string | null = null;
+  for (const item of items) {
+    if (itemDepth(item) === 2) {
+      currentH2 = item.href;
+      continue;
+    }
+    if (currentH2 === section) {
+      children.push(item);
+    }
+  }
+  return children;
+}
+
 function useActiveTocHref(items: DocsTocItem[]) {
   const [activeHref, setActiveHref] = useState("");
   const hrefKey = items.map((item) => item.href).join(" ");
@@ -79,38 +118,79 @@ function useActiveTocHref(items: DocsTocItem[]) {
   return activeHref;
 }
 
+function TocNote({
+  items,
+  activeHref,
+  label,
+  className,
+  zIndex,
+}: {
+  items: DocsTocItem[];
+  activeHref: string;
+  label?: string;
+  className?: string;
+  zIndex?: number;
+}) {
+  return (
+    <div
+      className={["docs-toc", className].filter(Boolean).join(" ")}
+      style={zIndex != null ? { zIndex } : undefined}
+    >
+      {label ? <p className="docs-toc-label">{label}</p> : null}
+      <ol>
+        {items.map((item) => {
+          const active = item.href === activeHref;
+          return (
+            <li key={item.href}>
+              <a
+                href={item.href}
+                className={item.depth === 3 ? "docs-toc-h3" : "docs-toc-h2"}
+                aria-current={active ? "location" : undefined}
+              >
+                <DocsTocHeart active={active} />
+                {item.label}
+              </a>
+            </li>
+          );
+        })}
+      </ol>
+    </div>
+  );
+}
+
 export function DocsToc({ items }: { items: DocsTocItem[] }) {
-  const notes = chunkItems(items);
   const activeHref = useActiveTocHref(items);
+  const h2Items = items.filter((item) => itemDepth(item) === 2);
+  const notes = chunkItems(h2Items);
+  const childNotes = chunkItems(activeSectionChildren(items, activeHref));
 
   return (
     <nav className="docs-toc-stack" aria-label="Table of contents">
-      {notes.map((group, index) => (
-        <div
-          key={group[0]?.href ?? index}
-          className="docs-toc"
-          style={{ zIndex: index + 1 }}
-        >
-          {index === 0 ? <p className="docs-toc-label">On this page</p> : null}
-          <ol>
-            {group.map((item) => {
-              const active = item.href === activeHref;
-              return (
-                <li key={item.href}>
-                  <a
-                    href={item.href}
-                    className={item.depth === 3 ? "docs-toc-h3" : "docs-toc-h2"}
-                    aria-current={active ? "location" : undefined}
-                  >
-                    <DocsTocHeart active={active} />
-                    {item.label}
-                  </a>
-                </li>
-              );
-            })}
-          </ol>
+      <div className="docs-toc-primary">
+        {notes.map((group, index) => (
+          <TocNote
+            key={group[0]?.href ?? index}
+            items={group}
+            activeHref={activeHref}
+            label={index === 0 ? "on this page" : undefined}
+            zIndex={index + 1}
+          />
+        ))}
+      </div>
+      {childNotes[0]?.length ? (
+        <div className="docs-toc-secondary">
+          {childNotes.map((group, index) => (
+            <TocNote
+              key={group[0]?.href ?? index}
+              items={group}
+              activeHref={activeHref}
+              className="docs-toc-children"
+              label={index === 0 ? "in this section" : undefined}
+              zIndex={index + 1}
+            />
+          ))}
         </div>
-      ))}
+      ) : null}
     </nav>
   );
 }

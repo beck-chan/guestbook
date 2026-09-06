@@ -8,7 +8,13 @@ import Example from "../_snippets/example.mdx"
 
 # MDX Reference
 
+::: {.callout}
+
 Copy `example/page.tsx` next to a `content.mdx` into a directory named for the page URL slug.
+
+Navigation with sections linked to the documentation landing page is defined in `app/docs/_nav/docs-nav-data.ts`.
+
+:::
 
 ## YAML Frontmatter
 
@@ -36,14 +42,7 @@ import Example from "../_snippets/example.mdx"
 <Example />
 :::
 
-Leave YAML and `# h1` on the host page. Snippet headings do not appear in the host page table of contents by default — merge the `toc` exports in `page.tsx` if they should:
-
-```typescript
-import Guide, { toc as guideToc } from "./content.mdx";
-import Example, { toc as exampleToc } from "../_snippets/example.mdx";
-
-const toc = [...guideToc, ...exampleToc];
-```
+Leave YAML and `# h1` on the host page. Snippet `##` / `###` headings are included in the host table of contents automatically, in the order the snippet appears on the page.
 
 ## Content
 
