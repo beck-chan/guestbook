@@ -1,9 +1,30 @@
 import { unstable_cache } from "next/cache";
+import { flags } from "@/lib/flags";
 import { FALLBACK_HIT_COUNT } from "@/lib/hitCount";
 
 export { FALLBACK_HIT_COUNT };
 
-async function fetchUniqueVisitors(): Promise<number> {
+function escapeHogqlString(value: string) {
+  return value.replace(/\\/g, "\\\\").replace(/'/g, "\\'");
+}
+
+function uniqueVisitorsQuery(urlFilter: string) {
+  let query =
+    "SELECT uniq(distinct_id) FROM events WHERE event = '$pageview'";
+  if (!urlFilter) {
+    return query;
+  }
+  const escaped = escapeHogqlString(urlFilter);
+  // Full URL → substring on $current_url; path (e.g. / or /guestbook) → exact $pathname
+  if (urlFilter.includes("://")) {
+    query += ` AND properties.$current_url LIKE '%${escaped}%'`;
+  } else {
+    query += ` AND properties.$pathname = '${escaped}'`;
+  }
+  return query;
+}
+
+async function fetchUniqueVisitors(urlFilter: string): Promise<number> {
   if (process.env.NODE_ENV !== "production") {
     return FALLBACK_HIT_COUNT;
   }
@@ -30,8 +51,7 @@ async function fetchUniqueVisitors(): Promise<number> {
         body: JSON.stringify({
           query: {
             kind: "HogQLQuery",
-            query:
-              "SELECT uniq(distinct_id) FROM events WHERE event = '$pageview'",
+            query: uniqueVisitorsQuery(urlFilter),
           },
           name: "guestbook_unique_visitors",
         }),
@@ -56,8 +76,11 @@ async function fetchUniqueVisitors(): Promise<number> {
   }
 }
 
-export const getUniqueVisitors = unstable_cache(
-  fetchUniqueVisitors,
-  ["posthog-unique-visitors"],
-  { revalidate: 60 },
-);
+export async function getUniqueVisitors() {
+  const urlFilter = flags.hitCounterUrl;
+  return unstable_cache(
+    () => fetchUniqueVisitors(urlFilter),
+    ["posthog-unique-visitors", urlFilter || "all"],
+    { revalidate: 60 },
+  )();
+}

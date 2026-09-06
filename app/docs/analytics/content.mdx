@@ -4,13 +4,14 @@ subtitle: Hook up analytics using PostHog.
 
 # Add Analytics
 
-Use PostHog to track page views and user interactions, as well as to show a visitor hit counter.
+Use PostHog to track page views and user interactions, as well as to show a visitor hit counter in your production build.
 
 ::: {.callout}
 This guide assumes:
 
 - [x] You've set up the guestbook application with either [Quickstart](/docs/quickstart) or [Install via npm](/docs/install).
 - [x] You already have a PostHog account and project.
+- [x] (For cloud deployment) You have a Vercel account and project.
 :::
 
 ## Retrieve PostHog Variables
@@ -64,6 +65,30 @@ From the [PostHog](https://posthog.com/){.blank} dashboard's left sidebar, click
     POSTHOG_API_HOST=<your-api-host>
     ```
 
+# iii. Enter Vercel Variables
+
+If you are deploying to Vercel:
+
+1. In the left sidebar of your guestbook project, select **Environment Variables**.
+
+2. Click **Add Environment Variable**.
+
+3. Enter the following as **Config** Type variables:
+
+    ```bash
+    NEXT_PUBLIC_POSTHOG_KEY=<your-project-token>
+    NEXT_PUBLIC_POSTHOG_HOST=<your-project-api-host>
+    ```
+
+4. Enter the following as **Secret** Type variables:
+
+    ```bash
+    # IMPORTANT: MAKE SURE THEY ARE SECRET SO THEY ARE HIDDEN
+    POSTHOG_PERSONAL_API_KEY=<your-personal-api-key>
+    POSTHOG_PROJECT_ID=<your-project-id>
+    POSTHOG_API_HOST=<your-api-host>
+    ```
+
 :::
 
 ## Enable Hit Counter
@@ -76,7 +101,16 @@ From the [PostHog](https://posthog.com/){.blank} dashboard's left sidebar, click
     POSTHOG_API_HOST=<your-api-host>
     ```
 
-2. Show or hide the counter with `flags.hitCounter` in `lib/flags.ts` (default `true`).
+2. Show or hide the counter with `FLAG_COUNTER` (default `true`). Scope unique visitors to your guestbook page with `FLAG_COUNTER_URL`:
+
+    - Path (recommended): `/guestbook`, or `/` if the guestbook is the home page — matched on `$pathname`.
+    - Full URL: `https://example.com/guestbook` — matched as a substring of `$current_url`.
+    - Empty: count all `$pageview` events on the site.
+
+    ```bash
+    FLAG_COUNTER=true
+    FLAG_COUNTER_URL=/guestbook
+    ```
 
 3. On the public guestbook page, `HitCounter` mounts once (Quickstart: `app/page.tsx`; npm: `import { HitCounter } from "y2k-guestbook"` as in [Install via npm](/docs/install)).
 

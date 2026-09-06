@@ -9,6 +9,7 @@ const nextConfig: NextConfig = {
   env: {
     FLAG_DOCS: process.env.FLAG_DOCS,
     FLAG_COUNTER: process.env.FLAG_COUNTER,
+    FLAG_COUNTER_URL: process.env.FLAG_COUNTER_URL,
     FLAG_PUBLIC: process.env.FLAG_PUBLIC,
   },
   pageExtensions: ["js", "jsx", "md", "mdx", "ts", "tsx"],

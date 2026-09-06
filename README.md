@@ -67,6 +67,7 @@ Flags are compile-time values in [`lib/flags.ts`](lib/flags.ts). Override them w
 | --- | --- | --- | --- |
 | `FLAG_DOCS` | `docs` | `true` | Desk bookmarks: **view docs** plus a short **admin login** ribbon. Off: the labeled bookmark is **admin login** only. |
 | `FLAG_COUNTER` | `hitCounter` | `true` | Hit-counter on the home cover, guestbook page, and comment sidebar. |
+| `FLAG_COUNTER_URL` | `hitCounterUrl` | *(empty)* | Guestbook path or URL for unique visitors. Paths (e.g. `/guestbook`, `/`) match `$pathname` exactly; full URLs match `$current_url`. Empty counts all `$pageview` events. |
 | `FLAG_PUBLIC` | `public` | `false` | Public guestbook home (rewrite `/` to `/guestbook`), dark green favicon, `y2k-guestbook` GitHub links. |
 
 Accepted values are `true` / `1` and `false` / `0`. When `docs` is on, `docsUrl` in the same file sets the docs href (default `/docs`).
