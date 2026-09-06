@@ -60,61 +60,31 @@ cd y2k-guestbook
 
 ### Set Up Environment Variables
 
-::: {tabset}
+1. Copy the `.env.example` file to `.env.local`:
 
-# Copy Example File
+    ```bash
+    cp .env.example .env.local
+    ```
 
-Copy the `.env.example` file to `.env.local`:
+2. Fill in values from *your* Supabase project and site origin:
 
-```bash
-cp .env.example .env.local
-```
+    ```bash
+    # Supabase project URL
+    NEXT_PUBLIC_SUPABASE_URL=https://<your-database-url>.supabase.co
 
-Fill in values from *your* Supabase project and site origin:
+    # Supabase anon / public key (browser-safe, RLS still applies)
+    NEXT_PUBLIC_SUPABASE_ANON_KEY=sb_publishable_<your-publishable-key>
 
-```bash
-# Supabase project URL
-NEXT_PUBLIC_SUPABASE_URL=https://<your-database-url>.supabase.co
+    # Service role. Local ONLY — for `npm run allow-admin`
+    SUPABASE_SERVICE_ROLE_KEY=<your-service-role-key>
 
-# Supabase anon / public key (browser-safe, RLS still applies)
-NEXT_PUBLIC_SUPABASE_ANON_KEY=sb_publishable_<your-publishable-key>
+    # App origin for OAuth return. Used to build redirectTo on the server.
+    SITE_URL=http://localhost:3000
 
-# Service role. Local ONLY — for `npm run allow-admin`
-SUPABASE_SERVICE_ROLE_KEY=<your-service-role-key>
+    # Supabase pooler URI — for rate limiting
+    DATABASE_URL=postgresql://postgres.<your-database-url>:[YOUR-PASSWORD]@<your-database-region>.pooler.supabase.com:<port>/postgres
+    ```
 
-# App origin for OAuth return. Used to build redirectTo on the server.
-SITE_URL=http://localhost:3000
-
-# Supabase pooler URI — for rate limiting
-DATABASE_URL=postgresql://postgres.<your-database-url>:[YOUR-PASSWORD]@<your-database-region>.pooler.supabase.com:<port>/postgres
-```
-
-# Enter Deployment Variables
-
-You'll need to also enter the following variables for your deployment environment if you intend to deploy your application:
-
-```bash
-# Supabase project URL
-NEXT_PUBLIC_SUPABASE_URL=https://<your-database-url>.supabase.co
-
-# Supabase anon / public key (browser-safe, RLS still applies)
-NEXT_PUBLIC_SUPABASE_ANON_KEY=sb_publishable_<your-publishable-key>
-
-# App origin for OAuth return. Used to build redirectTo on the server.
-# For example, Vercel:
-SITE_URL=http://your-project-url.vercel.app
-
-# Supabase pooler URI — for rate limiting
-DATABASE_URL=postgresql://postgres.<your-database-url>:[YOUR-PASSWORD]@<your-database-region>.pooler.supabase.com:<port>/postgres
-```
-
-::: {.callout}
-
-For example, if you're using [Vercel](https://vercel.com/docs/environment-variables){.blank}, you'll need to enter the variables onto the project that's hooked up to your GitHub guestbook repository.
-
-:::
-
-:::
 
 ## Installing
 

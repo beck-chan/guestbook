@@ -160,6 +160,14 @@ function positiveInt(value: string, fallback: number) {
   return Number.isFinite(parsed) && parsed >= 1 ? parsed : fallback;
 }
 
+export function guestbookRateLimits(settings: GuestbookSettings) {
+  return {
+    count: positiveInt(settings.rateLimitCount, 1),
+    minutes: positiveInt(settings.rateLimitMinutes, 5),
+    daily: positiveInt(settings.rateLimitDaily, 2),
+  };
+}
+
 export function guestbookDisplayTitle(title: string) {
   const trimmed = title.trim();
   return trimmed || "y2k guestbook";

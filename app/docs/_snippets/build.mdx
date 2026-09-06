@@ -1,6 +1,10 @@
-## Build for Deployment
+## Serve the Guestbook
 
-To build the application locally:
+::: {.tabset}
+
+# Build Application Locally
+
+To build the application locally to upload manually to your hosting provider:
 
 ```bash
 # Compile
@@ -8,3 +12,45 @@ npm run build
 # View build
 npm run start
 ```
+
+# Deploy to Vercel
+
+The easiest way to do this is just to connect your guestbook GitHub repository to a Vercel project:
+
+From your [Vercel](https://vercel.com/){.blank} dashboard:
+
+1. If you already have projects with Vercel, click **Add New** and select **Project**.
+
+    ::: {.callout}
+    If you've just freshly signed up for Vercel, select **GitHub** under Import Git Repository on your main page:
+
+    - Follow the prompts to authorize the connection to your GitHub account.
+    - You can allow Vercel to access all your repositories, or just the one you want to deploy.
+
+    :::
+
+2. Click **Import** for the guestbook repository, then set your **Project Name**.
+
+    Your project name will become the URL slug for your application if it's unique and available.
+
+3. Click **Environment Variables** to enter the following [variables](https://vercel.com/docs/environment-variables){.blank}:
+
+    ```bash
+    # Supabase project URL
+    NEXT_PUBLIC_SUPABASE_URL=https://<your-database-url>.supabase.co
+
+    # Supabase anon / public key (browser-safe, RLS still applies)
+    NEXT_PUBLIC_SUPABASE_ANON_KEY=sb_publishable_<your-publishable-key>
+
+    # App origin for OAuth return. Used to build redirectTo on the server.
+    # For example, Vercel:
+    SITE_URL=http://your-project-url.vercel.app
+
+    # Supabase pooler URI — for rate limiting
+    # MAKE SURE TO TOGGLE THE LOCK ICON TO THE RIGHT OF `Value` FOR THIS KEY TO MAKE IT INVISIBLE!!!
+    DATABASE_URL=postgresql://postgres.<your-database-url>:[YOUR-PASSWORD]@<your-database-region>.pooler.supabase.com:<port>/postgres
+    ```
+
+:::
+
+

@@ -9,7 +9,13 @@ import {
   type PublicCommentRow,
 } from "@/lib/comments";
 import { guestbookPageSize } from "@/lib/guestbookSettingsShared";
+import { clientIp } from "@/lib/clientIp";
 import { loadGuestbookSettings } from "@/lib/loadGuestbookSettings";
+import {
+  checkCommentProfanity,
+  profanityErrorMessage,
+} from "@/lib/profanity";
+import { consumeCommentRateLimit } from "@/lib/rate-limit";
 import { createClient } from "@/lib/supabase/server";
 
 export type ActionResult =
@@ -82,11 +88,33 @@ export async function submitComment(input: {
   const body = input.comment.trim();
   const email = input.email?.trim() ?? "";
 
+  // load settings → validate → profanity → rate-limit → insert
+  const settings = await loadGuestbookSettings();
+
   if (!name) {
     return { ok: false, error: "Display name is required." };
   }
   if (!body) {
     return { ok: false, error: "Comment is required." };
+  }
+
+  const hit = checkCommentProfanity(name, body, settings.profanityAllowList);
+  const profanityError = profanityErrorMessage(hit);
+  if (profanityError) {
+    return { ok: false, error: profanityError };
+  }
+
+  try {
+    const limited = await consumeCommentRateLimit(await clientIp(), settings);
+    if (!limited.ok) {
+      return limited;
+    }
+  } catch (err) {
+    console.error("rate limit failed:", err);
+    return {
+      ok: false,
+      error: "Comment posting is temporarily unavailable. Please try again later.",
+    };
   }
 
   const supabase = await createClient();
@@ -96,6 +124,7 @@ export async function submitComment(input: {
     body,
   });
 
+  // If insert fails after consume, the rate-limit point stays spent (no refund).
   if (error) {
     return { ok: false, error: requireAdminMessage(error.message) };
   }
