@@ -13,7 +13,7 @@ function envString(name: string, fallback: string) {
 export const flags = {
   docs: envFlag("FLAG_DOCS", true), // Show docs link
   hitCounter: envFlag("FLAG_COUNTER", true), // Show hit counter
-  /** Path or URL substring for unique-visitor query (empty = all $pageview events). */
+  /** Comma-separated paths/URLs for unique-visitor query (empty = all $pageview events). */
   hitCounterUrl: envString("FLAG_COUNTER_URL", ""),
   public: envFlag("FLAG_PUBLIC", false), // Show public guestbook home/public repo + dark green favicon
 };

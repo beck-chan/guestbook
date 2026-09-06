@@ -8,18 +8,29 @@ function escapeHogqlString(value: string) {
   return value.replace(/\\/g, "\\\\").replace(/'/g, "\\'");
 }
 
-function uniqueVisitorsQuery(urlFilter: string) {
-  let query =
-    "SELECT uniq(distinct_id) FROM events WHERE event = '$pageview'";
-  if (!urlFilter) {
-    return query;
-  }
+function urlFilterClause(urlFilter: string) {
   const escaped = escapeHogqlString(urlFilter);
   // Full URL → substring on $current_url; path (e.g. / or /guestbook) → exact $pathname
   if (urlFilter.includes("://")) {
-    query += ` AND properties.$current_url LIKE '%${escaped}%'`;
+    return `properties.$current_url LIKE '%${escaped}%'`;
+  }
+  return `properties.$pathname = '${escaped}'`;
+}
+
+function uniqueVisitorsQuery(urlFilter: string) {
+  let query =
+    "SELECT uniq(distinct_id) FROM events WHERE event = '$pageview'";
+  const filters = urlFilter
+    .split(",")
+    .map((part) => part.trim())
+    .filter(Boolean);
+  if (filters.length === 0) {
+    return query;
+  }
+  if (filters.length === 1) {
+    query += ` AND ${urlFilterClause(filters[0])}`;
   } else {
-    query += ` AND properties.$pathname = '${escaped}'`;
+    query += ` AND (${filters.map(urlFilterClause).join(" OR ")})`;
   }
   return query;
 }

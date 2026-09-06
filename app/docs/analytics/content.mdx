@@ -14,7 +14,9 @@ This guide assumes:
 - [x] (For cloud deployment) You have a Vercel account and project.
 :::
 
-## Retrieve PostHog Variables
+## PostHog Setup
+
+### Retrieve PostHog Variables
 
 From the [PostHog](https://posthog.com/){.blank} dashboard's left sidebar, click **Settings**:
 
@@ -65,7 +67,15 @@ From the [PostHog](https://posthog.com/){.blank} dashboard's left sidebar, click
     POSTHOG_API_HOST=<your-api-host>
     ```
 
-# iii. Enter Vercel Variables
+:::
+
+### Configure PostHog
+
+For cloud deployment:
+
+::: {.tabset}
+
+# i. Enter Vercel Variables
 
 If you are deploying to Vercel:
 
@@ -89,36 +99,42 @@ If you are deploying to Vercel:
     POSTHOG_API_HOST=<your-api-host>
     ```
 
+# ii. Configure Web Analytics URLs
+
+1. From the PostHog dashboard's left sidebar, click **Settings**.
+
+2. Under Products, select **Web analytics**.
+
+3. Under **Web analytics domains**, click **+ Add new authorized URL**.
+
+4. Enter in the URL of your deployed guestbook application. For example: `https://<your-project-url>.vercel.app`
+
+5. Click **Save**.
+
 :::
 
 ## Enable Hit Counter
 
-1. Ensure `.env.local` includes the Query API values from **Retrieve PostHog Variables**:
+In `env.local` (for local development) or your Vercel environment variables (for cloud deployment):
 
-    ```bash
-    POSTHOG_PERSONAL_API_KEY=<your-personal-api-key>
-    POSTHOG_PROJECT_ID=<your-project-id>
-    POSTHOG_API_HOST=<your-api-host>
-    ```
+1. Toggle **`FLAG_COUNTER=`** to `true`.
 
-2. Show or hide the counter with `FLAG_COUNTER` (default `true`). Scope unique visitors to your guestbook page with `FLAG_COUNTER_URL`:
+2. Scope the counter to your guestbook page(s) with `FLAG_COUNTER_URL` (comma-separated for more than one). For example:
 
-    - Path (recommended): `/guestbook`, or `/` if the guestbook is the home page — matched on `$pathname`.
-    - Full URL: `https://example.com/guestbook` — matched as a substring of `$current_url`.
-    - Empty: count all `$pageview` events on the site.
+    - **Path:** `/guestbook`, or `/` if the guestbook is the home page.
+    - **Full URL:** `https://example.com/guestbook` — matched as a substring of `$current_url`.
+    - **Several pages:** `/guestbook,/docs/example`
 
-    ```bash
-    FLAG_COUNTER=true
-    FLAG_COUNTER_URL=/guestbook
-    ```
+    Leaving this variable empty counts all `$pageview` events on the site.
 
-3. On the public guestbook page, `HitCounter` mounts once (Quickstart: `app/page.tsx`; npm: `import { HitCounter } from "y2k-guestbook"` as in [Install via npm](/docs/install)).
-
-The digits are unique `$pageview` visitors from PostHog’s Query API. In production they live-update: +1 on a browser’s first visit, then poll about every 45 seconds, and never tick down.
 
 ::: {.callout}
-`npm run dev` keeps the decorative fallback (`000481`) and does not call PostHog. For live digits, run `npm run build` then `npm run start`, or deploy (for example on Vercel) with the Query API env vars set.
+# `npm run dev` keeps the decorative fallback (`000481`) and does not call PostHog. 
+
+Digits displayed are unique `$pageview` visitors from PostHog’s Query API. In production they live-update: — +1 on a browser’s first visit, then poll about every 45 seconds, and never tick down.
+
 :::
+
 
 ## Enable Web Tracking
 
