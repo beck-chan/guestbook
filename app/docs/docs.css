@@ -874,7 +874,7 @@ body:has(.docs-shell) {
   border-bottom: 2px solid transparent;
   background: transparent;
   color: var(--cover-soft);
-  font-family: var(--peony-font);
+  font-family: var(--body-font);
   font-size: clamp(1.15rem, 1.7vw, 1.4rem);
   font-weight: 400;
   letter-spacing: 0.03em;

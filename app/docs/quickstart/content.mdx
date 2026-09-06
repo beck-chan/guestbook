@@ -118,11 +118,41 @@ For example, if you're using [Vercel](https://vercel.com/docs/environment-variab
 
 ## Installing
 
-### Run Installation Schema
+### Enable Authentication Hook
 
-{/* 1. Open `docs/install/schema.sql` in your local clone. 
-2. In the Supabase dashboard, **SQL Editor → New query**, paste the file, **Run** once. Do not run it twice (existing objects will error). 
-3. Then **Authentication → Hooks:** attach `hook_before_user_created` as **Before User Created**. The function does nothing until that hook is connected. */}
+::: {tabset}
+
+# Run Installation Schema
+
+1. Copy the contents of [`schema.sql`](https://github.com/beck-chan/y2k-guestbook/blob/main/schema.sql){.blank} to your clipboard.
+
+2. Within Supabase, select **SQL Editor** from the left sidebar, then paste in the contents of `schema.sql`.
+
+3. Click **Run** to execute the schema.
+
+    Confirm that you see `Success. No rows returned` under the Results before moving on to the next step.
+
+::: {.callout}
+# You may need to select **Run query** on a Potential issue detected popup.
+
+The schema contains a `drop trigger` in the event that you want to re-run the schema — Postgres won't create a trigger that already exists.
+:::
+
+# Set Up Auth Hook
+
+1. Within Supabase, select **Authentication** from the left sidebar, then click **Auth Hooks**.
+
+2. Click **Add hook**, then select **Before User Created hook**:
+
+    - For **Hook type** select `Postgres`.
+    - For **Postgres Schema**, select `schema.public`.
+
+3. For **Postgres funtion**, select `function: hook_before_user_created`.
+
+4. Click **Create hook**.
+
+:::
+
 
 ### Allow Your Admin User
 
