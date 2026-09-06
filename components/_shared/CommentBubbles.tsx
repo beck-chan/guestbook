@@ -16,6 +16,7 @@ import {
 
 type CommentBubblesProps = {
   showHits?: boolean;
+  hitCount?: number;
   idPrefix?: string;
   sectionId?: string;
   /**
@@ -30,6 +31,7 @@ type CommentBubblesProps = {
 
 export function CommentBubbles({
   showHits = true,
+  hitCount = 0,
   idPrefix = "",
   sectionId,
   limit,
@@ -100,7 +102,7 @@ export function CommentBubbles({
 
   return (
     <aside className="desk-side" id={sectionId}>
-      {showHits ? <HitCounter /> : null}
+      {showHits ? <HitCounter count={hitCount} /> : null}
       <form className="comment-compose" onSubmit={onSubmit}>
         <div className="comment-bubble is-compose">
           <input

@@ -17,6 +17,7 @@ import { pickPoemIndex, type Poem } from "@/lib/poems";
 type PoetryDeskProps = {
   poems: Poem[];
   initialIndex: number;
+  hitCount: number;
 };
 
 const EMPTY_HEART: PoemHeartState = {
@@ -25,7 +26,7 @@ const EMPTY_HEART: PoemHeartState = {
   total_hearts: 0,
 };
 
-export function PoetryDesk({ poems, initialIndex }: PoetryDeskProps) {
+export function PoetryDesk({ poems, initialIndex, hitCount }: PoetryDeskProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [poemIndex, setPoemIndex] = useState(initialIndex);
   const [hintVisible, setHintVisible] = useState(true);
@@ -130,7 +131,11 @@ export function PoetryDesk({ poems, initialIndex }: PoetryDeskProps) {
               </span>
             </button>
           </div>
-          <CommentBubbles sectionId="guestbook" limit={4} />
+          <CommentBubbles
+            sectionId="guestbook"
+            limit={4}
+            hitCount={hitCount}
+          />
         </div>
       </div>
       <MobileReading
@@ -142,6 +147,7 @@ export function PoetryDesk({ poems, initialIndex }: PoetryDeskProps) {
         liked={heart.liked}
         heartPending={heartPending}
         onToggleHeart={onToggleHeart}
+        hitCount={hitCount}
       />
     </>
   );

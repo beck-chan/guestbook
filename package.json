@@ -21,6 +21,7 @@
     "next": "16.3.3",
     "obscenity": "^0.4.6",
     "pg": "^8.23.0",
+    "posthog-js": "^1.427.2",
     "rate-limiter-flexible": "^11.2.0",
     "react": "19.2.8",
     "react-dom": "19.2.8",

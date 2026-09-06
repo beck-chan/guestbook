@@ -92,19 +92,22 @@ App Router will not pick up pages from `node_modules`. Add thin files in your `a
 ```typescript
 import type { Metadata } from "next";
 import { GuestbookBoard, HitCounter } from "y2k-guestbook";
+import { getUniqueVisitors } from "@/lib/uniqueVisitors";
 
 export const metadata: Metadata = {
   title: "y2k guestbook",
   description: "Sign the guestbook.",
 };
 
-export default function GuestbookPage() {
+export default async function GuestbookPage() {
+  const hitCount = await getUniqueVisitors();
+
   return (
     <main className="admin-page guestbook-page guestbook-public">
       <a className="guestbook-login" href="/admin">
         admin login
       </a>
-      <HitCounter />
+      <HitCounter count={hitCount} />
       <div className="admin-shell">
         <GuestbookBoard />
       </div>
@@ -113,6 +116,7 @@ export default function GuestbookPage() {
 }
 ```
 
+Copy `lib/uniqueVisitors.ts` (and `lib/hitCount.ts`) from the [starter](/docs/quickstart), or follow [Add Analytics](/docs/analytics) for the Query API hit counter.
 ::: {tabset}
 
 # `/guestbook`

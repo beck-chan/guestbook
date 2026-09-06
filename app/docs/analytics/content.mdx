@@ -66,6 +66,42 @@ From the [PostHog](https://posthog.com/){.blank} dashboard's left sidebar, click
 
 :::
 
-## Enable Hit HitCounter
+## Enable Hit Counter
+
+1. Ensure `.env.local` includes the Query API values from **Retrieve PostHog Variables**:
+
+    ```bash
+    POSTHOG_PERSONAL_API_KEY=<your-personal-api-key>
+    POSTHOG_PROJECT_ID=<your-project-id>
+    POSTHOG_API_HOST=<your-api-host>
+    ```
+
+2. Show or hide the counter with `flags.hitCounter` in `lib/flags.ts` (default `true`).
+
+3. On the public guestbook page, `HitCounter` mounts once (Quickstart: `app/page.tsx`; npm: `import { HitCounter } from "y2k-guestbook"` as in [Install via npm](/docs/install)).
+
+The digits are unique `$pageview` visitors from PostHog’s Query API. In production they live-update: +1 on a browser’s first visit, then poll about every 45 seconds, and never tick down.
+
+::: {.callout}
+`npm run dev` keeps the decorative fallback (`000481`) and does not call PostHog. For live digits, run `npm run build` then `npm run start`, or deploy (for example on Vercel) with the Query API env vars set.
+:::
 
 ## Enable Web Tracking
+
+1. Copy the example client entry to the **app project root** (next to `app/`):
+
+    ```bash
+    cp instrumentation-client.ts.example instrumentation-client.ts
+    ```
+
+    Next.js only loads the exact filename `instrumentation-client.ts`. Do not paste the PostHog HTML snippet into your layout.
+
+2. The example initializes PostHog only when `NODE_ENV === "production"`, with `person_profiles: "always"` (pageviews, clicks, and session replay via the SDK defaults).
+
+3. In your PostHog project, enable **Session replay**.
+
+4. Restart after changing env vars or the instrumentation file.
+
+::: {.callout}
+`npm run dev` does not send events. Use `npm run build` then `npm run start`, or a production deploy, to capture traffic.
+:::

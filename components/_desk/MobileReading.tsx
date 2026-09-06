@@ -10,6 +10,7 @@ import { pickPoemIndex, poemMeasureLines, type Poem } from "@/lib/poems";
 type MobileReadingProps = {
   poems: Poem[];
   initialIndex: number;
+  hitCount: number;
   heartCount?: number;
   liked?: boolean;
   onToggleHeart?: () => void;
@@ -110,6 +111,7 @@ function fitPoemFont(copy: HTMLElement, poem: Poem) {
 export function MobileReading({
   poems,
   initialIndex,
+  hitCount,
   heartCount = 0,
   liked = false,
   onToggleHeart,
@@ -232,7 +234,7 @@ export function MobileReading({
           <div className="cover-copy">
             <h1 className="cover-title">ORIGINAL POETRY</h1>
             <p className="cover-author">by Beck Chan</p>
-            <HitCounter />
+            <HitCounter count={hitCount} />
           </div>
         </div>
         <ScrollHint
