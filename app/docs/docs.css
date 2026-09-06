@@ -478,6 +478,25 @@ body:has(.docs-shell) {
   padding-left: 2.35rem;
 }
 
+/* Nested decimal lists follow outline markers: 1. → a. → i. */
+.docs-article ol ol {
+  list-style-type: lower-alpha;
+}
+
+.docs-article ol ol ol {
+  list-style-type: lower-roman;
+}
+
+.docs-article ol[type="a"],
+.docs-article ol.docs-ol-alpha {
+  list-style-type: lower-alpha;
+}
+
+.docs-article ol[type="i"],
+.docs-article ol.docs-ol-roman {
+  list-style-type: lower-roman;
+}
+
 .docs-article ol > li::marker {
   color: color-mix(in srgb, #6f4e37 55%, white);
   font-family: var(--peony-font);

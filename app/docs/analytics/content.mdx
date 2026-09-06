@@ -15,14 +15,56 @@ This guide assumes:
 
 ## Retrieve PostHog Variables
 
-From your [PostHog](https://posthog.com/){.blank} dashboard:
+From the [PostHog](https://posthog.com/){.blank} dashboard's left sidebar, click **Settings**:
 
-1. In the left sidebar, click **Settings**.
+::: {.tabset}
 
-2. Under Settings - General:
+# i. Retrieve Project Details
 
-    - Copy your **Project token**. Hang on to this — we'll need to enter this into your `.env.local` file under your
+ Under Settings - General:
 
+1. Copy your **Project token**. Enter this into your `.env.local` file under your `NEXT_PUBLIC_POSTHOG_KEY`:
+    
+    ```bash
+    NEXT_PUBLIC_POSTHOG_KEY=<your-project-token>
+    ```
+
+2. Under SDK setup, grab the `api_host` value from one of the snippets (For example, `https://us.i.posthog.com`). Enter this into your `.env.local` file under your `NEXT_PUBLIC_POSTHOG_HOST`:
+    
+    ```bash
+    NEXT_PUBLIC_POSTHOG_HOST=<your-project-api-host>
+    ```
+
+3. Copy your **Project ID**. Enter this into your `.env.local` file under your `POSTHOG_PROJECT_ID`:
+    
+    ```bash
+    POSTHOG_PROJECT_ID=<your-project-id>
+    ```
+
+# ii. Create Personal API Key
+
+1. In the Settings left sidebar, select **Personal API keys** under Account.
+
+2. Click **+ Create personal API key**.
+
+    a. Give the key a **Label**. For example: `Guestbook Hit Counter`
+    b. Under **Organizations & project access**, select **Projects** then the project you want to grant access to.
+    c. Under **Scopes**, select **Query**: `Read`.
+    d. Click **Create key**.
+
+3. Copy your API key after it generates. Enter this into your `.env.local` file under your `POSTHOG_PERSONAL_API_KEY`:
+
+    ```bash
+    POSTHOG_PERSONAL_API_KEY=<your-personal-api-key>
+    ```
+
+4. For your `POSTHOG_API_HOST`, enter the app host for the Query API (For example: `https://us.posthog.com`, not the `*.i.posthog.com` ingest host):
+    
+    ```bash
+    POSTHOG_API_HOST=<your-api-host>
+    ```
+
+:::
 
 ## Enable Hit HitCounter
 

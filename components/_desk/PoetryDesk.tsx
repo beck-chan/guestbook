@@ -3,9 +3,10 @@
 import { useEffect, useRef, useState, useTransition } from "react";
 import {
   getPoemHeartState,
+  loadPoemHearts,
   togglePoemHeart,
   type PoemHeartState,
-} from "@/app/actions/hearts";
+} from "@/lib/actions/hearts";
 import { Book } from "@/components/_desk/Book";
 import { CommentBubbles } from "@/components/_shared/CommentBubbles";
 import { DeskBookmarks } from "@/components/_shared/DeskBookmarks";

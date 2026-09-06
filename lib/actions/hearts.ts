@@ -78,3 +78,23 @@ export async function togglePoemHeart(poemId: string): Promise<PoemHeartState> {
 
   return asHeartState(data);
 }
+
+export type PoemHeartsOverview = { counts: Record<string, number>; totalHearts: number; liked: string[] };
+export async function loadPoemHearts(poemIds: string[]): Promise<PoemHeartsOverview> {
+  const visitorKey = await getOrCreateVisitorKey();
+  const supabase = await createClient();
+  const [countsRes, totalRes, ...likedResults] = await Promise.all([
+    supabase.from("poem_heart_counts").select("poem_id, heart_count"),
+    supabase.from("poem_heart_total").select("total_hearts").maybeSingle(),
+    ...poemIds.map((poemId) => supabase.rpc("poem_heart_state", { p_poem_id: poemId, p_visitor_key: visitorKey })),
+  ]);
+  const counts: Record<string, number> = {};
+  for (const row of countsRes.data ?? []) counts[String(row.poem_id)] = Number(row.heart_count) || 0;
+  const liked: string[] = [];
+  poemIds.forEach((poemId, index) => {
+    const payload = asHeartState(likedResults[index]?.data);
+    if (payload.liked) liked.push(poemId);
+    if (counts[poemId] === undefined) counts[poemId] = payload.heart_count;
+  });
+  return { counts, totalHearts: Number(totalRes.data?.total_hearts) || 0, liked };
+}

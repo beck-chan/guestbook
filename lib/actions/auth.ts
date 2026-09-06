@@ -11,7 +11,7 @@ function siteUrl() {
   return raw.replace(/\/$/, "");
 }
 
-export async function signInWithGoogle() {
+export async function startGoogleLogin() {
   const supabase = await createClient();
   const redirectTo = `${siteUrl()}/auth/callback`;
 
@@ -34,3 +34,5 @@ export async function signOut() {
   await supabase.auth.signOut();
   redirect("/");
 }
+
+export const signInWithGoogle = startGoogleLogin;
