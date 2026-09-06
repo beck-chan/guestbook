@@ -23,7 +23,7 @@ export async function signInWithGoogle() {
   });
 
   if (error || !data.url) {
-    redirect("/admin/login?error=oauth");
+    redirect("/?admin_error=1");
   }
 
   redirect(data.url);

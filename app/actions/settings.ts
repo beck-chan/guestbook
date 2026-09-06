@@ -55,3 +55,14 @@ export async function saveGuestbookSettings(
   revalidatePath("/admin");
   return { ok: true, settings: next };
 }
+
+export async function loadGuestbookSettingsAction(): Promise<GuestbookSettings> {
+  return loadGuestbookSettings();
+}
+
+export async function saveGuestbookSettingsAction(
+  settings: GuestbookSettings,
+): Promise<SettingsActionResult> {
+  return saveGuestbookSettings(settings);
+}
+

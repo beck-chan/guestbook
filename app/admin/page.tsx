@@ -38,7 +38,7 @@ function pageFrom(searchParams: Record<string, string | string[] | undefined>) {
   return Number.isFinite(parsed) && parsed > 0 ? parsed : 1;
 }
 
-export default async function AdminPage({ searchParams }: PageProps<"/admin">) {
+export default async function AdminPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   const params = await searchParams;
   const filters = filtersFrom(params);
   const allComments = await loadAdminComments();

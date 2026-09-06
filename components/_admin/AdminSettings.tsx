@@ -4,7 +4,7 @@ import { useEffect, useState, useTransition } from "react";
 import {
   loadGuestbookSettingsAction,
   saveGuestbookSettingsAction,
-} from "@/lib/actions/settings";
+} from "@/app/actions/settings";
 import {
   ACCENT_FONTS,
   MAIN_FONTS,
@@ -97,13 +97,12 @@ export function AdminSettings() {
           setError(null);
           startTransition(async () => {
             const result = await saveGuestbookSettingsAction(draft);
-            if (result.error) {
+            if (!result.ok) {
               setError(result.error);
               return;
             }
-            const next = result.settings ?? draft;
-            saveContext(next);
-            setDraft(next);
+            saveContext(result.settings);
+            setDraft(result.settings);
           });
         }}
       >

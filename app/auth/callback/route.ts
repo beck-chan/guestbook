@@ -14,5 +14,5 @@ export async function GET(request: Request) {
     }
   }
 
-  return NextResponse.redirect(new URL("/admin/login?error=callback", origin));
+  return NextResponse.redirect(new URL("/?admin_error=1", origin));
 }

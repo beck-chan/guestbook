@@ -32,7 +32,7 @@ export const metadata: Metadata = {
   description: "A volume of original poetry.",
 };
 
-export default async function RootLayout({ children }: LayoutProps<"/">) {
+export default async function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   const settings = await loadGuestbookSettings();
 
   return (
