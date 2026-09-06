@@ -55,65 +55,160 @@ Use **Node.js 20 LTS** or **22 LTS** (either includes `npm`). Next.js `16` needs
 
 :::
 
+## Create Supabase Project
+
+::: {.tabset}
+
+# i. Create Project
+
+Create an account and organization with [Supabase](https://supabase.com/), then on the Create a new project screen:
+
+1. Enter in your **Organization**, **Project name**, and **Database password**.
+
+    Hang on to your **Database password** — we'll need to enter this into your `.env.local` file alongside your `DATABASE_URL`.
+
+2. Select a **Region**.
+
+3. Under Security, check off:
+
+    - **Enable Data API**
+    - **Enable automatic RLS**
+
+    Leave `Automatically expose new tables` *unchecked*.
+
+4. Click **Create new project**.
+
+# ii. Retrieve API Keys
+
+When your project is ready:
+
+1. In the left sidebar, click **Project Settings**, then select **API Keys**.
+
+2. Under Publishable and secret API keys, copy the **Publishable key** to your clipboard. 
+
+    Hang on to this — we'll need to enter this into your `.env.local` file alongside your `NEXT_PUBLIC_SUPABASE_URL`:
+
+    ```bash
+    NEXT_PUBLIC_SUPABASE_ANON_KEY=sb_publishable_<your-publishable-key>
+    ```
+
+3. Click **Legacy anon, service_role, API keys**, then copy the `service_role` `secret` key to your clipboard. 
+
+    Hang on to this — we'll need to enter this into your `.env.local` file alongside your `SUPABASE_SERVICE_ROLE_KEY`:
+
+    ```bash
+    SUPABASE_SERVICE_ROLE_KEY=<your-service-role-key>
+    ```
+
+# iii. Retrieve Supabase URLs
+
+1. In the Settings left sidebar, select **Data API**.
+
+2. Under Overview, copy the **API URL** to your clipboard. 
+
+    Hang on to this — we'll need to enter this into your `.env.local` file and to hook up Supabase and Google OAuth 2.0:
+
+    ```bash
+    NEXT_PUBLIC_SUPABASE_URL=https://<your-database-url>.supabase.co/rest/v1/
+    ```
+
+3. In the top navigation, click the **Connect** button.
+
+4. On the Connect to your project panel, select **Direct**.
+
+5. Under Connection Method, select **Transaction pooler**. Leave the **Type** as `URI`.
+
+6. Under Connection string, copy the **Shared pooler** to your clipboard. 
+
+    Hang on to this — we'll need to enter this into your `.env.local` file alongside your `DATABASE_URL`:
+
+    ```bash
+    DATABASE_URL=postgresql://postgres.<your-database-url>:[YOUR-PASSWORD]@<your-database-region>.pooler.supabase.com:<port>/postgres
+    ```
+
+:::
+
 ## Create Google Cloud Project
 
-{/* 1. Create a Google Cloud project.
-2. Configure the **OAuth consent screen** (External). While the app is in **Testing**, add your Gmail as a test user.
-3. Create an OAuth client → **Web application**.
-4. **Authorized JavaScript origins:** `http://localhost:3000` (add the Vercel / live origin when you deploy).
-5. **Authorized redirect URI:** `https://<project-ref>.supabase.co/auth/v1/callback` (exact, or you get `redirect_uri_mismatch`).
-6. Save the Client ID and Client secret for the Supabase Google provider. */}
+::: {.callout}
+# These instructions assume you are a general Google user with no company or school organization. 
 
-## Set up Supabase
+Depending on your Google Cloud organization or setup, you may need to follow different steps. Refer to [Google: Using OAuth 2.0 to Access Google APIs](https://developers.google.com/identity/protocols/oauth2){.blank} for more guidance.
+:::
 
-1. Create an account and a project with [Supabase](https://supabase.com/).
-2. Retrieve your API keys:
-3. Retrieve your pooler URI:
-4. Connect Google to Supabase:
+Log in to [Google Cloud](https://console.cloud.google.com/){.blank}:
 
-{/* ### API keys
+::: {.tabset}
 
-**Project Settings → API:**
+# i. Create Project
 
-- **Project URL** → `NEXT_PUBLIC_SUPABASE_URL`
-- **anon / public** → `NEXT_PUBLIC_SUPABASE_ANON_KEY` (browser-safe; row-level security still applies)
-- **service_role** → `SUPABASE_SERVICE_ROLE_KEY` (local scripts only — never `NEXT_PUBLIC_`, never commit)
+1. [Create a new Google Cloud project](https://developers.google.com/workspace/guides/create-project){.blank}.
 
-The anon key is meant to ship to the browser. It is not a master key. The service role is.
+2. When the project is ready, select your new project.
 
-### Database URL
+3. In the left sidebar, click **APIs & Services**, then select **OAuth consent screen**.
 
-**Project Settings → Database → Connect** and copy the **pooler** URI into `DATABASE_URL`. Rate limiting uses this Postgres connection. It does not belong in GitHub Actions secrets.
+4. In OAuth Overview, click **Get started**.
 
-### Auth
+4. Configure your project, then click **Create**. For example, enter your:
+    - App Information
+    - Audience (for personal Google accounts, select `External`)
+    - Contact Information
+    - Finish (to agree to the Google API Services: User Data Policy)
 
-After you have a Google client (below):
+# ii. Add User
 
-1. **Authentication → Providers → Google:** on. Paste the Client ID and secret.
-2. **Email:** signups **off**. Leave other OAuth providers off.
-3. **URL Configuration:** Site URL `http://localhost:3000`. Redirect URLs must include `http://localhost:3000/auth/callback` (add the live `https://` origin later).
+1. In the left sidebar, click **Audience**.
 
-Google’s redirect into Supabase is `https://<project-ref>.supabase.co/auth/v1/callback` — one callback per project.
+2. Under Test users, click **+ Add users** then add the address you'll use to log into your admin dashboard.
 
-The SQL hook and `schema.sql` paste happen in [Quickstart](/docs/quickstart). */}
+3. Click **Save**.
 
-## Hook up Google OAuth 2.0
+# iii. Create Client
 
-{/* Admin login is **Sign in with Google**. Skip billing prompts. Scopes are only `openid`, `email`, and `profile`.
+1. In the left sidebar, click **Clients**.
 
-In [Google Cloud Console](https://console.cloud.google.com/):
+2. Click **+ Create client**.
 
-1. Create a Cloud project. Configure the **OAuth consent screen** (External). While the app is in **Testing**, add your Gmail as a test user.
-2. Create an OAuth client → **Web application**.
-3. **Authorized JavaScript origins:** `http://localhost:3000` (add the Vercel / live origin when you deploy).
-4. **Authorized redirect URI:** `https://<project-ref>.supabase.co/auth/v1/callback` (exact, or you get `redirect_uri_mismatch`).
-5. Save the Client ID and Client secret for the Supabase Google provider.
+3. In the **Application type** drop-down, select `Web application`.
+
+4. Give your application a **Name**.
+
+5. Under Authorized JavaScript origins, enter any URLs you'll use to access your application. For example:
+    - Local host: `http://localhost:3000`
+    - Vercel deployment: `https://<your-vercel-project-name>.vercel.app`
+
+6. Under Authorized redirect URIs, enter your Supabase project's callback URL based on your `NEXT_PUBLIC_SUPABASE_URL`. For example:
+
+    ```bash
+    https://<your-database-url>.supabase.co/auth/v1/callback
+    ```
+
+7. Click **Create**.
+
+8. On the OAuth client created popup, copy the **Client ID** and **Client secret** to your clipboard. Hang on to these — we'll need to enter this into Supabase to connect Google OAuth 2.0 in the next section.
 
 ::: {.callout}
+Click **Download JSON** to save your OAuth client credentials to a file as a backup.
+:::
 
-Enabling Google lets **anyone with a Google account** finish OAuth unless you gate it. Turning off “Allow new users to sign up” blocks email signup; it does **not** reliably stop first-time Google logins. The starter rejects unknown emails **before** insert (`admin_allowlist` + Before User Created). A non-allowlisted Google account creates **no** `auth.users` row.
+:::
 
-::: */}
+## Connect Supabase and Google
+
+After you have your Google OAuth client credentials, within Supabase:
+
+1. In the left sidebar, click **Authentication**, then select **Sign In / Providers**.
+
+2. Under Auth Providers, click **Google**.
+
+3. Toggle **Enable Sign in with Google** to ON.
+
+4. Replace the **Client IDs** with your Google OAuth client ID.
+
+5. Paste in your **Client Secret (for OAuth)**.
+
+6. Click **Save**.
 
 ## What's Next
 

@@ -785,6 +785,8 @@ body:has(.docs-shell) {
   margin: 1.1rem 0 0;
   padding: 1rem 1.15rem;
   overflow-x: auto;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
   background: var(--docs-ink);
   color: var(--paper);
   font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
