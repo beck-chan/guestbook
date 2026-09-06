@@ -16,6 +16,10 @@ type DeskBookmarksProps = {
 
 export function DeskBookmarks({ publicMode = false }: DeskBookmarksProps) {
   if (publicMode) {
+    if (!flags.docs) {
+      return null;
+    }
+
     return (
       <div className="desk-bookmarks">
         <a

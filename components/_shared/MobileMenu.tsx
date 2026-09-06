@@ -32,21 +32,23 @@ const DEFAULT_LINKS: MobileMenuLink[] = flags.docs
     ]
   : [{ href: "/admin/login", label: "admin login" }, REPORT_ISSUE_LINK];
 
-const PUBLIC_LINKS: MobileMenuLink[] = [
-  {
-    href: getStartedUrl,
-    label: "get started",
-    target: "_blank",
-    rel: "noopener noreferrer",
-  },
-  {
-    href: docsUrl,
-    label: "view docs",
-    target: "_blank",
-    rel: "noopener noreferrer",
-  },
-  REPORT_ISSUE_LINK,
-];
+const PUBLIC_LINKS: MobileMenuLink[] = flags.docs
+  ? [
+      {
+        href: getStartedUrl,
+        label: "get started",
+        target: "_blank",
+        rel: "noopener noreferrer",
+      },
+      {
+        href: docsUrl,
+        label: "view docs",
+        target: "_blank",
+        rel: "noopener noreferrer",
+      },
+      REPORT_ISSUE_LINK,
+    ]
+  : [REPORT_ISSUE_LINK];
 
 type MobileMenuProps = {
   links?: MobileMenuLink[];

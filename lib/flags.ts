@@ -1,21 +1,20 @@
-function envFlag(name: string, fallback: boolean) {
-  const v = process.env[name];
-  if (v === undefined || v === "") return fallback;
-  return v === "true" || v === "1";
+function envFlag(value: string | undefined, fallback: boolean) {
+  if (value === undefined || value === "") return fallback;
+  return value === "true" || value === "1";
 }
 
-function envString(name: string, fallback: string) {
-  const v = process.env[name];
-  if (v === undefined) return fallback;
-  return v.trim();
+function envString(value: string | undefined, fallback: string) {
+  if (value === undefined) return fallback;
+  return value.trim();
 }
 
 export const flags = {
-  docs: envFlag("FLAG_DOCS", true), // Show docs link
-  hitCounter: envFlag("FLAG_COUNTER", true), // Show hit counter
+  // Static process.env.* access so Next can inline these for client components.
+  docs: envFlag(process.env.FLAG_DOCS, true), // Show docs link
+  hitCounter: envFlag(process.env.FLAG_COUNTER, true), // Show hit counter
   /** Comma-separated paths/URLs for unique-visitor query (empty = all $pageview events). */
-  hitCounterUrl: envString("FLAG_COUNTER_URL", ""),
-  public: envFlag("FLAG_PUBLIC", false), // Show public guestbook home/public repo + dark green favicon
+  hitCounterUrl: envString(process.env.FLAG_COUNTER_URL, ""),
+  public: envFlag(process.env.FLAG_PUBLIC, false), // Show public guestbook home/public repo + dark green favicon
 };
 
 const githubRepo = flags.public ? "y2k-guestbook" : "guestbook";

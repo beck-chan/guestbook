@@ -15,20 +15,15 @@ import {
 export type {
   FontSize,
   GuestbookSettings,
-  GuestbookSettingsRow,
 } from "@/lib/guestbookSettingsShared";
 
 export {
   ACCENT_FONTS,
-  DEFAULT_COMMENT_PLACEHOLDER,
-  DEFAULT_GUESTBOOK_SETTINGS,
   MAIN_FONTS,
   guestbookCommentPlaceholder,
   guestbookDisplayTitle,
   guestbookPageSize,
-  guestbookSettingsToRow,
   guestbookThemeVars,
-  normalizeGuestbookSettings,
 } from "@/lib/guestbookSettingsShared";
 
 type SettingsContextValue = {
