@@ -29,9 +29,13 @@ function requireAdminMessage(error: string | undefined) {
 
 export async function getPublicCommentsPage(
   page = 1,
+  pageSizeOverride?: number,
 ): Promise<PublicCommentsPage> {
   const settings = await loadGuestbookSettings();
-  const pageSize = guestbookPageSize(settings.pageSize);
+  const pageSize =
+    typeof pageSizeOverride === "number" && pageSizeOverride > 0
+      ? Math.floor(pageSizeOverride)
+      : guestbookPageSize(settings.pageSize);
   const current = Math.max(1, page);
   const from = (current - 1) * pageSize;
   const to = from + pageSize - 1;
@@ -104,12 +108,23 @@ export async function submitComment(input: {
 
 export async function loadAdminComments(): Promise<GuestbookComment[]> {
   const supabase = await createClient();
-  const { data, error } = await supabase
+  let { data, error } = await supabase
     .from("comments")
-    .select("id, display_name, email, body, created_at, updated_at")
+    .select("id, display_name, email, body, is_read, created_at, updated_at")
     .order("created_at", { ascending: false });
 
+  // Fallback if the live DB has not been altered yet.
+  if (error && /is_read|column/i.test(error.message)) {
+    const fallback = await supabase
+      .from("comments")
+      .select("id, display_name, email, body, created_at, updated_at")
+      .order("created_at", { ascending: false });
+    data = (fallback.data ?? []).map((row) => ({ ...row, is_read: false }));
+    error = fallback.error;
+  }
+
   if (error || !data) {
+    console.error("loadAdminComments failed:", error?.message);
     return [];
   }
 
@@ -171,6 +186,51 @@ export async function deleteComment(id: string): Promise<ActionResult> {
 
   revalidatePath("/");
   revalidatePath("/guestbook");
+  revalidatePath("/admin");
+  return { ok: true };
+}
+
+export async function setCommentRead(
+  id: string,
+  read: boolean,
+): Promise<ActionResult> {
+  if (!id) {
+    return { ok: false, error: "Comment id is required." };
+  }
+
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("comments")
+    .update({ is_read: read })
+    .eq("id", id);
+
+  if (error) {
+    return { ok: false, error: requireAdminMessage(error.message) };
+  }
+
+  revalidatePath("/admin");
+  return { ok: true };
+}
+
+export async function setCommentsRead(
+  ids: string[],
+  read: boolean,
+): Promise<ActionResult> {
+  const uniqueIds = [...new Set(ids.filter(Boolean))];
+  if (uniqueIds.length === 0) {
+    return { ok: true };
+  }
+
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("comments")
+    .update({ is_read: read })
+    .in("id", uniqueIds);
+
+  if (error) {
+    return { ok: false, error: requireAdminMessage(error.message) };
+  }
+
   revalidatePath("/admin");
   return { ok: true };
 }

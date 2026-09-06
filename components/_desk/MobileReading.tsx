@@ -219,7 +219,7 @@ export function MobileReading({
             <span className="mobile-comments-close-label">close</span>
           </button>
         </div>
-        <CommentBubbles showHits={false} idPrefix="mobile-" />
+        <CommentBubbles showHits={false} idPrefix="mobile-" limit={4} />
       </div>
 
       <main

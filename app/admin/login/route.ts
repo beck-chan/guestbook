@@ -1,16 +1,15 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
-export async function GET(request: NextRequest) {
-  const { searchParams, origin } = new URL(request.url);
-  const code = searchParams.get("code");
-  const nextParam = searchParams.get("next") ?? "/admin";
-  const next = nextParam.startsWith("/") ? nextParam : "/admin";
-
-  if (!code) {
-    return NextResponse.redirect(new URL("/?admin_error=1", origin));
+function siteUrl() {
+  const raw = process.env.SITE_URL?.trim();
+  if (!raw) {
+    throw new Error("SITE_URL is not configured.");
   }
+  return raw.replace(/\/$/, "");
+}
 
+export async function GET(request: NextRequest) {
   const cookieJar: {
     name: string;
     value: string;
@@ -39,25 +38,17 @@ export async function GET(request: NextRequest) {
     },
   );
 
-  const { error } = await supabase.auth.exchangeCodeForSession(code);
-  if (error) {
-    return NextResponse.redirect(new URL("/?admin_error=1", origin));
-  }
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  const role =
-    user && typeof user.app_metadata?.role === "string"
-      ? user.app_metadata.role
-      : null;
-
-  if (role !== "admin") {
-    await supabase.auth.signOut();
-  }
+  const { data, error } = await supabase.auth.signInWithOAuth({
+    provider: "google",
+    options: {
+      redirectTo: `${siteUrl()}/auth/callback`,
+    },
+  });
 
   const response = NextResponse.redirect(
-    new URL(role === "admin" ? next : "/?admin_error=1", origin),
+    error || !data.url
+      ? new URL("/?admin_error=1", request.url)
+      : data.url,
   );
 
   for (const { name, value, options } of cookieJar) {

@@ -42,14 +42,13 @@ export function AdminAuthErrorOverlay() {
         onClick={(event) => event.stopPropagation()}
       >
         <h2 id="admin-auth-error-title" className="admin-auth-error-title">
-          Access denied
+          Oops.
         </h2>
         <p id="admin-auth-error-body" className="admin-auth-error-body">
-          That Google account isn&apos;t on the admin allowlist, so it can&apos;t
-          sign in to moderate this guestbook.
+          The Google account you used to sign in isn&apos;t an administrator.
         </p>
         <button type="button" className="admin-auth-error-ok" onClick={dismiss}>
-          OK
+          Boo hiss! Fine.
         </button>
       </div>
     </div>

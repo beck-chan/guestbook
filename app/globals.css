@@ -1147,9 +1147,14 @@ body {
   color: var(--peony-hot);
 }
 
-.comment-page.is-current {
+.comment-page.is-status {
   color: var(--cover);
   pointer-events: none;
+  cursor: default;
+}
+
+.comment-page-current {
+  color: var(--peony-soft);
 }
 
 .comment-page.is-ellipsis {

@@ -17,27 +17,6 @@ type AdminGuestbookProps = {
   homeHref?: string;
 };
 
-function pageItems(page: number, totalPages: number) {
-  const items: Array<{ type: "page"; n: number } | { type: "ellipsis" }> = [
-    { type: "page", n: 1 },
-  ];
-
-  if (totalPages <= 1) {
-    return items;
-  }
-
-  if (page !== 1 && page !== totalPages) {
-    items.push({ type: "ellipsis" });
-    items.push({ type: "page", n: page });
-    items.push({ type: "ellipsis" });
-  } else {
-    items.push({ type: "ellipsis" });
-  }
-
-  items.push({ type: "page", n: totalPages });
-  return items;
-}
-
 export function AdminGuestbook({
   comments,
   page,
@@ -89,33 +68,11 @@ export function AdminGuestbook({
               ) : (
                 <span className="comment-page is-disabled">prev</span>
               )}
-              {pageItems(page, totalPages).map((item, index) =>
-                item.type === "ellipsis" ? (
-                  <span
-                    key={`ellipsis-${index}`}
-                    className="comment-page is-ellipsis"
-                    aria-hidden="true"
-                  >
-                    …
-                  </span>
-                ) : item.n === page ? (
-                  <span
-                    key={item.n}
-                    className="comment-page is-current"
-                    aria-current="page"
-                  >
-                    {item.n}
-                  </span>
-                ) : (
-                  <a
-                    key={item.n}
-                    className="comment-page"
-                    href={adminHref(item.n, filters, basePath)}
-                  >
-                    {item.n}
-                  </a>
-                ),
-              )}
+              <span className="comment-page is-status" aria-current="page">
+                <span className="comment-page-current">{page}</span>
+                {" / "}
+                {totalPages}
+              </span>
               {page < totalPages ? (
                 <a
                   className="comment-page"

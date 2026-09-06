@@ -1,7 +1,12 @@
 "use client";
 
 import { useEffect, useRef, useState, useTransition } from "react";
-import { deleteComment, updateComment } from "@/app/actions/comments";
+import {
+  deleteComment,
+  setCommentRead,
+  setCommentsRead,
+  updateComment,
+} from "@/app/actions/comments";
 import { MarkReadCheckbox } from "@/components/_admin/MarkReadCheckbox";
 import type { GuestbookComment } from "@/lib/comments";
 
@@ -52,7 +57,18 @@ export function AdminCommentThread({
   }, [editingId]);
 
   function setAll(read: boolean) {
-    setReadById(Object.fromEntries(notes.map((note) => [note.id, read])));
+    const ids = notes.map((note) => note.id);
+    setReadById(Object.fromEntries(ids.map((id) => [id, read])));
+    setNotes((current) =>
+      current.map((note) => ({ ...note, read })),
+    );
+    setError(null);
+    startTransition(async () => {
+      const result = await setCommentsRead(ids, read);
+      if (!result.ok) {
+        setError(result.error);
+      }
+    });
   }
 
   function startEdit(note: GuestbookComment) {
@@ -240,9 +256,21 @@ export function AdminCommentThread({
               <MarkReadCheckbox
                 commentId={note.id}
                 read={Boolean(readById[note.id])}
-                onReadChange={(read) =>
-                  setReadById((current) => ({ ...current, [note.id]: read }))
-                }
+                onReadChange={(read) => {
+                  setReadById((current) => ({ ...current, [note.id]: read }));
+                  setNotes((current) =>
+                    current.map((item) =>
+                      item.id === note.id ? { ...item, read } : item,
+                    ),
+                  );
+                  setError(null);
+                  startTransition(async () => {
+                    const result = await setCommentRead(note.id, read);
+                    if (!result.ok) {
+                      setError(result.error);
+                    }
+                  });
+                }}
               />
             </figure>
             <nav

@@ -1,6 +1,14 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { updateSession } from "@/lib/supabase/proxy";
 
+function redirectWithCookies(url: URL, sessionResponse: NextResponse) {
+  const redirectResponse = NextResponse.redirect(url);
+  sessionResponse.cookies.getAll().forEach(({ name, value }) => {
+    redirectResponse.cookies.set(name, value);
+  });
+  return redirectResponse;
+}
+
 export async function proxy(request: NextRequest) {
   const { supabaseResponse, user, supabase } = await updateSession(request);
   const { pathname } = request.nextUrl;
@@ -24,7 +32,7 @@ export async function proxy(request: NextRequest) {
     const loginUrl = request.nextUrl.clone();
     loginUrl.pathname = "/admin/login";
     loginUrl.search = "";
-    return NextResponse.redirect(loginUrl);
+    return redirectWithCookies(loginUrl, supabaseResponse);
   }
 
   if (!isAdmin) {
@@ -32,14 +40,14 @@ export async function proxy(request: NextRequest) {
     const homeUrl = request.nextUrl.clone();
     homeUrl.pathname = "/";
     homeUrl.search = "admin_error=1";
-    return NextResponse.redirect(homeUrl);
+    return redirectWithCookies(homeUrl, supabaseResponse);
   }
 
   if (isLogin) {
     const adminUrl = request.nextUrl.clone();
     adminUrl.pathname = "/admin";
     adminUrl.search = "";
-    return NextResponse.redirect(adminUrl);
+    return redirectWithCookies(adminUrl, supabaseResponse);
   }
 
   return supabaseResponse;

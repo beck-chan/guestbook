@@ -129,7 +129,7 @@ export function PoetryDesk({ poems, initialIndex }: PoetryDeskProps) {
               </span>
             </button>
           </div>
-          <CommentBubbles sectionId="guestbook" />
+          <CommentBubbles sectionId="guestbook" limit={4} />
         </div>
       </div>
       <MobileReading

@@ -19,6 +19,7 @@ export type PublicCommentRow = {
 
 export type AdminCommentRow = PublicCommentRow & {
   email: string | null;
+  is_read: boolean;
 };
 
 const MONTHS = [
@@ -81,6 +82,7 @@ export function mapAdminComment(
   return {
     ...mapPublicComment(row, now),
     email: row.email ?? undefined,
+    read: Boolean(row.is_read),
   };
 }
 
@@ -235,26 +237,6 @@ export function paginateComments(comments: GuestbookComment[], page: number) {
   };
 }
 
-export function publicPageItems(page: number, totalPages: number) {
-  const items: Array<{ type: "page"; n: number } | { type: "ellipsis" }> = [
-    { type: "page", n: 1 },
-  ];
-
-  if (totalPages <= 1) {
-    return items;
-  }
-
-  if (page !== 1 && page !== totalPages) {
-    items.push({ type: "ellipsis" });
-    items.push({ type: "page", n: page });
-    items.push({ type: "ellipsis" });
-  } else {
-    items.push({ type: "ellipsis" });
-  }
-
-  items.push({ type: "page", n: totalPages });
-  return items;
-}
 
 
 /** Kept for local UI demos; admin/public paths load from Supabase. */

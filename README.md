@@ -95,3 +95,5 @@ taskkill //F //PID {id}
 don't forgor to 
 
 Optional: rewrite history (git filter-repo / BFG) and force-push to scrub the old blob — still rotate first; assume the secrets were already copied.
+
+remove docs install later

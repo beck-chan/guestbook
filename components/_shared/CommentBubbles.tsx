@@ -7,7 +7,6 @@ import {
 } from "@/app/actions/comments";
 import { HitCounter } from "@/components/_shared/HitCounter";
 import {
-  publicPageItems,
   type GuestbookComment,
 } from "@/lib/comments";
 import {
@@ -19,7 +18,10 @@ type CommentBubblesProps = {
   showHits?: boolean;
   idPrefix?: string;
   sectionId?: string;
-  /** Kept for call-site compatibility; page size comes from guestbook_settings. */
+  /**
+   * Page size for this board. When set (e.g. desk = 4), settings page_size is ignored.
+   * When omitted, uses guestbook_settings.page_size.
+   */
   limit?: number;
   initialComments?: GuestbookComment[];
   initialPage?: number;
@@ -30,14 +32,16 @@ export function CommentBubbles({
   showHits = true,
   idPrefix = "",
   sectionId,
-  limit: _limit,
+  limit,
   initialComments,
   initialPage = 1,
   initialTotalPages = 1,
 }: CommentBubblesProps) {
-  const [{ captureEmail, placeholder }] = useGuestbookSettings();
+  const [{ captureEmail, placeholder, pageSize }] = useGuestbookSettings();
   const nameId = `${idPrefix}comment-name`;
   const inputId = `${idPrefix}comment-input`;
+  const pageSizeOverride =
+    typeof limit === "number" && limit > 0 ? limit : undefined;
 
   const [comments, setComments] = useState<GuestbookComment[]>(
     initialComments ?? [],
@@ -55,16 +59,16 @@ export function CommentBubbles({
       return;
     }
     startTransition(async () => {
-      const result = await getPublicCommentsPage(1);
+      const result = await getPublicCommentsPage(1, pageSizeOverride);
       setComments(result.comments);
       setPage(result.page);
       setTotalPages(result.totalPages);
     });
-  }, [initialComments]);
+  }, [initialComments, pageSizeOverride, pageSize]);
 
   function loadPage(nextPage: number) {
     startTransition(async () => {
-      const result = await getPublicCommentsPage(nextPage);
+      const result = await getPublicCommentsPage(nextPage, pageSizeOverride);
       setComments(result.comments);
       setPage(result.page);
       setTotalPages(result.totalPages);
@@ -87,7 +91,7 @@ export function CommentBubbles({
       setName("");
       setEmail("");
       setBody("");
-      const refreshed = await getPublicCommentsPage(1);
+      const refreshed = await getPublicCommentsPage(1, pageSizeOverride);
       setComments(refreshed.comments);
       setPage(refreshed.page);
       setTotalPages(refreshed.totalPages);
@@ -168,35 +172,11 @@ export function CommentBubbles({
         ) : (
           <span className="comment-page is-disabled">prev</span>
         )}
-        {publicPageItems(page, totalPages).map((item, index) =>
-          item.type === "ellipsis" ? (
-            <span
-              key={`ellipsis-${index}`}
-              className="comment-page is-ellipsis"
-              aria-hidden="true"
-            >
-              …
-            </span>
-          ) : item.n === page ? (
-            <span
-              key={item.n}
-              className="comment-page is-current"
-              aria-current="page"
-            >
-              {item.n}
-            </span>
-          ) : (
-            <button
-              key={item.n}
-              type="button"
-              className="comment-page"
-              disabled={pending}
-              onClick={() => loadPage(item.n)}
-            >
-              {item.n}
-            </button>
-          ),
-        )}
+        <span className="comment-page is-status" aria-current="page">
+          <span className="comment-page-current">{page}</span>
+          {" / "}
+          {totalPages}
+        </span>
         {page < totalPages ? (
           <button
             type="button"
