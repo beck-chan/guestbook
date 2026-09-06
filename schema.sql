@@ -128,7 +128,14 @@ begin
     );
   end if;
 
-  return '{}'::jsonb;
+  -- Stamp admin role into app_metadata for the new user (JWT + RLS).
+  return jsonb_build_object(
+    'user',
+    jsonb_build_object(
+      'app_metadata',
+      jsonb_build_object('role', 'admin')
+    )
+  );
 end;
 $fn$;
 
@@ -160,6 +167,44 @@ create trigger on_auth_user_created_set_admin
   before insert on auth.users
   for each row
   execute function public.set_admin_role_from_allowlist();
+
+-- If the signed-in user is on the allowlist but missing app_metadata.role,
+-- stamp it so JWT/RLS checks succeed. Call from auth callback, then refreshSession.
+create or replace function public.ensure_admin_role()
+returns boolean
+language plpgsql
+security definer
+set search_path = public, auth
+as $fn$
+declare
+  uid uuid := auth.uid();
+  user_email text;
+begin
+  if uid is null then
+    return false;
+  end if;
+
+  select lower(email) into user_email from auth.users where id = uid;
+
+  if user_email is null
+     or not exists (
+       select 1 from public.admin_allowlist where email = user_email
+     ) then
+    return false;
+  end if;
+
+  update auth.users
+  set raw_app_meta_data =
+    coalesce(raw_app_meta_data, '{}'::jsonb) || '{"role":"admin"}'::jsonb
+  where id = uid
+    and coalesce(raw_app_meta_data->>'role', '') is distinct from 'admin';
+
+  return true;
+end;
+$fn$;
+
+revoke all on function public.ensure_admin_role() from public, anon;
+grant execute on function public.ensure_admin_role() to authenticated;
 
 -- ---------------------------------------------------------------------------
 -- guestbook_settings (singleton id = 1)

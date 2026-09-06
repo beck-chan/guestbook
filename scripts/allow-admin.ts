@@ -33,7 +33,46 @@ async function main() {
     process.exit(1);
   }
 
+  // Stamp app_metadata.role on an existing Auth user (signup trigger only runs on insert).
+  let stamped = false;
+  for (let page = 1; page <= 10; page += 1) {
+    const { data, error: listError } = await supabase.auth.admin.listUsers({
+      page,
+      perPage: 200,
+    });
+    if (listError) {
+      console.error("Allowlist saved, but listing users failed:", listError.message);
+      process.exit(1);
+    }
+    const match = data.users.find((user) => user.email?.toLowerCase() === email);
+    if (match) {
+      const { error: updateError } = await supabase.auth.admin.updateUserById(
+        match.id,
+        { app_metadata: { ...match.app_metadata, role: "admin" } },
+      );
+      if (updateError) {
+        console.error(
+          "Allowlist saved, but failed to set app_metadata.role:",
+          updateError.message,
+        );
+        process.exit(1);
+      }
+      stamped = true;
+      break;
+    }
+    if (data.users.length < 200) {
+      break;
+    }
+  }
+
   console.log(`Allowed admin: ${email}`);
+  if (stamped) {
+    console.log("Set app_metadata.role=admin on existing Auth user.");
+  } else {
+    console.log(
+      "No existing Auth user with that email yet; role will be set on first signup.",
+    );
+  }
 }
 
 main().catch((err) => {
