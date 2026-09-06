@@ -85,9 +85,25 @@ async function getLimiter(opts: {
   }
 
   const storeClient = getStoreClient();
+  // Ready callback can run synchronously while `new` is still evaluating.
+  // Defer resolve so we never read the instance in the TDZ / pre-assign window.
   const limiter = await new Promise<RateLimiterPostgres>((resolve, reject) => {
+    let settled = false;
+    let instance!: RateLimiterPostgres;
+
+    const finish = (err?: unknown) => {
+      if (settled) return;
+      settled = true;
+      if (err) {
+        reject(err);
+        return;
+      }
+      tableReady = true;
+      queueMicrotask(() => resolve(instance));
+    };
+
     try {
-      const instance = new RateLimiterPostgres(
+      instance = new RateLimiterPostgres(
         {
           storeClient,
           // Treat duck-typed client like a pool (acquire = identity, no release).
@@ -98,17 +114,10 @@ async function getLimiter(opts: {
           tableName: "guestbook_rate_limits",
           tableCreated: tableReady,
         },
-        (err) => {
-          if (err) {
-            reject(err);
-            return;
-          }
-          tableReady = true;
-          resolve(instance);
-        },
+        (err) => finish(err ?? undefined),
       );
     } catch (err) {
-      reject(err);
+      finish(err);
     }
   });
 
