@@ -1,4 +1,4 @@
-import { releasesUrl, reportIssueUrl } from "@/lib/flags";
+import { flags, releasesUrl, reportIssueUrl } from "@/lib/flags";
 
 export type DocsNavItem = {
   label: string;
@@ -27,6 +27,7 @@ export const DOCS_NAV_SECTIONS: DocsNavSection[] = [
       { label: "Customize Settings", href: "/docs/settings" },
       { label: "Moderate Comments", href: "/docs/moderate" },
       { label: "Add Analytics", href: "/docs/analytics" },
+      { label: "Manage Admin Users", href: "/docs/admin" },
     ],
   },
   {
@@ -72,4 +73,25 @@ export const DOCS_NAV_SECTIONS: DocsNavSection[] = [
       },
     ],
   },
+  ...(flags.public
+    ? []
+    : [
+        {
+          title: "Internal",
+          items: [
+            {
+              label: "MDX Reference",
+              href: "/docs/example/",
+            },
+            {
+              label: "Privacy Policy",
+              href: "/docs/policy/",
+            },
+            {
+            label: "Search & LLM Ingestion",
+            href: "/docs/search/",
+            },
+          ],
+        },
+      ]),
 ];
