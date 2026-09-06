@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "allow-admin": "tsx scripts/allow-admin.ts"
+    "allow-admin": "tsx scripts/allow-admin.ts",
+    "delete-admin": "tsx scripts/delete-admin.ts"
   },
   "dependencies": {
     "@mdx-js/loader": "^3.1.1",
