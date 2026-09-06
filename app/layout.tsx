@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import { Jost, Kaisei_HarunoUmi, Libre_Baskerville } from "next/font/google";
+import { AdminAuthErrorOverlay } from "@/components/_shared/AdminAuthErrorOverlay";
 import { CustomTheme } from "@/components/_shared/CustomTheme";
 import { GuestbookSettingsProvider } from "@/lib/guestbookSettings";
 import { loadGuestbookSettings } from "@/lib/loadGuestbookSettings";
@@ -43,6 +45,9 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
       <body className="min-h-full">
         <GuestbookSettingsProvider initialSettings={settings}>
           {children}
+          <Suspense fallback={null}>
+            <AdminAuthErrorOverlay />
+          </Suspense>
           <CustomTheme />
         </GuestbookSettingsProvider>
       </body>

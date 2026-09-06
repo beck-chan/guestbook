@@ -2,7 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { updateSession } from "@/lib/supabase/proxy";
 
 export async function proxy(request: NextRequest) {
-  const { supabaseResponse, user } = await updateSession(request);
+  const { supabaseResponse, user, supabase } = await updateSession(request);
   const { pathname } = request.nextUrl;
   const isAdminPath = pathname === "/admin" || pathname.startsWith("/admin/");
   const isLogin = pathname === "/admin/login";
@@ -28,13 +28,11 @@ export async function proxy(request: NextRequest) {
   }
 
   if (!isAdmin) {
-    if (isLogin) {
-      return supabaseResponse;
-    }
-    const forbiddenUrl = request.nextUrl.clone();
-    forbiddenUrl.pathname = "/forbidden";
-    forbiddenUrl.search = "";
-    return NextResponse.rewrite(forbiddenUrl);
+    await supabase.auth.signOut();
+    const homeUrl = request.nextUrl.clone();
+    homeUrl.pathname = "/";
+    homeUrl.search = "admin_error=1";
+    return NextResponse.redirect(homeUrl);
   }
 
   if (isLogin) {
@@ -49,6 +47,6 @@ export async function proxy(request: NextRequest) {
 
 export const config = {
   matcher: [
-    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|css)$).*)",
+    "/((?!_next/static|_next/image|favicon.ico|.*\.(?:svg|png|jpg|jpeg|gif|webp|css)$).*)",
   ],
 };

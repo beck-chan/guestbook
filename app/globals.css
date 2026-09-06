@@ -2776,3 +2776,43 @@ body {
     animation: none;
   }
 }
+
+/* Admin auth error overlay (non-allowlisted Google sign-in) */
+.admin-auth-error-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  display: grid;
+  place-items: center;
+  padding: 1.5rem;
+  background: rgba(20, 16, 12, 0.45);
+}
+.admin-auth-error-dialog {
+  width: min(100%, 22rem);
+  padding: 1.25rem 1.35rem 1.1rem;
+  border: 1px solid rgba(0, 0, 0, 0.25);
+  background: #fffaf3;
+  color: #241c14;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.22);
+}
+.admin-auth-error-title {
+  margin: 0 0 0.55rem;
+  font-size: 1.15rem;
+  font-weight: 600;
+}
+.admin-auth-error-body {
+  margin: 0 0 1rem;
+  line-height: 1.45;
+  font-size: 0.95rem;
+}
+.admin-auth-error-ok {
+  appearance: none;
+  border: 1px solid rgba(0, 0, 0, 0.35);
+  background: transparent;
+  padding: 0.35rem 0.9rem;
+  cursor: pointer;
+  font: inherit;
+}
+.admin-auth-error-ok:hover {
+  background: rgba(0, 0, 0, 0.06);
+}
