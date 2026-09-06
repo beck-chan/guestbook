@@ -1,0 +1,274 @@
+{/* edit from here */}
+
+## Setting Up
+
+### Dependencies
+
+Your Next.js app should already provide:
+
+- [x] `next` (App Router; Pages Router is not supported)
+- [x] `react` and `react-dom`
+- [x] `@supabase/supabase-js`
+- [x] `@supabase/ssr` (cookie sessions for Google admin login)
+
+::: {.callout}
+
+Next.js 16 names the old `middleware.ts` file `proxy.ts` — put it next to `app/` (or inside `src/` if that is how your project is laid out).
+
+This package is the **standalone y2k demobook** (public board + admin). It does **not** include the poetry desk or poem hearts from the poetry guestbook app.
+
+:::
+
+### Install Package
+
+```bash
+npm install y2k-guestbook @supabase/supabase-js @supabase/ssr
+```
+
+If the published kit does not bundle them, also install the submit-path libraries it uses:
+
+```bash
+npm install obscenity pg rate-limiter-flexible
+```
+
+Tell Next to compile the kit. Merge this with whatever is already in `next.config.ts`:
+
+```typescript
+import type { NextConfig } from "next";
+
+const nextConfig: NextConfig = {
+  transpilePackages: ["y2k-guestbook"],
+  async rewrites() {
+    return [
+      {
+        source: "/admin/example.css",
+        destination: "/admin/example",
+      },
+    ];
+  },
+};
+
+export default nextConfig;
+```
+
+The rewrite is so **view example** on the settings panel can serve the reference stylesheet at `/admin/example.css`.
+
+### Paste the shared schema
+
+Comments, `guestbook_settings`, admin allowlist, and auth hooks live in one Supabase project. Paste and run [`schema.sql`](https://github.com/letter-chan/y2k-guestbook/blob/main/schema.sql){.blank} in the SQL Editor (same project as [Prerequisites](/docs/prerequisites)). Attach the **Before User Created** hook as described in the [Quickstart](/docs/quickstart).
+
+### Add Stylesheet and Providers
+
+Kit CSS lives in `@layer guestbook` so it can sit next to your own globals. The root layout must load settings from Supabase, wrap the tree in `GuestbookSettingsProvider`, and mount `CustomTheme` plus the dismissible admin auth error overlay:
+
+```typescript
+import { Suspense } from "react";
+import "y2k-guestbook/styles.css";
+import {
+  AdminAuthErrorOverlay,
+  CustomTheme,
+  GuestbookSettingsProvider,
+  loadGuestbookSettings,
+} from "y2k-guestbook";
+
+export default async function RootLayout({
+  children,
+}: LayoutProps<"/">) {
+  const settings = await loadGuestbookSettings();
+
+  return (
+    <html lang="en">
+      <body>
+        <GuestbookSettingsProvider initialSettings={settings}>
+          {children}
+          <Suspense fallback={null}>
+            <AdminAuthErrorOverlay />
+          </Suspense>
+          <CustomTheme />
+        </GuestbookSettingsProvider>
+      </body>
+    </html>
+  );
+}
+```
+
+Keep `@import "tailwindcss"` in *your* `globals.css`. The package stylesheet is the guestbook layer only.
+
+### Mount Routes
+
+App Router will not pick up pages from `node_modules`. Add thin files in your `app/` tree that render the kit.
+
+**Public board**
+
+```typescript
+import type { Metadata } from "next";
+import { GuestbookBoard, HitCounter } from "y2k-guestbook";
+
+export const metadata: Metadata = {
+  title: "y2k guestbook",
+  description: "Sign the guestbook.",
+};
+
+export default function GuestbookPage() {
+  return (
+    <main className="admin-page guestbook-page guestbook-public">
+      <a className="guestbook-login" href="/admin/login">
+        admin login
+      </a>
+      <HitCounter />
+      <div className="admin-shell">
+        <GuestbookBoard />
+      </div>
+    </main>
+  );
+}
+```
+
+::: {tabset}
+
+# `/guestbook`
+
+Save that as `app/guestbook/page.tsx` when `/` is already your site. Point admin back here with `homeHref="/guestbook"`.
+
+# `/`
+
+Save that as `app/page.tsx` when the guestbook *is* the site, same as the [starter](/docs/quickstart). Pass `homeHref="/"` on the admin page.
+
+:::
+
+Those `admin-page guestbook-page` classes are the theme scope. Custom theme CSS is rewritten to `.admin-page`, so it will not restyle the rest of your site.
+
+Guests submit a **required** display name, **optional** email (never shown on the public board), and a **required** message. There are no replies or reactions. Rate limits and the profanity allow-list come from **Admin → Settings** (`guestbook_settings`); failed submits show an inline message under the form and leave the fields filled in. Profanity rejects do not spend a rate-limit slot.
+
+**Admin dashboard**
+
+```typescript
+import type { Metadata } from "next";
+import {
+  AdminGuestbook,
+  filterComments,
+  loadAdminComments,
+  paginateComments,
+  sortComments,
+  type AdminFilters,
+} from "y2k-guestbook";
+
+export const metadata: Metadata = {
+  title: "Admin Dashboard",
+  description: "Comment moderation & settings.",
+};
+
+function first(value: string | string[] | undefined) {
+  return Array.isArray(value) ? value[0] : value;
+}
+
+function filtersFrom(
+  searchParams: Record<string, string | string[] | undefined>,
+): AdminFilters {
+  const email = first(searchParams.email);
+  const status = first(searchParams.status);
+  const sort = first(searchParams.sort);
+  return {
+    q: first(searchParams.q) ?? "",
+    sort: sort === "oldest" ? "oldest" : "newest",
+    status: status === "unread" || status === "read" ? status : "all",
+    email: email === "has" || email === "none" ? email : "all",
+    from: first(searchParams.from) ?? "",
+    to: first(searchParams.to) ?? "",
+  };
+}
+
+function pageFrom(
+  searchParams: Record<string, string | string[] | undefined>,
+) {
+  const parsed = Number.parseInt(first(searchParams.page) ?? "1", 10);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : 1;
+}
+
+export default async function AdminPage({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
+  const params = await searchParams;
+  const filters = filtersFrom(params);
+  const allComments = await loadAdminComments();
+  const { comments, page, totalPages } = paginateComments(
+    sortComments(filterComments(allComments, filters), filters.sort),
+    pageFrom(params),
+  );
+
+  return (
+    <AdminGuestbook
+      variant="demobook"
+      basePath="/admin"
+      homeHref="/guestbook"
+      comments={comments}
+      page={page}
+      totalPages={totalPages}
+      filters={filters}
+    />
+  );
+}
+```
+
+Save that as `app/admin/page.tsx`. `variant="demobook"` is the standalone chrome (link back to the guestbook, no poetry-book tab). Server actions for submit, moderate, and save-settings ship in the package — you do not copy those files. Admins see emails, can edit/delete, and are not rate-limited or profanity-filtered on moderation.
+
+Theme preview needs one more route:
+
+```typescript
+export { GET, dynamic } from "y2k-guestbook/example-css";
+```
+
+Save that as `app/admin/example/route.ts`.
+
+## Configuration
+
+### Set Environment Variables
+
+Put secrets in `.env.local`. Never commit them.
+
+```bash
+NEXT_PUBLIC_SUPABASE_URL=
+NEXT_PUBLIC_SUPABASE_ANON_KEY=
+SITE_URL=http://localhost:3000
+DATABASE_URL=
+```
+
+| Variable | Purpose |
+| --- | --- |
+| `NEXT_PUBLIC_SUPABASE_URL` / `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Browser + server Supabase client (RLS still applies) |
+| `SITE_URL` | App origin used to build the Google OAuth `redirectTo` (`/auth/callback`). Use your live `https://` host on Vercel |
+| `DATABASE_URL` | Supabase **pooler** URI for comment rate limiting (`rate-limiter-flexible`) |
+
+Admin access is **not** an env allowlist. Allowlisted Google accounts live in Supabase `admin_allowlist` and receive `app_metadata.role = admin`. Mint keys and the OAuth client in [Prerequisites](/docs/prerequisites), then run `npm run allow-admin -- you@gmail.com` from a checkout that has `SUPABASE_SERVICE_ROLE_KEY` (local only) as in the [Quickstart](/docs/quickstart).
+
+### Auth proxy, login, and callback
+
+The kit cannot own these files — App Router only loads `proxy.ts` and route handlers from *your* project. Re-export the kit handlers:
+
+```typescript
+export { proxy, config } from "y2k-guestbook/proxy";
+```
+
+Save that as `proxy.ts` next to `app/`. The bundled matcher refreshes the Supabase session and gates `/admin/*` on `app_metadata.role === "admin"`. Non-admins are signed out and sent home with `?admin_error=1` (the overlay in the layout). It does not run on static assets.
+
+```typescript
+export { GET } from "y2k-guestbook/admin-login";
+```
+
+Save that as `app/admin/login/route.ts`. Visiting `/admin/login` starts Google OAuth immediately (no intermediate login page).
+
+```typescript
+export { GET } from "y2k-guestbook/callback";
+```
+
+Save that as `app/auth/callback/route.ts`. That is the OAuth return URL after Supabase. In the Google Cloud and Supabase consoles, the **provider** redirect stays `https://PROJECT.supabase.co/auth/v1/callback`; your app `SITE_URL/auth/callback` must be listed under Supabase **Redirect URLs**.
+
+::: {.callout}
+
+If you already have a `proxy.ts`, import `{ proxy as guestbookProxy }` from `y2k-guestbook/proxy` and call it from your existing `proxy` function instead of replacing the file. Keep `/auth/callback` and `/admin/login` reachable — do not redirect those paths away before the kit handlers run.
+
+:::
+
+{/* edit to here */}

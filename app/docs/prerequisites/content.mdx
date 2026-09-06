@@ -65,7 +65,7 @@ Create an account and organization with [Supabase](https://supabase.com/), then 
 
 1. Enter in your **Organization**, **Project name**, and **Database password**.
 
-    Hang on to your **Database password** — we'll need to enter this into your `.env.local` file alongside your `DATABASE_URL`.
+    Hang on to your **Database password** — we'll need to enter this into your `.env.local` file under your `DATABASE_URL`.
 
 2. Select a **Region**.
 
@@ -86,7 +86,7 @@ When your project is ready:
 
 2. Under Publishable and secret API keys, copy the **Publishable key** to your clipboard. 
 
-    Hang on to this — we'll need to enter this into your `.env.local` file alongside your `NEXT_PUBLIC_SUPABASE_URL`:
+    Hang on to this — we'll need to enter this into your `.env.local` file under your `NEXT_PUBLIC_SUPABASE_URL`:
 
     ```bash
     NEXT_PUBLIC_SUPABASE_ANON_KEY=sb_publishable_<your-publishable-key>
@@ -94,7 +94,7 @@ When your project is ready:
 
 3. Click **Legacy anon, service_role, API keys**, then copy the `service_role` `secret` key to your clipboard. 
 
-    Hang on to this — we'll need to enter this into your `.env.local` file alongside your `SUPABASE_SERVICE_ROLE_KEY`:
+    Hang on to this — we'll need to enter this into your `.env.local` file under your `SUPABASE_SERVICE_ROLE_KEY`:
 
     ```bash
     SUPABASE_SERVICE_ROLE_KEY=<your-service-role-key>
@@ -120,7 +120,7 @@ When your project is ready:
 
 6. Under Connection string, copy the **Shared pooler** to your clipboard. 
 
-    Hang on to this — we'll need to enter this into your `.env.local` file alongside your `DATABASE_URL`:
+    Hang on to this — we'll need to enter this into your `.env.local` file under your `DATABASE_URL`:
 
     ```bash
     DATABASE_URL=postgresql://postgres.<your-database-url>:[YOUR-PASSWORD]@<your-database-region>.pooler.supabase.com:<port>/postgres

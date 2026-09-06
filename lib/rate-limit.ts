@@ -13,15 +13,17 @@ const limiterCache = new Map<string, RateLimiterPostgres>();
 function getPool() {
   const connectionString = process.env.DATABASE_URL?.trim();
   if (!connectionString) {
-    throw new Error("DATABASE_URL is not configured.");
+    throw new Error(
+      "DATABASE_URL is not configured. Add the Supabase pooler URI to .env.local (and Vercel).",
+    );
   }
   if (!pool) {
     pool = new Pool({
       connectionString,
       max: 3,
       idleTimeoutMillis: 10_000,
-      connectionTimeoutMillis: 5_000,
-      ssl: connectionString.includes("localhost")
+      connectionTimeoutMillis: 8_000,
+      ssl: /localhost|127\.0\.0\.1/i.test(connectionString)
         ? undefined
         : { rejectUnauthorized: false },
     });
@@ -29,12 +31,28 @@ function getPool() {
   return pool;
 }
 
+/**
+ * Duck-typed store for rate-limiter-flexible.
+ * Supabase Transaction pooler (6543) rejects named prepared statements, so we
+ * never forward `name` to `pg`.
+ */
+function getStoreClient() {
+  const pgPool = getPool();
+  return {
+    query(config: { name?: string; text: string; values?: unknown[] }) {
+      return pgPool.query({
+        text: config.text,
+        values: config.values,
+      });
+    },
+  };
+}
+
 function hashIp(ip: string) {
   return createHash("sha256").update(ip).digest("hex").slice(0, 32);
 }
 
 function hasRoom(res: RateLimiterRes | null) {
-  // null => key unused this window => full points available
   return res === null || res.remainingPoints > 0;
 }
 
@@ -47,6 +65,15 @@ function rateLimitMessage(limits: RateLimits, msBeforeNext: number) {
   return `You can post ${limits.count} message(s) every ${limits.minutes} minutes and at most ${limits.daily} messages every 24 hours. Please wait about ${wait} minute${wait === 1 ? "" : "s"}.`;
 }
 
+function isRateLimiterRes(err: unknown): err is RateLimiterRes {
+  return (
+    typeof err === "object" &&
+    err !== null &&
+    "msBeforeNext" in err &&
+    typeof (err as RateLimiterRes).msBeforeNext === "number"
+  );
+}
+
 async function getLimiter(opts: {
   points: number;
   duration: number;
@@ -57,28 +84,32 @@ async function getLimiter(opts: {
     return cached;
   }
 
-  const storeClient = getPool();
+  const storeClient = getStoreClient();
   const limiter = await new Promise<RateLimiterPostgres>((resolve, reject) => {
-    const instance = new RateLimiterPostgres(
-      {
-        storeClient,
-        // pg Pool constructs as BoundPool — force pool mode.
-        storeType: "pool",
-        points: opts.points,
-        duration: opts.duration,
-        keyPrefix: opts.keyPrefix,
-        tableName: "guestbook_rate_limits",
-        tableCreated: tableReady,
-      },
-      (err) => {
-        if (err) {
-          reject(err);
-          return;
-        }
-        tableReady = true;
-        resolve(instance);
-      },
-    );
+    try {
+      const instance = new RateLimiterPostgres(
+        {
+          storeClient,
+          // Treat duck-typed client like a pool (acquire = identity, no release).
+          storeType: "pool",
+          points: opts.points,
+          duration: opts.duration,
+          keyPrefix: opts.keyPrefix,
+          tableName: "guestbook_rate_limits",
+          tableCreated: tableReady,
+        },
+        (err) => {
+          if (err) {
+            reject(err);
+            return;
+          }
+          tableReady = true;
+          resolve(instance);
+        },
+      );
+    } catch (err) {
+      reject(err);
+    }
   });
 
   limiterCache.set(opts.keyPrefix, limiter);
@@ -86,8 +117,8 @@ async function getLimiter(opts: {
 }
 
 /**
- * Check daily then burst via get(); consume only when both have room so a
- * failed daily check does not leave a dangling burst consume (and vice versa).
+ * Check both windows with get(); consume only when both have room so a
+ * failed check does not leave a dangling consume on the other window.
  */
 export async function consumeCommentRateLimit(
   ip: string,
@@ -122,14 +153,13 @@ export async function consumeCommentRateLimit(
   }
 
   try {
-    // Daily first (longer window); burst second. Rare race: accept spent points.
     await daily.consume(key);
     await burst.consume(key);
   } catch (err) {
-    const res = err as RateLimiterRes;
-    const ms =
-      typeof res?.msBeforeNext === "number" ? res.msBeforeNext : 60_000;
-    return { ok: false, error: rateLimitMessage(limits, ms) };
+    if (isRateLimiterRes(err)) {
+      return { ok: false, error: rateLimitMessage(limits, err.msBeforeNext) };
+    }
+    throw err;
   }
 
   return { ok: true };

@@ -111,6 +111,14 @@ export async function submitComment(input: {
     }
   } catch (err) {
     console.error("rate limit failed:", err);
+    const detail = err instanceof Error ? err.message : "";
+    if (/DATABASE_URL/i.test(detail)) {
+      return {
+        ok: false,
+        error:
+          "Comment posting is temporarily unavailable (DATABASE_URL is missing or invalid).",
+      };
+    }
     return {
       ok: false,
       error: "Comment posting is temporarily unavailable. Please try again later.",

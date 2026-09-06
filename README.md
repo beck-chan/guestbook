@@ -89,6 +89,12 @@ The last column is the PID. Stop it:
 taskkill //F //PID {id}
 ```
 
+kill all:
+
+```bash
+taskkill //F //IM node.exe
+```
+
 
 # NOTE TO SELF
 
