@@ -135,23 +135,74 @@ Digits displayed are unique `$pageview` visitors from PostHog’s Query API. In 
 
 :::
 
-
 ## Enable Web Tracking
 
-1. Copy the example client entry to the **app project root** (next to `app/`):
+1. Copy [`instrumentation-client.ts.example`](https://github.com/beck-chan/y2k-guestbook/blob/main/instrumentation-client.ts.example){.blank} to the your guestbook project root:
 
     ```bash
     cp instrumentation-client.ts.example instrumentation-client.ts
     ```
 
-    Next.js only loads the exact filename `instrumentation-client.ts`. Do not paste the PostHog HTML snippet into your layout.
+    ::: {.callout}
+    # Next.js only loads the exact filename `instrumentation-client.ts`. Do not paste the PostHog HTML snippet into your layout.
 
-2. The example initializes PostHog only when `NODE_ENV === "production"`, with `person_profiles: "always"` (pageviews, clicks, and session replay via the SDK defaults).
+    The example initializes PostHog only when `NODE_ENV === "production"`, with `person_profiles: "always"` which captures pageviews, clicks, and session replay via the SDK defaults.
 
-3. In your PostHog project, enable **Session replay**.
+    :::
 
-4. Restart after changing env vars or the instrumentation file.
+2. From the PostHog dashboard's left sidebar, click **Settings**.
+
+3. Under Products, select **Session replay**. Toggle ON:
+
+    - Record user sessions
+    - Log capture
+    - Canvas capture
 
 ::: {.callout}
-`npm run dev` does not send events. Use `npm run build` then `npm run start`, or a production deploy, to capture traffic.
+# `npm run dev` does not send tracking events. 
+
 :::
+
+## Test Hit Counter & Tracking 
+
+Since development builds do not send tracking events, test the hit counter by building and serving the application locally:
+
+```bash
+# Linter check for errors
+npm run lint
+# Compile
+npm run build
+# Serve build 
+npm run start
+```
+
+Confirm the hit counter is displaying the expected number of unique visitors for your guestbook page(s):
+
+1. From the PostHog dashboard's left sidebar, click **Product analytics**.
+
+2. Click **+ New**, then select **SQL**.
+
+3. Enter in a SQL query to count the unique visitors for your guestbook page(s):
+
+    ```bash
+    # Single URL
+    SELECT uniq(distinct_id)
+    FROM events
+    WHERE event = '$pageview'
+    AND properties.$current_url LIKE '%/guestbook%' # Example slug
+    ```
+
+    ```bash
+    # Multiple URLs
+    SELECT uniq(distinct_id)
+    FROM events
+    WHERE event = '$pageview'
+    AND (
+        properties.$current_url LIKE '<your-url-one>'
+        OR properties.$current_url LIKE '<your-url-two>'
+    )
+    ```
+
+4. Click **Run**.
+
+5. Confirm that the returned **Results** match your displayed hit counter.
