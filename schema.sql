@@ -98,7 +98,9 @@ create table public.admin_allowlist (
 );
 
 alter table public.admin_allowlist enable row level security;
--- No policies: anon/authenticated cannot read or write. Service role bypasses RLS.
+-- No policies: anon/authenticated cannot read or write.
+-- service_role bypasses RLS but still needs table grants (auto-expose was off).
+grant select, insert, update, delete on table public.admin_allowlist to service_role;
 
 create or replace function public.hook_before_user_created(event jsonb)
 returns jsonb
