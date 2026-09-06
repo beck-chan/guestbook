@@ -237,7 +237,3 @@ export function paginateComments(comments: GuestbookComment[], page: number) {
   };
 }
 
-
-
-/** Kept for local UI demos; admin/public paths load from Supabase. */
-export const MOCK_COMMENTS: GuestbookComment[] = [];

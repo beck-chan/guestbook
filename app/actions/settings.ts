@@ -27,10 +27,6 @@ async function requireAdmin() {
   return { supabase, error: null };
 }
 
-export async function fetchGuestbookSettings(): Promise<GuestbookSettings> {
-  return loadGuestbookSettings();
-}
-
 export async function saveGuestbookSettings(
   settings: GuestbookSettings,
 ): Promise<SettingsActionResult> {

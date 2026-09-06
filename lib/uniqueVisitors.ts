@@ -2,8 +2,6 @@ import { unstable_cache } from "next/cache";
 import { flags } from "@/lib/flags";
 import { FALLBACK_HIT_COUNT } from "@/lib/hitCount";
 
-export { FALLBACK_HIT_COUNT };
-
 function escapeHogqlString(value: string) {
   return value.replace(/\\/g, "\\\\").replace(/'/g, "\\'");
 }
