@@ -1,6 +1,11 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useTransition } from "react";
+import {
+  getPoemHeartState,
+  togglePoemHeart,
+  type PoemHeartState,
+} from "@/app/actions/hearts";
 import { Book } from "@/components/_desk/Book";
 import { CommentBubbles } from "@/components/_shared/CommentBubbles";
 import { DeskBookmarks } from "@/components/_shared/DeskBookmarks";
@@ -13,10 +18,18 @@ type PoetryDeskProps = {
   initialIndex: number;
 };
 
+const EMPTY_HEART: PoemHeartState = {
+  liked: false,
+  heart_count: 0,
+  total_hearts: 0,
+};
+
 export function PoetryDesk({ poems, initialIndex }: PoetryDeskProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [poemIndex, setPoemIndex] = useState(initialIndex);
   const [hintVisible, setHintVisible] = useState(true);
+  const [heart, setHeart] = useState<PoemHeartState>(EMPTY_HEART);
+  const [heartPending, startHeartTransition] = useTransition();
   const hintClickedRef = useRef(false);
 
   const poem = poems[poemIndex];
@@ -41,6 +54,33 @@ export function PoetryDesk({ poems, initialIndex }: PoetryDeskProps) {
     return () => window.removeEventListener("scroll", syncHint);
   }, []);
 
+  useEffect(() => {
+    if (!poem) {
+      setHeart(EMPTY_HEART);
+      return;
+    }
+    let cancelled = false;
+    startHeartTransition(async () => {
+      const next = await getPoemHeartState(poem.id);
+      if (!cancelled) {
+        setHeart(next);
+      }
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [poem?.id]);
+
+  function onToggleHeart() {
+    if (!poem) {
+      return;
+    }
+    startHeartTransition(async () => {
+      const next = await togglePoemHeart(poem.id);
+      setHeart(next);
+    });
+  }
+
   return (
     <>
       <div className="desk-desktop">
@@ -51,6 +91,10 @@ export function PoetryDesk({ poems, initialIndex }: PoetryDeskProps) {
             <Book
               isOpen={isOpen}
               poem={poem}
+              heartCount={heart.heart_count}
+              liked={heart.liked}
+              heartPending={heartPending}
+              onToggleHeart={onToggleHeart}
               onTurnPage={() =>
                 setPoemIndex((current) => pickPoemIndex(poems.length, current))
               }
@@ -88,7 +132,16 @@ export function PoetryDesk({ poems, initialIndex }: PoetryDeskProps) {
           <CommentBubbles sectionId="guestbook" />
         </div>
       </div>
-      <MobileReading poems={poems} initialIndex={initialIndex} />
+      <MobileReading
+        poems={poems}
+        initialIndex={initialIndex}
+        poemIndex={poemIndex}
+        onPoemIndexChange={setPoemIndex}
+        heartCount={heart.heart_count}
+        liked={heart.liked}
+        heartPending={heartPending}
+        onToggleHeart={onToggleHeart}
+      />
     </>
   );
 }

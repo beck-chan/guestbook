@@ -722,10 +722,17 @@ body:has(.docs-shell) {
 }
 
 .docs-heading,
-.docs-subheading,
-.docs-callout .docs-title {
+.docs-subheading {
   scroll-margin-top: 1.25rem;
   font-family: var(--peony-font);
+  font-weight: 400;
+  letter-spacing: 0.02em;
+  line-height: 1.2;
+}
+
+.docs-callout .docs-title {
+  scroll-margin-top: 1.25rem;
+  font-family: var(--body-font);
   font-weight: 400;
   letter-spacing: 0.02em;
   line-height: 1.2;
@@ -760,6 +767,7 @@ body:has(.docs-shell) {
 .docs-callout .docs-title {
   margin: 1.75rem 0 0;
   color: color-mix(in srgb, #6f4e37 48%, white);
+  font-family: var(--body-font);
   font-size: clamp(1.08rem, 1.55vw, 1.32rem);
 }
 

@@ -4,183 +4,85 @@ export type GuestbookComment = {
   email?: string;
   body: string;
   time: string;
+  createdAt?: string;
   nested?: boolean;
   read?: boolean;
 };
 
-/** Newest first. Public guestbook shows a page of these; admin shows the full list. */
-const MOCK_COMMENT_SEED: GuestbookComment[] = [
-  {
-    id: "a-guest-doorway",
-    name: "a guest",
-    email: "aguest@example.com",
-    body: "this one stopped me in the doorway.",
-    time: "just now",
-  },
-  {
-    id: "m-exhaling",
-    name: "m.",
-    body: "turning the page felt like exhaling.",
-    time: "2h ago",
-    nested: true,
-  },
-  {
-    id: "anon-last-line",
-    name: "anon",
-    email: "anon.keeps@example.net",
-    body: "i keep coming back to the last line.",
-    time: "yesterday",
-  },
-  {
-    id: "june-peonies",
-    name: "june",
-    email: "june@example.com",
-    body: "left it open on the kitchen table. the peonies did the rest.",
-    time: "Aug 28",
-    nested: true,
-  },
-  {
-    id: "willow-dogear",
-    name: "willow",
-    email: "willow.reads@example.com",
-    body: "the dog-ear is my favorite part. i keep meaning to close it and then i don't.",
-    time: "Aug 20",
-  },
-  {
-    id: "k-twice",
-    name: "k",
-    body: "read it twice. then once more.",
-    time: "Aug 12",
-    nested: true,
-  },
-  {
-    id: "visitor-open",
-    name: "visitor",
-    email: "hello@visitor.example",
-    body: "thank you for leaving it open.",
-    time: "Aug 3",
-  },
-  {
-    id: "lea-cream",
-    name: "lea",
-    email: "lea@example.com",
-    body: "the cream pages feel like a held breath.",
-    time: "Jul 29",
-  },
-  {
-    id: "n-corner",
-    name: "n.",
-    body: "i dog-eared the corner and then felt guilty about it.",
-    time: "Jul 22",
-    nested: true,
-  },
-  {
-    id: "rio-twice",
-    name: "rio",
-    email: "rio.notes@example.net",
-    body: "came back the next morning and it still held.",
-    time: "Jul 14",
-  },
-  {
-    id: "s-quiet",
-    name: "s",
-    body: "quiet on purpose. i needed that.",
-    time: "Jul 6",
-    nested: true,
-  },
-  {
-    id: "harper-spread",
-    name: "harper",
-    email: "harper@example.org",
-    body: "the two-page spread is doing more work than it lets on.",
-    time: "Jun 28",
-  },
-  {
-    id: "bo-ink",
-    name: "bo",
-    body: "left a fingerprint of ink on the desk. sorry. not sorry.",
-    time: "Jun 19",
-    nested: true,
-  },
-  {
-    id: "ellen-again",
-    name: "ellen",
-    email: "ellen.reads@example.com",
-    body: "read it aloud to the empty kitchen.",
-    time: "Jun 11",
-  },
-  {
-    id: "t-pause",
-    name: "t.",
-    body: "the pause after the last line is the poem.",
-    time: "Jun 2",
-    nested: true,
-  },
-  {
-    id: "mina-foil",
-    name: "mina",
-    email: "mina@example.com",
-    body: "the foil on the cover caught the late light just so.",
-    time: "May 24",
-  },
-  {
-    id: "guest-2",
-    name: "a guest",
-    body: "signed it because the sticky note told me to.",
-    time: "May 15",
-    nested: true,
-  },
-  {
-    id: "owen-desk",
-    name: "owen",
-    email: "owen.p@example.net",
-    body: "this desk feels like a room i already knew.",
-    time: "May 7",
-  },
-  {
-    id: "p-again",
-    name: "p",
-    body: "another pass. still catching on the same line.",
-    time: "Apr 28",
-    nested: true,
-  },
-  {
-    id: "iris-void",
-    name: "iris",
-    email: "iris@example.com",
-    body: "thoughts into the void, as requested.",
-    time: "Apr 16",
-  },
-  {
-    id: "cal-kind",
-    name: "cal",
-    body: "trying to be kind. it is harder than the page makes it look.",
-    time: "Apr 4",
-    nested: true,
-  },
-  {
-    id: "yarrow-first",
-    name: "yarrow",
-    email: "yarrow.leaf@example.org",
-    body: "first visit. i will be back.",
-    time: "Mar 22",
-  },
-  {
-    id: "old-friend",
-    name: "an old friend",
-    email: "stillhere@example.com",
-    body: "found this the way one finds a letter in a coat pocket.",
-    time: "Mar 9",
-  },
-];
+export type PublicCommentRow = {
+  id: string;
+  display_name: string;
+  body: string;
+  created_at: string;
+  updated_at?: string;
+};
 
-export const MOCK_COMMENTS: GuestbookComment[] = MOCK_COMMENT_SEED.map(
-  (note, index) => ({
-    ...note,
-    nested: index % 2 === 1,
-    read: index >= 4,
-  }),
-);
+export type AdminCommentRow = PublicCommentRow & {
+  email: string | null;
+};
+
+const MONTHS = [
+  "Jan",
+  "Feb",
+  "Mar",
+  "Apr",
+  "May",
+  "Jun",
+  "Jul",
+  "Aug",
+  "Sep",
+  "Oct",
+  "Nov",
+  "Dec",
+] as const;
+
+export function formatCommentTime(iso: string, now = Date.now()) {
+  const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) {
+    return iso;
+  }
+
+  const diffMs = now - date.getTime();
+  if (diffMs < 60_000) {
+    return "just now";
+  }
+  if (diffMs < 86_400_000) {
+    const hours = Math.max(1, Math.floor(diffMs / 3_600_000));
+    return `${hours}h ago`;
+  }
+
+  const startOfToday = new Date(now);
+  startOfToday.setHours(0, 0, 0, 0);
+  const startOfYesterday = new Date(startOfToday.getTime() - 86_400_000);
+  if (date >= startOfYesterday && date < startOfToday) {
+    return "yesterday";
+  }
+
+  return `${MONTHS[date.getMonth()]} ${date.getDate()}`;
+}
+
+export function mapPublicComment(
+  row: PublicCommentRow,
+  now = Date.now(),
+): GuestbookComment {
+  return {
+    id: row.id,
+    name: row.display_name,
+    body: row.body,
+    createdAt: row.created_at,
+    time: formatCommentTime(row.created_at, now),
+  };
+}
+
+export function mapAdminComment(
+  row: AdminCommentRow,
+  now = Date.now(),
+): GuestbookComment {
+  return {
+    ...mapPublicComment(row, now),
+    email: row.email ?? undefined,
+  };
+}
 
 export const ADMIN_PAGE_SIZE = 10;
 
@@ -197,7 +99,7 @@ export type AdminFilters = {
   to: string;
 };
 
-const MONTHS: Record<string, number> = {
+const MONTH_INDEX: Record<string, number> = {
   Jan: 0,
   Feb: 1,
   Mar: 2,
@@ -213,11 +115,18 @@ const MONTHS: Record<string, number> = {
 };
 
 function commentDate(note: GuestbookComment): Date {
+  if (note.createdAt) {
+    const parsed = new Date(note.createdAt);
+    if (!Number.isNaN(parsed.getTime())) {
+      return parsed;
+    }
+  }
+
   const { time } = note;
   if (time === "just now") {
     return new Date(2026, 8, 2, 12, 0, 0);
   }
-  if (time === "2h ago") {
+  if (time.endsWith("h ago") || time.endsWith("m ago")) {
     return new Date(2026, 8, 2, 10, 0, 0);
   }
   if (time === "yesterday") {
@@ -227,7 +136,7 @@ function commentDate(note: GuestbookComment): Date {
     /^(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s+(\d{1,2})$/,
   );
   if (match) {
-    return new Date(2026, MONTHS[match[1]], Number(match[2]), 12, 0, 0);
+    return new Date(2026, MONTH_INDEX[match[1]], Number(match[2]), 12, 0, 0);
   }
   return new Date(2026, 8, 2, 12, 0, 0);
 }
@@ -254,7 +163,8 @@ export function filterComments(
       return false;
     }
     if (needle) {
-      const haystack = `${note.name} ${note.email ?? ""} ${note.body}`.toLowerCase();
+      const haystack =
+        `${note.name} ${note.email ?? ""} ${note.body}`.toLowerCase();
       if (!haystack.includes(needle)) {
         return false;
       }
@@ -324,3 +234,28 @@ export function paginateComments(comments: GuestbookComment[], page: number) {
     totalPages,
   };
 }
+
+export function publicPageItems(page: number, totalPages: number) {
+  const items: Array<{ type: "page"; n: number } | { type: "ellipsis" }> = [
+    { type: "page", n: 1 },
+  ];
+
+  if (totalPages <= 1) {
+    return items;
+  }
+
+  if (page !== 1 && page !== totalPages) {
+    items.push({ type: "ellipsis" });
+    items.push({ type: "page", n: page });
+    items.push({ type: "ellipsis" });
+  } else {
+    items.push({ type: "ellipsis" });
+  }
+
+  items.push({ type: "page", n: totalPages });
+  return items;
+}
+
+
+/** Kept for local UI demos; admin/public paths load from Supabase. */
+export const MOCK_COMMENTS: GuestbookComment[] = [];

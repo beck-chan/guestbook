@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { AdminGuestbook } from "@/components/_admin/AdminGuestbook";
+import { loadAdminComments } from "@/app/actions/comments";
 import {
-  MOCK_COMMENTS,
   filterComments,
   paginateComments,
   sortComments,
@@ -41,8 +41,9 @@ function pageFrom(searchParams: Record<string, string | string[] | undefined>) {
 export default async function AdminPage({ searchParams }: PageProps<"/admin">) {
   const params = await searchParams;
   const filters = filtersFrom(params);
+  const allComments = await loadAdminComments();
   const { comments, page, totalPages } = paginateComments(
-    sortComments(filterComments(MOCK_COMMENTS, filters), filters.sort),
+    sortComments(filterComments(allComments, filters), filters.sort),
     pageFrom(params),
   );
 

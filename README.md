@@ -88,3 +88,10 @@ The last column is the PID. Stop it:
 ```bash
 taskkill //F //PID {id}
 ```
+
+
+# NOTE TO SELF
+
+don't forgor to 
+
+Optional: rewrite history (git filter-repo / BFG) and force-push to scrub the old blob — still rotate first; assume the secrets were already copied.

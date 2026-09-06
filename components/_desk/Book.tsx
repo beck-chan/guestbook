@@ -7,9 +7,22 @@ type BookProps = {
   poem?: Poem;
   onTurnPage: () => void;
   onToggle: () => void;
+  heartCount?: number;
+  liked?: boolean;
+  onToggleHeart?: () => void;
+  heartPending?: boolean;
 };
 
-export function Book({ isOpen, poem, onTurnPage, onToggle }: BookProps) {
+export function Book({
+  isOpen,
+  poem,
+  onTurnPage,
+  onToggle,
+  heartCount = 0,
+  liked = false,
+  onToggleHeart,
+  heartPending = false,
+}: BookProps) {
   return (
     <div className="book-scene" data-open={isOpen}>
       <div className={`book${isOpen ? " is-open" : ""}`}>
@@ -37,17 +50,18 @@ export function Book({ isOpen, poem, onTurnPage, onToggle }: BookProps) {
               <button
                 type="button"
                 className="poem-heart"
-                disabled={!isOpen}
+                disabled={!isOpen || heartPending || !poem}
                 tabIndex={isOpen ? 0 : -1}
-                aria-label="Heart this poem, 0 hearts"
-                aria-pressed="false"
+                aria-label={`Heart this poem, ${heartCount} hearts`}
+                aria-pressed={liked}
+                onClick={onToggleHeart}
               >
                 <svg viewBox="0 0 24 24" aria-hidden="true">
                   <path d="M12 21.35 10.55 20C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54Z" />
                 </svg>
               </button>
               <span className="poem-heart-count" aria-hidden="true">
-                0
+                {heartCount}
               </span>
             </div>
             <button

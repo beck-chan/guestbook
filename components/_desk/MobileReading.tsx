@@ -10,6 +10,12 @@ import { pickPoemIndex, poemMeasureLines, type Poem } from "@/lib/poems";
 type MobileReadingProps = {
   poems: Poem[];
   initialIndex: number;
+  heartCount?: number;
+  liked?: boolean;
+  onToggleHeart?: () => void;
+  heartPending?: boolean;
+  poemIndex?: number;
+  onPoemIndexChange?: (index: number) => void;
 };
 
 const FONT_BOOST_MAX = 4;
@@ -101,10 +107,29 @@ function fitPoemFont(copy: HTMLElement, poem: Poem) {
   return lo;
 }
 
-export function MobileReading({ poems, initialIndex }: MobileReadingProps) {
+export function MobileReading({
+  poems,
+  initialIndex,
+  heartCount = 0,
+  liked = false,
+  onToggleHeart,
+  heartPending = false,
+  poemIndex: controlledIndex,
+  onPoemIndexChange,
+}: MobileReadingProps) {
   const scrollerRef = useRef<HTMLElement>(null);
   const poemCopyRef = useRef<HTMLElement>(null);
-  const [poemIndex, setPoemIndex] = useState(initialIndex);
+  const [uncontrolledIndex, setUncontrolledIndex] = useState(initialIndex);
+  const poemIndex = controlledIndex ?? uncontrolledIndex;
+  const setPoemIndex = (updater: number | ((current: number) => number)) => {
+    const next =
+      typeof updater === "function" ? updater(poemIndex) : updater;
+    if (onPoemIndexChange) {
+      onPoemIndexChange(next);
+    } else {
+      setUncontrolledIndex(next);
+    }
+  };
   const [commentsOpen, setCommentsOpen] = useState(false);
   const [fontBoost, setFontBoost] = useState(0);
   const [fitPx, setFitPx] = useState<number | null>(null);
@@ -271,15 +296,17 @@ export function MobileReading({ poems, initialIndex }: MobileReadingProps) {
             <button
               type="button"
               className="poem-heart"
-              aria-label="Heart this poem, 0 hearts"
-              aria-pressed="false"
+              aria-label={`Heart this poem, ${heartCount} hearts`}
+              aria-pressed={liked}
+              disabled={heartPending || !poem}
+              onClick={onToggleHeart}
             >
               <svg viewBox="0 0 24 24" aria-hidden="true">
                 <path d="M12 21.35 10.55 20C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54Z" />
               </svg>
             </button>
             <span className="poem-heart-count" aria-hidden="true">
-              0
+              {heartCount}
             </span>
           </div>
         </div>

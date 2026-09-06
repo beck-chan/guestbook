@@ -1,10 +1,17 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useTransition } from "react";
+import { deleteComment, updateComment } from "@/app/actions/comments";
 import { MarkReadCheckbox } from "@/components/_admin/MarkReadCheckbox";
 import type { GuestbookComment } from "@/lib/comments";
 
 type CommentMode = { kind: "edit" | "delete"; id: string } | null;
+
+type EditDraft = {
+  name: string;
+  email: string;
+  body: string;
+};
 
 export function AdminCommentThread({
   comments,
@@ -16,10 +23,23 @@ export function AdminCommentThread({
     Object.fromEntries(comments.map((note) => [note.id, Boolean(note.read)])),
   );
   const [mode, setMode] = useState<CommentMode>(null);
-  const [draft, setDraft] = useState("");
+  const [draft, setDraft] = useState<EditDraft>({
+    name: "",
+    email: "",
+    body: "",
+  });
+  const [error, setError] = useState<string | null>(null);
+  const [pending, startTransition] = useTransition();
   const editorRef = useRef<HTMLTextAreaElement>(null);
 
   const editingId = mode?.kind === "edit" ? mode.id : null;
+
+  useEffect(() => {
+    setNotes(comments);
+    setReadById(
+      Object.fromEntries(comments.map((note) => [note.id, Boolean(note.read)])),
+    );
+  }, [comments]);
 
   useEffect(() => {
     if (editingId) {
@@ -36,8 +56,13 @@ export function AdminCommentThread({
   }
 
   function startEdit(note: GuestbookComment) {
+    setError(null);
     setMode({ kind: "edit", id: note.id });
-    setDraft(note.body);
+    setDraft({
+      name: note.name,
+      email: note.email ?? "",
+      body: note.body,
+    });
   }
 
   function saveEdit() {
@@ -45,23 +70,53 @@ export function AdminCommentThread({
       return;
     }
     const id = mode.id;
-    const next = draft.trim();
-    setNotes((current) =>
-      current.map((note) =>
-        note.id === id ? { ...note, body: next || note.body } : note,
-      ),
-    );
-    setMode(null);
+    const name = draft.name.trim();
+    const body = draft.body.trim();
+    const email = draft.email.trim();
+    if (!name || !body) {
+      setError("Display name and comment are required.");
+      return;
+    }
+
+    startTransition(async () => {
+      const result = await updateComment({ id, name, email, body });
+      if (!result.ok) {
+        setError(result.error);
+        return;
+      }
+      setNotes((current) =>
+        current.map((note) =>
+          note.id === id
+            ? {
+                ...note,
+                name,
+                email: email || undefined,
+                body,
+              }
+            : note,
+        ),
+      );
+      setMode(null);
+      setError(null);
+    });
   }
 
   function confirmDelete(id: string) {
-    setNotes((current) => current.filter((note) => note.id !== id));
-    setReadById((current) => {
-      const next = { ...current };
-      delete next[id];
-      return next;
+    startTransition(async () => {
+      const result = await deleteComment(id);
+      if (!result.ok) {
+        setError(result.error);
+        return;
+      }
+      setNotes((current) => current.filter((note) => note.id !== id));
+      setReadById((current) => {
+        const next = { ...current };
+        delete next[id];
+        return next;
+      });
+      setMode(null);
+      setError(null);
     });
-    setMode(null);
   }
 
   if (notes.length === 0) {
@@ -74,6 +129,11 @@ export function AdminCommentThread({
 
   return (
     <div className="comment-thread">
+      {error ? (
+        <p className="comment-error" role="alert">
+          {error}
+        </p>
+      ) : null}
       <nav className="admin-bulk-actions" aria-label="Mark all comments">
         <button
           type="button"
@@ -95,14 +155,9 @@ export function AdminCommentThread({
         const confirming = mode?.kind === "delete" && mode.id === note.id;
 
         return (
-          <article
-            key={note.id}
-            className={`admin-comment${note.nested ? " is-nested" : ""}`}
-          >
+          <article key={note.id} className="admin-comment">
             <figure
-              className={`comment-bubble${note.nested ? " is-nested" : ""}${
-                editing ? " is-editing" : ""
-              }`}
+              className={`comment-bubble${editing ? " is-editing" : ""}`}
               onBlur={(event) => {
                 const next = event.relatedTarget;
                 if (
@@ -113,33 +168,74 @@ export function AdminCommentThread({
                 }
               }}
             >
-              <figcaption className="comment-meta">
-                <span className="comment-name">{note.name}</span>
-                <time className="comment-time">{note.time}</time>
-              </figcaption>
-              {note.email ? (
-                <p className="admin-comment-email">{note.email}</p>
-              ) : (
-                <p className="admin-comment-email is-missing">no email</p>
-              )}
               {editing ? (
-                <textarea
-                  ref={editorRef}
-                  className="comment-input"
-                  name={`edit-${note.id}`}
-                  rows={4}
-                  aria-label={`edit ${note.name} comment`}
-                  value={draft}
-                  onChange={(event) => setDraft(event.target.value)}
-                  onKeyDown={(event) => {
-                    if (event.key === "Escape") {
-                      event.preventDefault();
-                      setMode(null);
+                <>
+                  <input
+                    className="comment-name-input"
+                    name={`edit-name-${note.id}`}
+                    type="text"
+                    aria-label={`edit ${note.name} display name`}
+                    value={draft.name}
+                    onChange={(event) =>
+                      setDraft((current) => ({
+                        ...current,
+                        name: event.target.value,
+                      }))
                     }
-                  }}
-                />
+                    disabled={pending}
+                  />
+                  <input
+                    className="comment-email"
+                    name={`edit-email-${note.id}`}
+                    type="email"
+                    aria-label={`edit ${note.name} email`}
+                    placeholder="email (optional)"
+                    value={draft.email}
+                    onChange={(event) =>
+                      setDraft((current) => ({
+                        ...current,
+                        email: event.target.value,
+                      }))
+                    }
+                    disabled={pending}
+                  />
+                  <textarea
+                    ref={editorRef}
+                    className="comment-input"
+                    name={`edit-${note.id}`}
+                    rows={4}
+                    aria-label={`edit ${note.name} comment`}
+                    value={draft.body}
+                    onChange={(event) =>
+                      setDraft((current) => ({
+                        ...current,
+                        body: event.target.value,
+                      }))
+                    }
+                    onKeyDown={(event) => {
+                      if (event.key === "Escape") {
+                        event.preventDefault();
+                        setMode(null);
+                      }
+                    }}
+                    disabled={pending}
+                  />
+                </>
               ) : (
-                <p className="comment-body">{note.body}</p>
+                <>
+                  <figcaption className="comment-meta">
+                    <span className="comment-name">{note.name}</span>
+                    <time className="comment-time" dateTime={note.createdAt}>
+                      {note.time}
+                    </time>
+                  </figcaption>
+                  {note.email ? (
+                    <p className="admin-comment-email">{note.email}</p>
+                  ) : (
+                    <p className="admin-comment-email is-missing">no email</p>
+                  )}
+                  <p className="comment-body">{note.body}</p>
+                </>
               )}
               <MarkReadCheckbox
                 commentId={note.id}
@@ -158,6 +254,7 @@ export function AdminCommentThread({
                   <button
                     type="button"
                     className="admin-comment-link"
+                    disabled={pending}
                     onClick={() => setMode(null)}
                   >
                     cancel
@@ -165,6 +262,7 @@ export function AdminCommentThread({
                   <button
                     type="button"
                     className="admin-comment-link"
+                    disabled={pending}
                     onClick={() => confirmDelete(note.id)}
                   >
                     confirm
@@ -175,6 +273,7 @@ export function AdminCommentThread({
                   <button
                     type="button"
                     className="admin-comment-link"
+                    disabled={pending}
                     onClick={() => {
                       if (editing) {
                         saveEdit();
@@ -187,7 +286,7 @@ export function AdminCommentThread({
                   <button
                     type="button"
                     className="admin-comment-link"
-                    disabled={editing}
+                    disabled={editing || pending}
                     onClick={() => startEdit(note)}
                   >
                     edit

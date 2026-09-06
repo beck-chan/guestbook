@@ -65,7 +65,7 @@ export function DeskBookmarks({ publicMode = false }: DeskBookmarksProps) {
         </a>
         <a
           className="desk-bookmark desk-bookmark-short desk-bookmark-admin"
-          href="/admin"
+          href="/admin/login"
           aria-label="admin login"
         >
           <AdminRibbon />
@@ -79,7 +79,7 @@ export function DeskBookmarks({ publicMode = false }: DeskBookmarksProps) {
     <div className="desk-bookmarks">
       <a
         className="desk-bookmark desk-bookmark-labeled"
-        href="/admin"
+        href="/admin/login"
         aria-label="admin login"
       >
         <span className="desk-bookmark-ribbon" aria-hidden="true" />

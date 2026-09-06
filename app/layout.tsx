@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Jost, Kaisei_HarunoUmi, Libre_Baskerville } from "next/font/google";
 import { CustomTheme } from "@/components/_shared/CustomTheme";
+import { GuestbookSettingsProvider } from "@/lib/guestbookSettings";
+import { loadGuestbookSettings } from "@/lib/loadGuestbookSettings";
 import "./globals.css";
 
 const jost = Jost({
@@ -30,15 +32,19 @@ export const metadata: Metadata = {
   description: "A volume of original poetry.",
 };
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export default async function RootLayout({ children }: LayoutProps<"/">) {
+  const settings = await loadGuestbookSettings();
+
   return (
     <html
       lang="en"
       className={`${jost.variable} ${baskerville.variable} ${kaisei.variable} h-full antialiased`}
     >
       <body className="min-h-full">
-        {children}
-        <CustomTheme />
+        <GuestbookSettingsProvider initialSettings={settings}>
+          {children}
+          <CustomTheme />
+        </GuestbookSettingsProvider>
       </body>
     </html>
   );

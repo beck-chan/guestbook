@@ -226,7 +226,6 @@ body {
 }
 
 .report-issue::before,
-.desk-bookmarks::before,
 .hit-counter::before {
   content: "";
   position: absolute;
@@ -241,10 +240,6 @@ body {
 
 .report-issue::before {
   inset: -2.1rem -2.45rem;
-}
-
-.desk-bookmarks::before {
-  inset: -1.7rem -1.9rem -2.5rem;
 }
 
 .hit-counter::before {
@@ -747,6 +742,11 @@ body {
   cursor: pointer;
 }
 
+.poem-heart[aria-pressed="true"] svg {
+  fill: currentColor;
+}
+
+
 .poem-heart-count {
   color: var(--peony);
   font-family: var(--peony-font);
@@ -1103,6 +1103,13 @@ body {
   line-height: 1;
   cursor: pointer;
 }
+
+.comment-error {
+  margin: 0.35rem 0 0;
+  font-size: 0.85rem;
+  color: #8b2e2e;
+}
+
 
 .comment-action:hover {
   color: var(--peony);

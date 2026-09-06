@@ -27,10 +27,10 @@ const DEFAULT_LINKS: MobileMenuLink[] = flags.docs
         target: "_blank",
         rel: "noopener noreferrer",
       },
-      { href: "/admin", label: "admin login" },
+      { href: "/admin/login", label: "admin login" },
       REPORT_ISSUE_LINK,
     ]
-  : [{ href: "/admin", label: "admin login" }, REPORT_ISSUE_LINK];
+  : [{ href: "/admin/login", label: "admin login" }, REPORT_ISSUE_LINK];
 
 const PUBLIC_LINKS: MobileMenuLink[] = [
   {

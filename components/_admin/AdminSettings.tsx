@@ -1,6 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useTransition } from "react";
+import {
+  loadGuestbookSettingsAction,
+  saveGuestbookSettingsAction,
+} from "@/lib/actions/settings";
 import {
   ACCENT_FONTS,
   MAIN_FONTS,
@@ -60,8 +64,10 @@ function OnOffToggle({
 }
 
 export function AdminSettings() {
-  const [saved, save] = useGuestbookSettings();
+  const [saved, saveContext, setSettings] = useGuestbookSettings();
   const [draft, setDraft] = useState<GuestbookSettings>(saved);
+  const [error, setError] = useState<string | null>(null);
+  const [pending, startTransition] = useTransition();
 
   useEffect(() => {
     setDraft(saved);
@@ -69,6 +75,15 @@ export function AdminSettings() {
 
   function patch(next: Partial<GuestbookSettings>) {
     setDraft((current) => ({ ...current, ...next }));
+  }
+
+  function undoChanges() {
+    setError(null);
+    startTransition(async () => {
+      const fresh = await loadGuestbookSettingsAction();
+      setSettings(fresh);
+      setDraft(fresh);
+    });
   }
 
   return (
@@ -79,7 +94,17 @@ export function AdminSettings() {
         className="admin-settings-list"
         onSubmit={(event) => {
           event.preventDefault();
-          save(draft);
+          setError(null);
+          startTransition(async () => {
+            const result = await saveGuestbookSettingsAction(draft);
+            if (result.error) {
+              setError(result.error);
+              return;
+            }
+            const next = result.settings ?? draft;
+            saveContext(next);
+            setDraft(next);
+          });
         }}
       >
         <label className="admin-setting-field">
@@ -282,15 +307,21 @@ export function AdminSettings() {
             }
           />
         </label>
+        {error ? (
+          <p className="comment-error" role="alert">
+            {error}
+          </p>
+        ) : null}
         <nav className="admin-settings-actions" aria-label="Save settings">
           <button
             type="button"
             className="admin-comment-link"
-            onClick={() => setDraft(saved)}
+            disabled={pending}
+            onClick={undoChanges}
           >
             undo changes
           </button>
-          <button type="submit" className="admin-comment-link">
+          <button type="submit" className="admin-comment-link" disabled={pending}>
             save changes
           </button>
         </nav>
