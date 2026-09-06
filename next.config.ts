@@ -35,10 +35,15 @@ const nextConfig: NextConfig = {
 
 const withMDX = createMDX({
   options: {
-    remarkPlugins: [path.join(root, "lib/mdx/remark-docs-syntax.mjs")],
+    // Tuple form includes `{ rev }` in the loader options hash so plugin edits
+    // bust @mdx-js/loader's processor cache (functions alone hash as null).
+    remarkPlugins: [
+      "remark-gfm",
+      [path.join(root, "lib/mdx/remark-docs-syntax.mjs"), { rev: 4 }],
+    ],
     rehypePlugins: [
       "rehype-slug",
-      path.join(root, "lib/mdx/rehype-docs-highlight.mjs"),
+      [path.join(root, "lib/mdx/rehype-docs-highlight.mjs"), { rev: 1 }],
     ],
   },
 });

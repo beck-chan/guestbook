@@ -84,6 +84,16 @@ const components: MDXComponents = {
       {children}
     </pre>
   ),
+  table: ({ children, className, ...props }) => (
+    <div className="docs-table-wrap">
+      <table
+        {...props}
+        className={["docs-table", className].filter(Boolean).join(" ")}
+      >
+        {children}
+      </table>
+    </div>
+  ),
   li: ({ children, className, ...props }) => {
     const names = classNames(className);
     const isTask = names.includes("task-list-item");
@@ -106,6 +116,7 @@ const components: MDXComponents = {
       </li>
     );
   },
+  DocsHeart,
   DocsCallout,
   DocsColumns,
   DocsColumn,

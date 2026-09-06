@@ -27,7 +27,7 @@ export const DOCS_NAV_SECTIONS: DocsNavSection[] = [
       { label: "Customize Settings", href: "/docs/settings" },
       { label: "Moderate Comments", href: "/docs/moderate" },
       { label: "Add Analytics", href: "/docs/analytics" },
-      { label: "Manage Admin Users", href: "/docs/admin" },
+      { label: "Manage Admin Auth", href: "/docs/admin" },
     ],
   },
   {
@@ -80,16 +80,20 @@ export const DOCS_NAV_SECTIONS: DocsNavSection[] = [
           title: "Internal",
           items: [
             {
-              label: "MDX Reference",
-              href: "/docs/example/",
-            },
-            {
               label: "Privacy Policy",
               href: "/docs/policy/",
             },
             {
+              label: "Terms of Service",
+              href: "/docs/service/",
+            },
+            {
             label: "Search & LLM Ingestion",
             href: "/docs/search/",
+            },
+            {
+              label: "MDX Reference",
+              href: "/docs/example/",
             },
           ],
         },

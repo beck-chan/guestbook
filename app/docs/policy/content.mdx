@@ -1,7 +1,79 @@
 ---
-subtitle: Examples on this page will render with the proper styling.
+subtitle: How this guestbook handles personal data.
 search: false
-public: false
 ---
 
+# Privacy Policy
 
+This page describes how the *y2k Guestbook* ("the Site") handles information. It is written for:
+
+- [x] Guestbook commenters 
+- [x] Visitors who interact with the Original Poetry volume
+- [x] Google account holders who sign in as admins, who can only access the guestbook administration panel via invite
+
+::: {.callout}
+# Contact
+
+This page is not intended to be a substitute for legal advice. If you have any questions about this policy, please reach out:
+
+- Click **Report Issue** to open an issue on linked GitHub repository.
+- Email: [beckchan.tech@gmail.com](mailto:beckchan.tech@gmail.com?subject=y2k%20Guestbook%20Privacy%20Policy){.blank}
+
+:::
+
+## What We Collect
+
+| Data | Who | Purpose |
+|---|---|---|
+| Display name & message body | Anyone who comments | Displayed in posted comments |
+| Optional email | Commenters | Visible to admins only — will not be used to contact you unless requested in your comment |
+| Google account email & basic profile | Admins signing in with Google | Authenticate allow-listed users|
+| IP address (stored hashed) | Commenters | Rate-limit abuse |
+| Anonymous visitor cookie (poem {.heart}#) | Visitors who {.heart} like poems | Count one {.heart} like interaction per visitor per poem |
+| Page-view / analytics events | Visitors | Traffic & hit-counter stats |
+
+::: {.callout}
+We do *not* use Google SSO to read Gmail, Drive, or other Google data beyond basic profile/email for admin login.
+
+:::
+
+## How We Use It
+
+- Run and moderate the guestbook (edit and delete comments as needed).
+- Limit spam and abuse (profanity checks, rate limits).
+- Restrict `/admin` to allow-listed Google accounts.
+- Measure visits to display hit counter / track visitor interactions with PostHog.
+
+## Who Processes It
+
+- **Google Cloud OAuth Client** — SSO for admins
+- **Supabase** — Auth sessions and database storage
+- **Vercel** — Serves the site on the cloud
+- **PostHog** — Analytics tracking
+
+::: {.callout}
+We do not sell personal data.
+
+:::
+
+## Retention and Deletion
+
+- Guestbook comments (and optional emails) stay until an admin removes them or the database is cleared.
+- Admin sessions use Supabase Auth (short-lived access tokens, long-lived refresh until sign-out or cookie clear).
+- Rate-limit keys are temporary.
+- Analytics retention follows the PostHog project settings.
+
+::: {.callout}
+To request deletion of a comment or related data you submitted, contact us (refer to **Contact** above) and provide your submitted display name, and describe the post or approximate time.
+
+:::
+
+## Your Choices
+
+- Do not submit an email if you prefer not to share one.
+- Admins can sign out to end the current session — Clear site cookies to drop stored auth/visitor cookies.
+- You can ask us to delete a comment or stored contact email you provided.
+
+## Changes
+
+We may update this policy when the Site’s features or processors change. The version on this page is the current one.

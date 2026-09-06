@@ -547,6 +547,16 @@ body:has(.docs-shell) {
   padding-left: 1.15em;
 }
 
+.docs-article .docs-inline-heart {
+  display: inline-block;
+  width: 0.85em;
+  height: 0.9em;
+  margin: 0 0.08em;
+  vertical-align: -0.12em;
+  color: var(--peony);
+  overflow: visible;
+}
+
 .docs-article .docs-list-heart {
   display: none;
 }
@@ -961,6 +971,37 @@ body:has(.docs-shell) {
 
 .docs-callout > :first-child {
   margin-top: 0;
+}
+
+.docs-article .docs-table-wrap {
+  margin: 1.1rem 0 0;
+  overflow-x: auto;
+}
+
+.docs-article table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: clamp(0.95rem, 1.4vw, 1.15rem);
+  line-height: 1.45;
+}
+
+.docs-article th,
+.docs-article td {
+  padding: 0.55rem 0.75rem;
+  border-bottom: 1px solid color-mix(in srgb, #6f4e37 22%, white);
+  text-align: left;
+  vertical-align: top;
+}
+
+.docs-article th {
+  color: color-mix(in srgb, #6f4e37 48%, white);
+  font-family: var(--peony-font);
+  font-weight: 400;
+  letter-spacing: 0.02em;
+}
+
+.docs-article tbody tr:last-child td {
+  border-bottom: 0;
 }
 
 .docs-columns {

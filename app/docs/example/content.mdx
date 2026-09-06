@@ -70,6 +70,8 @@ You can write **bold** and *italic* in the same sentence as the surrounding copy
 
 Append `{.button}` to a markdown link for a bordered button. Append `{.blank}` to open a link in a new tab.
 
+Drop `{.heart}` anywhere in prose for a peony-pink heart: poem {.heart} guestbook.
+
 :::
 
 ::: {.20}
@@ -173,3 +175,15 @@ To add spacing on the top-level fence:
 :::
 
 :::
+
+### Tables
+
+Pipe tables use a header row, a `| --- |` separator, and body rows:
+
+| Data | Who | Purpose |
+| --- | --- | --- |
+| Display name and message body | Anyone who posts | Show guestbook comments |
+| Optional email (if the email field is enabled) | Comment authors | Visible to site admins only |
+| IP address (stored hashed) | Comment submitters | Rate-limit abuse |
+
+Align a column with `:---` (left), `:---:` (center), or `---:` (right) in the separator row.

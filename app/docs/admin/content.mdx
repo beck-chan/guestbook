@@ -1,4 +1,84 @@
 ---
-subtitle: Examples on this page will render with the proper styling.
+subtitle: Manage access to your guestbook admin dashboard.
 ---
+
+import Setup from "../_snippets/setup.mdx"
+
+# Manage Admin Auth
+
+<Setup />
+
+## Managing Users
+
+### Allow Admin Users
+
+In the event you want to allow more users to moderate your guestbook, you can allow-list their Google accounts as admin users.
+
+Run the following command in your terminal to allow-list a Google account as your admin user:
+
+```bash
+npm install
+npm run allow-admin -- example@gmail.com
+```
+::: {.callout }
+The invited user will not receive an email invitation, and will need to authorize Google to connect on their first sign in.
+
+:::
+
+### Revoke Admin Users
+
+Run the following command in your terminal to revoke admin access from a Google account:
+
+```bash
+npm install
+npm run revoke-admin -- example@gmail.com
+```
+::: {.callout }
+Their access will be revoked after their most recent authentication session expires. 
+
+:::
+
+## Publish Your Google OAuth Client
+
+If you intend to serve your guestbook application to the general public, you may want to publish your Google OAuth client to production.
+
+This will remove the generic `You're receiving this email because you used Sign in with Google to sign in to <your-project-url>.supabase.co on {timestamp}.` message when admin users authenticate into your guestbook dashboard, but may require a verification process depending on your Google Cloud project settings.
+
+Log in to your [Google Cloud](https://console.cloud.google.com/){.blank} console and select your project:
+
+::: {.tabset}
+
+# i. Configure Your Branding
+
+1. In the left sidebar, click **APIs & Services**, then select **OAuth consent screen**.
+
+2. Click **Branding** and enter your:
+
+    - **App name** — This will be displayed instead of your generic Supabase project URL.
+    - **User support email** — This will be displayed in the "Contact us" link in the Google OAuth consent screen.
+
+3. Under App domain, enter:
+
+    - **Application home page** — The URL of your guestbook application.
+
+    - **Application privacy policy link** — The URL of your guestbook's [privacy policy](docs/policy).
+
+    - **Application terms of service link** — The URL of your guestbook's [terms of service](/docs/service).
+
+4. Under Authorized domains, enter any **Authorized domains #** where you intend to serve your guestbook application.
+
+5. In **Developer contact information**, enter your contact email.
+
+6. Click **Save**.
+
+# ii. Publish Your Client
+
+1. In the left sidebar, click **Audience**.
+
+2. Under Testing, click **Publish app**.
+
+3. Click **Confirm** to publish your client to production.
+
+
+:::
 
