@@ -39,6 +39,11 @@ async function getOrCreateVisitorKey() {
   return key;
 }
 
+function asCount(value: unknown) {
+  const n = Number(value ?? 0);
+  return Number.isFinite(n) && n > 0 ? Math.floor(n) : 0;
+}
+
 export async function getPoemHeartTotal(): Promise<number> {
   try {
     const supabase = await createClient();
@@ -51,10 +56,62 @@ export async function getPoemHeartTotal(): Promise<number> {
       return 0;
     }
 
-    const total = Number(data?.total_hearts ?? 0);
-    return Number.isFinite(total) && total > 0 ? Math.floor(total) : 0;
+    return asCount(data?.total_hearts);
   } catch {
     return 0;
+  }
+}
+
+export type DeskHeartSeed = {
+  heartCounts: Record<string, number>;
+  initialHeart: PoemHeartState;
+};
+
+export async function getDeskHeartSeed(poemId: string): Promise<DeskHeartSeed> {
+  const empty: PoemHeartState = {
+    liked: false,
+    heart_count: 0,
+    total_hearts: 0,
+  };
+  const trimmed = poemId.trim();
+
+  try {
+    const cookieStore = await cookies();
+    const visitorKey = cookieStore.get(VISITOR_COOKIE)?.value?.trim() ?? "";
+    const supabase = await createClient();
+
+    const [countsRes, totalRes, stateRes] = await Promise.all([
+      supabase.from("poem_heart_counts").select("poem_id, heart_count"),
+      supabase.from("poem_heart_total").select("total_hearts").maybeSingle(),
+      trimmed
+        ? supabase.rpc("poem_heart_state", {
+            p_poem_id: trimmed,
+            p_visitor_key: visitorKey,
+          })
+        : Promise.resolve({ data: null, error: null }),
+    ]);
+
+    const heartCounts: Record<string, number> = {};
+    if (!countsRes.error && countsRes.data) {
+      for (const row of countsRes.data) {
+        const id = typeof row.poem_id === "string" ? row.poem_id.trim() : "";
+        const count = asCount(row.heart_count);
+        if (id && count > 0) {
+          heartCounts[id] = count;
+        }
+      }
+    }
+
+    const fromRpc = stateRes.error ? empty : asHeartState(stateRes.data);
+    const initialHeart: PoemHeartState = {
+      liked: fromRpc.liked,
+      heart_count: fromRpc.heart_count || heartCounts[trimmed] || 0,
+      total_hearts: fromRpc.total_hearts || asCount(totalRes.data?.total_hearts),
+    };
+
+    return { heartCounts, initialHeart };
+  } catch {
+    return { heartCounts: {}, initialHeart: empty };
   }
 }
 

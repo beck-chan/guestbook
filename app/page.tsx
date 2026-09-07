@@ -1,15 +1,15 @@
 import { loadPoems } from "@/lib/loadPoems";
 import { pickPoemIndex } from "@/lib/poems";
 import { PoetryDesk } from "@/components/_desk/PoetryDesk";
-import { getPoemHeartTotal } from "@/lib/actions/hearts";
+import { getDeskHeartSeed } from "@/lib/actions/hearts";
 import { getUniqueVisitors } from "@/lib/uniqueVisitors";
 
 export default async function Home() {
   const poems = loadPoems();
   const initialIndex = pickPoemIndex(poems.length);
-  const [hitCount, totalHearts] = await Promise.all([
+  const [hitCount, heartSeed] = await Promise.all([
     getUniqueVisitors(),
-    getPoemHeartTotal(),
+    getDeskHeartSeed(poems[initialIndex]?.id ?? ""),
   ]);
 
   return (
@@ -17,7 +17,8 @@ export default async function Home() {
       poems={poems}
       initialIndex={initialIndex}
       hitCount={hitCount}
-      totalHearts={totalHearts}
+      initialHeart={heartSeed.initialHeart}
+      heartCounts={heartSeed.heartCounts}
     />
   );
 }
