@@ -10,7 +10,7 @@ import {
   formatCommentTime,
   type GuestbookComment,
 } from "@/lib/comments";
-import { commentBodyLengthError } from "@/lib/commentLimits";
+import { commentLengthError } from "@/lib/commentLimits";
 import {
   guestbookCommentPlaceholder,
   useGuestbookSettings,
@@ -83,7 +83,12 @@ export function CommentBubbles({
   function onSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setError(null);
-    const lengthError = commentBodyLengthError(body.trim(), commentLength);
+    const lengthError = commentLengthError(
+      name.trim(),
+      captureEmail ? email.trim() : "",
+      body.trim(),
+      commentLength,
+    );
     if (lengthError) {
       setError(lengthError);
       return;

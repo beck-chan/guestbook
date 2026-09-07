@@ -122,3 +122,7 @@ npx supabase gen types typescript --project-id YOUR_PROJECT_REF --schema public 
 
 need to do this for public docs too
 
+
+Display name: 128 characters
+Email: 254 characters (the usual max for an email address)
+

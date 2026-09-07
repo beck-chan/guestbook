@@ -12,7 +12,7 @@ import { guestbookAdminPath } from "@/lib/guestbookPaths";
 import { guestbookPageSize } from "@/lib/guestbookSettingsShared";
 import { clientIp } from "@/lib/clientIp";
 import { loadGuestbookSettings } from "@/lib/loadGuestbookSettings";
-import { commentBodyLengthError } from "@/lib/commentLimits";
+import { commentLengthError } from "@/lib/commentLimits";
 import {
   checkCommentProfanity,
   profanityErrorMessage,
@@ -98,7 +98,12 @@ export async function submitComment(input: {
   if (!body) {
     return { ok: false, error: "Comment is required." };
   }
-  const lengthError = commentBodyLengthError(body, settings.commentLength);
+  const lengthError = commentLengthError(
+    name,
+    email,
+    body,
+    settings.commentLength,
+  );
   if (lengthError) {
     return { ok: false, error: lengthError };
   }
@@ -193,7 +198,12 @@ export async function updateComment(input: {
     return { ok: false, error: "Comment is required." };
   }
   const settings = await loadGuestbookSettings();
-  const lengthError = commentBodyLengthError(body, settings.commentLength);
+  const lengthError = commentLengthError(
+    name,
+    email,
+    body,
+    settings.commentLength,
+  );
   if (lengthError) {
     return { ok: false, error: lengthError };
   }

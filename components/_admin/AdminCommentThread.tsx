@@ -8,7 +8,7 @@ import {
   updateComment,
 } from "@/app/actions/comments";
 import { MarkReadCheckbox } from "@/components/_admin/MarkReadCheckbox";
-import { commentBodyLengthError } from "@/lib/commentLimits";
+import { commentLengthError } from "@/lib/commentLimits";
 import { formatCommentTime, type GuestbookComment } from "@/lib/comments";
 import { useGuestbookSettings } from "@/lib/guestbookSettings";
 
@@ -98,7 +98,7 @@ export function AdminCommentThread({
       setError("Display name and comment are required.");
       return;
     }
-    const lengthError = commentBodyLengthError(body, commentLength);
+    const lengthError = commentLengthError(name, email, body, commentLength);
     if (lengthError) {
       setError(lengthError);
       return;
