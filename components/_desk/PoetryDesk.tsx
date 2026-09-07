@@ -95,7 +95,9 @@ export function PoetryDesk({ poems, initialIndex, hitCount }: PoetryDeskProps) {
         <DeskBookmarks />
         <ReportIssueLink />
         <div className={`desk-split${isOpen ? " is-open" : ""}`}>
-          <div className={`stage${isOpen ? " is-open" : ""}`}>
+          <div
+            className={`stage${isOpen ? " is-open" : ""}${hintVisible ? " has-guestbook-hint" : ""}`}
+          >
             <Book
               isOpen={isOpen}
               poem={poem}

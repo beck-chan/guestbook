@@ -24,10 +24,10 @@ export const DOCS_NAV_SECTIONS: DocsNavSection[] = [
   {
     title: "Guides",
     items: [
+      { label: "Manage Admin Auth", href: "/docs/admin" },
+      { label: "Add Analytics", href: "/docs/analytics" },
       { label: "Customize Settings", href: "/docs/settings" },
       { label: "Moderate Comments", href: "/docs/moderate" },
-      { label: "Add Analytics", href: "/docs/analytics" },
-      { label: "Manage Admin Auth", href: "/docs/admin" },
     ],
   },
   {

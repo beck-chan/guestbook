@@ -172,7 +172,13 @@ Set `homeHref=` according to where your public comment board lives:
 
 ## Configure Next.js
 
-Wrap your existing config so Next compiles the kit and the Settings **view example** stylesheet resolves at `/admin/example.css`:
+::: {.tabset}
+
+# i. Wrap Config
+
+Next needs a small config wrap so it can compile the shipped npm package, and so the **view example** link for the custom theme Settings can serve a sample CSS file.
+
+In your `next.config.ts` (or `next.config.js`), wrap your existing config with `withGuestbookConfig`:
 
 ```typescript
 import type { NextConfig } from "next";
@@ -185,21 +191,28 @@ const nextConfig: NextConfig = {
 export default withGuestbookConfig(nextConfig);
 ```
 
-`withGuestbookConfig` adds `transpilePackages: ["y2k-guestbook"]` and the `/admin/example.css` → `/admin/example` rewrite. Merge carefully if you already define `rewrites()`. 
+::: {.callout}  
+If you already define your own `rewrites()`, merge them carefully — `withGuestbookConfig` adds one rewrite of its own.
 
-### Theme example route
+:::
 
-Create as `app/admin/example/route.ts` (Settings **view example**; needs `withGuestbookConfig` above):
+# ii. Set Theme Example Route
+
+Create `app/admin/example/route.ts`: 
 
 ```typescript
 export { GET, dynamic } from "y2k-guestbook/example-css";
 ```
 
+This is the file that **view example** loads — it only works after the config wrapping.
 
+# iii. Add Stylesheet and Providers
 
-### Add Stylesheet and Providers
+Place two last pieces in your root layout (`app/layout.tsx`):
 
-Keep `@import "tailwindcss"` in *your* `globals.css`. Import the kit stylesheet (guestbook `@layer` only) and wrap the tree in `GuestbookProviders` (settings, `CustomTheme`, admin auth error overlay):
+1. Import the default guestbook stylesheet (`y2k-guestbook/styles.css`) so the board and admin dashboard have the skeleton theme. Leave your own Tailwind import in `globals.css` as-is.
+
+2. Wrap the app in `GuestbookProviders`. That turns on settings, custom theme overrides, and the admin auth error overlay.
 
 ```typescript
 import type { Metadata } from "next";
@@ -224,7 +237,12 @@ export default function RootLayout({
 }
 ```
 
-Merge this into your existing root layout if you already have one — mount `GuestbookProviders` around `{children}` and import the stylesheet once.
+::: {.callout}
+If you already have a root layout, merge these in: import the stylesheet once, and wrap `{children}` with `GuestbookProviders`.
+
+:::
+
+:::
 
 ## Run Development Server
 

@@ -37,50 +37,37 @@ const MONTHS = [
   "Dec",
 ] as const;
 
-export function formatCommentTime(iso: string, now = Date.now()) {
+/** Formats in the runtime's local timezone, e.g. `2026-Aug-09 / 5:36PM`. */
+export function formatCommentTime(iso: string) {
   const date = new Date(iso);
   if (Number.isNaN(date.getTime())) {
     return iso;
   }
 
-  const diffMs = now - date.getTime();
-  if (diffMs < 60_000) {
-    return "just now";
-  }
-  if (diffMs < 86_400_000) {
-    const hours = Math.max(1, Math.floor(diffMs / 3_600_000));
-    return `${hours}h ago`;
-  }
+  const year = date.getFullYear();
+  const month = MONTHS[date.getMonth()];
+  const day = String(date.getDate()).padStart(2, "0");
+  const minutes = String(date.getMinutes()).padStart(2, "0");
+  const hour24 = date.getHours();
+  const ampm = hour24 >= 12 ? "PM" : "AM";
+  const hour12 = hour24 % 12 || 12;
 
-  const startOfToday = new Date(now);
-  startOfToday.setHours(0, 0, 0, 0);
-  const startOfYesterday = new Date(startOfToday.getTime() - 86_400_000);
-  if (date >= startOfYesterday && date < startOfToday) {
-    return "yesterday";
-  }
-
-  return `${MONTHS[date.getMonth()]} ${date.getDate()}`;
+  return `${year}-${month}-${day} / ${hour12}:${minutes}${ampm}`;
 }
 
-export function mapPublicComment(
-  row: PublicCommentRow,
-  now = Date.now(),
-): GuestbookComment {
+export function mapPublicComment(row: PublicCommentRow): GuestbookComment {
   return {
     id: row.id,
     name: row.display_name,
     body: row.body,
     createdAt: row.created_at,
-    time: formatCommentTime(row.created_at, now),
+    time: formatCommentTime(row.created_at),
   };
 }
 
-export function mapAdminComment(
-  row: AdminCommentRow,
-  now = Date.now(),
-): GuestbookComment {
+export function mapAdminComment(row: AdminCommentRow): GuestbookComment {
   return {
-    ...mapPublicComment(row, now),
+    ...mapPublicComment(row),
     email: row.email ?? undefined,
     read: Boolean(row.is_read),
   };
@@ -124,23 +111,25 @@ function commentDate(note: GuestbookComment): Date {
     }
   }
 
-  const { time } = note;
-  if (time === "just now") {
-    return new Date(2026, 8, 2, 12, 0, 0);
-  }
-  if (time.endsWith("h ago") || time.endsWith("m ago")) {
-    return new Date(2026, 8, 2, 10, 0, 0);
-  }
-  if (time === "yesterday") {
-    return new Date(2026, 8, 1, 12, 0, 0);
-  }
-  const match = time.match(
-    /^(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s+(\d{1,2})$/,
+  const match = note.time.match(
+    /^(\d{4})-(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)-(\d{2}) \/ (\d{1,2}):(\d{2})(AM|PM)$/,
   );
   if (match) {
-    return new Date(2026, MONTH_INDEX[match[1]], Number(match[2]), 12, 0, 0);
+    const [, year, month, day, hourRaw, minute, ampm] = match;
+    let hour = Number(hourRaw) % 12;
+    if (ampm === "PM") {
+      hour += 12;
+    }
+    return new Date(
+      Number(year),
+      MONTH_INDEX[month],
+      Number(day),
+      hour,
+      Number(minute),
+      0,
+    );
   }
-  return new Date(2026, 8, 2, 12, 0, 0);
+  return new Date(NaN);
 }
 
 export function filterComments(

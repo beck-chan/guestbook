@@ -67,11 +67,10 @@ export async function getPublicCommentsPage(
   const total = count ?? 0;
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
   const safePage = Math.min(current, totalPages);
-  const now = Date.now();
 
   return {
     comments: ((data ?? []) as PublicCommentRow[]).map((row) =>
-      mapPublicComment(row, now),
+      mapPublicComment(row),
     ),
     page: safePage,
     totalPages,
@@ -165,8 +164,7 @@ export async function loadAdminComments(): Promise<GuestbookComment[]> {
     return [];
   }
 
-  const now = Date.now();
-  return (data as AdminCommentRow[]).map((row) => mapAdminComment(row, now));
+  return (data as AdminCommentRow[]).map((row) => mapAdminComment(row));
 }
 
 export async function updateComment(input: {

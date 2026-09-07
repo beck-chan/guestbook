@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { adminHref, type AdminFilters } from "@/lib/comments";
 
@@ -37,10 +38,6 @@ export function AdminFilters({
         basePath,
       ),
     );
-  }
-
-  function clearAll() {
-    router.push(basePath);
   }
 
   return (
@@ -142,13 +139,9 @@ export function AdminFilters({
               </div>
             </div>
             <div className="admin-search-row">
-              <button
-                type="button"
-                className="admin-comment-link"
-                onClick={clearAll}
-              >
+              <Link className="admin-comment-link" href={basePath} scroll={false}>
                 clear all
-              </button>
+              </Link>
               <input
                 className="admin-filter admin-filter-search"
                 type="search"

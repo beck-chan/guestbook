@@ -575,6 +575,16 @@ body {
   line-height: 1.55;
 }
 
+.easter-body .easter-inline-heart {
+  display: inline-block;
+  width: 0.85em;
+  height: 0.9em;
+  margin: 0 0.08em;
+  vertical-align: -0.12em;
+  color: var(--peony);
+  overflow: visible;
+}
+
 .easter-body:last-of-type {
   margin-bottom: 0;
 }
@@ -973,6 +983,30 @@ body {
     right: 3.25rem;
     left: auto;
     bottom: auto;
+  }
+
+  .stage .leaf::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 3;
+    height: 10.5rem;
+    pointer-events: none;
+    opacity: 0;
+    background: linear-gradient(
+      to bottom,
+      rgb(250 246 234 / 0) 0%,
+      rgb(250 246 234 / 0.78) 32%,
+      rgb(250 246 234 / 0.96) 62%,
+      var(--paper) 100%
+    );
+    transition: opacity 0.28s ease;
+  }
+
+  .stage.has-guestbook-hint .leaf::after {
+    opacity: 1;
   }
 
   .desk-guestbook-hint {
@@ -2212,6 +2246,10 @@ body {
     transition: none;
   }
 
+  .stage .leaf::after {
+    transition: none;
+  }
+
   .demobook-marquee {
     animation: none;
     padding-left: 0;
@@ -2355,7 +2393,8 @@ body {
     background: linear-gradient(
       to bottom,
       rgb(250 246 234 / 0) 0%,
-      rgb(250 246 234 / 0.55) 42%,
+      rgb(250 246 234 / 0.72) 36%,
+      rgb(250 246 234 / 0.94) 68%,
       var(--paper) 100%
     );
   }

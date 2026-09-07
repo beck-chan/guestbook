@@ -1,3 +1,5 @@
+import { DocsHeart } from "@/app/docs/_components/DocsHeart";
+
 const EASTER_EGG = {
   heading: "Macte virtute!",
   paragraphs: [
@@ -5,12 +7,26 @@ const EASTER_EGG = {
     "I am a human that hates talking about myself, which you wouldn’t believe if you managed to corner me into an interview.",
     "The best I can do is some original poetry, some of which may or may not be autobiographical.",
     "Turn the page to receive a slightly-randomized one, y’know, in honour of the ephemeral.",
-    "No, I will not be taking any constructive criticism, thank you very kindly — but please do <3 the poems you like and leave a comment in the guestbook."
+    "No, I will not be taking any constructive criticism, thank you very kindly — but please do <3 the poems you like and leave a comment in the guestbook.",
   ],
   signoff: {
     mark: "svv,",
   },
 };
+
+function renderParagraph(paragraph: string) {
+  if (!paragraph.includes("<3")) {
+    return paragraph;
+  }
+  const [before, after] = paragraph.split("<3");
+  return (
+    <>
+      {before}
+      <DocsHeart filled className="easter-inline-heart" />
+      {after}
+    </>
+  );
+}
 
 export function EasterEgg() {
   return (
@@ -18,7 +34,7 @@ export function EasterEgg() {
       <p className="easter-heading">{EASTER_EGG.heading}</p>
       {EASTER_EGG.paragraphs.map((paragraph) => (
         <p key={paragraph} className="easter-body">
-          {paragraph}
+          {renderParagraph(paragraph)}
         </p>
       ))}
       <p className="easter-signoff">

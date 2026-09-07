@@ -7,6 +7,7 @@ import {
 } from "@/app/actions/comments";
 import { HitCounter } from "@/components/_shared/HitCounter";
 import {
+  formatCommentTime,
   type GuestbookComment,
 } from "@/lib/comments";
 import {
@@ -153,8 +154,14 @@ export function CommentBubbles({
           <figure key={note.id} className="comment-bubble">
             <figcaption className="comment-meta">
               <span className="comment-name">{note.name}</span>
-              <time className="comment-time" dateTime={note.createdAt}>
-                {note.time}
+              <time
+                className="comment-time"
+                dateTime={note.createdAt}
+                suppressHydrationWarning
+              >
+                {note.createdAt
+                  ? formatCommentTime(note.createdAt)
+                  : note.time}
               </time>
             </figcaption>
             <p className="comment-body">{note.body}</p>

@@ -104,3 +104,21 @@ don't forgor to
 Optional: rewrite history (git filter-repo / BFG) and force-push to scrub the old blob — still rotate first; assume the secrets were already copied.
 
 remove docs install later
+
+## api gen ref
+
+```bash
+mkdir -p docs/api
+npx supabase login
+npx supabase gen types typescript --project-id yahduosmchkyapkvpdn --schema public > docs/api/database.types.ts
+```
+
+If you prefer a token instead of npx supabase login: Dashboard → Account → Access Tokens, then:
+
+```bash
+export SUPABASE_ACCESS_TOKEN=your_token
+npx supabase gen types typescript --project-id YOUR_PROJECT_REF --schema public > docs/api/database.types.ts
+```
+
+need to do this for public docs too
+

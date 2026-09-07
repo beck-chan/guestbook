@@ -8,7 +8,7 @@ import {
   updateComment,
 } from "@/app/actions/comments";
 import { MarkReadCheckbox } from "@/components/_admin/MarkReadCheckbox";
-import type { GuestbookComment } from "@/lib/comments";
+import { formatCommentTime, type GuestbookComment } from "@/lib/comments";
 
 type CommentMode = { kind: "edit" | "delete"; id: string } | null;
 
@@ -243,8 +243,14 @@ export function AdminCommentThread({
                 <>
                   <figcaption className="comment-meta">
                     <span className="comment-name">{note.name}</span>
-                    <time className="comment-time" dateTime={note.createdAt}>
-                      {note.time}
+                    <time
+                      className="comment-time"
+                      dateTime={note.createdAt}
+                      suppressHydrationWarning
+                    >
+                      {note.createdAt
+                        ? formatCommentTime(note.createdAt)
+                        : note.time}
                     </time>
                   </figcaption>
                   {note.email ? (
