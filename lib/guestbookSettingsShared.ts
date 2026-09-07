@@ -12,6 +12,7 @@ export type GuestbookSettings = {
   accentFont: string;
   accentFontSize: FontSize;
   pageSize: string;
+  commentLength: string;
   rateLimitCount: string;
   rateLimitMinutes: string;
   rateLimitDaily: string;
@@ -29,6 +30,7 @@ export type GuestbookSettingsRow = {
   accent_font: string | null;
   accent_font_size: string | null;
   page_size: number | null;
+  comment_length: number | null;
   rate_limit_count: number | null;
   rate_limit_minutes: number | null;
   rate_limit_daily: number | null;
@@ -62,6 +64,7 @@ export const DEFAULT_GUESTBOOK_SETTINGS: GuestbookSettings = {
   accentFont: "peony",
   accentFontSize: "regular",
   pageSize: "10",
+  commentLength: "1000",
   rateLimitCount: "1",
   rateLimitMinutes: "5",
   rateLimitDaily: "2",
@@ -108,6 +111,10 @@ export function normalizeGuestbookSettings(
       row?.page_size != null
         ? String(row.page_size)
         : DEFAULT_GUESTBOOK_SETTINGS.pageSize,
+    commentLength:
+      row?.comment_length != null
+        ? String(guestbookCommentLength(row.comment_length))
+        : DEFAULT_GUESTBOOK_SETTINGS.commentLength,
     rateLimitCount:
       row?.rate_limit_count != null
         ? String(row.rate_limit_count)
@@ -147,6 +154,7 @@ export function guestbookSettingsToRow(settings: GuestbookSettings) {
     accent_font: settings.accentFont,
     accent_font_size: settings.accentFontSize,
     page_size: guestbookPageSize(settings.pageSize),
+    comment_length: guestbookCommentLength(settings.commentLength),
     rate_limit_count: positiveInt(settings.rateLimitCount, 1),
     rate_limit_minutes: positiveInt(settings.rateLimitMinutes, 5),
     rate_limit_daily: positiveInt(settings.rateLimitDaily, 2),
@@ -196,6 +204,24 @@ const SIZE_SCALE: Record<FontSize, string> = {
 export function guestbookPageSize(pageSize: string) {
   const parsed = Number.parseInt(pageSize, 10);
   return Number.isFinite(parsed) && parsed >= 4 && parsed <= 10 ? parsed : 10;
+}
+
+export const DEFAULT_COMMENT_BODY_MAX_LENGTH = 1000;
+export const COMMENT_BODY_MAX_LENGTH_MIN = 1;
+export const COMMENT_BODY_MAX_LENGTH_MAX = 10000;
+
+export function guestbookCommentLength(
+  value: string | number | null | undefined,
+) {
+  const parsed =
+    typeof value === "number" ? value : Number.parseInt(String(value ?? ""), 10);
+  if (!Number.isFinite(parsed)) {
+    return DEFAULT_COMMENT_BODY_MAX_LENGTH;
+  }
+  return Math.min(
+    COMMENT_BODY_MAX_LENGTH_MAX,
+    Math.max(COMMENT_BODY_MAX_LENGTH_MIN, Math.floor(parsed)),
+  );
 }
 
 export function guestbookThemeVars(settings: GuestbookSettings): CSSProperties {

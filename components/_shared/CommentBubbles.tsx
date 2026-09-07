@@ -10,6 +10,7 @@ import {
   formatCommentTime,
   type GuestbookComment,
 } from "@/lib/comments";
+import { commentBodyLengthError } from "@/lib/commentLimits";
 import {
   guestbookCommentPlaceholder,
   useGuestbookSettings,
@@ -40,7 +41,8 @@ export function CommentBubbles({
   initialPage = 1,
   initialTotalPages = 1,
 }: CommentBubblesProps) {
-  const [{ captureEmail, placeholder, pageSize }] = useGuestbookSettings();
+  const [{ captureEmail, placeholder, pageSize, commentLength }] =
+    useGuestbookSettings();
   const nameId = `${idPrefix}comment-name`;
   const inputId = `${idPrefix}comment-input`;
   const pageSizeOverride =
@@ -81,6 +83,11 @@ export function CommentBubbles({
   function onSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setError(null);
+    const lengthError = commentBodyLengthError(body.trim(), commentLength);
+    if (lengthError) {
+      setError(lengthError);
+      return;
+    }
     startTransition(async () => {
       const result = await submitComment({
         name,

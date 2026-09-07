@@ -244,6 +244,32 @@ export function AdminSettings() {
           />
         </div>
         <div className="admin-setting-field admin-setting-rate-row">
+          <span className="admin-setting-label" id="comment-length-label">
+            comment length
+          </span>
+          <div
+            className="admin-setting-rate-limits"
+            role="group"
+            aria-labelledby="comment-length-label"
+          >
+            <input
+              className="admin-filter admin-setting-rate"
+              type="number"
+              inputMode="numeric"
+              min={1}
+              max={10000}
+              step={1}
+              name="comment-length"
+              value={draft.commentLength}
+              aria-label="maximum comment characters"
+              onChange={(event) =>
+                patch({ commentLength: event.target.value })
+              }
+            />
+            <span>characters</span>
+          </div>
+        </div>
+        <div className="admin-setting-field admin-setting-rate-row">
           <span className="admin-setting-label" id="rate-limits-label">
             rate limits
           </span>

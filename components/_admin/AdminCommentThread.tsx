@@ -8,7 +8,9 @@ import {
   updateComment,
 } from "@/app/actions/comments";
 import { MarkReadCheckbox } from "@/components/_admin/MarkReadCheckbox";
+import { commentBodyLengthError } from "@/lib/commentLimits";
 import { formatCommentTime, type GuestbookComment } from "@/lib/comments";
+import { useGuestbookSettings } from "@/lib/guestbookSettings";
 
 type CommentMode = { kind: "edit" | "delete"; id: string } | null;
 
@@ -23,6 +25,7 @@ export function AdminCommentThread({
 }: {
   comments: GuestbookComment[];
 }) {
+  const [{ commentLength }] = useGuestbookSettings();
   const [notes, setNotes] = useState(comments);
   const [readById, setReadById] = useState<Record<string, boolean>>(() =>
     Object.fromEntries(comments.map((note) => [note.id, Boolean(note.read)])),
@@ -93,6 +96,11 @@ export function AdminCommentThread({
     const email = draft.email.trim();
     if (!name || !body) {
       setError("Display name and comment are required.");
+      return;
+    }
+    const lengthError = commentBodyLengthError(body, commentLength);
+    if (lengthError) {
+      setError(lengthError);
       return;
     }
 

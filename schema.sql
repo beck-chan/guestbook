@@ -221,6 +221,7 @@ create table public.guestbook_settings (
   accent_font text not null default 'peony',
   accent_font_size text not null default 'regular',
   page_size integer not null default 10,
+  comment_length integer not null default 1000,
   rate_limit_count integer not null default 1,
   rate_limit_minutes integer not null default 5,
   rate_limit_daily integer not null default 2,
@@ -240,6 +241,7 @@ insert into public.guestbook_settings (
   accent_font,
   accent_font_size,
   page_size,
+  comment_length,
   rate_limit_count,
   rate_limit_minutes,
   rate_limit_daily,
@@ -256,6 +258,7 @@ insert into public.guestbook_settings (
   'peony',
   'regular',
   10,
+  1000,
   1,
   5,
   2,
@@ -280,6 +283,10 @@ create policy "admin_update_guestbook_settings"
 
 grant select on public.guestbook_settings to anon, authenticated;
 grant update on public.guestbook_settings to authenticated;
+
+-- Existing projects: no-op if comment_length is already present.
+alter table public.guestbook_settings
+  add column if not exists comment_length integer not null default 1000;
 
 -- ---------------------------------------------------------------------------
 -- poem_hearts (guestbook poetry desk; y2k does not use this table)

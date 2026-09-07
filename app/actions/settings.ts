@@ -43,6 +43,13 @@ export async function saveGuestbookSettings(
     .eq("id", 1);
 
   if (error) {
+    if (/comment_length/i.test(error.message)) {
+      return {
+        ok: false,
+        error:
+          "guestbook_settings is missing comment_length. In the Supabase SQL Editor run: alter table public.guestbook_settings add column if not exists comment_length integer not null default 1000;",
+      };
+    }
     return { ok: false, error: error.message };
   }
 

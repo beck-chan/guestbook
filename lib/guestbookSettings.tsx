@@ -20,6 +20,7 @@ export type {
 export {
   ACCENT_FONTS,
   MAIN_FONTS,
+  guestbookCommentLength,
   guestbookCommentPlaceholder,
   guestbookDisplayTitle,
   guestbookPageSize,
