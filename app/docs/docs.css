@@ -926,38 +926,54 @@ body:has(.docs-shell) {
   top: 0.5rem;
   right: 0.5rem;
   z-index: 1;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 1.75rem;
-  height: 1.75rem;
+  width: 1.65rem;
+  height: 1.65rem;
   margin: 0;
   padding: 0;
   border: 0;
-  background: transparent;
-  color: var(--peony);
+  border-radius: 0.35rem;
+  background-color: var(--paper, #fff);
+  color: transparent;
+  font-size: 0;
   line-height: 0;
   cursor: pointer;
+  -webkit-mask: none;
+  mask: none;
+}
+
+.docs-code-copy::before {
+  content: "";
+  display: block;
+  width: 100%;
+  height: 100%;
+  background-color: var(--peony, #ff6162);
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill-rule='evenodd' fill='%23000' d='M4 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2zm2-1a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1zM2 5a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1v-1h1v1a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h1v1z'/%3E%3C/svg%3E")
+    center / 1.05rem 1.05rem no-repeat;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill-rule='evenodd' fill='%23000' d='M4 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2zm2-1a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1zM2 5a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1v-1h1v1a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h1v1z'/%3E%3C/svg%3E")
+    center / 1.05rem 1.05rem no-repeat;
 }
 
 .docs-code-copy:hover,
 .docs-code-copy:focus-visible {
-  color: var(--peony-hot);
+  background-color: var(--paper, #fff);
+}
+
+.docs-code-copy:hover::before,
+.docs-code-copy:focus-visible::before {
+  background-color: var(--peony-hot, #ff8586);
 }
 
 .docs-code-copy:focus-visible {
-  outline: 2px solid var(--peony-soft);
+  outline: 2px solid var(--peony-soft, #ffb3ba);
   outline-offset: 2px;
 }
 
-.docs-code-copy.is-copied {
-  color: var(--peony-soft);
-}
-
-.docs-code-copy svg {
-  display: block;
-  width: 1rem;
-  height: 1rem;
+.docs-code-copy.is-copied::before {
+  background-color: var(--peony-soft, #ffb3ba);
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='%23000' d='M13.854 3.646a.5.5 0 0 1 0 .708l-7 7a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L6.5 10.293l6.646-6.647a.5.5 0 0 1 .708 0'/%3E%3C/svg%3E")
+    center / 1.05rem 1.05rem no-repeat;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='%23000' d='M13.854 3.646a.5.5 0 0 1 0 .708l-7 7a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L6.5 10.293l6.646-6.647a.5.5 0 0 1 .708 0'/%3E%3C/svg%3E")
+    center / 1.05rem 1.05rem no-repeat;
 }
 
 .docs-code code,

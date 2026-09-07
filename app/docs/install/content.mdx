@@ -159,12 +159,72 @@ export default function AdminPage({
 }
 ```
 
+To customize the path for the admin dashboard:
+
+{/* INSERT HERE */}
+
 Set `homeHref=` according to where your public comment board lives:
 
 - `app/page.tsx` — When the guestbook *is* the site, then use `homeHref="/"`.
 - `app/guestbook/page.tsx` — When `/` (root) is already your site, then use `homeHref="/guestbook"`.
 
 :::
+
+## Configure Next.js
+
+Wrap your existing config so Next compiles the kit and the Settings **view example** stylesheet resolves at `/admin/example.css`:
+
+```typescript
+import type { NextConfig } from "next";
+import { withGuestbookConfig } from "y2k-guestbook/config";
+
+const nextConfig: NextConfig = {
+  // your existing options
+};
+
+export default withGuestbookConfig(nextConfig);
+```
+
+`withGuestbookConfig` adds `transpilePackages: ["y2k-guestbook"]` and the `/admin/example.css` → `/admin/example` rewrite. Merge carefully if you already define `rewrites()`. 
+
+### Theme example route
+
+Create as `app/admin/example/route.ts` (Settings **view example**; needs `withGuestbookConfig` above):
+
+```typescript
+export { GET, dynamic } from "y2k-guestbook/example-css";
+```
+
+
+
+### Add Stylesheet and Providers
+
+Keep `@import "tailwindcss"` in *your* `globals.css`. Import the kit stylesheet (guestbook `@layer` only) and wrap the tree in `GuestbookProviders` (settings, `CustomTheme`, admin auth error overlay):
+
+```typescript
+import type { Metadata } from "next";
+import "y2k-guestbook/styles.css";
+import { GuestbookProviders } from "y2k-guestbook";
+
+export const metadata: Metadata = {
+  title: "y2k guestbook",
+  description: "Sign the guestbook.",
+};
+
+export default function RootLayout({
+  children,
+}: Readonly<{ children: React.ReactNode }>) {
+  return (
+    <html lang="en" className="h-full antialiased">
+      <body className="min-h-full">
+        <GuestbookProviders>{children}</GuestbookProviders>
+      </body>
+    </html>
+  );
+}
+```
+
+Merge this into your existing root layout if you already have one — mount `GuestbookProviders` around `{children}` and import the stylesheet once.
 
 ## Run Development Server
 
