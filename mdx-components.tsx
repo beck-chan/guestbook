@@ -7,6 +7,7 @@ import {
   type ReactNode,
 } from "react";
 import { DocsCallout } from "@/app/docs/_components/DocsCallout";
+import { DocsCodeBlock } from "@/app/docs/_components/DocsCodeBlock";
 import { DocsColumn, DocsColumns } from "@/app/docs/_components/DocsColumns";
 import { DocsHeart } from "@/app/docs/_components/DocsHeart";
 import { DocsTab, DocsTabset } from "@/app/docs/_components/DocsTabset";
@@ -80,9 +81,9 @@ const components: MDXComponents = {
     </h3>
   ),
   pre: ({ children, className, ...props }) => (
-    <pre {...props} className={["docs-code", className].filter(Boolean).join(" ")}>
+    <DocsCodeBlock {...props} className={className}>
       {children}
-    </pre>
+    </DocsCodeBlock>
   ),
   table: ({ children, className, ...props }) => (
     <div className="docs-table-wrap">

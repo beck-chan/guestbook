@@ -63,259 +63,106 @@ npm install y2k-guestbook @supabase/supabase-js @supabase/ssr
 
 ## Configuring the Application
 
+::: {.callout}
+# The package ships the user interface, server actions, settings, CSS layer, auth handlers, and ready-made page entrypoints. 
+
+Next still only loads routes and `proxy.ts` from *your* project, so the steps below are thin re-exports and one layout mount.
+
+:::
+
 ### Protect Admin Login
 
-Next only runs auth/session files from *your* project root — not from the package. Add three small files that hand work off to the kit: 
+Next only runs auth/session files from *your* project root. Add three small re-exports:
 
 ::: {.tabset}
+
 # proxy.ts
 
-Import `proxy.ts` which guards admin access by checking `app_metadata.role === "admin"` next to `app/`:
+Create `proxy.ts` at your app root to keep the Supabase session fresh and block `/admin` unless `app_metadata.role === "admin"`:
 
 ```typescript
 export { proxy, config } from "y2k-guestbook/proxy";
 ```
 
-This file keeps the Supabase session fresh and blocks admin access unless the user is an admin (`app_metadata.role === "admin"`). 
+- The **admin login** link stays visible, but users without proper access are booted back to the 
+public guestbook comment board and presented with an error.
+- Error message copy is hardcoded in [`components/_shared/AdminAuthErrorOverlay.tsx`](https://github.com/beck-chan/y2k-guestbook/blob/main/components/_shared/AdminAuthErrorOverlay.tsx){.blank} — not accessible through the admin dashboard settings.
 
 ::: {.callout}
-The **admin login** link stays visible, but users without proper access are sent to `/` with `?admin_error=1` (the error overlay in the layout) if they attempt to authenticate.
+
+If you already have a `proxy.ts`, import `{ proxy as guestbookProxy }` from `y2k-guestbook/proxy` and call it from your existing `proxy` function instead of replacing the file. Keep `/auth/callback` and `/admin/login` reachable.
 
 :::
 
 # app/admin/login/route.ts
 
-Import `app/admin/login/route.ts` which starts Google sign-in:
+Create `app/admin/login/route.ts`, which starts Google sign-in:
 
 ```typescript
 export { GET } from "y2k-guestbook/admin-login";
 ```
 
-Opening `/admin/login` sends the user straight to Google sign-in (no separate login page). After Google, they return to the configured `${SITE_URL}/auth/callback`.
+CLicking **admin login** sends you to Google sign-in. After authenticating, you return to the your configured `${SITE_URL}/auth/callback`.
 
 # app/auth/callback/route.ts
 
-Import `app/auth/callback/route.ts` which sends the user back to the correct page after signing in with Googler:
+Create `app/auth/callback/route.ts`, which finishes login and sends you to the right page after Google:
 
 ```typescript
 export { GET } from "y2k-guestbook/callback";
 ```
 
-::: {.callout}
-# If you already have a `proxy.ts`, import `{ proxy as guestbookProxy }` from `y2k-guestbook/proxy` and call it from your existing `proxy` function instead of replacing the file. 
-
-Keep `/auth/callback` and `/admin/login` reachable — do not redirect those paths away before the kit handlers run.
-
-:::
-
 :::
 
 ### Add Guestbook Pages
 
-Installing the package puts the guestbook user interface in `node_modules`, but Next only serves pages from *your* `app/` folder. 
-
-You'll need to add a few small page files that import the kit and show it at a URL (for example `/` or `/guestbook`, plus `/admin`).
+Next only serves pages from *your* `app/` folder. Re-export the packaged entrypoints:
 
 ::: {.tabset}
 
 # Public Comment Board
 
-- Import the public comment board as `app/page.tsx` when the guestbook *is* the root of your site, then pass `homeHref="/"` on the admin page.
-- Import the public comment board as `app/guestbook/page.tsx` when `/` is already your site and you want a dedicated guestbook page. Point admin back here with `homeHref="/guestbook"`.
+Create `page.tsx` for your public guestbook comment board where you want it to live:
 
 ```typescript
-import type { Metadata } from "next";
-import {
-  GuestbookBoard,
-  HitCounter,
-  getUniqueVisitors,
+export {
+  GuestbookPublicPage as default,
+  guestbookPublicMetadata as metadata,
 } from "y2k-guestbook";
-
-export const metadata: Metadata = {
-  title: "y2k guestbook",
-  description: "Sign the guestbook.",
-};
-
-export default async function GuestbookPage() {
-  const hitCount = await getUniqueVisitors();
-
-  return (
-    <main className="admin-page guestbook-page guestbook-public">
-      <a className="guestbook-login" href="/admin/login">
-        admin login
-      </a>
-      <HitCounter count={hitCount} />
-      <div className="admin-shell">
-        <GuestbookBoard />
-      </div>
-    </main>
-  );
-}
 ```
 
-::: {.callout}
-# `admin-page guestbook-page` classes are the theme scope. 
-
-`CustomTheme` rewrites admin CSS into `@layer custom-theme` when you submit CSS to **custom theme** under Settings, so it will not restyle the rest of your site, just your guestbook.
-
-:::
-
+After you create the public comment board, set matching `homeHref` for the admin dashboard. 
 
 # Admin Dashboard
 
-Import `app/admin/page.tsx` which displays the admin dashboard:
+Create your admin dashboard where you want it to live. Default path is `app/admin/page.tsx`:
 
 ```typescript
-import type { Metadata } from "next";
 import {
-  AdminGuestbook,
-  filterComments,
-  loadAdminComments,
-  paginateComments,
-  sortComments,
-  type AdminFilters,
+  GuestbookAdminPage,
+  guestbookAdminMetadata,
 } from "y2k-guestbook";
 
-export const metadata: Metadata = {
-  title: "Admin Dashboard",
-  description: "Comment moderation & settings.",
-};
+export const metadata = guestbookAdminMetadata;
 
-function first(value: string | string[] | undefined) {
-  return Array.isArray(value) ? value[0] : value;
-}
-
-function filtersFrom(
-  searchParams: Record<string, string | string[] | undefined>,
-): AdminFilters {
-  const email = first(searchParams.email);
-  const status = first(searchParams.status);
-  const sort = first(searchParams.sort);
-  return {
-    q: first(searchParams.q) ?? "",
-    sort: sort === "oldest" ? "oldest" : "newest",
-    status: status === "unread" || status === "read" ? status : "all",
-    email: email === "has" || email === "none" ? email : "all",
-    from: first(searchParams.from) ?? "",
-    to: first(searchParams.to) ?? "",
-  };
-}
-
-function pageFrom(
-  searchParams: Record<string, string | string[] | undefined>,
-) {
-  const parsed = Number.parseInt(first(searchParams.page) ?? "1", 10);
-  return Number.isFinite(parsed) && parsed > 0 ? parsed : 1;
-}
-
-export default async function AdminPage({
+export default function AdminPage({
   searchParams,
 }: {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
-  const params = await searchParams;
-  const filters = filtersFrom(params);
-  const allComments = await loadAdminComments();
-  const { comments, page, totalPages } = paginateComments(
-    sortComments(filterComments(allComments, filters), filters.sort),
-    pageFrom(params),
-  );
-
   return (
-    <AdminGuestbook
-      basePath="/admin"
+    <GuestbookAdminPage
+      searchParams={searchParams}
       homeHref="/"
-      comments={comments}
-      page={page}
-      totalPages={totalPages}
-      filters={filters}
     />
   );
 }
 ```
 
-Use `homeHref="/guestbook"` instead when the public board lives under `/guestbook`. Server actions for submit, moderate, and save-settings ship in the package — you do not copy those files.
+Set `homeHref=` according to where your public comment board lives:
 
-:::
-
-### Configure Stylesheets for Theming
-
-::: {.tabset}
-
-# Display Example Stylesheet
-
-Merge this with whatever is already in `next.config.ts` so that when you click on **view example** under the "custom theme" Settings panel, the reference stylesheet is served to you at `/admin/example.css` on a built application:
-
-```typescript
-import type { NextConfig } from "next";
-
-const nextConfig: NextConfig = {
-  // Host apps only — compile the kit from node_modules (the demobook starter omits this)
-  transpilePackages: ["y2k-guestbook"],
-  async rewrites() {
-    return [
-      {
-        // Same rewrite as the demobook — Settings "view example" → /admin/example
-        source: "/admin/example.css",
-        destination: "/admin/example",
-      },
-    ];
-  },
-};
-
-export default nextConfig;
-```
-
-Theme preview needs one more route (serves the reference stylesheet used by **view example** on Settings):
-
-```typescript
-export { GET, dynamic } from "y2k-guestbook/example-css";
-```
-
-Import that as `app/admin/example/route.ts`. The rewrite you added earlier maps `/admin/example.css` → `/admin/example`.
-
-# Add Stylesheet and Providers
-
-Kit CSS lives in `@layer guestbook` (with `@layer custom-theme` for admin theme overrides) so it can sit next to your own globals. Keep `@import "tailwindcss"` in *your* `globals.css` — the package stylesheet is the guestbook layer only.
-
-The root layout must load settings from Supabase, wrap the tree in `GuestbookSettingsProvider`, and mount `CustomTheme` plus the dismissible admin auth error overlay — same shape as the [starter](https://github.com/letter-chan/y2k-guestbook/){.blank}:
-
-```typescript
-import type { Metadata } from "next";
-import { Suspense } from "react";
-import "y2k-guestbook/styles.css";
-import {
-  AdminAuthErrorOverlay,
-  CustomTheme,
-  GuestbookSettingsProvider,
-  loadGuestbookSettings,
-} from "y2k-guestbook";
-
-export const metadata: Metadata = {
-  title: "y2k guestbook",
-  description: "Sign the guestbook.",
-};
-
-export default async function RootLayout({
-  children,
-}: Readonly<{ children: React.ReactNode }>) {
-  const settings = await loadGuestbookSettings();
-
-  return (
-    <html lang="en" className="h-full antialiased">
-      <body className="min-h-full">
-        <GuestbookSettingsProvider initialSettings={settings}>
-          {children}
-          <Suspense fallback={null}>
-            <AdminAuthErrorOverlay />
-          </Suspense>
-          <CustomTheme />
-        </GuestbookSettingsProvider>
-      </body>
-    </html>
-  );
-}
-```
+- `app/page.tsx` — When the guestbook *is* the site, then use `homeHref="/"`.
+- `app/guestbook/page.tsx` — When `/` (root) is already your site, then use `homeHref="/guestbook"`.
 
 :::
 

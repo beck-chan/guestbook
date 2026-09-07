@@ -903,9 +903,14 @@ body:has(.docs-shell) {
   color: inherit;
 }
 
-.docs-code {
+.docs-code-block {
+  position: relative;
   margin: 1.1rem 0 0;
-  padding: 1rem 1.15rem;
+}
+
+.docs-code {
+  margin: 0;
+  padding: 1rem 2.75rem 1rem 1.15rem;
   overflow-x: auto;
   white-space: pre-wrap;
   overflow-wrap: anywhere;
@@ -914,6 +919,45 @@ body:has(.docs-shell) {
   font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
   font-size: 0.95rem;
   line-height: 1.5;
+}
+
+.docs-code-copy {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--peony);
+  line-height: 0;
+  cursor: pointer;
+}
+
+.docs-code-copy:hover,
+.docs-code-copy:focus-visible {
+  color: var(--peony-hot);
+}
+
+.docs-code-copy:focus-visible {
+  outline: 2px solid var(--peony-soft);
+  outline-offset: 2px;
+}
+
+.docs-code-copy.is-copied {
+  color: var(--peony-soft);
+}
+
+.docs-code-copy svg {
+  display: block;
+  width: 1rem;
+  height: 1rem;
 }
 
 .docs-code code,

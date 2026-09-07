@@ -113,19 +113,6 @@ If you are deploying to Vercel:
 
 :::
 
-## Enable Live Counter
-
-Import `app/api/hits/route.ts` which polls `/api/hits` in production:
-
-```typescript
-import { NextResponse } from "next/server";
-import { getUniqueVisitors } from "y2k-guestbook";
-
-export async function GET() {
-  const count = await getUniqueVisitors();
-  return NextResponse.json({ count });
-}
-```
 
 ## Enable Hit Counter
 
@@ -148,6 +135,22 @@ In `env.local` (for local development) or your Vercel environment variables (for
 Digits displayed are unique `$pageview` visitors from PostHog’s Query API. In production they live-update: — +1 on a browser’s first visit, then poll about every 45 seconds, and never tick down.
 
 :::
+
+### Enable Live Counter
+
+::: {.callout}
+# If you skip this step — the counter still renders from the server count, but will not live-refresh.
+
+- [Quickstart](/docs/quickstart) installs already include this route. 
+- [Install via npm](/docs/install) applications need the file above.
+
+:::
+
+Import `app/api/hits/route.ts` which polls `/api/hits` in production:
+
+```typescript
+export { GET } from "y2k-guestbook/hits";
+```
 
 ## Enable Web Tracking
 
