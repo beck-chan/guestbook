@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { docsUrl, flags, getStartedUrl, reportIssueUrl } from "@/lib/flags";
+import { guestbookAdminLoginPath } from "@/lib/guestbookPaths";
 
 type MobileMenuLink = {
   href: string;
@@ -27,10 +28,10 @@ const DEFAULT_LINKS: MobileMenuLink[] = flags.docs
         target: "_blank",
         rel: "noopener noreferrer",
       },
-      { href: "/admin/login", label: "admin login" },
+      { href: guestbookAdminLoginPath(), label: "admin login" },
       REPORT_ISSUE_LINK,
     ]
-  : [{ href: "/admin/login", label: "admin login" }, REPORT_ISSUE_LINK];
+  : [{ href: guestbookAdminLoginPath(), label: "admin login" }, REPORT_ISSUE_LINK];
 
 const PUBLIC_LINKS: MobileMenuLink[] = flags.docs
   ? [

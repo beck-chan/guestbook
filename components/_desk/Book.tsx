@@ -1,5 +1,7 @@
 import type { Poem } from "@/lib/poems";
+import { DocsHeart } from "@/app/docs/_components/DocsHeart";
 import { EasterEgg } from "@/components/_desk/EasterEgg";
+import { PoemHeartTotal } from "@/components/_desk/PoemHeartTotal";
 import { StickyNote } from "@/components/_desk/StickyNote";
 
 type BookProps = {
@@ -8,6 +10,7 @@ type BookProps = {
   onTurnPage: () => void;
   onToggle: () => void;
   heartCount?: number;
+  totalHearts?: number;
   liked?: boolean;
   onToggleHeart?: () => void;
   heartPending?: boolean;
@@ -19,6 +22,7 @@ export function Book({
   onTurnPage,
   onToggle,
   heartCount = 0,
+  totalHearts = 0,
   liked = false,
   onToggleHeart,
   heartPending = false,
@@ -56,9 +60,7 @@ export function Book({
                 aria-pressed={liked}
                 onClick={onToggleHeart}
               >
-                <svg viewBox="0 0 24 24" aria-hidden="true">
-                  <path d="M12 21.35 10.55 20C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54Z" />
-                </svg>
+                <DocsHeart filled={liked} className="poem-heart-icon" />
               </button>
               <span className="poem-heart-count" aria-hidden="true">
                 {heartCount}
@@ -80,6 +82,7 @@ export function Book({
               </span>
             </button>
           </div>
+          {isOpen ? <PoemHeartTotal count={totalHearts} /> : null}
         </div>
         <div className="cover">
           <div className="cover-front">

@@ -8,6 +8,7 @@ import {
   type GuestbookComment,
   type PublicCommentRow,
 } from "@/lib/comments";
+import { guestbookAdminPath } from "@/lib/guestbookPaths";
 import { guestbookPageSize } from "@/lib/guestbookSettingsShared";
 import { clientIp } from "@/lib/clientIp";
 import { loadGuestbookSettings } from "@/lib/loadGuestbookSettings";
@@ -138,7 +139,7 @@ export async function submitComment(input: {
 
   revalidatePath("/");
   revalidatePath("/guestbook");
-  revalidatePath("/admin");
+  revalidatePath(guestbookAdminPath());
   return { ok: true };
 }
 
@@ -203,7 +204,7 @@ export async function updateComment(input: {
 
   revalidatePath("/");
   revalidatePath("/guestbook");
-  revalidatePath("/admin");
+  revalidatePath(guestbookAdminPath());
   return { ok: true };
 }
 
@@ -221,7 +222,7 @@ export async function deleteComment(id: string): Promise<ActionResult> {
 
   revalidatePath("/");
   revalidatePath("/guestbook");
-  revalidatePath("/admin");
+  revalidatePath(guestbookAdminPath());
   return { ok: true };
 }
 
@@ -243,7 +244,7 @@ export async function setCommentRead(
     return { ok: false, error: requireAdminMessage(error.message) };
   }
 
-  revalidatePath("/admin");
+  revalidatePath(guestbookAdminPath());
   return { ok: true };
 }
 
@@ -266,6 +267,6 @@ export async function setCommentsRead(
     return { ok: false, error: requireAdminMessage(error.message) };
   }
 
-  revalidatePath("/admin");
+  revalidatePath(guestbookAdminPath());
   return { ok: true };
 }

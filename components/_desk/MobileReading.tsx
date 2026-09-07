@@ -2,9 +2,11 @@
 
 import { useLayoutEffect, useRef, useState } from "react";
 import { CommentBubbles } from "@/components/_shared/CommentBubbles";
+import { DocsHeart } from "@/app/docs/_components/DocsHeart";
 import { EasterEgg } from "@/components/_desk/EasterEgg";
 import { HitCounter } from "@/components/_shared/HitCounter";
 import { MobileMenu } from "@/components/_shared/MobileMenu";
+import { PoemHeartTotal } from "@/components/_desk/PoemHeartTotal";
 import { pickPoemIndex, poemMeasureLines, type Poem } from "@/lib/poems";
 
 type MobileReadingProps = {
@@ -12,6 +14,7 @@ type MobileReadingProps = {
   initialIndex: number;
   hitCount: number;
   heartCount?: number;
+  totalHearts?: number;
   liked?: boolean;
   onToggleHeart?: () => void;
   heartPending?: boolean;
@@ -113,6 +116,7 @@ export function MobileReading({
   initialIndex,
   hitCount,
   heartCount = 0,
+  totalHearts = 0,
   liked = false,
   onToggleHeart,
   heartPending = false,
@@ -254,6 +258,7 @@ export function MobileReading({
         <div className="leaf leaf-left">
           <EasterEgg />
         </div>
+        <PoemHeartTotal count={totalHearts} />
         <ScrollHint
           label="Turn Page"
           onPaper
@@ -303,9 +308,7 @@ export function MobileReading({
               disabled={heartPending || !poem}
               onClick={onToggleHeart}
             >
-              <svg viewBox="0 0 24 24" aria-hidden="true">
-                <path d="M12 21.35 10.55 20C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54Z" />
-              </svg>
+              <DocsHeart filled={liked} className="poem-heart-icon" />
             </button>
             <span className="poem-heart-count" aria-hidden="true">
               {heartCount}

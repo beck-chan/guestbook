@@ -1,12 +1,14 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import { resolveAdminSession } from "@/lib/adminAuth";
+import { guestbookAdminPath } from "@/lib/guestbookPaths";
 
 export async function GET(request: NextRequest) {
   const { searchParams, origin } = new URL(request.url);
   const code = searchParams.get("code");
-  const nextParam = searchParams.get("next") ?? "/admin";
-  const next = nextParam.startsWith("/") ? nextParam : "/admin";
+  const adminPath = guestbookAdminPath();
+  const nextParam = searchParams.get("next") ?? adminPath;
+  const next = nextParam.startsWith("/") ? nextParam : adminPath;
 
   const forwardedHost = request.headers.get("x-forwarded-host");
   const isLocal = process.env.NODE_ENV === "development";

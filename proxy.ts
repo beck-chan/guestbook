@@ -1,4 +1,8 @@
 import { NextResponse, type NextRequest } from "next/server";
+import {
+  guestbookAdminLoginPath,
+  guestbookAdminPath,
+} from "@/lib/guestbookPaths";
 import { updateSession } from "@/lib/supabase/proxy";
 
 function redirectWithCookies(url: URL, sessionResponse: NextResponse) {
@@ -12,8 +16,11 @@ function redirectWithCookies(url: URL, sessionResponse: NextResponse) {
 export async function proxy(request: NextRequest) {
   const { supabaseResponse, user, supabase } = await updateSession(request);
   const { pathname } = request.nextUrl;
-  const isAdminPath = pathname === "/admin" || pathname.startsWith("/admin/");
-  const isLogin = pathname === "/admin/login";
+  const adminPath = guestbookAdminPath();
+  const loginPath = guestbookAdminLoginPath();
+  const isAdminPath =
+    pathname === adminPath || pathname.startsWith(`${adminPath}/`);
+  const isLogin = pathname === loginPath;
 
   if (!isAdminPath) {
     return supabaseResponse;
@@ -30,7 +37,7 @@ export async function proxy(request: NextRequest) {
       return supabaseResponse;
     }
     const loginUrl = request.nextUrl.clone();
-    loginUrl.pathname = "/admin/login";
+    loginUrl.pathname = loginPath;
     loginUrl.search = "";
     return redirectWithCookies(loginUrl, supabaseResponse);
   }
@@ -45,7 +52,7 @@ export async function proxy(request: NextRequest) {
 
   if (isLogin) {
     const adminUrl = request.nextUrl.clone();
-    adminUrl.pathname = "/admin";
+    adminUrl.pathname = adminPath;
     adminUrl.search = "";
     return redirectWithCookies(adminUrl, supabaseResponse);
   }

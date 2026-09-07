@@ -2,6 +2,10 @@ import path from "node:path";
 import type { NextConfig } from "next";
 import createMDX from "@next/mdx";
 import { flags } from "./lib/flags";
+import {
+  guestbookAdminExamplePath,
+  guestbookAdminPath,
+} from "./lib/guestbookPaths";
 
 const root = process.cwd(); // docs MDX plugins resolve from here
 
@@ -25,8 +29,8 @@ const nextConfig: NextConfig = {
         : [],
       afterFiles: [
         {
-          source: "/admin/example.css",
-          destination: "/admin/example",
+          source: `${guestbookAdminPath()}/example.css`,
+          destination: guestbookAdminExamplePath(),
         },
       ],
     };

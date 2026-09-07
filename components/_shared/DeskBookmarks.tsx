@@ -1,4 +1,5 @@
 import { docsUrl, flags, getStartedUrl } from "@/lib/flags";
+import { guestbookAdminLoginPath } from "@/lib/guestbookPaths";
 
 function AdminRibbon() {
   return (
@@ -69,7 +70,7 @@ export function DeskBookmarks({ publicMode = false }: DeskBookmarksProps) {
         </a>
         <a
           className="desk-bookmark desk-bookmark-short desk-bookmark-admin"
-          href="/admin/login"
+          href={guestbookAdminLoginPath()}
           aria-label="admin login"
         >
           <AdminRibbon />
@@ -83,7 +84,7 @@ export function DeskBookmarks({ publicMode = false }: DeskBookmarksProps) {
     <div className="desk-bookmarks">
       <a
         className="desk-bookmark desk-bookmark-labeled"
-        href="/admin/login"
+        href={guestbookAdminLoginPath()}
         aria-label="admin login"
       >
         <span className="desk-bookmark-ribbon" aria-hidden="true" />

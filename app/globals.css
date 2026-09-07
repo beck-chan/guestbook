@@ -1,5 +1,7 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.never-dark, .never-dark *));
+
 @font-face {
   font-family: "Peony";
   src: url("/fonts/Peony-Regular.otf") format("opentype");
@@ -17,6 +19,7 @@
 }
 
 :root {
+  color-scheme: only light;
   --desk: #fff4f5;
   --cover: #0b2a12;
   --cover-soft: #0b2a1290;
@@ -532,6 +535,9 @@ body {
   font-family: var(--body-font);
   scrollbar-width: thin;
   scrollbar-color: var(--paper-shadow) transparent;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
 }
 
 .leaf-copy::-webkit-scrollbar {
@@ -752,10 +758,12 @@ body {
   cursor: pointer;
 }
 
-.poem-heart[aria-pressed="true"] svg {
-  fill: currentColor;
+.poem-heart-icon {
+  display: block;
+  width: 1.55rem;
+  height: 1.65rem;
+  overflow: visible;
 }
-
 
 .poem-heart-count {
   color: var(--peony);
@@ -765,13 +773,51 @@ body {
   line-height: 1;
 }
 
-.poem-heart svg {
-  width: 1.55rem;
-  height: 1.55rem;
-  fill: none;
-  stroke: currentColor;
-  stroke-width: 1.65;
-  stroke-linejoin: round;
+.poem-heart-total {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 0.45rem;
+  color: var(--peony);
+  pointer-events: none;
+}
+
+.poem-heart-total-label {
+  color: color-mix(in srgb, #6f4e37 80%, white);
+  font-family: var(--body-font);
+  font-size: 0.72rem;
+  font-weight: 400;
+  letter-spacing: 0.02em;
+  line-height: 1.2;
+  text-align: right;
+}
+
+.poem-heart-total-stack {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.02rem;
+}
+
+.page-right .poem-heart-total {
+  position: absolute;
+  right: 0.7rem;
+  bottom: 0.55rem;
+  z-index: 5;
+}
+
+.poem-heart-total-icon {
+  display: block;
+  width: 1.35rem;
+  height: 1.4rem;
+  overflow: visible;
+}
+
+.poem-heart-total-count {
+  font-family: var(--peony-font);
+  font-size: 1.25rem;
+  font-weight: 400;
+  line-height: 1;
 }
 
 .poem-heart:disabled {
@@ -992,7 +1038,7 @@ body {
     right: 0;
     bottom: 0;
     z-index: 3;
-    height: 10.5rem;
+    height: 5rem;
     pointer-events: none;
     opacity: 0;
     background: linear-gradient(
@@ -2378,6 +2424,7 @@ body {
   }
 
   .mobile-leaf {
+    --mobile-leaf-fade: 12.5rem;
     background: var(--paper);
   }
 
@@ -2388,7 +2435,7 @@ body {
     right: 0;
     bottom: 0;
     z-index: 3;
-    height: 12.5rem;
+    height: var(--mobile-leaf-fade);
     pointer-events: none;
     background: linear-gradient(
       to bottom,
@@ -2406,11 +2453,11 @@ body {
   }
 
   .mobile-leaf .leaf-copy {
-    padding: 4.4rem 1.7rem 6.4rem;
+    padding: 4.4rem 1.7rem calc(var(--mobile-leaf-fade) + 1.25rem);
   }
 
   .mobile-leaf .leaf-left .leaf-copy {
-    padding: 4.4rem 1.7rem 6.4rem;
+    padding: 4.4rem 1.7rem calc(var(--mobile-leaf-fade) + 1.25rem);
   }
 
   .mobile-leaf .easter-heading {
@@ -2442,6 +2489,18 @@ body {
   .mobile-poem .leaf-copy:not(.is-font-boosted) .poem-title,
   .mobile-poem .leaf-copy:not(.is-font-boosted) .poem-body {
     white-space: nowrap;
+  }
+
+  .mobile-leaf:not(.mobile-poem) .poem-heart-total {
+    position: absolute;
+    left: max(1.45rem, env(safe-area-inset-left));
+    bottom: max(0.7rem, env(safe-area-inset-bottom));
+    z-index: 5;
+    flex-direction: row-reverse;
+  }
+
+  .mobile-leaf:not(.mobile-poem) .poem-heart-total-label {
+    text-align: left;
   }
 
   .mobile-font-zoom {

@@ -12,6 +12,7 @@ import {
   type FontSize,
   type GuestbookSettings,
 } from "@/lib/guestbookSettings";
+import { guestbookAdminPath } from "@/lib/guestbookPaths";
 
 const PAGE_SIZES = [4, 5, 6, 7, 8, 9, 10] as const;
 
@@ -226,7 +227,7 @@ export function AdminSettings() {
             <span className="admin-setting-label">custom theme</span>
             <a
               className="admin-comment-link"
-              href="/admin/example.css"
+              href={`${guestbookAdminPath()}/example.css`}
               target="_blank"
               rel="noopener noreferrer"
             >

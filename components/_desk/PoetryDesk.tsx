@@ -17,6 +17,7 @@ type PoetryDeskProps = {
   poems: Poem[];
   initialIndex: number;
   hitCount: number;
+  totalHearts?: number;
 };
 
 const EMPTY_HEART: PoemHeartState = {
@@ -25,11 +26,19 @@ const EMPTY_HEART: PoemHeartState = {
   total_hearts: 0,
 };
 
-export function PoetryDesk({ poems, initialIndex, hitCount }: PoetryDeskProps) {
+export function PoetryDesk({
+  poems,
+  initialIndex,
+  hitCount,
+  totalHearts = 0,
+}: PoetryDeskProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [poemIndex, setPoemIndex] = useState(initialIndex);
   const [hintVisible, setHintVisible] = useState(true);
-  const [heart, setHeart] = useState<PoemHeartState>(EMPTY_HEART);
+  const [heart, setHeart] = useState<PoemHeartState>({
+    ...EMPTY_HEART,
+    total_hearts: totalHearts,
+  });
   const [heartPending, startHeartTransition] = useTransition();
   const [trackedPoemId, setTrackedPoemId] = useState<string | undefined>(
     poems[initialIndex]?.id,
@@ -40,7 +49,10 @@ export function PoetryDesk({ poems, initialIndex, hitCount }: PoetryDeskProps) {
   const poemId = poem?.id;
   if (trackedPoemId !== poemId) {
     setTrackedPoemId(poemId);
-    setHeart(EMPTY_HEART);
+    setHeart((current) => ({
+      ...EMPTY_HEART,
+      total_hearts: current.total_hearts,
+    }));
   }
 
   useEffect(() => {
@@ -102,6 +114,7 @@ export function PoetryDesk({ poems, initialIndex, hitCount }: PoetryDeskProps) {
               isOpen={isOpen}
               poem={poem}
               heartCount={heart.heart_count}
+              totalHearts={heart.total_hearts}
               liked={heart.liked}
               heartPending={heartPending}
               onToggleHeart={onToggleHeart}
@@ -152,6 +165,7 @@ export function PoetryDesk({ poems, initialIndex, hitCount }: PoetryDeskProps) {
         poemIndex={poemIndex}
         onPoemIndexChange={setPoemIndex}
         heartCount={heart.heart_count}
+        totalHearts={heart.total_hearts}
         liked={heart.liked}
         heartPending={heartPending}
         onToggleHeart={onToggleHeart}

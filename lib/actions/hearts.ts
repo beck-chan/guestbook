@@ -39,6 +39,25 @@ async function getOrCreateVisitorKey() {
   return key;
 }
 
+export async function getPoemHeartTotal(): Promise<number> {
+  try {
+    const supabase = await createClient();
+    const { data, error } = await supabase
+      .from("poem_heart_total")
+      .select("total_hearts")
+      .maybeSingle();
+
+    if (error) {
+      return 0;
+    }
+
+    const total = Number(data?.total_hearts ?? 0);
+    return Number.isFinite(total) && total > 0 ? Math.floor(total) : 0;
+  } catch {
+    return 0;
+  }
+}
+
 export async function getPoemHeartState(poemId: string): Promise<PoemHeartState> {
   const trimmed = poemId.trim();
   if (!trimmed) {

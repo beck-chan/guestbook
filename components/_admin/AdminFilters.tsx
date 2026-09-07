@@ -1,19 +1,25 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { adminHref, type AdminFilters } from "@/lib/comments";
+import { guestbookAdminPath } from "@/lib/guestbookPaths";
 
 export function AdminFilters({
   filters,
-  basePath = "/admin",
+  basePath = guestbookAdminPath(),
 }: {
   filters: AdminFilters;
   basePath?: string;
 }) {
   const router = useRouter();
   const [toolsOpen, setToolsOpen] = useState(false);
+  const [query, setQuery] = useState(filters.q);
+
+  useEffect(() => {
+    setQuery(filters.q);
+  }, [filters.q]);
 
   function apply(form: HTMLFormElement) {
     const data = new FormData(form);
@@ -139,14 +145,20 @@ export function AdminFilters({
               </div>
             </div>
             <div className="admin-search-row">
-              <Link className="admin-comment-link" href={basePath} scroll={false}>
+              <Link
+                className="admin-comment-link"
+                href={basePath}
+                scroll={false}
+                onClick={() => setQuery("")}
+              >
                 clear all
               </Link>
               <input
                 className="admin-filter admin-filter-search"
                 type="search"
                 name="q"
-                defaultValue={filters.q}
+                value={query}
+                onChange={(event) => setQuery(event.currentTarget.value)}
                 placeholder="search"
                 aria-label="search comments"
               />

@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Suspense } from "react";
 import { Jost, Kaisei_HarunoUmi, Libre_Baskerville } from "next/font/google";
 import { AdminAuthErrorOverlay } from "@/components/_shared/AdminAuthErrorOverlay";
@@ -32,6 +32,10 @@ const kaisei = Kaisei_HarunoUmi({
 export const metadata: Metadata = {
   title: "Poetry by Beck",
   description: "A volume of original poetry.",
+};
+
+export const viewport: Viewport = {
+  colorScheme: "light",
 };
 
 export default async function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {

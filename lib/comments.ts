@@ -1,3 +1,5 @@
+import { guestbookAdminPath } from "@/lib/guestbookPaths";
+
 export type GuestbookComment = {
   id: string;
   name: string;
@@ -186,7 +188,7 @@ export function sortComments(
 export function adminHref(
   page: number,
   filters: AdminFilters,
-  basePath = "/admin",
+  basePath = guestbookAdminPath(),
 ) {
   const params = new URLSearchParams();
   if (filters.q) {

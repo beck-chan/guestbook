@@ -7,6 +7,7 @@ import {
   type AdminFilters as FilterState,
   type GuestbookComment,
 } from "@/lib/comments";
+import { guestbookAdminPath } from "@/lib/guestbookPaths";
 
 type AdminGuestbookProps = {
   comments: GuestbookComment[];
@@ -22,7 +23,7 @@ export function AdminGuestbook({
   page,
   totalPages,
   filters,
-  basePath = "/admin",
+  basePath = guestbookAdminPath(),
   homeHref = "/",
 }: AdminGuestbookProps) {
   return (
