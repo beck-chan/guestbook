@@ -34,7 +34,7 @@ export function loadDatabaseOpenApi(isPublic = flags.public): OpenApiSpec {
       ? "y2k Guestbook API"
       : "Beck's y2k Guestbook API",
     description: isPublic
-      ? "The API reference below reflects the calls you can make to your connected Supabase database when the guestbook is fully installed. Project IDs and keys you enter for `Test Request` stay in your browser — we do not collect them. Send goes from your browser direct to your Supabase project."
+      ? "The API reference below reflects the calls you can make to your connected Supabase database when the guestbook is fully installed.\n\nProject IDs and keys you enter for `Test Request` stay in your browser — we do not collect them.\n\nSend goes from your browser direct to your Supabase project.\n\n*For calls that do not require auth, enter in a Header:* `apikey = <NEXT_PUBLIC_SUPABASE_ANON_KEY>`\n\n*For calls that require auth, add Authentication:* `bearerAuth: Bearer <your-SUPABASE_ACCESS_TOKEN>`"
       : "The API reference below reflects the functionality of Beck's custom guestbook install. These docs do not collect API keys or project IDs.\n\n[View Public API Library](https://y2k-guestbook.vercel.app/docs/api)",
   });
 

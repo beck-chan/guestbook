@@ -191,3 +191,10 @@ Paste the anon public key from Supabase → Project Settings → API (NEXT_PUBLI
 That header is required on every Send, including the public routes.
 
 Auth → Bearer is only the user JWT for locked admin calls. Do not put the anon key there unless you are also sending Authorization: Bearer <anon-key> as a header — the name Scalar expects for the project key is apikey.
+
+
+1. Anon key (every request)
+Headers → apikey = NEXT_PUBLIC_SUPABASE_ANON_KEY
+
+2. User JWT (locked routes)
+Auth → Bearer = the signed-in admin access token

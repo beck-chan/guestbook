@@ -30,7 +30,9 @@ export const SCALAR_CUSTOM_CSS = `
 .scalar-app .hljs,
 .scalar-app code *,
 .scalar-app pre *,
-.scalar-app .hljs * {
+.scalar-app .hljs *,
+.scalar-app .cm-editor,
+.scalar-app .cm-editor * {
   font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace !important;
 }
 
@@ -198,6 +200,73 @@ export const SCALAR_CUSTOM_CSS = `
 .scalar-app .hljs-meta,
 .scalar-app .hljs-title.function_ {
   color: var(--foil, #df9a49) !important;
+}
+
+/* Try it / CodeMirror response preview — same tokens as .docs-code. */
+.scalar-app .cm-editor,
+.scalar-app .cm-scroller,
+.scalar-app .cm-gutters,
+.scalar-app .cm-content {
+  background: var(--docs-ink, #8a6a52) !important;
+  color: var(--paper, #faf6ea) !important;
+  --scalar-background-1: var(--docs-ink, #8a6a52);
+  --scalar-background-2: var(--docs-ink, #8a6a52);
+  --scalar-background-3: var(--docs-ink, #8a6a52);
+  --scalar-color-1: color-mix(in srgb, var(--paper, #faf6ea) 72%, var(--foil, #df9a49));
+  --scalar-color-2: var(--paper, #faf6ea);
+  --scalar-color-3: color-mix(in srgb, var(--paper, #faf6ea) 48%, #6a6864);
+  --scalar-color-blue: var(--peony-soft, #ffb3ba);
+  --scalar-color-green: var(--foil-lit, #e8b85a);
+  --scalar-color-orange: var(--foil, #df9a49);
+  --scalar-color-purple: var(--foil-lit, #e8b85a);
+}
+
+.scalar-app .cm-gutters {
+  border: 0 !important;
+}
+
+.scalar-app .cm-gutterElement,
+.scalar-app .cm-lineNumbers .cm-gutterElement {
+  color: color-mix(in srgb, var(--paper, #faf6ea) 48%, #6a6864) !important;
+}
+
+.scalar-app .cm-foldPlaceholder,
+.scalar-app .cm-foldGutter span {
+  color: var(--peony-soft, #ffb3ba) !important;
+}
+
+.scalar-app .cm-editor .tok-string,
+.scalar-app .cm-editor .cm-string,
+.scalar-app .cm-string {
+  color: var(--peony-soft, #ffb3ba) !important;
+}
+
+.scalar-app .cm-editor .tok-propertyName,
+.scalar-app .cm-editor .tok-attributeName,
+.scalar-app .cm-editor .tok-variableName,
+.scalar-app .cm-property {
+  color: color-mix(in srgb, var(--paper, #faf6ea) 72%, var(--foil, #df9a49)) !important;
+}
+
+.scalar-app .cm-editor .tok-keyword,
+.scalar-app .cm-editor .tok-bool,
+.scalar-app .cm-editor .tok-atom,
+.scalar-app .cm-editor .tok-literal,
+.scalar-app .cm-keyword {
+  color: var(--foil-lit, #e8b85a) !important;
+}
+
+.scalar-app .cm-editor .tok-number,
+.scalar-app .cm-number {
+  color: var(--foil, #df9a49) !important;
+}
+
+.scalar-app .cm-editor .tok-punctuation,
+.scalar-app .cm-editor .tok-bracket,
+.scalar-app .cm-editor .tok-separator,
+.scalar-app .cm-bracket,
+.scalar-app .cm-punctuation {
+  color: var(--paper, #faf6ea) !important;
 }
 `;
 
