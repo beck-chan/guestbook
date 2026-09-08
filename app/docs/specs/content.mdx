@@ -2,14 +2,216 @@
 subtitle: Test your installed guestbook against the expected specifications.
 ---
 
-
 # Cucumber Specs
 
+The `.feature` files on this page are Gherkin specifications. Use [cucumber.js](https://github.com/cucumber/cucumber-js){.blank} to run these `.feature` scenarios against your installation of the guestbook.
+
+- [x] This guide assumes that you've set up the guestbook application with either [Quickstart](/docs/quickstart) or [Install via npm](/docs/install).
+
+
 ::: {.private}
-This version of the specifications reflect Beck's custom installation of the guestbook.
+::: {.callout}
+# This version of the specifications displayed on this page reflect Beck's custom installation of the guestbook.
+:::
+
+:::
 
 
-## Poetry Landing Page
+## Install Cucumber and Playwright
+
+To install Cucumber and [Playwright](https://playwright.dev){.blank} in your app, call the following commands in your terminal from your Next.js app root:
+
+```bash
+npm install --save-dev @cucumber/cucumber playwright tsx
+npx playwright install chromium
+```
+
+- `@cucumber/cucumber` — Reads `.feature` files and reports pass/fail behaviour.
+- `playwright` — Drives Chromium against the running app.
+- `tsx` — Loads TypeScript step definitions without a separate compile step.
+
+::: {.callout}
+# `npx playwright install chromium` downloads the browser binary once. 
+
+Re-run it after upgrading Playwright.
+
+:::
+
+## Feature Directory Setup
+
+The guestbook repository and includes the following Cucumber setup files covered in this section.
+
+### Environment
+
+::: {.tabset}
+
+# cucumber.yaml
+
+At the project root lives `cucumber.yaml` which configures Cucumber:
+
+```yaml
+default:
+  paths:
+    - features/**/*.feature
+  requireModule:
+    - tsx/cjs
+  require:
+    - features/support/**/*.ts
+    - features/step_definitions/**/*.ts
+  format:
+    - progress-bar
+    - html:reports/cucumber.html
+  formatOptions:
+    snippetInterface: async-await
+  worldParameters:
+    baseUrl: http://localhost:3000
+```
+
+# features/support/world.ts
+
+Cucumber needs a Playwright page on the World object so every step can click the same browser:
+
+```typescript
+import {
+  IWorldOptions,
+  setWorldConstructor,
+  World,
+} from "@cucumber/cucumber";
+import type { Browser, BrowserContext, Page } from "playwright";
+
+export class PlaywrightWorld extends World {
+  browser!: Browser;
+  context!: BrowserContext;
+  page!: Page;
+  baseUrl: string;
+  postedName?: string;
+
+  constructor(options: IWorldOptions) {
+    super(options);
+    const fromEnv = process.env.BASE_URL;
+    const fromConfig = options.parameters.baseUrl;
+    this.baseUrl = String(fromEnv ?? fromConfig ?? "http://localhost:3000").replace(
+      /\/$/,
+      "",
+    );
+  }
+}
+
+setWorldConstructor(PlaywrightWorld);
+```
+
+# features/support/hooks.ts
+
+Hooks start Chromium, allowing page clicks on each scenario's fresh page, then closes the page when the scenario completes:
+
+```typescript
+import { After, AfterAll, Before, BeforeAll } from "@cucumber/cucumber";
+import { chromium, type Browser } from "playwright";
+import { PlaywrightWorld } from "./world";
+
+let browser: Browser;
+
+BeforeAll(async function () {
+  browser = await chromium.launch({
+    headless: process.env.HEADED !== "1",
+  });
+});
+
+Before(async function (this: PlaywrightWorld) {
+  this.browser = browser;
+  this.context = await browser.newContext({
+    viewport: { width: 1280, height: 720 },
+  });
+  this.page = await this.context.newPage();
+});
+
+After(async function (this: PlaywrightWorld) {
+  await this.context.close();
+});
+
+AfterAll(async function () {
+  await browser.close();
+});
+```
+
+
+
+:::
+
+### Step Definitions
+
+Step definitions under `features/step_definitions/` map each `Given` / `When` / `Then` to clicks in the browser.
+
+{/* The hooks open a desktop-sized window (`1280` by `720`). Specs that say *on mobile* use a different UI (drop-down menu instead of hanging bookmarks). Those `Given` steps should shrink the viewport (for example `390` by `844`) *before* `goto`, or the test is still looking at the desktop layout. */}
+
+::: {.callout}
+# Snippets are only for steps you have not written yet
+
+A `.feature` file says *what* should happen. A step definition is the TypeScript that actually does it (`click`, `fill`, `goto`). If a `Given` / `When` / `Then` already has a matching function, Cucumber runs that function — it does not print a stub.
+
+Stubs appear only for Gherkin lines with no match. Paste those into `features/step_definitions/` and fill in the body.
+
+Find things the way a guest would see them on the page — the `submit` button, the `display name` field, the `prev` / `next` links — not CSS class names from the guestbook source.
+:::
+
+
+## Run Cucumber Tests
+
+1. Start the guestbook preview server: `npm run dev`
+
+2. In a second terminal at the app root, run:
+
+    ```bash
+    npx cucumber-js
+    ```
+
+3. Run one file while you fill in steps:
+
+    ```bash
+    npx cucumber-js features/guestbook-comments.feature
+    ```
+
+::: {.callout}
+# Optional prefixes
+
+Playwright hides the browser window. To watch a run:
+
+```bash
+HEADED=1 npx cucumber-js
+```
+
+To hit a deployed URL instead of localhost:
+
+```bash
+BASE_URL=https://your-preview.vercel.app npx cucumber-js
+```
+:::
+
+::: {.callout}
+# Admin scenarios that sign in with Google need an allow-listed account. 
+
+Log in once with `HEADED=1` (shows the browser window while testing), then reuse Playwright [`storageState`](https://playwright.dev/docs/auth){.blank} in `newContext` so later runs skip the SSO prompt.
+
+:::
+
+A passing run writes `reports/cucumber.html`. Undefined steps print snippets and fail until you implement them. Do not point these tests at a production guestbook that real visitors are using — commenting, rate limits, and admin edits are live.
+
+## Gherkin `.feature` Files
+
+::: {.public}
+
+The `features/` directory is included with the guestbook repository and contains the following `.feature` files displayed in this section.
+
+::: {.callout}
+Keep all the Gherkin wording as written. Cucumber matches step definitions to those lines.
+
+:::
+
+:::
+
+::: {.private}
+
+### Poetry Landing Page
 
 ::: {.tabset}
 
@@ -30,7 +232,7 @@ This version of the specifications reflect Beck's custom installation of the gue
 
 :::
 
-## Guestbook Standalone Page
+### Guestbook Standalone Page
 
 ::: {.tabset}
 
@@ -53,7 +255,7 @@ This version of the specifications reflect Beck's custom installation of the gue
 
 ::: {.public}
 
-## Guestbook  
+### Guestbook  
 
 ::: {.tabset}
 
@@ -76,7 +278,7 @@ This version of the specifications reflect Beck's custom installation of the gue
 :::
 
 
-## Admin Dashboard
+### Admin Dashboard
 
 ::: {.tabset}
 
