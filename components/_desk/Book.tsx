@@ -433,6 +433,7 @@ export function Book({
     );
     tl.to(shadowDepth, { opacity: 1, duration: 0.9, ease: "power1.out" }, shadowAt);
 
+    tl.addLabel("noteFly", ">-0.12");
     tl.to(
       note,
       {
@@ -441,25 +442,34 @@ export function Book({
         duration: 1.02,
         ease: "power1.inOut",
       },
-      ">-0.12",
+      "noteFly",
     );
-    tl.to(note, { y: arcY, duration: 0.4, ease: "power2.out" }, "<");
-    tl.to(note, { y: 0, duration: 0.62, ease: "power2.inOut" }, ">-0.14");
+    tl.to(note, { y: arcY, duration: 0.4, ease: "power2.out" }, "noteFly");
+    tl.to(note, { y: 0, duration: 0.62, ease: "power2.inOut" }, "noteFly+=0.26");
+    tl.to(
+      note,
+      { z: 40, zIndex: 8, duration: 0.22, ease: "power2.out" },
+      "noteFly+=1.02",
+    );
 
-    const closeLabel = noteCloseLabel(note);
-    if (closeLabel && onRight) {
+    const closeLetters = note.querySelectorAll<HTMLElement>(
+      ".sticky-note-label-close .sticky-note-letter",
+    );
+    if (onRight && closeLetters.length > 0) {
       tl.add(() => {
         note.classList.add("is-label-open");
-      }, ">-0.42");
-      tl.fromTo(
-        closeLabel,
-        { clipPath: "inset(0% 100% 0% 0%)" },
+        gsap.set(closeLetters, { opacity: 0, y: 6 });
+      }, "noteFly+=1.24");
+      tl.to(
+        closeLetters,
         {
-          clipPath: "inset(0% 0% 0% 0%)",
-          duration: 0.42,
-          ease: "power2.out",
+          opacity: 1,
+          y: 0,
+          duration: 0.11,
+          stagger: 0.07,
+          ease: "power1.out",
         },
-        ">-0.42",
+        "noteFly+=1.24",
       );
     }
 

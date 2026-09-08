@@ -977,22 +977,6 @@ body {
   left: 50%;
   bottom: 14%;
   z-index: 1;
-  transform: translateX(-50%);
-  pointer-events: none;
-}
-
-.book.is-open:not(.is-animating) .sticky-note-caption,
-.sticky-note.is-label-open .sticky-note-caption {
-  top: 52%;
-  bottom: auto;
-  transform: translate(-50%, -50%);
-}
-
-.sticky-note-caption {
-  position: absolute;
-  left: 50%;
-  bottom: 14%;
-  z-index: 1;
   display: grid;
   justify-items: center;
   transform: translateX(-50%);
@@ -1021,6 +1005,15 @@ body {
 
 .sticky-note-label-close {
   visibility: hidden;
+}
+
+.sticky-note-label-close .sticky-note-letter {
+  display: inline-block;
+  opacity: 0;
+}
+
+.book.is-open:not(.is-animating) .sticky-note-label-close .sticky-note-letter {
+  opacity: 1;
 }
 
 .book.is-open:not(.is-animating) .sticky-note-label-open,

@@ -21,7 +21,11 @@ export const StickyNote = forwardRef<HTMLButtonElement, StickyNoteProps>(
             Open Book
           </span>
           <span className="sticky-note-label sticky-note-label-close">
-            Close Book
+            {Array.from("Close Book").map((ch, i) => (
+              <span key={i} className="sticky-note-letter">
+                {ch === " " ? "\u00a0" : ch}
+              </span>
+            ))}
           </span>
           <span className="sticky-note-eraser" aria-hidden="true" />
         </span>
