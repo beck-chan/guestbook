@@ -5,65 +5,79 @@ Feature: Original Poetry landing page navigation
         Background:
             Given a user is on the main landing page of the poetry guestbook on desktop
 
-                Scenario: View Docs link works
-                When a user clicks the `View Docs` bookmark
-                Then a new tab or window opens to the y2k Guestbook Docs
+        Scenario: View Docs link works on desktop
+            When a user clicks the `view docs` link
+            Then a new tab or window opens to the y2k Guestbook Docs
 
-                Scenario: Admin Login link works
-                When a user hovers over the hidden Admin Login bookmark
-                Then the `Admin Login` link becomes visible
-                When users click on the `Admin Login` bookmark 
-                Then users are directed to the Google SSO page for the admin dashboard 
+        Scenario: Admin Login link becomes visible on hover on desktop
+            When a user hovers over the hidden `admin login` link
+            Then the `admin login` link becomes visible
 
-                Scenario: Admin Login works with authorization
-                When a user has clicked on the `Admin Login` bookmark
-                And the user has admin authorization
-                Then signing in successfully with Google redirects users to the `/admin` dashboard
+        Scenario: Admin Login link works on desktop
+            When a user clicks the `admin login` link
+            Then they are directed to the Google SSO page for the admin dashboard
 
-                Scenario: Admin Login is gated to admins
-                When a user has clicked on the `Admin Login` bookmark
-                But the user does not have admin authorization
-                Then signing in successfully with Google redirects users to the landing page
-                And show the user a message that they do not have admin authorization
-                And they can click on the `Boo hiss! Fine` button to close the message
+        Scenario: Admin Login works with authorization on desktop
+            Given the user has admin authorization
+            When a user clicks the `admin login` link
+            And they sign in successfully with Google
+            Then they are redirected to the `/admin` dashboard
+
+        Scenario: Admin Login is gated to admins on desktop
+            Given the user does not have admin authorization
+            When a user clicks the `admin login` link
+            And they sign in successfully with Google
+            Then they are redirected to the landing page
+            And show the user a message that they do not have admin authorization
+
+        Scenario: Unauthorized admin message can be dismissed on desktop
+            Given the user is shown a message that they do not have admin authorization
+            When they click the `Boo hiss! Fine.` button
+            Then the message closes
 
     Rule: Drop-down menu serves as navigation on mobile
 
         Background:
             Given a user is on the main landing page of the poetry guestbook on mobile
 
-                Scenario: Drop-down menu works on mobile
-                When a user clicks the drop-down Menu
-                Then the `Menu` opens and show the user navigation links
+        Scenario: Drop-down menu works on mobile
+            When a user clicks the drop-down `menu` button
+            Then the `menu` opens and show the user navigation links
 
-                Scenario: View Docs link works
-                When a user clicks the drop-down `Menu` and selects the `View Docs` link
-                Then a new tab or window opens to the y2k Guestbook Docs
+        Scenario: View Docs link works on mobile
+            When a user clicks the drop-down `menu` button and selects the `view docs` link
+            Then a new tab or window opens to the y2k Guestbook Docs
 
-                Scenario: Admin Login link works
-                When a user clicks the drop-down `Menu` and selects the `Admin Login` link
-                Then users are directed to the Google SSO page for the admin dashboard
+        Scenario: Admin Login link works on mobile
+            When a user clicks the drop-down `menu` button and selects the `admin login` link
+            Then they are directed to the Google SSO page for the admin dashboard
 
-                Scenario: Admin Login works with authorization
-                When a user clicks the drop-down `Menu` and selects the `Admin Login` link
-                And the user has admin authorization
-                Then signing in successfully with Google redirects users to the `/admin` dashboard
+        Scenario: Admin Login works with authorization on mobile
+            Given the user has admin authorization
+            When a user clicks the drop-down `menu` button and selects the `admin login` link
+            And they sign in successfully with Google
+            Then they are redirected to the `/admin` dashboard
 
-                Scenario: Admin Login is gated to admins
-                When a user clicks the drop-down `Menu` and selects the `Admin Login` link
-                But the user does not have admin authorization
-                Then signing in successfully with Google redirects users to the landing page
-                And show the user a message that they do not have admin authorization
-                And they can click on the `Boo hiss! Fine` button to close the message
+        Scenario: Admin Login is gated to admins on mobile
+            Given the user does not have admin authorization
+            When a user clicks the drop-down `menu` button and selects the `admin login` link
+            And they sign in successfully with Google
+            Then they are redirected to the landing page
+            And show the user a message that they do not have admin authorization
+
+        Scenario: Unauthorized admin message can be dismissed on mobile
+            Given the user is shown a message that they do not have admin authorization
+            When they click the `Boo hiss! Fine.` button
+            Then the message closes
 
     Rule: Report Issue link takes users to the repo Issues page
 
         Scenario: Report Issue link works on desktop
-        Given a user is on the main landing page of the poetry guestbook on desktop
-        When a user clicks the `Report Issue` link
-        Then a new tab or window opens to the Beck's guestbook repo Issues page
+            Given a user is on the main landing page of the poetry guestbook on desktop
+            When a user clicks the `report issue` link
+            Then a new tab or window opens to the Beck's guestbook repo Issues page
 
         Scenario: Report Issue link works on mobile
-        Given a user is on the main landing page of the poetry guestbook on mobile
-        When a user clicks the drop-down `Menu` and selects the `Report Issue` link
-        Then a new tab or window opens to the Beck's guestbook repo Issues page
+            Given a user is on the main landing page of the poetry guestbook on mobile
+            When a user clicks the drop-down `menu` button and selects the `report issue` link
+            Then a new tab or window opens to the Beck's guestbook repo Issues page

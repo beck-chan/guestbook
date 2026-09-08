@@ -17,5 +17,5 @@ Feature: Admin Dashboard page navigation
             And they are on the admin dashboard on mobile (`/admin`)
 
         Scenario: Collapsible menu contains comment sort, filter, and search options
-            When an admin clicks the collapsible `Comments Menu` button
-            Then the `Comments Menu` opens showing comment sort, filter, and search options
+            When an admin clicks the collapsible `comments menu` button
+            Then the `comments menu` opens showing comment sort, filter, and search options

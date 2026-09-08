@@ -40,7 +40,7 @@ Feature: Original Poetry volume
 
         Scenario: Portfolio link works
             Given a user is interacting with the introduction page
-            When a user clicks the Visit Beck's Portfolio link
+            When a user clicks the `Visit Beck's Portfolio` link
             Then a new tab or window opens to Beck's portfolio
 
         Scenario: Original Poetry like (heart) function
@@ -55,5 +55,5 @@ Feature: Original Poetry volume
 
         Scenario: Users can change poem font size on mobile
             Given a user is interacting with a poem page on mobile
-            When they click on the plus or minus above or below the Font button
+            When they click on the plus or minus above or below the `font` button
             Then the poem page font increases or decreases in size within a limit

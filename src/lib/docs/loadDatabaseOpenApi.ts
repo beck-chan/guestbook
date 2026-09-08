@@ -4,6 +4,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { flags } from "@/lib/flags";
 import { typesToOpenApi, type OpenApiSpec } from "./typesToOpenApi";
+import { PUBLIC_API_SERVERS } from "./publicApiServers";
 
 const API_DIR = path.join(process.cwd(), "src/app/docs/api");
 const PAIR_FILES = ["database.types.ts", "database.types-public.ts"] as const;
@@ -38,19 +39,7 @@ export function loadDatabaseOpenApi(isPublic = flags.public): OpenApiSpec {
   });
 
   if (isPublic) {
-    spec.servers = [
-      {
-        url: "https://{projectRef}.supabase.co/rest/v1",
-        description: "Your Supabase project",
-        variables: {
-          projectRef: {
-            default: "your-database-url",
-            description:
-              "Project ID from NEXT_PUBLIC_SUPABASE_URL (the subdomain before .supabase.co).",
-          },
-        },
-      },
-    ];
+    spec.servers = PUBLIC_API_SERVERS;
   }
 
   return spec;

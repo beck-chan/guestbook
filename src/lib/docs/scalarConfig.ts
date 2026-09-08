@@ -1,4 +1,5 @@
 import { flags } from "@/lib/flags";
+import { PUBLIC_API_SERVERS } from "./publicApiServers";
 
 export const SCALAR_CUSTOM_CSS = `
 .scalar-app,
@@ -102,6 +103,57 @@ export const SCALAR_CUSTOM_CSS = `
   color: var(--paper, #faf6ea) !important;
 }
 
+.scalar-app .response-card .scalar-card-header,
+.scalar-app .response-card .scalar-card-footer,
+.scalar-app .response-card .response-card-footer {
+  background: var(--paper, #faf6ea) !important;
+  color: var(--cover, #0b2a12) !important;
+}
+
+.scalar-app .response-card > .scalar-card-content.grid,
+.scalar-app .response-card .scalar-code-block {
+  background: var(--docs-ink, #8a6a52) !important;
+}
+
+.scalar-app .response-card .scalar-code-block pre,
+.scalar-app .response-card .scalar-code-block code.hljs,
+.scalar-app .response-card .scalar-code-block .hljs {
+  background: transparent !important;
+}
+
+.scalar-app .scalar-code-copy,
+.scalar-app .code-copy,
+.scalar-app .scalar-code-copy-backdrop {
+  background: var(--paper, #faf6ea) !important;
+  color: var(--peony, #ff6162) !important;
+  border-radius: 0.35rem;
+}
+
+.scalar-app .scalar-code-copy svg,
+.scalar-app .code-copy svg,
+.scalar-app .scalar-code-copy *:not(.scalar-code-copy-backdrop),
+.scalar-app .code-copy *:not(.scalar-code-copy-backdrop) {
+  color: var(--peony, #ff6162) !important;
+  fill: var(--peony, #ff6162) !important;
+}
+
+.scalar-app .scalar-code-copy:hover,
+.scalar-app .code-copy:hover,
+.scalar-app .scalar-code-copy:focus-visible,
+.scalar-app .code-copy:focus-visible,
+.scalar-app .scalar-code-copy:hover .scalar-code-copy-backdrop,
+.scalar-app .scalar-code-copy:focus-visible .scalar-code-copy-backdrop {
+  background: var(--paper, #faf6ea) !important;
+}
+
+.scalar-app .scalar-code-copy:hover *:not(.scalar-code-copy-backdrop),
+.scalar-app .code-copy:hover *:not(.scalar-code-copy-backdrop),
+.scalar-app .scalar-code-copy:focus-visible *:not(.scalar-code-copy-backdrop),
+.scalar-app .code-copy:focus-visible *:not(.scalar-code-copy-backdrop) {
+  color: var(--peony-hot, #ff8586) !important;
+  fill: var(--peony-hot, #ff8586) !important;
+}
+
 .scalar-app .hljs-comment,
 .scalar-app .hljs-quote {
   color: color-mix(in srgb, var(--paper, #faf6ea) 48%, #6a6864) !important;
@@ -172,5 +224,6 @@ export function createScalarReferenceConfig() {
     forceDarkModeState: "light" as const,
     modelsSectionLabel: "Models",
     customCss: SCALAR_CUSTOM_CSS,
+    ...(flags.public ? { servers: PUBLIC_API_SERVERS } : {}),
   };
 }

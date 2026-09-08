@@ -7,7 +7,7 @@ Feature: Admin Dashboard page navigation
             And they are on the admin dashboard
 
         Scenario: View Book link works
-            When an admin clicks the `View Book` link
+            When an admin clicks the `view book` link
             Then they are taken to the Original Poetry landing page
 
     Rule: Navigation is handled by a button on mobile
@@ -27,5 +27,5 @@ Feature: Admin Dashboard page navigation
             And they are on the admin dashboard on mobile  (`/admin`)
 
         Scenario: Drop-down menu contains comment sort, filter, and search options
-            When an admin clicks the drop-down `Comments Menu` button
-            Then the `Comments Menu` opens showing comment sort, filter, and search options
+            When an admin clicks the drop-down `comments menu` button
+            Then the `comments menu` opens showing comment sort, filter, and search options
