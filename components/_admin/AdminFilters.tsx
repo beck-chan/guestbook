@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ChangeEvent } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { DocsHeart } from "@/app/docs/_components/DocsHeart";
@@ -64,7 +64,7 @@ export function AdminFilters({
     setQuery(filters.q);
   }, [filters.q]);
 
-  function apply(form: HTMLFormElement) {
+  function apply(form: HTMLFormElement, q = String(new FormData(form).get("q") ?? "").trim()) {
     const data = new FormData(form);
     const emailValue = String(data.get("email") ?? "all");
     const statusValue = String(data.get("status") ?? "all");
@@ -73,7 +73,7 @@ export function AdminFilters({
       adminHref(
         1,
         {
-          q: String(data.get("q") ?? "").trim(),
+          q,
           sort: sortValue === "oldest" ? "oldest" : "newest",
           status:
             statusValue === "unread" || statusValue === "read"
@@ -87,6 +87,14 @@ export function AdminFilters({
         basePath,
       ),
     );
+  }
+
+  function onQueryChange(event: ChangeEvent<HTMLInputElement>) {
+    const value = event.currentTarget.value;
+    setQuery(value);
+    if (value === "" && filters.q && event.currentTarget.form) {
+      apply(event.currentTarget.form, "");
+    }
   }
 
   return (
@@ -212,7 +220,7 @@ export function AdminFilters({
                 type="search"
                 name="q"
                 value={query}
-                onChange={(event) => setQuery(event.currentTarget.value)}
+                onChange={onQueryChange}
                 placeholder="search"
                 aria-label="search comments"
               />

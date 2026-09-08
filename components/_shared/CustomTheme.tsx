@@ -1,11 +1,17 @@
 "use client";
 
-import { useLayoutEffect } from "react";
-import { useGuestbookSettings } from "@/lib/guestbookSettings";
+import type { CSSProperties } from "react";
+import {
+  guestbookThemeVars,
+  useGuestbookSettings,
+} from "@/lib/guestbookSettings";
 
 const STYLE_ID = "guestbook-custom-theme";
+const VARS_ID = "guestbook-theme-vars";
 const THEME_SCOPE = ".admin-page";
-const HOIST_AT = /^@(?:import|charset|namespace|font-face|keyframes)\b/i;
+const HOIST_AT =
+  /^@(?:import|charset|namespace|font-face|keyframes|property)\b/i;
+const GROUP_AT = /^@(?:media|supports|container|layer|scope)\b/i;
 
 function sanitizeCustomCss(css: string) {
   return css.replace(/<\/style/gi, "");
@@ -67,59 +73,94 @@ function splitCssBlocks(css: string) {
   return blocks.filter(Boolean);
 }
 
-function rewriteRootSelectors(block: string) {
+function firstCompound(selector: string) {
+  return selector.match(/^[^\s>+~]+/)?.[0] ?? selector;
+}
+
+function alreadyScoped(compound: string) {
+  return (
+    compound === THEME_SCOPE ||
+    compound.startsWith(`${THEME_SCOPE}.`) ||
+    compound.startsWith(`${THEME_SCOPE}:`) ||
+    compound.startsWith(`${THEME_SCOPE}[`)
+  );
+}
+
+function scopeSelector(selector: string) {
+  const sel = selector.trim();
+  if (!sel) {
+    return sel;
+  }
+  if (/^(:root|html|body)\b/.test(sel)) {
+    return sel.replace(/^(:root|html|body)\b/, THEME_SCOPE);
+  }
+
+  const first = firstCompound(sel);
+  if (alreadyScoped(first)) {
+    return sel;
+  }
+
+  const descendant = `${THEME_SCOPE} ${sel}`;
+  // /admin puts guestbook-themed on the same node as admin-page; /guestbook nests it.
+  if (/^[.#[]/.test(first)) {
+    return `${THEME_SCOPE}${first}${sel.slice(first.length)}, ${descendant}`;
+  }
+  return descendant;
+}
+
+function scopePrelude(prelude: string) {
+  return prelude.split(",").map(scopeSelector).filter(Boolean).join(", ");
+}
+
+function rewriteBlock(block: string): string {
+  if (HOIST_AT.test(block)) {
+    return block;
+  }
+
   const brace = block.indexOf("{");
   if (brace === -1) {
     return block;
   }
-  const prelude = block.slice(0, brace);
-  const rest = block.slice(brace);
-  return (
-    prelude.replace(/(^|,)(\s*)(?::root\b|html\b|body\b)/g, "$1$2&") + rest
-  );
-}
 
-function scopeCustomCss(css: string) {
-  const blocks = splitCssBlocks(css);
-  const hoisted: string[] = [];
-  const scoped: string[] = [];
-
-  for (const block of blocks) {
-    if (HOIST_AT.test(block)) {
-      hoisted.push(block);
-    } else {
-      scoped.push(rewriteRootSelectors(block));
-    }
+  if (GROUP_AT.test(block)) {
+    const close = block.lastIndexOf("}");
+    const inner = close === -1 ? "" : block.slice(brace + 1, close);
+    return `${block.slice(0, brace + 1)}\n${rewriteBlocks(inner)}\n}`;
   }
 
-  const wrapped = scoped.length
-    ? `${THEME_SCOPE} {\n${scoped.join("\n\n")}\n}`
-    : "";
+  return `${scopePrelude(block.slice(0, brace))}${block.slice(brace)}`;
+}
 
-  return [...hoisted, wrapped].filter(Boolean).join("\n\n");
+function rewriteBlocks(css: string) {
+  return splitCssBlocks(css).map(rewriteBlock).join("\n\n");
+}
+
+function rewriteCustomCss(css: string) {
+  return rewriteBlocks(css);
+}
+
+function cssDeclarations(vars: CSSProperties) {
+  return Object.entries(vars)
+    .map(([key, value]) => `${key}: ${value};`)
+    .join(" ");
 }
 
 export function CustomTheme() {
   const [settings] = useGuestbookSettings();
-  const css = sanitizeCustomCss(settings.customTheme);
+  const varsCss = cssDeclarations(guestbookThemeVars(settings));
+  const css = sanitizeCustomCss(settings.customTheme).trim();
 
-  useLayoutEffect(() => {
-    const trimmed = css.trim();
-    const existing = document.getElementById(STYLE_ID);
-
-    if (!trimmed) {
-      existing?.remove();
-      return;
-    }
-
-    const style =
-      existing instanceof HTMLStyleElement
-        ? existing
-        : document.createElement("style");
-    style.id = STYLE_ID;
-    style.textContent = scopeCustomCss(trimmed);
-    document.head.appendChild(style);
-  }, [css]);
-
-  return null;
+  return (
+    <>
+      <style id={VARS_ID}>
+        {`.admin-page, .guestbook-themed { ${varsCss} }`}
+      </style>
+      {css ? (
+        <style
+          id={STYLE_ID}
+          dangerouslySetInnerHTML={{ __html: rewriteCustomCss(css) }}
+        />
+      ) : null}
+    </>
+  );
 }

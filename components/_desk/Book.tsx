@@ -212,6 +212,7 @@ export function Book({
   const prevOpenRef = useRef<boolean | null>(null);
   const isOpenRef = useRef(isOpen);
   const [heldOpen, setHeldOpen] = useState(false);
+  const [animating, setAnimating] = useState(false);
   isOpenRef.current = isOpen;
 
   function nodes() {
@@ -290,8 +291,8 @@ export function Book({
         book.setAttribute("data-closing-clip", "");
       } else {
         book.removeAttribute("data-closing-clip");
-        gsap.set(scene, { width: poses.openW, x: 0 });
-        spread.style.width = `${poses.openW}px`;
+        gsap.set(scene, { clearProps: "width,x" });
+        spread.style.width = "100%";
       }
       return;
     }
@@ -312,7 +313,7 @@ export function Book({
   }
 
   function settleOpen() {
-    setHeldOpen(false);
+    setAnimating(false);
     const parts = nodes();
     parts?.book.classList.remove("is-animating", "is-closing-clip");
     parts?.book.removeAttribute("data-closing-clip");
@@ -357,6 +358,7 @@ export function Book({
       gsap.set(parts.book, bookTilt(false));
     }
     setHeldOpen(false);
+    setAnimating(false);
     parts?.pageLeft.classList.remove("is-revealed");
     discardFlyingNotes();
     if (parts) {
@@ -608,7 +610,7 @@ export function Book({
     const { book, cover, note, gutter, shadowLeft, shadowDepth } = parts;
     const { hoverX, hoverY, landX } = poses;
     let rotationY = Number(gsap.getProperty(cover, "rotationY"));
-    if (Number.isNaN(rotationY)) {
+    if (Number.isNaN(rotationY) || Math.abs(rotationY) < 2) {
       rotationY = -180;
     }
 
@@ -630,7 +632,6 @@ export function Book({
       transformOrigin: "left center",
       backfaceVisibility: "visible",
     });
-    gsap.set(book, bookTilt(true));
     gsap.set(gutter, { opacity: 1 });
     gsap.set(shadowLeft, { clipPath: STACK_CLIP_OPEN });
     gsap.set(shadowDepth, { opacity: 1 });
@@ -886,6 +887,7 @@ export function Book({
     leafRef.current = leaf;
 
     setHeldOpen(true);
+    setAnimating(true);
     parts.book.classList.add("is-open", "is-animating");
     gsap.set(parts.cover, { transformOrigin: "left center", backfaceVisibility: "visible" });
 
@@ -919,10 +921,6 @@ export function Book({
         gsap.set(parts.shadowLeft, { clipPath: STACK_CLIP_OPEN });
         gsap.set(parts.shadowDepth, { opacity: 1 });
       }
-      if (poses) {
-        gsap.set(parts.scene, { width: poses.openW });
-        parts.spread.style.width = `${poses.openW}px`;
-      }
       playToClose();
     }
   }, [isOpen]);
@@ -931,7 +929,7 @@ export function Book({
     <div className="book-scene" data-open={isOpen} ref={sceneRef}>
       <div
         ref={bookRef}
-        className={`book${isOpen || heldOpen ? " is-open" : ""}${heldOpen ? " is-animating" : ""}`}
+        className={`book${isOpen || heldOpen ? " is-open" : ""}${animating ? " is-animating" : ""}`}
       >
         <div className="book-shadow-left" aria-hidden="true" ref={shadowLeftRef} />
         <div className="book-shadow-depth" aria-hidden="true" ref={shadowDepthRef} />

@@ -1,3 +1,4 @@
+import { unstable_noStore as noStore } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import {
   DEFAULT_GUESTBOOK_SETTINGS,
@@ -7,6 +8,7 @@ import {
 } from "@/lib/guestbookSettingsShared";
 
 export async function loadGuestbookSettings(): Promise<GuestbookSettings> {
+  noStore();
   try {
     const supabase = await createClient();
     const { data, error } = await supabase

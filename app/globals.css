@@ -274,6 +274,7 @@ body {
 
 .desk-split.is-open .stage,
 .stage.is-open,
+.desk-split:has(.book.is-open) .stage,
 .desk-split:has(.book.is-animating):not(:has(.book[data-closing-clip])) .stage {
   padding-left: calc(var(--sticky-size) * 2 / 3 + 1.25rem);
   padding-right: 2.5rem;
@@ -289,6 +290,7 @@ body {
 }
 
 .stage.is-open .book-scene,
+.stage:has(.book.is-open) .book-scene,
 .stage:has(.book.is-animating):not(:has(.book[data-closing-clip])) .book-scene {
   width: min(var(--book-width), calc(var(--page-side) * 2));
 }
@@ -456,6 +458,7 @@ body {
 
 .book.is-open:not(.is-animating) .cover {
   transform: rotateY(-180deg) translateZ(3px);
+  pointer-events: none;
 }
 
 .book.is-animating .sticky-note {
@@ -547,6 +550,10 @@ body {
   background: var(--paper);
 }
 
+.book.is-open:not(.is-animating) .cover-inside {
+  visibility: hidden;
+}
+
 .page-left,
 .page-right {
   position: absolute;
@@ -567,6 +574,7 @@ body {
 .book.is-open:not(.is-animating) .page-left {
   visibility: visible;
   opacity: 1;
+  pointer-events: auto;
 }
 
 .page-right {
@@ -1153,6 +1161,7 @@ body {
 
   .desk-split.is-open .stage,
   .stage.is-open,
+  .desk-split:has(.book.is-open) .stage,
   .desk-split:has(.book.is-animating):not(:has(.book[data-closing-clip])) .stage {
     padding-left: calc(var(--sticky-size) * 2 / 3 + 1.25rem);
     padding-right: 2.25rem;
@@ -1490,6 +1499,10 @@ body {
 
 .admin-page.admin-desk {
   padding: 0;
+}
+
+.admin-page .desk-split {
+  background: transparent;
 }
 
 .admin-main {
@@ -2518,6 +2531,7 @@ body {
 
   .desk-split.is-open .stage,
   .stage.is-open,
+  .desk-split:has(.book.is-open) .stage,
   .desk-split:has(.book.is-animating):not(:has(.book[data-closing-clip])) .stage {
     padding-left: calc(var(--sticky-size) * 2 / 3 + 1rem);
     padding-right: 1.5rem;

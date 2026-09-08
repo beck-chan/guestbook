@@ -1,10 +1,5 @@
 "use client";
 
-import {
-  guestbookThemeVars,
-  useGuestbookSettings,
-} from "@/lib/guestbookSettings";
-
 export function AdminPageFrame({
   className,
   children,
@@ -12,14 +7,7 @@ export function AdminPageFrame({
   className: string;
   children: React.ReactNode;
 }) {
-  const [settings] = useGuestbookSettings();
-
   return (
-    <main
-      className={`${className} guestbook-themed`}
-      style={guestbookThemeVars(settings)}
-    >
-      {children}
-    </main>
+    <main className={`${className} guestbook-themed`}>{children}</main>
   );
 }

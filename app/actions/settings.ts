@@ -5,7 +5,6 @@ import {
   guestbookSettingsToRow,
   type GuestbookSettings,
 } from "@/lib/guestbookSettingsShared";
-import { guestbookAdminPath } from "@/lib/guestbookPaths";
 import { loadGuestbookSettings } from "@/lib/loadGuestbookSettings";
 import { createClient } from "@/lib/supabase/server";
 
@@ -54,9 +53,7 @@ export async function saveGuestbookSettings(
   }
 
   const next = await loadGuestbookSettings();
-  revalidatePath("/");
-  revalidatePath("/guestbook");
-  revalidatePath(guestbookAdminPath());
+  revalidatePath("/", "layout");
   return { ok: true, settings: next };
 }
 

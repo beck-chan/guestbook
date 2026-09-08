@@ -43,9 +43,14 @@ export function GuestbookSettingsProvider({
   initialSettings?: GuestbookSettings;
   children: ReactNode;
 }) {
-  const [settings, setSettings] = useState<GuestbookSettings>(
-    initialSettings ?? DEFAULT_GUESTBOOK_SETTINGS,
-  );
+  const seed = initialSettings ?? DEFAULT_GUESTBOOK_SETTINGS;
+  const seedKey = JSON.stringify(seed);
+  const [settings, setSettings] = useState<GuestbookSettings>(seed);
+  const [prevSeedKey, setPrevSeedKey] = useState(seedKey);
+  if (seedKey !== prevSeedKey) {
+    setPrevSeedKey(seedKey);
+    setSettings(seed);
+  }
 
   return (
     <GuestbookSettingsContext.Provider value={{ settings, setSettings }}>
