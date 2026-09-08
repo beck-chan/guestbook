@@ -96,6 +96,18 @@ function measurePoses(
   };
 }
 
+function noteOpenLabel(note: HTMLElement) {
+  return note.querySelector<HTMLElement>(".sticky-note-label-open");
+}
+
+function noteCloseLabel(note: HTMLElement) {
+  return note.querySelector<HTMLElement>(".sticky-note-label-close");
+}
+
+function noteEraser(note: HTMLElement) {
+  return note.querySelector<HTMLElement>(".sticky-note-eraser");
+}
+
 function spreadWidthForCover(sceneW: number, leaf: number, openW: number) {
   if (sceneW <= leaf) {
     return leaf * 2;
@@ -230,6 +242,19 @@ export function Book({
         transformOrigin: "left center",
       });
       gsap.set(parts.note, { clearProps: "transform,x,y,z,zIndex" });
+      const openLabel = noteOpenLabel(parts.note);
+      const closeLabel = noteCloseLabel(parts.note);
+      if (openLabel) {
+        gsap.set(openLabel, { clearProps: "clipPath,webkitMaskImage,webkitMaskSize,webkitMaskPosition,maskImage,maskSize,maskPosition,opacity,visibility,overflow" });
+      }
+      if (closeLabel) {
+        gsap.set(closeLabel, { clearProps: "clipPath" });
+      }
+      const eraser = noteEraser(parts.note);
+      if (eraser) {
+        gsap.set(eraser, { clearProps: "transform,x,y,rotation,opacity" });
+      }
+      parts.note.classList.add("is-label-open");
     }
   }
 
@@ -242,6 +267,19 @@ export function Book({
       gsap.set(parts.gutter, { clearProps: "opacity" });
       gsap.set(parts.shadowLeft, { clearProps: "clipPath" });
       gsap.set(parts.shadowDepth, { clearProps: "opacity" });
+      const openLabel = noteOpenLabel(parts.note);
+      const closeLabel = noteCloseLabel(parts.note);
+      if (openLabel) {
+        gsap.set(openLabel, { clearProps: "clipPath,webkitMaskImage,webkitMaskSize,webkitMaskPosition,maskImage,maskSize,maskPosition,opacity,visibility,overflow" });
+      }
+      if (closeLabel) {
+        gsap.set(closeLabel, { clearProps: "clipPath" });
+      }
+      const eraser = noteEraser(parts.note);
+      if (eraser) {
+        gsap.set(eraser, { clearProps: "transform,x,y,rotation,opacity" });
+      }
+      parts.note.classList.remove("is-label-open");
     }
     clearMotionProps();
   }
@@ -301,6 +339,74 @@ export function Book({
         },
         0,
       );
+      const openLabel = noteOpenLabel(note);
+      const eraser = noteEraser(note);
+      if (openLabel && eraser) {
+        const width = openLabel.offsetWidth;
+        const mask = {
+          webkitMaskImage:
+            "linear-gradient(90deg, #000 0%, #000 42%, rgb(0 0 0 / 0.2) 52%, transparent 68%)",
+          webkitMaskRepeat: "no-repeat",
+          webkitMaskSize: "320% 180%",
+          maskImage:
+            "linear-gradient(90deg, #000 0%, #000 42%, rgb(0 0 0 / 0.2) 52%, transparent 68%)",
+          maskRepeat: "no-repeat",
+          maskSize: "320% 180%",
+        };
+        gsap.set(openLabel, {
+          ...mask,
+          webkitMaskPosition: "0% 40%",
+          maskPosition: "0% 40%",
+          overflow: "hidden",
+          autoAlpha: 1,
+        });
+        gsap.set(eraser, {
+          opacity: 0,
+          x: width - 4,
+          y: -12,
+          rotation: -34,
+        });
+        tl.to(
+          eraser,
+          { opacity: 1, y: 3, rotation: -26, duration: 0.12, ease: "power2.out" },
+          0.05,
+        );
+        tl.to(
+          eraser,
+          { x: width * 0.55, y: 6, duration: 0.14, ease: "power1.inOut" },
+          0.12,
+        );
+        tl.to(
+          openLabel,
+          { webkitMaskPosition: "42% 55%", maskPosition: "42% 55%", duration: 0.14, ease: "none" },
+          0.12,
+        );
+        tl.to(
+          eraser,
+          { x: width * 0.7, y: -2, rotation: -16, duration: 0.1, ease: "power1.inOut" },
+          0.26,
+        );
+        tl.to(
+          eraser,
+          { x: -18, y: 5, rotation: -32, duration: 0.24, ease: "power1.in" },
+          0.36,
+        );
+        tl.to(
+          openLabel,
+          { webkitMaskPosition: "130% 45%", maskPosition: "130% 45%", duration: 0.26, ease: "power1.out" },
+          0.34,
+        );
+        tl.to(
+          openLabel,
+          { autoAlpha: 0, duration: 0.08, ease: "power1.out" },
+          0.56,
+        );
+        tl.to(
+          eraser,
+          { opacity: 0, y: -14, rotation: -6, duration: 0.16, ease: "power2.in" },
+          0.58,
+        );
+      }
     }
 
     tl.to(
@@ -339,6 +445,23 @@ export function Book({
     );
     tl.to(note, { y: arcY, duration: 0.4, ease: "power2.out" }, "<");
     tl.to(note, { y: 0, duration: 0.62, ease: "power2.inOut" }, ">-0.14");
+
+    const closeLabel = noteCloseLabel(note);
+    if (closeLabel && onRight) {
+      tl.add(() => {
+        note.classList.add("is-label-open");
+      }, ">-0.42");
+      tl.fromTo(
+        closeLabel,
+        { clipPath: "inset(0% 100% 0% 0%)" },
+        {
+          clipPath: "inset(0% 0% 0% 0%)",
+          duration: 0.42,
+          ease: "power2.out",
+        },
+        ">-0.42",
+      );
+    }
 
     tlRef.current = tl;
   }

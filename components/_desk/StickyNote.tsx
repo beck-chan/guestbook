@@ -16,8 +16,14 @@ export const StickyNote = forwardRef<HTMLButtonElement, StickyNoteProps>(
         aria-label={isOpen ? "Close Book" : "Open Book"}
         aria-pressed={isOpen}
       >
-        <span className="sticky-note-label">
-          {isOpen ? "Close Book" : "Open Book"}
+        <span className="sticky-note-caption">
+          <span className="sticky-note-label sticky-note-label-open">
+            Open Book
+          </span>
+          <span className="sticky-note-label sticky-note-label-close">
+            Close Book
+          </span>
+          <span className="sticky-note-eraser" aria-hidden="true" />
         </span>
       </button>
     );
