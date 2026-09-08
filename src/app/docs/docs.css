@@ -478,6 +478,18 @@ body:has(.docs-shell) {
   max-width: 58rem;
 }
 
+.docs-article:has(.docs-api-reference) {
+  max-width: min(72rem, 100%);
+}
+
+.docs-api-reference {
+  margin-top: 1.5rem;
+  min-height: 42rem;
+  background: #fff;
+  color: var(--ink);
+  font-family: var(--futura-font);
+}
+
 .docs-article p {
   margin: 1.1rem 0 0;
   font-size: clamp(1rem, 1.5vw, 1.28rem);

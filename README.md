@@ -151,3 +151,10 @@ need to do this for public docs too
 Display name: 128 characters
 Email: 254 characters (the usual max for an email address)
 
+To keep a change:
+
+Open Configure and tweak theme/layout/options.
+Copy the JSON snippet in that panel.
+Paste the keys you want into the createApiReference config in src/app/docs/_components/DocsApiReferenceView.tsx (scalarConfig). If you still use the iframe explorer, copy the same keys into src/app/docs/api/explorer/route.ts.
+Refresh /docs/api.
+

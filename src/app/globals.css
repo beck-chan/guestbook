@@ -311,7 +311,6 @@ body {
   height: calc(var(--page-side) * 1.5);
   flex: 0 0 auto;
   overflow: visible;
-  transform-style: preserve-3d;
 }
 
 .stage.is-open .book-scene,
@@ -325,7 +324,7 @@ body {
   inset: 0;
   z-index: 0;
   pointer-events: none;
-  transform-style: flat;
+  isolation: isolate;
 }
 
 .book {
@@ -400,7 +399,7 @@ body {
 }
 
 .book-scene:has(.book.is-open) .book-shadow-left {
-  clip-path: inset(-12px 0px -12px -28px);
+  clip-path: var(--book-shadow-left-clip, inset(-12px 0px -12px -28px));
 }
 
 .book-shadow-right {
@@ -409,7 +408,7 @@ body {
 }
 
 .book-scene:has(.book.is-open) .book-shadow-right {
-  opacity: 1;
+  opacity: var(--book-shadow-right-opacity, 1);
 }
 
 .book-shadow-depth {
@@ -420,7 +419,7 @@ body {
 }
 
 .book-scene:has(.book.is-open) .book-shadow-depth {
-  opacity: 1;
+  opacity: var(--book-shadow-depth-opacity, 1);
 }
 
 .spread {
@@ -446,8 +445,8 @@ body {
   opacity: 0;
 }
 
-.book.is-open:not(.is-animating) .spread-gutter {
-  opacity: 1;
+.book.is-open .spread-gutter {
+  opacity: var(--book-gutter-opacity, 1);
 }
 
 .spread-gutter::after {
@@ -1045,7 +1044,6 @@ body {
   pointer-events: none;
 }
 
-.book.is-open:not(.is-animating) .sticky-note-caption,
 .sticky-note.is-label-open .sticky-note-caption,
 .sticky-note.is-upright .sticky-note-caption {
   top: 52%;
@@ -1105,16 +1103,14 @@ body {
   opacity: 1;
 }
 
-.book.is-open:not(.is-animating) .sticky-note-label-close .sticky-note-letter {
+.sticky-note.is-label-open .sticky-note-label-close .sticky-note-letter {
   opacity: 1;
 }
 
-.book.is-open:not(.is-animating) .sticky-note-label-open,
 .sticky-note.is-label-open .sticky-note-label-open {
   visibility: hidden;
 }
 
-.book.is-open:not(.is-animating) .sticky-note-label-close,
 .sticky-note.is-label-open .sticky-note-label-close {
   visibility: visible;
 }

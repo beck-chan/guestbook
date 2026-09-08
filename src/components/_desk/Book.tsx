@@ -195,7 +195,7 @@ function poseFlyingNote(clone: HTMLElement, note: HTMLElement, extras?: gsap.Twe
   });
 }
 
-function spawnFlyingNote(note: HTMLButtonElement) {
+function spawnFlyingNote(note: HTMLButtonElement, extras?: gsap.TweenVars) {
   const clone = note.cloneNode(true) as HTMLButtonElement;
   clone.classList.add("sticky-note-flying");
   clone.removeAttribute("aria-label");
@@ -210,8 +210,57 @@ function spawnFlyingNote(note: HTMLButtonElement) {
     z: 0,
     autoAlpha: 1,
     boxShadow: window.getComputedStyle(note).boxShadow,
+    ...extras,
   });
   return clone;
+}
+
+function cssOr(value: string, fallback: string) {
+  return value && value !== "none" ? value : fallback;
+}
+
+function paintOpenShadows(parts: {
+  scene: HTMLElement;
+  gutter: HTMLElement;
+  shadowLeft: HTMLElement;
+  shadowRight: HTMLElement;
+  shadowDepth: HTMLElement;
+}) {
+  parts.scene.style.setProperty(
+    "--book-shadow-left-clip",
+    cssOr(getComputedStyle(parts.shadowLeft).clipPath, STACK_CLIP_OPEN),
+  );
+  parts.scene.style.setProperty(
+    "--book-shadow-right-opacity",
+    getComputedStyle(parts.shadowRight).opacity,
+  );
+  parts.scene.style.setProperty(
+    "--book-shadow-depth-opacity",
+    getComputedStyle(parts.shadowDepth).opacity,
+  );
+  parts.scene.style.setProperty(
+    "--book-gutter-opacity",
+    getComputedStyle(parts.gutter).opacity,
+  );
+}
+
+function restOpenShadows(parts: {
+  gutter: HTMLElement;
+  shadowLeft: HTMLElement;
+  shadowRight: HTMLElement;
+  shadowDepth: HTMLElement;
+}) {
+  gsap.set(parts.gutter, { clearProps: "opacity" });
+  gsap.set(parts.shadowLeft, { clearProps: "clipPath" });
+  gsap.set(parts.shadowRight, { clearProps: "opacity" });
+  gsap.set(parts.shadowDepth, { clearProps: "opacity" });
+}
+
+function clearOpenShadowPaint(scene: HTMLElement) {
+  scene.style.removeProperty("--book-shadow-left-clip");
+  scene.style.removeProperty("--book-shadow-right-opacity");
+  scene.style.removeProperty("--book-shadow-depth-opacity");
+  scene.style.removeProperty("--book-gutter-opacity");
 }
 
 function spawnDepartingNote(note: HTMLButtonElement) {
@@ -370,12 +419,12 @@ export function Book({
   }
 
   function settleOpen() {
-    setAnimating(false);
     const parts = nodes();
-    parts?.book.classList.remove("is-animating", "is-closing-clip");
     parts?.book.removeAttribute("data-closing-clip");
     parts?.pageLeft.classList.add("is-revealed");
     if (parts) {
+      paintOpenShadows(parts);
+      restOpenShadows(parts);
       gsap.set(parts.book, { clearProps: "transform,rotationX,rotationY" });
       gsap.set(parts.cover, {
         rotationY: -180,
@@ -383,9 +432,6 @@ export function Book({
         transformOrigin: "left center",
         clearProps: "backfaceVisibility",
       });
-      gsap.set(parts.shadowLeft, { clipPath: STACK_CLIP_OPEN });
-      gsap.set(parts.shadowRight, { opacity: 1 });
-      gsap.set(parts.shadowDepth, { opacity: 1 });
       const coverInside = parts.cover.querySelector(".cover-inside");
       if (coverInside instanceof HTMLElement) {
         gsap.set(coverInside, { clearProps: "visibility" });
@@ -406,7 +452,9 @@ export function Book({
       gsap.set(noteOpenLetters(parts.note), { clearProps: "opacity,y,transform" });
       gsap.set(noteCloseLetters(parts.note), { clearProps: "opacity,y,transform" });
       parts.note.classList.add("is-label-open");
+      parts.book.classList.remove("is-animating", "is-closing-clip");
     }
+    setAnimating(false);
   }
 
   function settleClosed() {
@@ -422,10 +470,8 @@ export function Book({
     parts?.pageLeft.classList.remove("is-revealed");
     discardFlyingNotes();
     if (parts) {
-      gsap.set(parts.gutter, { clearProps: "opacity" });
-      gsap.set(parts.shadowLeft, { clearProps: "clipPath" });
-      gsap.set(parts.shadowRight, { clearProps: "opacity" });
-      gsap.set(parts.shadowDepth, { clearProps: "opacity" });
+      restOpenShadows(parts);
+      clearOpenShadowPaint(parts.scene);
       const openLabel = noteOpenLabel(parts.note);
       const closeLabel = noteCloseLabel(parts.note);
       if (openLabel) {
@@ -499,7 +545,7 @@ export function Book({
       return;
     }
     killAnim();
-    const { book, cover, note, gutter, shadowLeft, shadowDepth } = parts;
+    const { book, cover, note, gutter, shadowLeft, shadowRight, shadowDepth } = parts;
     const { hoverX, hoverY, landX, arcY } = poses;
     const rotationY = Number(gsap.getProperty(cover, "rotationY")) || 0;
     const noteX = Number(gsap.getProperty(note, "x")) || 0;
@@ -616,6 +662,7 @@ export function Book({
 
     const shadowAt = Math.max(0.2, coverDur * 0.42);
     gsap.set(shadowLeft, { clipPath: STACK_CLIP_CLOSED });
+    gsap.set(shadowRight, { opacity: 0 });
     gsap.set(shadowDepth, { opacity: 0 });
     tl.to(gutter, { opacity: 1, duration: 0.72, ease: "power1.out" }, shadowAt);
     tl.to(
@@ -623,6 +670,7 @@ export function Book({
       { clipPath: STACK_CLIP_OPEN, duration: 0.95, ease: "power2.out" },
       shadowAt,
     );
+    tl.to(shadowRight, { opacity: 1, duration: 0.9, ease: "power1.out" }, shadowAt);
     tl.to(shadowDepth, { opacity: 1, duration: 0.9, ease: "power1.out" }, shadowAt);
 
     tl.addLabel("noteFly", ">-0.12");
@@ -714,8 +762,7 @@ export function Book({
     gsap.set(openLetters, { opacity: 0, y: 6 });
     gsap.set(note, { autoAlpha: 0, pointerEvents: "none" });
 
-    const arriver = spawnFlyingNote(note);
-    gsap.set(arriver, { autoAlpha: 0 });
+    const arriver = spawnFlyingNote(note, { autoAlpha: 0 });
     const arriverLetters = noteOpenLetters(arriver);
     gsap.set(arriverLetters, {
       opacity: 0,
@@ -822,6 +869,8 @@ export function Book({
     });
 
     tl.add(() => {
+      arriver.remove();
+      gsap.set(openLetters, { clearProps: "opacity,y,transform" });
       gsap.set(note, {
         x: 0,
         y: 0,
@@ -833,8 +882,6 @@ export function Book({
         left: "calc(100% - var(--sticky-size) * 0.55)",
         boxShadow: restShadow,
       });
-      gsap.set(openLetters, { clearProps: "opacity,y,transform" });
-      arriver.remove();
     });
 
     tl.add(() => {
@@ -905,18 +952,17 @@ export function Book({
     });
     if (isOpenRef.current) {
       parts.pageLeft.classList.add("is-revealed");
-      gsap.set(parts.gutter, { opacity: 1 });
-      gsap.set(parts.shadowLeft, { clipPath: STACK_CLIP_OPEN });
-      gsap.set(parts.shadowRight, { opacity: 1 });
-      gsap.set(parts.shadowDepth, { opacity: 1 });
+      parts.scene.style.setProperty("--book-shadow-left-clip", STACK_CLIP_OPEN);
+      parts.scene.style.setProperty("--book-shadow-right-opacity", "1");
+      parts.scene.style.setProperty("--book-shadow-depth-opacity", "1");
+      parts.scene.style.setProperty("--book-gutter-opacity", "1");
+      restOpenShadows(parts);
       gsap.set(parts.note, { clearProps: "transform,x,y,z,zIndex" });
       parts.spread.style.width = "100%";
     } else {
       parts.pageLeft.classList.remove("is-revealed");
-      gsap.set(parts.gutter, { opacity: 0 });
-      gsap.set(parts.shadowLeft, { clipPath: STACK_CLIP_CLOSED });
-      gsap.set(parts.shadowRight, { opacity: 0 });
-      gsap.set(parts.shadowDepth, { opacity: 0 });
+      restOpenShadows(parts);
+      clearOpenShadowPaint(parts.scene);
       gsap.set(parts.note, { clearProps: "transform,x,y,z,zIndex" });
       parts.spread.style.width = "";
     }
@@ -1025,6 +1071,7 @@ export function Book({
         gsap.set(parts.note, { x: 0, y: 0, rotation: -90, z: 0, zIndex: 2 });
         gsap.set(parts.gutter, { opacity: 0 });
         gsap.set(parts.shadowLeft, { clipPath: STACK_CLIP_CLOSED });
+        gsap.set(parts.shadowRight, { opacity: 0 });
         gsap.set(parts.shadowDepth, { opacity: 0 });
       }
       gsap.set(parts.scene, { width: leaf });
