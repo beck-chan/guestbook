@@ -35,7 +35,6 @@ This page is not intended to be a substitute for legal advice. If you have any q
 |---|---|---|
 | Display name & message body | Anyone who comments | Displayed in posted comments |
 | Optional email | Commenters | Visible to admins only — will not be used to contact you unless requested in your comment |
-| Google account email & basic profile | Admins signing in with Google | Authenticate allow-listed users|
 | IP address (stored hashed) | Commenters | Rate-limit abuse |
 | Anonymous visitor cookie (poem {.heart}#) | Visitors who {.heart} like poems | Count one {.heart} like interaction per visitor per poem |
 | Page-view / analytics events | Visitors | Traffic & hit-counter stats |
@@ -60,10 +59,20 @@ We do *not* use Google SSO to read Gmail, Drive, or other Google data beyond bas
 
 ## How We Use It
 
+::: {.private}
 - Run and manage the guestbook (edit and delete comments as needed).
 - Limit spam and abuse (profanity checks, rate limits).
 - Restrict `/admin` to allow-listed Google accounts.
 - Measure visits to display hit counter / track visitor interactions with PostHog.
+
+:::
+
+::: {.public}
+- Run and manage the guestbook (edit and delete comments as needed).
+- Limit spam and abuse (profanity checks, rate limits).
+- Measure visits to display hit counter / track visitor interactions with PostHog.
+
+:::
 
 ## Who Processes It
 
@@ -79,10 +88,20 @@ We do not sell personal data.
 
 ## Retention and Deletion
 
+::: {.private}
 - Guestbook comments (and optional emails) stay until an admin removes them or the database is cleared.
 - Admin sessions use Supabase Auth (short-lived access tokens, long-lived refresh until sign-out or cookie clear).
 - Rate-limit keys are temporary.
 - Analytics retention follows the PostHog project settings.
+
+:::
+
+::: {.public}
+- Guestbook comments (and optional emails) stay until an admin removes them or the database is cleared.
+- Rate-limit keys are temporary.
+- Analytics retention follows the PostHog project settings.
+
+:::
 
 ::: {.callout}
 To request deletion of a comment or related data you submitted, contact us (refer to **Contact** above) and provide your submitted display name, and describe the post or approximate time.
@@ -91,9 +110,18 @@ To request deletion of a comment or related data you submitted, contact us (refe
 
 ## Your Choices
 
+::: {.private}
 - Do not submit an email if you prefer not to share one.
 - Admins can sign out to end the current session — Clear site cookies to drop stored auth/visitor cookies.
 - You can ask us to delete a comment or stored contact email you provided.
+
+:::
+
+::: {.public}
+- Do not submit an email if you prefer not to share one.
+- You can ask us to delete a comment or stored contact email you provided.
+
+:::
 
 ## Changes
 
