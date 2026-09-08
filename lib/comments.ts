@@ -39,7 +39,7 @@ const MONTHS = [
   "Dec",
 ] as const;
 
-/** Formats in the runtime's local timezone, e.g. `2026-Aug-09 / 5:36PM`. */
+/** Formats in the runtime's local timezone, e.g. `2026-Aug-09 / 5:36pm`. */
 export function formatCommentTime(iso: string) {
   const date = new Date(iso);
   if (Number.isNaN(date.getTime())) {
@@ -51,7 +51,7 @@ export function formatCommentTime(iso: string) {
   const day = String(date.getDate()).padStart(2, "0");
   const minutes = String(date.getMinutes()).padStart(2, "0");
   const hour24 = date.getHours();
-  const ampm = hour24 >= 12 ? "PM" : "AM";
+  const ampm = hour24 >= 12 ? "pm" : "am";
   const hour12 = hour24 % 12 || 12;
 
   return `${year}-${month}-${day} / ${hour12}:${minutes}${ampm}`;
@@ -114,12 +114,12 @@ function commentDate(note: GuestbookComment): Date {
   }
 
   const match = note.time.match(
-    /^(\d{4})-(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)-(\d{2}) \/ (\d{1,2}):(\d{2})(AM|PM)$/,
+    /^(\d{4})-(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)-(\d{2}) \/ (\d{1,2}):(\d{2})(am|pm|AM|PM)$/,
   );
   if (match) {
     const [, year, month, day, hourRaw, minute, ampm] = match;
     let hour = Number(hourRaw) % 12;
-    if (ampm === "PM") {
+    if (ampm.toLowerCase() === "pm") {
       hour += 12;
     }
     return new Date(
