@@ -1,6 +1,6 @@
 "use client";
 
-import { useLayoutEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
 import type { Poem } from "@/lib/poems";
@@ -122,6 +122,29 @@ function noteCloseLetters(note: HTMLElement) {
 
 function discardFlyingNotes() {
   document.querySelectorAll(".sticky-note-flying").forEach((el) => el.remove());
+}
+
+function wheelDeltaY(event: WheelEvent) {
+  if (event.deltaMode === WheelEvent.DOM_DELTA_LINE) {
+    return event.deltaY * 16;
+  }
+  if (event.deltaMode === WheelEvent.DOM_DELTA_PAGE) {
+    return event.deltaY * window.innerHeight;
+  }
+  return event.deltaY;
+}
+
+function leafCopyUnderPoint(root: HTMLElement, x: number, y: number) {
+  const copies = root.querySelectorAll<HTMLElement>(
+    ".page-left .leaf-copy, .page-right .leaf-copy",
+  );
+  for (const copy of copies) {
+    const box = copy.getBoundingClientRect();
+    if (x >= box.left && x <= box.right && y >= box.top && y <= box.bottom) {
+      return copy;
+    }
+  }
+  return null;
 }
 
 function poseFlyingNote(clone: HTMLElement, note: HTMLElement, extras?: gsap.TweenVars) {
@@ -859,6 +882,43 @@ export function Book({
     });
     observer.observe(stage);
     return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
+    function onWheel(event: WheelEvent) {
+      if (event.ctrlKey || event.defaultPrevented) {
+        return;
+      }
+      if (!isOpenRef.current) {
+        return;
+      }
+      const book = bookRef.current;
+      if (!book) {
+        return;
+      }
+      const target = event.target;
+      if (target instanceof Element && target.closest(".sticky-note")) {
+        return;
+      }
+      const copy = leafCopyUnderPoint(book, event.clientX, event.clientY);
+      if (!copy) {
+        return;
+      }
+      const max = copy.scrollHeight - copy.clientHeight;
+      if (max <= 1) {
+        return;
+      }
+      const next = Math.max(0, Math.min(max, copy.scrollTop + wheelDeltaY(event)));
+      if (next === copy.scrollTop) {
+        return;
+      }
+      copy.scrollTop = next;
+      event.preventDefault();
+    }
+
+    window.addEventListener("wheel", onWheel, { passive: false, capture: true });
+    return () =>
+      window.removeEventListener("wheel", onWheel, { capture: true });
   }, []);
 
   useLayoutEffect(() => {

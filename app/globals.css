@@ -449,7 +449,7 @@ body {
   left: 50%;
   width: 50%;
   height: 100%;
-  pointer-events: auto;
+  pointer-events: none;
   transform: rotateY(0deg) translateZ(3px);
   transform-origin: left center;
   transform-style: preserve-3d;
@@ -459,6 +459,7 @@ body {
 .book.is-open:not(.is-animating) .cover {
   transform: rotateY(-180deg) translateZ(3px);
   pointer-events: none;
+  visibility: hidden;
 }
 
 .book.is-animating .sticky-note {
@@ -579,6 +580,10 @@ body {
 
 .page-right {
   right: 0;
+  pointer-events: none;
+}
+
+.book.is-open .page-right {
   pointer-events: auto;
 }
 
@@ -626,6 +631,7 @@ body {
   z-index: 1;
   height: 100%;
   overflow: auto;
+  overscroll-behavior: contain;
   padding: 4.75rem 4.6rem 9rem 5.6rem;
   color: color-mix(in srgb, #6f4e37 80%, white);
   font-family: var(--body-font);
