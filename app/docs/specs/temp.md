@@ -1,4 +1,4 @@
-{/* ::: {.public}
+
 
 Example for the guestbook page (`/`):
 
@@ -19,9 +19,6 @@ Given(
 );
 ```
 
-::: */}
-
-{/* ::: {.private}
 
 Example for the standalone guestbook (`/guestbook`):
 
@@ -45,9 +42,8 @@ Given(
 );
 ```
 
-::: */}
 
-{/* Keep the `Given` functions in the same file as the comment steps:
+ Keep the `Given` functions in the same file as the comment steps:
 
 ```typescript
 import { Then, When } from "@cucumber/cucumber";
@@ -75,4 +71,13 @@ Then(
     assert.match(await top.innerText(), /hello from cucumber/);
   },
 );
-``` */}
+``` 
+
+The hooks open a desktop-sized window (`1280` by `720`). Specs that say *on mobile* use a different UI (drop-down menu instead of hanging bookmarks). Those `Given` steps should shrink the viewport (for example `390` by `844`) *before* `goto`, or the test is still looking at the desktop layout. 
+
+#  If a `Given` / `When` / `Then` already has a matching function, Cucumber runs that function. 
+
+Stubs are returned for Gherkin lines with no match. Paste those into `features/step_definitions/` and fill in the body.
+
+Find things the way a guest would see them on the page — the `submit` button, the `display name` field, the `prev` / `next` links — not CSS class names from the guestbook source.
+

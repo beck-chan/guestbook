@@ -42,6 +42,9 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
+# Playwright saved Google admin session (cookies)
+/features/support/.auth/
+
 # Cursor & internal tools
 .cursor
 .cursorignore

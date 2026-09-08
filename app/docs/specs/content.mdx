@@ -4,18 +4,14 @@ subtitle: Test your installed guestbook against the expected specifications.
 
 # Cucumber Specs
 
-The `.feature` files on this page are Gherkin specifications. Use [cucumber.js](https://github.com/cucumber/cucumber-js){.blank} to run these `.feature` scenarios against your installation of the guestbook.
+The `.feature` files on this page are Gherkin specifications. Use [cucumber.js](https://github.com/cucumber/cucumber-js){.blank} to run these `.feature` scenarios against your installation of the guestbook:
 
-- [x] This guide assumes that you've set up the guestbook application with either [Quickstart](/docs/quickstart) or [Install via npm](/docs/install).
+- A `.feature` file says what should happen. 
+- A step definition is how TypeScript that actually applies the behaviour. 
 
-
-::: {.private}
 ::: {.callout}
-# This version of the specifications displayed on this page reflect Beck's custom installation of the guestbook.
+- [x] This guide assumes that you've set up the guestbook application with either [Quickstart](/docs/quickstart) or [Install via npm](/docs/install).
 :::
-
-:::
-
 
 ## Install Cucumber and Playwright
 
@@ -140,63 +136,109 @@ AfterAll(async function () {
 
 ### Step Definitions
 
-Step definitions under `features/step_definitions/` map each `Given` / `When` / `Then` to clicks in the browser.
-
-{/* The hooks open a desktop-sized window (`1280` by `720`). Specs that say *on mobile* use a different UI (drop-down menu instead of hanging bookmarks). Those `Given` steps should shrink the viewport (for example `390` by `844`) *before* `goto`, or the test is still looking at the desktop layout. */}
+Step definitions under `features/step_definitions/` map each `Given` / `When` / `Then` to clicks in the browser. There should be step definitions for the functionality that ships with the guestbook repository, but you will need to write step definitions for any additional functionality you add.
 
 ::: {.callout}
-# Snippets are only for steps you have not written yet
+#  If a `Given` / `When` / `Then` already has a matching function, Cucumber runs that function. 
 
-A `.feature` file says *what* should happen. A step definition is the TypeScript that actually does it (`click`, `fill`, `goto`). If a `Given` / `When` / `Then` already has a matching function, Cucumber runs that function — it does not print a stub.
+Stubs are returned in the terminal console for Gherkin lines with no match. For example:
 
-Stubs appear only for Gherkin lines with no match. Paste those into `features/step_definitions/` and fill in the body.
+```typescript
+Given('a user is on the guestbook page', async function () {
+  // Write code here that turns the phrase above into concrete actions
+  return 'pending';
+});
+```
 
-Find things the way a guest would see them on the page — the `submit` button, the `display name` field, the `prev` / `next` links — not CSS class names from the guestbook source.
+- Create a file in `features/step_definitions/`, paste the stub into it, and fill in the body with the appropriate code to execute the step. 
+- It doesn't matter what the file is called, as long as it's in the `features/step_definitions/` directory and has the `.ts` extension.
+
+Instruction should be written the way a human user would find things on the page — for example, reference the `submit` button, the `display name` field, the `prev` / `next` links, and not CSS class names or code.
 :::
 
 
-## Run Cucumber Tests
+## Running Cucumber Tests
+
+- A passing test run writes `reports/cucumber.html`. Reruns will overwrite the file.
+- Note that commenting, rate limits, and admin edits are live — if you're hooked up to a production database or guestbook instance, these tests will affect real data.
+
+### Set Up Admin Testing
+
+Cucumber cannot finish Google's login screen on its own, so you will need to run a special session to log your authorized admin user in, then save the session once in order for subsequent runs to reuse it.
 
 1. Start the guestbook preview server: `npm run dev`
 
-2. In a second terminal at the app root, run:
+2. In a second terminal at the app root, call:
 
     ```bash
-    npx cucumber-js
+    npm run save-admin-session
     ```
 
-3. Run one file while you fill in steps:
+3. Sign in with your admin user. 
 
-    ```bash
-    npx cucumber-js features/guestbook-comments.feature
-    ```
+    When `/admin` loads, the script writes `features/support/.auth/admin.json` (already excluded from tracking by`.gitignore`).
 
 ::: {.callout}
-# Optional prefixes
+# After that, `npx cucumber-js` loads that file in `hooks.ts` when it exists, so you skip the Google prompt.
 
-Playwright hides the browser window. To watch a run:
+Re-run `npm run save-admin-session` if the session expires or Google asks you to log in again.
+
+:::
+
+### Run `.feature` Tests
+
+1. Start the guestbook preview server: `npm run dev`
+
+2. In a second terminal at the app root, call:
+
+::: {.tabset}
+
+# To Run All  `.feature` Tests
+
+```bash
+npx cucumber-js
+```
+
+# To Run One  `.feature` Test
+
+For example, the `guestbook-comments.feature` file:
+
+```bash
+npx cucumber-js features/guestbook-comments.feature
+```
+
+:::
+
+### Optional Prefixes
+
+::: {.tabset}
+
+# Watch a Run
+
+By default, Playwright hides the browser window. To watch a run:
 
 ```bash
 HEADED=1 npx cucumber-js
 ```
 
+# Test a Deployed URL
+
 To hit a deployed URL instead of localhost:
 
 ```bash
-BASE_URL=https://your-preview.vercel.app npx cucumber-js
+BASE_URL=https://<your-deployed-url>.vercel.app npx cucumber-js
 ```
-:::
-
-::: {.callout}
-# Admin scenarios that sign in with Google need an allow-listed account. 
-
-Log in once with `HEADED=1` (shows the browser window while testing), then reuse Playwright [`storageState`](https://playwright.dev/docs/auth){.blank} in `newContext` so later runs skip the SSO prompt.
 
 :::
-
-A passing run writes `reports/cucumber.html`. Undefined steps print snippets and fail until you implement them. Do not point these tests at a production guestbook that real visitors are using — commenting, rate limits, and admin edits are live.
 
 ## Gherkin `.feature` Files
+
+::: {.private}
+::: {.callout}
+# This version of the `.feature` files displayed on this page reflect Beck's custom installation of the guestbook.
+:::
+
+:::
 
 ::: {.public}
 
