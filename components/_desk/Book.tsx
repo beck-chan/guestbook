@@ -263,20 +263,10 @@ export function Book({
     if (!parts || !poses || !leaf) {
       return;
     }
-    const { scene, book, spread, cover, pageLeft, note } = parts;
+    const { scene, book, spread, cover, pageLeft } = parts;
     const rotationY = Number(gsap.getProperty(cover, "rotationY"));
     const pastMid = rotationY <= -90;
     pageLeft.classList.toggle("is-revealed", closing || pastMid);
-
-    if (closing) {
-      const coverOverRight = !pastMid;
-      gsap.set(
-        note,
-        coverOverRight
-          ? { z: 1, zIndex: 2, force3D: true }
-          : { z: 40, zIndex: 8, force3D: true },
-      );
-    }
 
     if (closing && !pastMid) {
       gsap.set(scene, { width: leaf });
@@ -708,8 +698,8 @@ export function Book({
         x: 0,
         y: 0,
         rotation: -90,
-        z: 40,
-        zIndex: 8,
+        z: 0,
+        zIndex: 2,
         autoAlpha: 1,
         boxShadow: restShadow,
       });
@@ -966,8 +956,8 @@ export function Book({
               </div>
             </div>
           </div>
+          <StickyNote ref={noteRef} isOpen={isOpen} onToggle={onToggle} />
         </div>
-        <StickyNote ref={noteRef} isOpen={isOpen} onToggle={onToggle} />
       </div>
     </div>
   );

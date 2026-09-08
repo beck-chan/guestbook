@@ -933,6 +933,7 @@ body {
   padding: 0;
   overflow: visible;
   border: 0;
+  pointer-events: auto;
   cursor: pointer;
   color: var(--cover);
   background: var(--peony-soft);
