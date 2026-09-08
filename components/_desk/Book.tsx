@@ -224,9 +224,11 @@ export function Book({
     parts?.book.classList.remove("is-animating", "is-closing-clip");
     parts?.pageLeft.classList.add("is-revealed");
     if (parts) {
-      parts.spread.style.width = "100%";
-      gsap.set(parts.scene, { clearProps: "width" });
-      gsap.set(parts.cover, { clearProps: "transform,z" });
+      gsap.set(parts.cover, {
+        rotationY: -180,
+        z: 3,
+        transformOrigin: "left center",
+      });
       gsap.set(parts.note, { clearProps: "transform,x,y,z,zIndex" });
     }
   }
