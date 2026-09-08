@@ -83,6 +83,16 @@ To add another flag, add a key on `flags` in [`lib/flags.ts`](lib/flags.ts), pas
 npm run dev:stop
 ```
 
+It’s the “actually quit the local website” command.
+
+When you (or an agent) run npm run dev, Next starts a server on port 3000. Closing the preview tab or the browser does not stop that server. It keeps running in the background, holding files open and using memory.
+
+npm run dev:stop does two things:
+
+Stops that server — whatever is still sitting on ports 3000/3001.
+Deletes the .next folder — Next’s leftover build cache, so it doesn’t sit there growing while nothing is running.
+Use it when you’re done looking at the app and don’t want that background process left on. Next time you want the site, run npm run dev again.
+
 (not ctrl+c)
 
 `npm run dev` listens on port 3000. In Git Bash, check whether anything is already bound to that port:
