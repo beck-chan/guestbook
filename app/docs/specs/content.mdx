@@ -21,26 +21,26 @@ Feature: Original Poetry landing page navigation
             Given a user is on the main landing page of the poetry guestbook on desktop
 
                 Scenario: View Docs link works
-                When a user clicks the View Docs bookmark
-                Then a new tab or window will open to the y2k Guestbook Docs
+                When a user clicks the `View Docs` bookmark
+                Then a new tab or window opens to the y2k Guestbook Docs
 
                 Scenario: Admin Login link works
                 When a user hovers over the hidden Admin Login bookmark
-                Then the Admin Login text will become visible
-                When users click on the Admin Login link
-                Then users will be directed to the Google SSO page for the admin dashboard 
+                Then the `Admin Login` link becomes visible
+                When users click on the `Admin Login` bookmark 
+                Then users are directed to the Google SSO page for the admin dashboard 
 
                 Scenario: Admin Login works with authorization
-                When a user has clicked on the Admin Login bookmark
+                When a user has clicked on the `Admin Login` bookmark
                 And the user has admin authorization
                 Then signing in successfully with Google redirects users to the `/admin` dashboard
 
                 Scenario: Admin Login is gated to admins
-                When a user has clicked on the Admin Login bookmark
+                When a user has clicked on the `Admin Login` bookmark
                 But the user does not have admin authorization
-                Then signing in successfully with Google will redirect users to the landing page
+                Then signing in successfully with Google redirects users to the landing page
                 And show the user a message that they do not have admin authorization
-                And they can click on the Boo hiss! Fine button to close the message
+                And they can click on the `Boo hiss! Fine` button to close the message
 
     Rule: Drop-down menu serves as navigation on mobile
 
@@ -49,73 +49,74 @@ Feature: Original Poetry landing page navigation
 
                 Scenario: Drop-down menu works on mobile
                 When a user clicks the drop-down Menu
-                Then the Menu will open and show the user navigation links
+                Then the `Menu` opens and show the user navigation links
 
                 Scenario: View Docs link works
-                When a user clicks the drop-down Menu and selects the View Docs link
-                Then a new tab or window will open to the y2k Guestbook Docs
+                When a user clicks the drop-down `Menu` and selects the `View Docs` link
+                Then a new tab or window opens to the y2k Guestbook Docs
 
                 Scenario: Admin Login link works
-                When a user clicks the drop-down Menu and selects the Admin Login link
-                Then users will be directed to the Google SSO page for the admin dashboard
+                When a user clicks the drop-down `Menu` and selects the `Admin Login` link
+                Then users are directed to the Google SSO page for the admin dashboard
 
                 Scenario: Admin Login works with authorization
-                When a user clicks the drop-down Menu and selects the Admin Login link
+                When a user clicks the drop-down `Menu` and selects the `Admin Login` link
                 And the user has admin authorization
                 Then signing in successfully with Google redirects users to the `/admin` dashboard
 
                 Scenario: Admin Login is gated to admins
-                When a user clicks the drop-down Menu and selects the Admin Login link
+                When a user clicks the drop-down `Menu` and selects the `Admin Login` link
                 But the user does not have admin authorization
-                Then signing in successfully with Google will redirect users to the landing page
+                Then signing in successfully with Google redirects users to the landing page
                 And show the user a message that they do not have admin authorization
+                And they can click on the `Boo hiss! Fine` button to close the message
 
     Rule: Report Issue link takes users to the repo Issues page
 
         Scenario: Report Issue link works on desktop
         Given a user is on the main landing page of the poetry guestbook on desktop
-        When a user clicks the Report Issue link
-        Then a new tab or window will open to the Beck's guestbook repo Issues page
+        When a user clicks the `Report Issue` link
+        Then a new tab or window opens to the Beck's guestbook repo Issues page
 
         Scenario: Report Issue link works on mobile
         Given a user is on the main landing page of the poetry guestbook on mobile
-        When a user clicks the drop-down Menu and selects the Report Issue link
-        Then a new tab or window will open to the Beck's guestbook repo Issues page
+        When a user clicks the drop-down `Menu` and selects the `Report Issue` link
+        Then a new tab or window opens to the Beck's guestbook repo Issues page
 ```
 
 # Poetry Book
 
 ```gherkin
-Feature: Original Poetry book
+Feature: Original Poetry volume 
 
     Rule: Original Poetry volume behaves as a book on desktop
 
         Scenario: Original Poetry book opens flat
         Given a user is first on the main landing page of the poetry guestbook on desktop
-        When a user clicks the Open Book post-it note
+        When a user clicks the `Open Book` post-it note
         Then the Original Poetry book opens flat
 
         Scenario: Original Poetry book closes
         Given the Original Poetry book is opened flat on desktop
-        When a user clicks the Close Book post-it note
+        When a user clicks the `Close Book` post-it note
         Then the Original Poetry book closes to its original first load state 
 
     Rule: Original Poetry volume scrolls on mobile
 
         Scenario: Original Poetry book opens on mobile
         Given a user is first on the main landing page of the poetry guestbook on mobile
-        When a user scrolls down or clicks the Open Book button
-        Then the introduction page of the Original Poetry book will be revealed
+        When a user scrolls down or clicks the `Open Book` button
+        Then the introduction page of the Original Poetry book reveals
 
         Scenario: Original Poetry book closes on mobile
-        Given the user has revealed the introduction page of the Original Poetry book on mobile
+        Given the user is on the introduction page of the Original Poetry book on mobile
         When a user scrolls up or clicks the up caret
-        They will be taken back up to the cover page of the Original Poetry book
+        They are taken back up to the cover page of the Original Poetry book
 
         Scenario: Original Poetry book poem pages turn
-        Given the user has revealed the first internal page of the Original Poetry book on mobile
-        When a user scrolls down or clicks the Turn Page button 
-        They will be taken to the poem page of the Original Poetry book
+        Given the user is on the introduction page of the Original Poetry book on mobile
+        When a user scrolls down or clicks the `Turn Page` button 
+        Then they are taken to the poem page of the Original Poetry book
 
 
     Rule: Book pages are interactive
@@ -125,28 +126,27 @@ Feature: Original Poetry book
 
                 Scenario: Original Poetry pages scroll
                 When a user scrolls on pages of the book
-                Then the content will move smoothly up and down the page
+                Then the content moves smoothly up and down the page
 
                 Scenario: Portfolio link works
-                When a user is looking at the introduction page
-                When a user clicks the Visit Beck's Portfolio button
-                Then a new tab or window will open to Beck's portfolio
+                When a user is interacting with the introduction page
+                And a user clicks the Visit Beck's Portfolio button
+                Then a new tab or window opens to Beck's portfolio
 
                 Scenario: Original Poetry like (heart) function
                 When a user clicks the like (heart) button for a poem
-                And they interacting with a poem page
-                Then the heart will become filled
-                And the count of likes will increase by 1
+                Then the heart fills with colour
+                And the count of likes increases by 1
 
                 Scenario: Poem page turn
-                When a user clicks the Turn Page button on a poem page
-                Then they will be presented with a new random poem
-                And the new poem will not be a repeat of the previous poem
+                When a user clicks the `Turn Page` button on a poem page
+                Then they are presented with a new random poem
+                And the new poem is not be a repeat of the previous poem
 
                 Scenario: Users can change poem font size on mobile
-                When a user is looking at a poem page on mobile
-                When they click on the plus or minus above or below the Font button
-                Then the poem page font will increase or decrease in size within a limit
+                When a user is interacting with a poem page on mobile
+                And they click on the plus or minus above or below the Font button
+                Then the poem page font increases or decreases in size within a limit
 
 ```
 
@@ -160,37 +160,37 @@ Feature: Original Poetry landing page guestbook
         Background:
             Given a user is interacting with the guestbook on the poetry landing Page
 
-                Scenario: User submits a comment
+                Scenario: User submits a valid comment
                 When a user enters in a valid display name and comment body 
-                And clicks the Submit link
-                Then their comment will be displayed as the topmost guestbook entry
+                And clicks the `Submit` link
+                Then their comment displays as the topmost guestbook entry
                 But if the name or comment is empty or above the configured character limit
-                Then the comment will be rejected and not submitted
-                And the user will be shown an error message
+                Then the comment is rejected and not submitted
+                And the user is shown an error message
 
                 Scenario: User submits a comment with an email
-                When a user submits a valid comment with an email address 
-                Then their comment will be displayed without their email
+                When a user submits a valid comment with a valid email address 
+                Then their comment displays without their email
                 But if the email address is invalid
-                Then the comment will be rejected and not submitted
-                And the user will be shown an error message
+                Then the comment is rejected and not submitted
+                And the user is shown an error message
 
                 Scenario: User submits a comment with English profanity
                 When a user submits a comment 
                 But it contains English profanity in the display name or comment body
-                Then their comment will be rejected and not submitted
-                And the user will be shown an error message
+                Then their comment is rejected and not submitted
+                And the user is shown an error message
 
                 Scenario: User submits a comment above the configured character limit
-                When a user submits a comment with a display name, email, or comment body 
+                When a user submits a comment with a display name and comment and optional email
                 But the character counts are above the configured character limit
-                Then their comment will be rejected and not submitted
-                And the user will be shown an error message
+                Then their comment is rejected and not submitted
+                And the user is shown an error message
 
                 Scenario: User submissions are rate limited
                 When a user submits too many comments within a specified time period as configured
-                Then their comment will be rejected and not submitted
-                And the user will be shown an error message
+                Then their comment is rejected and not submitted
+                And the user is shown an error message
 
     Rule: Guestbook is hidden on mobile by default
 
@@ -198,21 +198,20 @@ Feature: Original Poetry landing page guestbook
             Given a user is on the main landing page of the poetry guestbook on mobile
 
                 Scenario: Guestbook can be opened on mobile using the commenting button
-                When a user is looking at the poetry book
-                When a user clicks the comment bubble button
-                Then the guestbook will open and show the user the commenting form
+                When a user is interacting with the poetry book
+                And a user clicks the comment bubble button
+                Then the guestbook opens and show the user the commenting form
 
                 Scenario: Guestbook can be closed on mobile using the Close button
                 When a user has clicked on the comment bubble button to show the guestbook
-                When they click the Close button
-                Then the guestbook will close and reveal the poetry book again
+                And they click the Close button
+                Then the guestbook closes and reveal the poetry book again
 
     Rule: Guestbook entries are paginated
 
         Scenario: User interacts with the guestbook pagination
-        Given a user interacting with the guestbook on the poetry landing page
-        When a user clicks the prev or next links for comment pagination
-        Then a previous or next page of comments will be displayed
+        When a user clicks the `prev` or `next` links for guestbook comment pagination
+        Then a previous or next page of comments displays
 ```
 
 :::
@@ -232,12 +231,12 @@ Feature: Standalone guestbook page navigation (`/guestbook`)
             Rule: Hanging bookmarks work as links
 
                 Scenario: Get Started link works
-                When a user clicks the Get Started bookmark
-                Then a new tab or window will open to the y2k Guestbook Docs Get Started guide
+                When a user clicks the `Get Started` bookmark
+                Then a new tab or window opens to the y2k Guestbook Docs Get Started guide
 
                 Scenario: View Docs link works
-                When a user clicks the View Docs bookmark
-                Then a new tab or window will open to the y2k Guestbook Docs main page
+                When a user clicks the `View Docs` bookmark
+                Then a new tab or window opens to the y2k Guestbook Docs main page
 
 
     Background:
@@ -246,28 +245,28 @@ Feature: Standalone guestbook page navigation (`/guestbook`)
             Rule: Drop-down menu serves as navigation on mobile
 
                 Scenario: Drop-down menu works on mobile
-                When a user clicks the drop-down Menu
-                Then the Menu will open and show the user navigation links
+                When a user clicks the drop-down `Menu`
+                Then the `Menu` opens and show the user navigation links
 
                 Scenario: Get Started link works
-                When a user clicks the drop-down Menu and selects Get Started link
-                Then a new tab or window will open to the y2k Guestbook Docs Get Started guide
+                When a user clicks the drop-down `Menu` and selects the `Get Started` link
+                Then a new tab or window opens to the y2k Guestbook Docs Get Started guide
 
                 Scenario: View Docs link works
-                When a user clicks the drop-down Menu and selects the View Docs link
-                Then a new tab or window will open to the y2k Guestbook Docs
+                When a user clicks the drop-down `Menu` and selects the `View Docs` link
+                Then a new tab or window opens to the y2k Guestbook Docs
 
     Rule: Report Issue link takes users to the repo Issues page
 
         Scenario: Report Issue link works on desktop
         Given a user is on the standalone guestbook page on desktop
-        When a user clicks the Report Issue link
-        Then a new tab or window will open to the Beck's guestbook repo Issues page
+        When a user clicks the `Report Issue` link
+        Then a new tab or window opens to the Beck's guestbook repo Issues page
 
         Scenario: Report Issue link works on mobile
         Given a user is on the standalone guestbook page on mobile
-        When a user clicks the drop-down Menu and selects the Report Issue link
-        Then a new tab or window will open to the Beck's guestbook repo Issues page
+        When a user clicks the drop-down `Menu` and selects the `Report Issue` link
+        Then a new tab or window opens to the Beck's guestbook repo Issues page
 ```
 
 # Guestbook
@@ -277,48 +276,48 @@ Feature: Standalone guestbook page guestbook
 
     Rule: Guestbook allows users to submit comments
 
-        Scenario: User submits a comment
+        Scenario: User submits a valid comment
         Given a user is on the standalone guestbook page of the poetry guestbook
-        When a user enters in a valid display name and comment body and clicks the Submit link
-        Then their comment will be displayed below the submission form as the topmost entry
+        When a user enters in a valid display name and comment body and clicks the `Submit` link
+        Then their comment displays below the submission form as the topmost entry
         But if the display name or comment body is empty or above the configured character limit
-        Then the comment will be rejected and not submitted
-        And the user will be shown an error message
+        Then the comment is rejected and not submitted
+        And the user is shown an error message
 
         Scenario: User submits a comment with an email
         Given a user is on the standalone guestbook page of the poetry guestbook
         When a user submits a valid comment with an email address 
-        Then their comment will be displayed without their email
+        Then their comment displays without their email
         But if the email address is invalid
-        Then the comment will be rejected and not submitted
-        And the user will be shown an error message
+        Then the comment is rejected and not submitted
+        And the user is shown an error message
 
         Scenario: User submits a comment with English profanity
         Given a user is on the standalone guestbook page of the poetry guestbook
         When a user submits a comment 
         But it contains English profanity in the display name or comment body
-        Then their comment will be rejected and not submitted
-        And the user will be shown an error message
+        Then their comment is rejected and not submitted
+        And the user is shown an error message
 
         Scenario: User submits a comment above the configured character limit
         Given a user is on the standalone guestbook page of the poetry guestbook
-        When a user submits a comment with a display name, email, or comment body 
+        When a user submits a comment with a display name and comment and optional email 
         But the character counts are above the configured character limit
-        Then their comment will be rejected and not submitted
-        And the user will be shown an error message
+        Then their comment is rejected and not submitted
+        And the user is shown an error message
 
         Scenario: User submissions are rate limited
         Given a user is on the standalone guestbook page of the poetry guestbook
         When a user submits too many comments within a specified time period as configured
-        Then their comment will be rejected and not submitted
-        And the user will be shown an error message
+        Then their comment is rejected and not submitted
+        And the user is shown an error message
 
     Rule: Guestbook entries are paginated
 
         Scenario: User interacts with the guestbook pagination
         Given a user is on the standalone guestbook page of the poetry guestbook
-        When a user clicks the prev or next links for comment pagination
-        Then a previous or next page of comments will be displayed
+        When a user clicks the `prev` or `next` links for comment pagination
+        Then a previous or next page of comments is displayed
 ```
 
 :::
@@ -332,114 +331,133 @@ Feature: Standalone guestbook page guestbook
 ```gherkin
 Feature: Admin Dashboard page navigation
 
-    Rule: Hanging bookmark works as a link
+    Rule: Hanging bookmark works as a link on desktop
 
         Scenario: View Book link works
         Given an authorized admin is signed in with Google SSO
         When they are on the admin dashboard
-        When an admin clicks the Get Started bookmark
-        Then they will be taken to the Original Poetry landing page
-```
-
-# Comments Column
-
-```gherkin
-Feature: Admin Dashboard comments column
+        When an admin clicks the `View Book` bookmark
+        Then they are taken to the Original Poetry landing page
 
     Background:
         Given an authorized admin is signed in with Google SSO
-        When they are on the admin dashboard (`/admin`)
-        Then they are shown the comments column
+        When they are on the admin dashboard on mobile
 
-            Rule: Admin Dashboard comment management
+            Rule: Navigation is handled by a button on mobile
+
+                Scenario: Close button works on mobile
+                When an admin clicks the `Close` button
+                Then they are taken to the Original Poetry landing page
+    
+            Rule: Comment sort, filter, and search are in a drop-down menu on mobile
+
+                Scenario: Drop-down menu contains comment sort, filter, and search options
+                When an admin clicks the drop-down `Comments Menu`
+                Then the `Comments Menu` opens showing comment sort, filter, and search options    
+
+```
+
+# Comments
+
+```gherkin
+Feature: Admin Dashboard comment interactions
+
+    Background:
+        Given an authorized admin is signed in with Google SSO
+        When they are on the admin dashboard (`/admin`) 
+
+            Rule: Admins can interact with comments
 
                 Scenario: Admins can filter comments by read status or date range
                 When admins filter comments by read status or date range
-                Then the comments will be filtered accordingly
+                Then comments without the selected criteria are hidden
                 When admins filter comments by whether or not they were submitted with an email
-                Then the comments will be filtered accordingly
+                Then comments without the selected criteria are hidden
+                And results stack on top of other sorts, filters, or searches
 
                 Scenario: Admins can filter comments by email presence
                 When admins filter comments by whether or not they were submitted with an email
-                Then the comments will be filtered accordingly
+                Then comments without the selected criteria are hidden
+                And results stack on top of other sorts, filters, or searches
 
                 Scenario: Admins can sort comments
                 When admins sort comments by newest or oldest timestamps
-                Then the comments will be sorted accordingly
-                And the sort display indicator will be updated accordingly
+                Then the comments sort according to the selected criteria
+                And the sort display indicator updates accordingly
+                And results stack on top of other sorts, filters, or searches
 
                 Scenario: Admins can search comments
                 When admins search comments by keywords
-                Then comments not matching submitted keywords will be filtered from display
+                Then comments not matching submitted keywords are hidden
+                And results stack on top of other sorts, filters, or searches
 
-                Scenario: Admins can clear filters
-                When admins have applied search, sort, or filter results to comments
-                When they click the Clear All link
-                Then search, sort, or filter results are all cleared
+                Scenario: Admins can clear applied filters or sorting
+                When admins have applied search keywords, sorting, or filters to comments
+                When they click the `Clear All` link or return a sort of filter to default state
+                Then search, filter, or sort results are cleared
 
                 Scenario: Admins can change comment read status
                 When admins can mark comments read or unread individually or all at once
-                Then the read status will be saved automatically accordingly
-                And the unread count will be updated accordingly
+                Then the read status saves automatically 
+                And the unread count updates accordingly
 
                 Scenario: Admins can edit comments
-                When admins click on the Edit link for a comment
+                When admins click on the `Edit` link for a comment
                 Then they can edit the comment body
                 And click away from the text editor to save changes 
 
                 Scenario: Admins can delete comments
-                When admins click on the Delete link for a comment
-                And they click the Confirm link
+                When admins click on the `Delete` link for a comment
+                And they click the `Confirm` link
                 Then the comment is removed
-                But if they click the Cancel link
-                Then the comment will not be removed
+                But if they click the `Cancel` link
+                Then the comment is not removed
 
             Rule: Guestbook comments are paginated
 
                 Scenario: Admin interacts with the guestbook pagination
-                When an admin clicks the prev or next links for comment pagination
-                Then a previous or next page of comments will be displayed
+                When an admin clicks the `prev` or `next` links for comment pagination
+                Then a previous or next page of comments displays
 ```
 
-# Settings Column
+# Settings
 
 ```gherkin
-Feature: Admin Dashboard settings column
+Feature: Admin Dashboard settings 
 
-    Rule: Admin Dashboard Settings work
+    Rule: Admin Dashboard settings apply changes
 
         Background:
             Given an authorized admin is signed in with Google SSO
             When they are on the admin dashboard (`/admin`)
-            Then they are shown the settings column
 
                 Scenario: Admin can configure guestbook settings
                 When an admin updates any guestbook settings
-                And they click the Save Changes link
-                Then those changes will be applied to the admin dashboard
+                And they click the `Save Changes` link
+                Then those changes are applied to the admin dashboard
                 And the standalone guestbook page
 
                 Scenario: Admin can undo changes to guestbook settings
                 When an admin updates any guestbook settings
-                And they click the Undo Changes link
-                Then those changes will be not applied to the admin dashboard
-                And the settings will revert to the previously entered values
+                And they click the `Undo Changes` link
+                Then those changes are not applied to the admin dashboard
+                And the settings revert to the previously entered values
 
                 Scenario: Admin can set custom comment lengths and rate limits
                 When an admin adjusts the Comment Length or Rate Limits settings to allowed limits
-                And they click the Save Changes link
-                Then those new limits will be applied to both the standalone guestbook 
+                And they click the `Save Changes` link
+                Then those new limits are applied to both the standalone guestbook 
                 And the main Original Poetry landing guestbook
 
                 Scenario: Admin can allow-list profanity
-                When an admin enters in words in a comma-separated list in the Profanity Allow-list setting
-                And they click the Save Changes link
-                Then those new allowances will be applied to both the standalone guestbook 
+                When an admin enters a comma-separated values in the Profanity Allow-List 
+                And they click the `Save Changes` link
+                Then those new allowances are applied to both the standalone guestbook 
                 And the main Original Poetry landing guestbook
 
                 Scenario: Admin can view custom CSS example file
-                When an admin clicks on the View Example link for the custom theme setting
-                Then a new tab or window will open to the custom CSS example file
+                When an admin clicks on the `View Example` link for the custom theme setting
+                Then a new tab or window opens to the custom CSS example file
 ```
 
 :::
