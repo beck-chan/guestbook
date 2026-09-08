@@ -30,10 +30,10 @@ export function loadDatabaseOpenApi(isPublic = flags.public): OpenApiSpec {
   const source = fs.readFileSync(file, "utf8");
   return typesToOpenApi(source, {
     title: isPublic
-      ? "y2k Guestbook Database API"
-      : "Beck's y2k Guestbook Database API",
+      ? "y2k Guestbook API"
+      : "Beck's y2k Guestbook API",
     description: isPublic
-      ? "Schema map of the connected Supabase `public` schema after a full guestbook install, generated from database types. Row-level security still applies at runtime."
-      : "Schema map of Beck's custom guestbook install (`public` schema), generated from database types. Row-level security still applies at runtime.",
+      ? "The API reference below reflects the calls you can make to your connected Supabase database when the guestbook is fully installed."
+      : "The API reference below reflects the functionality of Beck's custom guestbook install.",
   });
 }

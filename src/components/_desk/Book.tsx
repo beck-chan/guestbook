@@ -215,52 +215,40 @@ function spawnFlyingNote(note: HTMLButtonElement, extras?: gsap.TweenVars) {
   return clone;
 }
 
-function cssOr(value: string, fallback: string) {
-  return value && value !== "none" ? value : fallback;
-}
-
-function paintOpenShadows(parts: {
-  scene: HTMLElement;
+function poseOpenShadows(parts: {
   gutter: HTMLElement;
   shadowLeft: HTMLElement;
   shadowRight: HTMLElement;
   shadowDepth: HTMLElement;
 }) {
-  parts.scene.style.setProperty(
-    "--book-shadow-left-clip",
-    cssOr(getComputedStyle(parts.shadowLeft).clipPath, STACK_CLIP_OPEN),
-  );
-  parts.scene.style.setProperty(
-    "--book-shadow-right-opacity",
-    getComputedStyle(parts.shadowRight).opacity,
-  );
-  parts.scene.style.setProperty(
-    "--book-shadow-depth-opacity",
-    getComputedStyle(parts.shadowDepth).opacity,
-  );
-  parts.scene.style.setProperty(
-    "--book-gutter-opacity",
-    getComputedStyle(parts.gutter).opacity,
-  );
+  gsap.set(parts.gutter, { opacity: 1, force3D: false, clearProps: "transform" });
+  gsap.set(parts.shadowLeft, { clipPath: STACK_CLIP_OPEN, force3D: false, clearProps: "transform" });
+  gsap.set(parts.shadowRight, { opacity: 1, force3D: false, clearProps: "transform" });
+  gsap.set(parts.shadowDepth, { opacity: 1, force3D: false, clearProps: "transform" });
 }
 
-function restOpenShadows(parts: {
+function poseClosedShadows(parts: {
   gutter: HTMLElement;
   shadowLeft: HTMLElement;
   shadowRight: HTMLElement;
   shadowDepth: HTMLElement;
 }) {
-  gsap.set(parts.gutter, { clearProps: "opacity" });
-  gsap.set(parts.shadowLeft, { clearProps: "clipPath" });
-  gsap.set(parts.shadowRight, { clearProps: "opacity" });
-  gsap.set(parts.shadowDepth, { clearProps: "opacity" });
+  gsap.set(parts.gutter, { opacity: 0, force3D: false, clearProps: "transform" });
+  gsap.set(parts.shadowLeft, { clipPath: STACK_CLIP_CLOSED, force3D: false, clearProps: "transform" });
+  gsap.set(parts.shadowRight, { opacity: 0, force3D: false, clearProps: "transform" });
+  gsap.set(parts.shadowDepth, { opacity: 0, force3D: false, clearProps: "transform" });
 }
 
-function clearOpenShadowPaint(scene: HTMLElement) {
-  scene.style.removeProperty("--book-shadow-left-clip");
-  scene.style.removeProperty("--book-shadow-right-opacity");
-  scene.style.removeProperty("--book-shadow-depth-opacity");
-  scene.style.removeProperty("--book-gutter-opacity");
+function restClosedShadows(parts: {
+  gutter: HTMLElement;
+  shadowLeft: HTMLElement;
+  shadowRight: HTMLElement;
+  shadowDepth: HTMLElement;
+}) {
+  gsap.set(parts.gutter, { clearProps: "opacity,transform" });
+  gsap.set(parts.shadowLeft, { clearProps: "clipPath,transform" });
+  gsap.set(parts.shadowRight, { clearProps: "opacity,transform" });
+  gsap.set(parts.shadowDepth, { clearProps: "opacity,transform" });
 }
 
 function spawnDepartingNote(note: HTMLButtonElement) {
@@ -314,6 +302,7 @@ export function Book({
   const tlRef = useRef<gsap.core.Timeline | null>(null);
   const prevOpenRef = useRef<boolean | null>(null);
   const isOpenRef = useRef(isOpen);
+  const settleLockRef = useRef(false);
   const [heldOpen, setHeldOpen] = useState(false);
   const [animating, setAnimating] = useState(false);
   isOpenRef.current = isOpen;
@@ -423,8 +412,11 @@ export function Book({
     parts?.book.removeAttribute("data-closing-clip");
     parts?.pageLeft.classList.add("is-revealed");
     if (parts) {
-      paintOpenShadows(parts);
-      restOpenShadows(parts);
+      settleLockRef.current = true;
+      gsap.set(parts.scene, {
+        width: parts.scene.getBoundingClientRect().width,
+        x: 0,
+      });
       gsap.set(parts.book, { clearProps: "transform,rotationX,rotationY" });
       gsap.set(parts.cover, {
         rotationY: -180,
@@ -455,6 +447,11 @@ export function Book({
       parts.book.classList.remove("is-animating", "is-closing-clip");
     }
     setAnimating(false);
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        settleLockRef.current = false;
+      });
+    });
   }
 
   function settleClosed() {
@@ -470,8 +467,7 @@ export function Book({
     parts?.pageLeft.classList.remove("is-revealed");
     discardFlyingNotes();
     if (parts) {
-      restOpenShadows(parts);
-      clearOpenShadowPaint(parts.scene);
+      restClosedShadows(parts);
       const openLabel = noteOpenLabel(parts.note);
       const closeLabel = noteCloseLabel(parts.note);
       if (openLabel) {
@@ -661,17 +657,15 @@ export function Book({
     tl.to(cover, { z: 3, duration: Math.min(0.56, coverDur * 0.46), ease: "power2.in" }, ">-0.04");
 
     const shadowAt = Math.max(0.2, coverDur * 0.42);
-    gsap.set(shadowLeft, { clipPath: STACK_CLIP_CLOSED });
-    gsap.set(shadowRight, { opacity: 0 });
-    gsap.set(shadowDepth, { opacity: 0 });
-    tl.to(gutter, { opacity: 1, duration: 0.72, ease: "power1.out" }, shadowAt);
+    poseClosedShadows({ gutter, shadowLeft, shadowRight, shadowDepth });
+    tl.to(gutter, { opacity: 1, duration: 0.72, ease: "power1.out", force3D: false }, shadowAt);
     tl.to(
       shadowLeft,
-      { clipPath: STACK_CLIP_OPEN, duration: 0.95, ease: "power2.out" },
+      { clipPath: STACK_CLIP_OPEN, duration: 0.95, ease: "power2.out", force3D: false },
       shadowAt,
     );
-    tl.to(shadowRight, { opacity: 1, duration: 0.9, ease: "power1.out" }, shadowAt);
-    tl.to(shadowDepth, { opacity: 1, duration: 0.9, ease: "power1.out" }, shadowAt);
+    tl.to(shadowRight, { opacity: 1, duration: 0.9, ease: "power1.out", force3D: false }, shadowAt);
+    tl.to(shadowDepth, { opacity: 1, duration: 0.9, ease: "power1.out", force3D: false }, shadowAt);
 
     tl.addLabel("noteFly", ">-0.12");
     tl.to(
@@ -744,10 +738,7 @@ export function Book({
       transformOrigin: "left center",
       backfaceVisibility: "visible",
     });
-    gsap.set(gutter, { opacity: 1 });
-    gsap.set(shadowLeft, { clipPath: STACK_CLIP_OPEN });
-    gsap.set(shadowRight, { opacity: 1 });
-    gsap.set(shadowDepth, { opacity: 1 });
+    poseOpenShadows({ gutter, shadowLeft, shadowRight, shadowDepth });
 
     const clone = spawnDepartingNote(note);
     const cloneBounds = clone.getBoundingClientRect();
@@ -888,14 +879,14 @@ export function Book({
       beginCoverClose();
     }, "+=0.12");
     tl.addLabel("coverClose");
-    tl.to(gutter, { opacity: 0, duration: 0.48, ease: "power1.in" }, "coverClose");
+    tl.to(gutter, { opacity: 0, duration: 0.48, ease: "power1.in", force3D: false }, "coverClose");
     tl.to(
       shadowLeft,
-      { clipPath: STACK_CLIP_CLOSED, duration: 0.55, ease: "power2.in" },
+      { clipPath: STACK_CLIP_CLOSED, duration: 0.55, ease: "power2.in", force3D: false },
       "coverClose",
     );
-    tl.to(shadowRight, { opacity: 0, duration: 0.5, ease: "power1.in" }, "coverClose");
-    tl.to(shadowDepth, { opacity: 0, duration: 0.5, ease: "power1.in" }, "coverClose");
+    tl.to(shadowRight, { opacity: 0, duration: 0.5, ease: "power1.in", force3D: false }, "coverClose");
+    tl.to(shadowDepth, { opacity: 0, duration: 0.5, ease: "power1.in", force3D: false }, "coverClose");
 
     if (rotationY < -90) {
       tl.to(
@@ -952,22 +943,16 @@ export function Book({
     });
     if (isOpenRef.current) {
       parts.pageLeft.classList.add("is-revealed");
-      parts.scene.style.setProperty("--book-shadow-left-clip", STACK_CLIP_OPEN);
-      parts.scene.style.setProperty("--book-shadow-right-opacity", "1");
-      parts.scene.style.setProperty("--book-shadow-depth-opacity", "1");
-      parts.scene.style.setProperty("--book-gutter-opacity", "1");
-      restOpenShadows(parts);
+      gsap.set(parts.scene, { width: poses.openW, x: 0 });
       gsap.set(parts.note, { clearProps: "transform,x,y,z,zIndex" });
       parts.spread.style.width = "100%";
     } else {
       parts.pageLeft.classList.remove("is-revealed");
-      restOpenShadows(parts);
-      clearOpenShadowPaint(parts.scene);
+      restClosedShadows(parts);
       gsap.set(parts.note, { clearProps: "transform,x,y,z,zIndex" });
+      gsap.set(parts.scene, { clearProps: "width,x" });
       parts.spread.style.width = "";
     }
-    gsap.set(parts.scene, { clearProps: "width,x" });
-    void poses;
   }
 
   useGSAP(
@@ -988,6 +973,9 @@ export function Book({
     }
 
     const observer = new ResizeObserver(() => {
+      if (settleLockRef.current) {
+        return;
+      }
       if (bookRef.current?.classList.contains("is-animating")) {
         return;
       }
@@ -1069,10 +1057,7 @@ export function Book({
       if (fromIdle) {
         gsap.set(parts.cover, { rotationY: 0, z: 3, transformOrigin: "left center", backfaceVisibility: "visible" });
         gsap.set(parts.note, { x: 0, y: 0, rotation: -90, z: 0, zIndex: 2 });
-        gsap.set(parts.gutter, { opacity: 0 });
-        gsap.set(parts.shadowLeft, { clipPath: STACK_CLIP_CLOSED });
-        gsap.set(parts.shadowRight, { opacity: 0 });
-        gsap.set(parts.shadowDepth, { opacity: 0 });
+        poseClosedShadows(parts);
       }
       gsap.set(parts.scene, { width: leaf });
       parts.spread.style.width = `${leaf * 2}px`;
@@ -1085,10 +1070,7 @@ export function Book({
           transformOrigin: "left center",
           backfaceVisibility: "visible",
         });
-        gsap.set(parts.gutter, { opacity: 1 });
-        gsap.set(parts.shadowLeft, { clipPath: STACK_CLIP_OPEN });
-        gsap.set(parts.shadowRight, { opacity: 1 });
-        gsap.set(parts.shadowDepth, { opacity: 1 });
+        poseOpenShadows(parts);
       }
       playToClose();
     }

@@ -324,7 +324,6 @@ body {
   inset: 0;
   z-index: 0;
   pointer-events: none;
-  isolation: isolate;
 }
 
 .book {
@@ -399,7 +398,7 @@ body {
 }
 
 .book-scene:has(.book.is-open) .book-shadow-left {
-  clip-path: var(--book-shadow-left-clip, inset(-12px 0px -12px -28px));
+  clip-path: inset(-12px 0px -12px -28px);
 }
 
 .book-shadow-right {
@@ -408,7 +407,7 @@ body {
 }
 
 .book-scene:has(.book.is-open) .book-shadow-right {
-  opacity: var(--book-shadow-right-opacity, 1);
+  opacity: 1;
 }
 
 .book-shadow-depth {
@@ -419,7 +418,7 @@ body {
 }
 
 .book-scene:has(.book.is-open) .book-shadow-depth {
-  opacity: var(--book-shadow-depth-opacity, 1);
+  opacity: 1;
 }
 
 .spread {
@@ -446,7 +445,7 @@ body {
 }
 
 .book.is-open .spread-gutter {
-  opacity: var(--book-gutter-opacity, 1);
+  opacity: 1;
 }
 
 .spread-gutter::after {
