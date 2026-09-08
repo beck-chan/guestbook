@@ -80,7 +80,7 @@ body:has(.docs-shell) {
 }
 
 .docs-shell:has(.docs-api-reference) {
-  --docs-sidebar-width: 27rem;
+  --docs-sidebar-width: 24.3rem;
 }
 
 .docs-shell:has(.docs-index) .docs-sidenav {

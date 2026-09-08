@@ -550,13 +550,13 @@ export function Book({
     gsap.set(book, bookTilt(false));
     applyFlipLayout(false);
 
-    const coverDur = 1.18 * Math.max(0.28, Math.abs(rotationY + 180) / 180);
+    const coverDur = 1.42 * Math.max(0.28, Math.abs(rotationY + 180) / 180);
     const tl = gsap.timeline({
       defaults: { ease: "power2.inOut" },
       onUpdate: () => applyFlipLayout(false),
       onComplete: settleOpen,
     });
-    tl.to(book, { ...bookTilt(true), duration: coverDur, ease: "power2.inOut" }, 0);
+    tl.to(book, { ...bookTilt(true), duration: coverDur, ease: "sine.inOut" }, 0);
 
     if (onRight) {
       tl.to(
@@ -649,12 +649,12 @@ export function Book({
         rotationY: -180,
         z: 3,
         duration: coverDur,
-        ease: "power2.inOut",
+        ease: "sine.inOut",
       },
       onRight ? 0.16 : 0,
     );
-    tl.to(cover, { z: 36, duration: Math.min(0.4, coverDur * 0.34), ease: "power2.out" }, "<");
-    tl.to(cover, { z: 3, duration: Math.min(0.56, coverDur * 0.46), ease: "power2.in" }, ">-0.04");
+    tl.to(cover, { z: 22, duration: Math.min(0.48, coverDur * 0.34), ease: "sine.out" }, "<");
+    tl.to(cover, { z: 3, duration: Math.min(0.62, coverDur * 0.46), ease: "sine.in" }, ">-0.04");
 
     const shadowAt = Math.max(0.2, coverDur * 0.42);
     poseClosedShadows({ gutter, shadowLeft, shadowRight, shadowDepth });
@@ -768,7 +768,7 @@ export function Book({
 
     applyFlipLayout(true);
 
-    const toAjar = 0.92 * Math.max(0.32, Math.abs(Math.min(rotationY, AJAR) - AJAR) / 160);
+    const toAjar = 1.08 * Math.max(0.32, Math.abs(Math.min(rotationY, AJAR) - AJAR) / 160);
     const tl = gsap.timeline({
       defaults: { ease: "power2.inOut" },
       onUpdate: () => applyFlipLayout(true),
@@ -888,38 +888,25 @@ export function Book({
     tl.to(shadowRight, { opacity: 0, duration: 0.5, ease: "power1.in", force3D: false }, "coverClose");
     tl.to(shadowDepth, { opacity: 0, duration: 0.5, ease: "power1.in", force3D: false }, "coverClose");
 
-    if (rotationY < -90) {
-      tl.to(
-        cover,
-        {
-          rotationY: -92,
-          z: 22,
-          duration: toAjar * 0.58,
-          ease: "power2.inOut",
-        },
-        "coverClose+=0.12",
-      );
-    }
-
-    tl.to(cover, {
-      rotationY: AJAR,
-      z: 20,
-      duration: 0.46,
-      ease: "power2.out",
-    });
-
-    tl.to(cover, {
-      rotationY: AJAR,
-      z: 16,
-      duration: 0.16,
-      ease: "none",
-    }, ">-0.18");
-
+    tl.to(
+      cover,
+      {
+        rotationY: AJAR,
+        duration: toAjar,
+        ease: "sine.inOut",
+      },
+      "coverClose+=0.12",
+    );
+    tl.to(
+      cover,
+      { z: 16, duration: Math.min(0.48, toAjar * 0.38), ease: "sine.out" },
+      "coverClose+=0.12",
+    );
     tl.to(cover, {
       rotationY: 0,
       z: 3,
-      duration: 0.52,
-      ease: "power3.in",
+      duration: 0.65,
+      ease: "sine.in",
     });
     tl.to(
       book,
