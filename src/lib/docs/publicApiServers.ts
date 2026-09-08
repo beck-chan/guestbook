@@ -1,18 +1,24 @@
-export const PUBLIC_API_SERVERS = [
-  {
-    url: "https://{projectRef}.supabase.co/rest/v1",
-    description: "Set your project ID, then select your server URL from the drop-down for test calls",
-    variables: {
-      projectRef: {
-        default: "your-database-url",
-        description:
-          "Project ID from NEXT_PUBLIC_SUPABASE_URL (the subdomain before .supabase.co).",
-      },
+export const DEFAULT_PROJECT_REF = "your-database-url";
+
+export function parseProjectRef(raw: string): string {
+  const trimmed = raw.trim();
+  const hosted = trimmed.match(/https?:\/\/([a-z0-9-]+)\.supabase\.co/i);
+  if (hosted) {
+    return hosted[1].toLowerCase();
+  }
+  return trimmed.toLowerCase().replace(/[^a-z0-9-]/g, "");
+}
+
+export function supabaseRestUrl(projectRef = DEFAULT_PROJECT_REF): string {
+  const ref = parseProjectRef(projectRef) || DEFAULT_PROJECT_REF;
+  return `https://${ref}.supabase.co/rest/v1`;
+}
+
+export function publicApiServers(projectRef = DEFAULT_PROJECT_REF) {
+  return [
+    {
+      url: supabaseRestUrl(projectRef),
+      description: "Your Supabase project",
     },
-  },
-  {
-    url: "https://your-database-url.supabase.co/rest/v1",
-    description:
-      "Test call URL — select this server URL, once you've provided your project ID",
-  },
-];
+  ];
+}

@@ -1,5 +1,5 @@
 import { flags } from "@/lib/flags";
-import { PUBLIC_API_SERVERS } from "./publicApiServers";
+import { publicApiServers } from "./publicApiServers";
 
 export const SCALAR_CUSTOM_CSS = `
 .scalar-app,
@@ -230,6 +230,6 @@ export function createScalarReferenceConfig() {
     forceDarkModeState: "light" as const,
     modelsSectionLabel: "Models",
     customCss: SCALAR_CUSTOM_CSS,
-    ...(flags.public ? { servers: PUBLIC_API_SERVERS } : {}),
+    ...(flags.public ? { servers: publicApiServers() } : {}),
   };
 }

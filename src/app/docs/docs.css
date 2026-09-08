@@ -490,7 +490,66 @@ body:has(.docs-shell) {
   font-family: var(--futura-font);
 }
 
-.docs-main:has(> .docs-api-reference) {
+.docs-api-server {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: 0.65rem 0.85rem;
+  margin: 0 0 1.35rem;
+  max-width: 58rem;
+}
+
+.docs-api-server label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  flex: 1 1 16rem;
+  color: var(--docs-ink);
+  font-family: var(--body-font);
+  font-size: 0.95rem;
+}
+
+.docs-api-server input {
+  padding: 0.45rem 0.65rem;
+  border: 1px solid #c9c5bc;
+  border-radius: 1px;
+  background: var(--paper, #faf6ea);
+  color: var(--cover, #0b2a12);
+  font-family: var(--futura-font);
+  font-size: 1rem;
+}
+
+.docs-api-server input:focus-visible {
+  outline: 2px solid var(--peony-soft, #ffb3ba);
+  outline-offset: 2px;
+}
+
+.docs-api-server button {
+  padding: 0.45rem 0.85rem;
+  border: 1px solid #c9c5bc;
+  border-radius: 1px;
+  background: transparent;
+  color: var(--cover-soft, #0b2a1290);
+  font-family: var(--futura-font);
+  font-size: 0.95rem;
+  cursor: pointer;
+}
+
+.docs-api-server button:hover,
+.docs-api-server button:focus-visible {
+  background: rgb(47 46 44 / 0.05);
+}
+
+.docs-api-server-url {
+  flex: 1 1 100%;
+  margin: 0;
+  color: var(--ink-muted, #6a6864);
+  font-family: var(--futura-font);
+  font-size: 0.9rem;
+}
+
+.docs-main:has(> .docs-api-reference),
+.docs-main:has(.docs-api-explorer) {
   max-width: none;
   padding: 1.35rem 1.5rem 3rem;
 }

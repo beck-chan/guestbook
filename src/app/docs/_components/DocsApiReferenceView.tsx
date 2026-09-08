@@ -1,11 +1,21 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState, type FormEvent } from "react";
+import { flags } from "@/lib/flags";
 import { createScalarReferenceConfig } from "@/lib/docs/scalarConfig";
+import {
+  DEFAULT_PROJECT_REF,
+  parseProjectRef,
+  publicApiServers,
+  supabaseRestUrl,
+} from "@/lib/docs/publicApiServers";
 import type { OpenApiSpec } from "@/lib/docs/typesToOpenApi";
+
+const PROJECT_REF_KEY = "guestbook-docs-api-project-ref";
 
 type ScalarInstance = {
   destroy?: () => void;
+  updateConfiguration?: (configuration: Record<string, unknown>) => void;
 };
 
 type ScalarGlobal = {
@@ -45,8 +55,28 @@ function loadStandalone() {
   });
 }
 
+function readStoredProjectRef() {
+  try {
+    return parseProjectRef(sessionStorage.getItem(PROJECT_REF_KEY) ?? "")
+      || DEFAULT_PROJECT_REF;
+  } catch {
+    return DEFAULT_PROJECT_REF;
+  }
+}
+
 export function DocsApiReferenceView({ spec }: { spec: OpenApiSpec }) {
   const hostRef = useRef<HTMLDivElement>(null);
+  const [draftRef, setDraftRef] = useState(DEFAULT_PROJECT_REF);
+  const [appliedRef, setAppliedRef] = useState(DEFAULT_PROJECT_REF);
+
+  useEffect(() => {
+    if (!flags.public) {
+      return;
+    }
+    const stored = readStoredProjectRef();
+    setDraftRef(stored);
+    setAppliedRef(stored);
+  }, []);
 
   useEffect(() => {
     const host = hostRef.current;
@@ -69,6 +99,7 @@ export function DocsApiReferenceView({ spec }: { spec: OpenApiSpec }) {
         instance = Scalar.createApiReference(hostRef.current, {
           ...createScalarReferenceConfig(),
           content: spec,
+          ...(flags.public ? { servers: publicApiServers(appliedRef) } : {}),
         });
       })
       .catch((error: unknown) => {
@@ -82,7 +113,41 @@ export function DocsApiReferenceView({ spec }: { spec: OpenApiSpec }) {
       instance?.destroy?.();
       host.replaceChildren();
     };
-  }, [spec]);
+  }, [spec, appliedRef]);
 
-  return <div ref={hostRef} className="docs-api-reference" />;
+  function applyProjectRef(event: FormEvent) {
+    event.preventDefault();
+    const next = parseProjectRef(draftRef) || DEFAULT_PROJECT_REF;
+    setDraftRef(next);
+    setAppliedRef(next);
+    try {
+      sessionStorage.setItem(PROJECT_REF_KEY, next);
+    } catch {
+      /* ignore quota / private mode */
+    }
+  }
+
+  return (
+    <div className="docs-api-explorer">
+      {flags.public ? (
+        <form className="docs-api-server" onSubmit={applyProjectRef}>
+          <label>
+            Supabase project ID
+            <input
+              value={draftRef}
+              onChange={(event) => setDraftRef(event.target.value)}
+              autoComplete="off"
+              spellCheck={false}
+              placeholder={DEFAULT_PROJECT_REF}
+            />
+          </label>
+          <button type="submit">Use this project</button>
+          <p className="docs-api-server-url">
+            Test calls use {supabaseRestUrl(appliedRef)}
+          </p>
+        </form>
+      ) : null}
+      <div ref={hostRef} className="docs-api-reference" />
+    </div>
+  );
 }

@@ -57,6 +57,20 @@ We do *not* use Google SSO to read Gmail, Drive, or other Google data beyond bas
 
 :::
 
+
+::: {.public}
+### Interactive API Library Reference
+
+The [API Library](/docs/api/) on these documentation pages is a reference explorer. Values you type there are not guestbook comments and are not stored in the Site database.
+
+If you use **Test Request**:
+
+- A Supabase project ID you apply stays in your open browser tab only (`sessionStorage`). Closing the tab clears it.
+- Anon keys and JSON Web Tokens (JWTs) you paste into request headers stay in the explorer until you reload or remount it. We do not save them.
+- Send goes from *your* browser to *your* Supabase project. We do not proxy or log those requests.
+
+:::
+
 ## How We Use It
 
 ::: {.private}

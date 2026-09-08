@@ -4,7 +4,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { flags } from "@/lib/flags";
 import { typesToOpenApi, type OpenApiSpec } from "./typesToOpenApi";
-import { PUBLIC_API_SERVERS } from "./publicApiServers";
+import { publicApiServers } from "./publicApiServers";
 
 const API_DIR = path.join(process.cwd(), "src/app/docs/api");
 const PAIR_FILES = ["database.types.ts", "database.types-public.ts"] as const;
@@ -34,12 +34,12 @@ export function loadDatabaseOpenApi(isPublic = flags.public): OpenApiSpec {
       ? "y2k Guestbook API"
       : "Beck's y2k Guestbook API",
     description: isPublic
-      ? "The API reference below reflects the calls you can make to your connected Supabase database when the guestbook is fully installed."
-      : "The API reference below reflects the functionality of Beck's custom guestbook install.\n\n[View Public API Library](https://y2k-guestbook.vercel.app/docs/api)",
+      ? "The API reference below reflects the calls you can make to your connected Supabase database when the guestbook is fully installed. Project IDs and keys you enter for `Test Request` stay in your browser — we do not collect them. Send goes from your browser direct to your Supabase project."
+      : "The API reference below reflects the functionality of Beck's custom guestbook install. These docs do not collect API keys or project IDs.\n\n[View Public API Library](https://y2k-guestbook.vercel.app/docs/api)",
   });
 
   if (isPublic) {
-    spec.servers = PUBLIC_API_SERVERS;
+    spec.servers = publicApiServers();
   }
 
   return spec;

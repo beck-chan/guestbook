@@ -181,3 +181,13 @@ can we integrate this into the LLM ingestion
 4. Database WebhooksDatabase Webhooks trigger external actions automatically whenever a specific change happens inside your database tables.What it does: It listens for any INSERT, UPDATE, or DELETE event inside your data rows and instantly alerts an outside server via an HTTP request.Fraud Detection Example: If a row is inserted into your transactions table with an amount over $10,000, a database webhook instantly alerts an external security service to freeze the account.Slack/Discord Alerts Example: Whenever a new user leaves a 1-star review in your reviews table, a webhook automatically posts an alert straight to your team's internal Slack channel so support can reach out.
 
 email notif on comment row creation to admins
+
+
+There is no dedicated “anon key” field. In Scalar, open an operation, then Test Request.
+
+Open the Headers section (not Auth / Bearer).
+Add a header named apikey.
+Paste the anon public key from Supabase → Project Settings → API (NEXT_PUBLIC_SUPABASE_ANON_KEY).
+That header is required on every Send, including the public routes.
+
+Auth → Bearer is only the user JWT for locked admin calls. Do not put the anon key there unless you are also sending Authorization: Bearer <anon-key> as a header — the name Scalar expects for the project key is apikey.
