@@ -59,32 +59,32 @@ Use **Node.js 20 LTS** or **22 LTS** (either includes `npm`). Next.js `16` needs
 
 ::: {.tabset}
 
-# i. Create Project
+# 1. Create Project
 
 Create an account and organization with [Supabase](https://supabase.com/), then on the Create a new project screen:
 
-1. Enter in your **Organization**, **Project name**, and **Database password**.
+a. Enter in your **Organization**, **Project name**, and **Database password**.
 
     Hang on to your **Database password** — we'll need to enter this into your `.env.local` file under your `DATABASE_URL`.
 
-2. Select a **Region**.
+b. Select a **Region**.
 
-3. Under Security, check off:
+c. Under Security, check off:
 
     - **Enable Data API**
     - **Enable automatic RLS**
 
     Leave `Automatically expose new tables` *unchecked*.
 
-4. Click **Create new project**.
+d. Click **Create new project**.
 
-# ii. Retrieve API Keys
+# 2. Retrieve API Keys
 
 When your project is ready:
 
-1. In the left sidebar, click **Project Settings**, then select **API Keys**.
+a. In the left sidebar, click **Project Settings**, then select **API Keys**.
 
-2. Under Publishable and secret API keys, copy the **Publishable key** to your clipboard. 
+b. Under Publishable and secret API keys, copy the **Publishable key** to your clipboard. 
 
     Hang on to this — we'll need to enter this into your `.env.local` file under your `NEXT_PUBLIC_SUPABASE_URL`:
 
@@ -92,7 +92,7 @@ When your project is ready:
     NEXT_PUBLIC_SUPABASE_ANON_KEY=sb_publishable_<your-publishable-key>
     ```
 
-3. Click **Legacy anon, service_role, API keys**, then copy the `service_role` `secret` key to your clipboard. 
+c. Click **Legacy anon, service_role, API keys**, then copy the `service_role` `secret` key to your clipboard. 
 
     Hang on to this — we'll need to enter this into your `.env.local` file under your `SUPABASE_SERVICE_ROLE_KEY`:
 
@@ -100,11 +100,11 @@ When your project is ready:
     SUPABASE_SERVICE_ROLE_KEY=<your-service-role-key>
     ```
 
-# iii. Retrieve Supabase URLs
+# 3. Retrieve Supabase URLs
 
-1. In the Settings left sidebar, select **Data API**.
+a. In the Settings left sidebar, select **Data API**.
 
-2. Under Overview, copy the **API URL** to your clipboard. 
+b. Under Overview, copy the **API URL** to your clipboard. 
 
     Hang on to this — we'll need to enter this into your `.env.local` file and to hook up Supabase and Google OAuth 2.0:
 
@@ -112,11 +112,11 @@ When your project is ready:
     NEXT_PUBLIC_SUPABASE_URL=https://<your-database-url>.supabase.co
     ```
 
-3. In the top navigation, click the **Connect** button.
+c. In the top navigation, click the **Connect** button.
 
-4.  Under Connection Method, select **Transaction pooler**. Leave the **Type** as `URI`.
+d.  Under Connection Method, select **Transaction pooler**. Leave the **Type** as `URI`.
 
-5. Under Connection string, copy the **Shared pooler** to your clipboard. 
+e. Under Connection string, copy the **Shared pooler** to your clipboard. 
 
     Hang on to this — we'll need to enter this into your `.env.local` file under your `DATABASE_URL`:
 
@@ -138,53 +138,53 @@ Log in to your [Google Cloud](https://console.cloud.google.com/){.blank} console
 
 ::: {.tabset}
 
-# i. Create Project
+# 1. Create Project
 
-1. [Create a new Google Cloud project](https://developers.google.com/workspace/guides/create-project){.blank}.
+a. [Create a new Google Cloud project](https://developers.google.com/workspace/guides/create-project){.blank}.
 
-2. When the project is ready, select your new project.
+b. When the project is ready, select your new project.
 
-3. In the left sidebar, click **APIs & Services**, then select **OAuth consent screen**.
+c. In the left sidebar, click **APIs & Services**, then select **OAuth consent screen**.
 
-4. In OAuth Overview, click **Get started**.
+d. In OAuth Overview, click **Get started**.
 
-4. Configure your project, then click **Create**. For example, enter your:
+d. Configure your project, then click **Create**. For example, enter your:
     - App Information
     - Audience (for personal Google accounts, select `External`)
     - Contact Information
     - Finish (to agree to the Google API Services: User Data Policy)
 
-# ii. Add User
+# 2. Add User
 
-1. In the left sidebar, click **Audience**.
+a. In the left sidebar, click **Audience**.
 
-2. Under Test users, click **+ Add users** then add the address you'll use to log into your admin dashboard.
+b. Under Test users, click **+ Add users** then add the address you'll use to log into your admin dashboard.
 
-3. Click **Save**.
+c. Click **Save**.
 
-# iii. Create Client
+# 3. Create Client
 
-1. In the left sidebar, click **Clients**.
+a. In the left sidebar, click **Clients**.
 
-2. Click **+ Create client**.
+b. Click **+ Create client**.
 
-3. In the **Application type** drop-down, select `Web application`.
+c. In the **Application type** drop-down, select `Web application`.
 
-4. Give your application a **Name**.
+d. Give your application a **Name**.
 
-5. Under Authorized JavaScript origins, enter any URLs you'll use to access your application. For example:
+e. Under Authorized JavaScript origins, enter any URLs you'll use to access your application. For example:
     - Local host: `http://localhost:3000`
     - Vercel deployment: `https://<your-vercel-project-name>.vercel.app`
 
-6. Under Authorized redirect URIs, enter your Supabase project's callback URL based on your `NEXT_PUBLIC_SUPABASE_URL`. For example:
+f. Under Authorized redirect URIs, enter your Supabase project's callback URL based on your `NEXT_PUBLIC_SUPABASE_URL`. For example:
 
     ```bash
     https://<your-database-url>.supabase.co/auth/v1/callback
     ```
 
-7. Click **Create**.
+g. Click **Create**.
 
-8. On the OAuth client created popup, copy the **Client ID** and **Client secret** to your clipboard. Hang on to these — we'll need to enter this into Supabase to connect Google OAuth 2.0 in the next section.
+h. On the OAuth client created popup, copy the **Client ID** and **Client secret** to your clipboard. Hang on to these — we'll need to enter this into Supabase to connect Google OAuth 2.0 in the next section.
 
 ::: {.callout}
 Click **Download JSON** to save your OAuth client credentials to a file as a backup.

@@ -20,6 +20,10 @@ export const flags = {
 const githubRepo = flags.public ? "y2k-guestbook" : "guestbook";
 const githubBase = `https://github.com/beck-chan/${githubRepo}`;
 
+export const docsIndexSubtitle = flags.public
+  ? "Install your own mobile-friendly, retro-inspired guestbook powered by Next.js, Supabase, and Vercel." // public = true
+  : "Install your own mobile-friendly, retro-inspired guestbook powered by Next.js, Supabase, and Vercel.\n*Reference section for this documentation version reflects the functionality of Beck's custom install."; // public = false
+
 export const docsUrl = "/docs";
 export const getStartedUrl = "/docs/quickstart/";
 export const reportIssueUrl = `${githubBase}/issues`;

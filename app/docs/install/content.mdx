@@ -189,7 +189,7 @@ Set `homeHref=` according to where your public comment board lives:
 
 ::: {.tabset}
 
-# i. Wrap Config
+# 1. Wrap Config
 
 Next needs a small config wrap so it can compile the shipped npm package, and so the **view example** link for the custom theme Settings can serve a sample CSS file. `withGuestbookConfig` reads `NEXT_PUBLIC_GUESTBOOK_ADMIN_PATH` for that rewrite (default `/admin/example.css`).
 
@@ -211,7 +211,7 @@ If you already define your own `rewrites()`, merge them carefully — `withGuest
 
 :::
 
-# ii. Set Theme Example Route
+# 2. Set Theme Example Route
 
 Create `app/admin/example/route.ts` (or `app/guestbook/admin/example/route.ts` if you set a custom admin path): 
 
@@ -221,13 +221,13 @@ export { GET, dynamic } from "y2k-guestbook/example-css";
 
 This is the file that **view example** loads — it only works after the config wrapping.
 
-# iii. Add Stylesheet and Providers
+# 3. Add Stylesheet and Providers
 
 Place two last pieces in your root layout (`app/layout.tsx`):
 
-1. Import the default guestbook stylesheet (`y2k-guestbook/styles.css`) so the board and admin dashboard have the skeleton theme. Leave your own Tailwind import in `globals.css` as-is.
+a. Import the default guestbook stylesheet (`y2k-guestbook/styles.css`) so the board and admin dashboard have the skeleton theme. Leave your own Tailwind import in `globals.css` as-is.
 
-2. Wrap the app in `GuestbookProviders`. That turns on settings, custom theme overrides, and the admin auth error overlay.
+b. Wrap the app in `GuestbookProviders`. That turns on settings, custom theme overrides, and the admin auth error overlay.
 
 ```typescript
 import type { Metadata } from "next";

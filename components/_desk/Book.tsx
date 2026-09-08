@@ -35,7 +35,11 @@ export function Book({
         <div className="page-right">
           <div className="leaf">
             {poem ? (
-              <article className="leaf-copy" aria-hidden={!isOpen}>
+              <article
+                key={poem.id}
+                className="leaf-copy"
+                aria-hidden={!isOpen}
+              >
                 {poem.sections.map((section) => (
                   <section key={section.title} className="poem-piece">
                     <h2 className="poem-title">{section.title}</h2>

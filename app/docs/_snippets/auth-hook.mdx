@@ -2,47 +2,47 @@
 
 ::: {tabset}
 
-# i. Run Installation Schema
+# 1. Run Installation Schema
 
-1. Copy the contents of [`schema.sql`](https://github.com/beck-chan/y2k-guestbook/blob/main/schema.sql){.blank} to your clipboard.
+a. Copy the contents of [`schema.sql`](https://github.com/beck-chan/y2k-guestbook/blob/main/schema.sql){.blank} to your clipboard.
 
-2. Within Supabase, select **SQL Editor** from the left sidebar, then paste in the contents of `schema.sql`.
+b. Within Supabase, select **SQL Editor** from the left sidebar, then paste in the contents of `schema.sql`.
 
-3. Click **Run** to execute the schema.
+c. Click **Run** to execute the schema.
 
-4. If you receive a Potential issue detected popup, click **Run query** to execute the schema. 
+d. If you receive a Potential issue detected popup, click **Run query** to execute the schema. 
 
 ::: {.callout}
 Confirm that you see `Success. No rows returned` under the Results before moving on to the next step.
 :::
 
-# ii. Set Up Auth Hook
+# 2. Set Up Auth Hook
 
-1. Within Supabase, select **Authentication** from the left sidebar, then click **Auth Hooks**.
+a. Within Supabase, select **Authentication** from the left sidebar, then click **Auth Hooks**.
 
-2. Click **Add hook**, then select **Before User Created hook**:
+b. Click **Add hook**, then select **Before User Created hook**:
 
     - For **Hook type** select `Postgres`.
     - For **Postgres Schema**, select `schema.public`.
 
-3. For **Postgres funtion**, select `function: hook_before_user_created`.
+c. For **Postgres funtion**, select `function: hook_before_user_created`.
 
-4. Click **Create hook**.
+d. Click **Create hook**.
 
-# iii. Set Up Redirects
+# 3. Set Up Redirects
 
-1. Within Supabase, select **Authentication** from the left sidebar, then click **URL Configuration**.
+a. Within Supabase, select **Authentication** from the left sidebar, then click **URL Configuration**.
 
-2. Confirm that `http://localhost:3000` is already entered under **Site URL** for local previews and builds.
+b. Confirm that `http://localhost:3000` is already entered under **Site URL** for local previews and builds.
 
-3. (Optional, for deployment builds) To enter a redirect URL for deployment:
+c. (Optional, for deployment builds) To enter a redirect URL for deployment:
 
-    a. Under Redirect URLs, click **Add URL**.
+    i. Under Redirect URLs, click **Add URL**.
 
-    b. Paste in your deployment callback URL. This is your `SITE_URL` with `auth/callback` appended to the end.
+    ii. Paste in your deployment callback URL. This is your `SITE_URL` with `auth/callback` appended to the end.
 
         For example: `https://<your-project-url>.vercel.app/auth/callback`.
 
-    c. Click **Save URLs**.
+    iii. Click **Save URLs**.
 
 :::

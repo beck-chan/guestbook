@@ -22,50 +22,53 @@ From the [PostHog](https://posthog.com/){.blank} dashboard's left sidebar, click
 
 ::: {.tabset}
 
-# i. Retrieve Project Details
+# 1. Retrieve Project Details
 
  Under Settings - General:
 
-1. Copy your **Project token**. Enter this into your `.env.local` file under your `NEXT_PUBLIC_POSTHOG_KEY`:
+a. Copy your **Project token**. Enter this into your `.env.local` file under your `NEXT_PUBLIC_POSTHOG_KEY`:
     
     ```bash
     NEXT_PUBLIC_POSTHOG_KEY=<your-project-token>
     ```
 
-2. Under SDK setup, grab the `api_host` value from one of the snippets (For example, `https://us.i.posthog.com`). Enter this into your `.env.local` file under your `NEXT_PUBLIC_POSTHOG_HOST`:
+b. Under SDK setup, grab the `api_host` value from one of the snippets (For example, `https://us.i.posthog.com`). Enter this into your `.env.local` file under your `NEXT_PUBLIC_POSTHOG_HOST`:
     
     ```bash
     NEXT_PUBLIC_POSTHOG_HOST=<your-project-api-host>
     ```
 
-3. Copy your **Project ID**. Enter this into your `.env.local` file under your `POSTHOG_PROJECT_ID`:
+c. Copy your **Project ID**. Enter this into your `.env.local` file under your `POSTHOG_PROJECT_ID`:
     
     ```bash
     POSTHOG_PROJECT_ID=<your-project-id>
     ```
 
-# ii. Create Personal API Key
+# 2. Create Personal API Key
 
-1. In the Settings left sidebar, select **Personal API keys** under Account.
+a. In the Settings left sidebar, select **Personal API keys** under Account.
 
-2. Click **+ Create personal API key**.
+b. Click **+ Create personal API key**.
 
-    a. Give the key a **Label**. For example: `Guestbook Hit Counter`
-    b. Under **Organizations & project access**, select **Projects** then the project you want to grant access to.
-    c. Under **Scopes**, select **Query**: `Read`.
-    d. Click **Create key**.
+c. Give the key a **Label**. For example: `Guestbook Hit Counter`
 
-3. Copy your API key after it generates. Enter this into your `.env.local` file under your `POSTHOG_PERSONAL_API_KEY`:
+d. Under **Organizations & project access**, select **Projects** then the project you want to grant access to.
 
-    ```bash
-    POSTHOG_PERSONAL_API_KEY=<your-personal-api-key>
-    ```
+e. Under **Scopes**, select **Query**: `Read`.
 
-4. For your `POSTHOG_API_HOST`, enter the app host for the Query API (For example: `https://us.posthog.com`, not the `*.i.posthog.com` ingest host):
-    
-    ```bash
-    POSTHOG_API_HOST=<your-api-host>
-    ```
+f. Click **Create key**.
+
+    i. Copy your API key after it generates. Enter this into your `.env.local` file under your `POSTHOG_PERSONAL_API_KEY`:
+
+        ```bash
+        POSTHOG_PERSONAL_API_KEY=<your-personal-api-key>
+        ```
+
+    ii. For your `POSTHOG_API_HOST`, enter the app host for the Query API (For example: `https://us.posthog.com`, not the `*.i.posthog.com` ingest host):
+
+        ```bash
+        POSTHOG_API_HOST=<your-api-host>
+        ```
 
 :::
 
@@ -75,22 +78,22 @@ For cloud deployment:
 
 ::: {.tabset}
 
-# i. Enter Vercel Variables
+# 1. Enter Vercel Variables
 
 If you are deploying to Vercel:
 
-1. In the left sidebar of your guestbook project, select **Environment Variables**.
+a. In the left sidebar of your guestbook project, select **Environment Variables**.
 
-2. Click **Add Environment Variable**.
+b. Click **Add Environment Variable**.
 
-3. Enter the following as **Config** Type variables:
+c. Enter the following as **Config** Type variables:
 
     ```bash
     NEXT_PUBLIC_POSTHOG_KEY=<your-project-token>
     NEXT_PUBLIC_POSTHOG_HOST=<your-project-api-host>
     ```
 
-4. Enter the following as **Secret** Type variables:
+d. Enter the following as **Secret** Type variables:
 
     ```bash
     # IMPORTANT: MAKE SURE THEY ARE SECRET SO THEY ARE HIDDEN
@@ -99,17 +102,17 @@ If you are deploying to Vercel:
     POSTHOG_API_HOST=<your-api-host>
     ```
 
-# ii. Configure Web Analytics URLs
+# 2. Configure Web Analytics URLs
 
-1. From the PostHog dashboard's left sidebar, click **Settings**.
+a. From the PostHog dashboard's left sidebar, click **Settings**.
 
-2. Under Products, select **Web analytics**.
+b. Under Products, select **Web analytics**.
 
-3. Under **Web analytics domains**, click **+ Add new authorized URL**.
+c. Under **Web analytics domains**, click **+ Add new authorized URL**.
 
-4. Enter in the URL of your deployed guestbook application. For example: `https://<your-project-url>.vercel.app`
+d. Enter in the URL of your deployed guestbook application. For example: `https://<your-project-url>.vercel.app`
 
-5. Click **Save**.
+e. Click **Save**.
 
 :::
 

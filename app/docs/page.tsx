@@ -1,9 +1,23 @@
 import Link from "next/link";
+import { docsIndexSubtitle } from "@/lib/flags";
 import { DocsHeart } from "./_components/DocsHeart";
 import { DocsSearch } from "./_components/DocsSearch";
 import { DOCS_NAV_SECTIONS } from "./_nav/docs-nav-data";
 
 const LANDING_TITLES = new Set(["Installation", "Guides", "Reference"]);
+
+function DocsIndexSubtitleLine({ line }: { line: string }) {
+  if (!line.startsWith("*")) {
+    return line;
+  }
+
+  return (
+    <>
+      <span className="docs-index-subtitle-mark">*</span>
+      {line.slice(1)}
+    </>
+  );
+}
 
 export default function DocsPage() {
   const sections = DOCS_NAV_SECTIONS.filter((section) =>
@@ -28,6 +42,16 @@ export default function DocsPage() {
           </span>
         </p>
       </header>
+      <p className="docs-index-subtitle">
+        {docsIndexSubtitle.split("\n").map((line, index) => (
+          <span
+            key={`${index}-${line}`}
+            className={index > 0 ? "docs-index-subtitle-more" : undefined}
+          >
+            <DocsIndexSubtitleLine line={line} />
+          </span>
+        ))}
+      </p>
       <DocsSearch variant="bar" />
       <div className="docs-index-notes">
         {sections.map((section) => (
