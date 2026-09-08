@@ -5,7 +5,7 @@ import { adminAuthFile } from "../features/support/auth-file";
 import {
   guestbookAdminLoginPath,
   guestbookAdminPath,
-} from "../lib/guestbookPaths";
+} from "../src/lib/guestbookPaths";
 
 const baseUrl = (process.env.BASE_URL ?? "http://localhost:3000").replace(
   /\/$/,

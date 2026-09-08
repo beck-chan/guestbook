@@ -1,11 +1,11 @@
 import path from "node:path";
 import type { NextConfig } from "next";
 import createMDX from "@next/mdx";
-import { flags } from "./lib/flags";
+import { flags } from "./src/lib/flags";
 import {
   guestbookAdminExamplePath,
   guestbookAdminPath,
-} from "./lib/guestbookPaths";
+} from "./src/lib/guestbookPaths";
 
 const root = process.cwd(); // docs MDX plugins resolve from here
 
@@ -56,11 +56,11 @@ const withMDX = createMDX({
     // bust @mdx-js/loader's processor cache (functions alone hash as null).
     remarkPlugins: [
       "remark-gfm",
-      [path.join(root, "lib/mdx/remark-docs-syntax.mjs"), { rev: 11 }],
+      [path.join(root, "src/lib/mdx/remark-docs-syntax.mjs"), { rev: 11 }],
     ],
     rehypePlugins: [
       "rehype-slug",
-      [path.join(root, "lib/mdx/rehype-docs-highlight.mjs"), { rev: 2 }],
+      [path.join(root, "src/lib/mdx/rehype-docs-highlight.mjs"), { rev: 2 }],
     ],
   },
 });

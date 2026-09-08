@@ -1,6 +1,7 @@
 /**
- * Copy this file to instrumentation-client.ts in the project root.
- * Next.js only loads that exact filename. Do not paste the HTML snippet here.
+ * Copy this file to src/instrumentation-client.ts (or the project root if
+ * there is no src/). Next.js only loads that exact filename. Do not paste
+ * the HTML snippet here.
  */
 import posthog from "posthog-js";
 

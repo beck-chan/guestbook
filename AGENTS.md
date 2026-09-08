@@ -1,6 +1,6 @@
 # Guestbook agent notes
 
-Docs are MDX (`app/docs/**/*.mdx`) compiled by Next. Do not glob `node_modules` or `.next` to “set up” Next.
+Docs are MDX (`src/app/docs/**/*.mdx`) compiled by Next. Do not glob `node_modules` or `.next` to “set up” Next.
 
 If a Next 16 API is unfamiliar, Read **one** file under `node_modules/next/dist/docs/` (start from that folder’s index). Never glob `**/*.md` there.
 

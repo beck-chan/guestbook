@@ -69,7 +69,7 @@ npm run docs
 
 ## Feature flags
 
-Flags are compile-time values in [`lib/flags.ts`](lib/flags.ts). Override them with env vars, then restart `npm run dev` or run `npm run build` again. Unset vars use the defaults in `lib/flags.ts`.
+Flags are compile-time values in [`src/lib/flags.ts`](src/lib/flags.ts). Override them with env vars, then restart `npm run dev` or run `npm run build` again. Unset vars use the defaults in `src/lib/flags.ts`.
 
 | Env var | Flag | Default | Effect |
 | --- | --- | --- | --- |
@@ -83,7 +83,7 @@ Accepted values are `true` / `1` and `false` / `0`. When `docs` is on, `docsUrl`
 
 A second Vercel project can deploy the same `main` branch with different `FLAG_*` values (set as that project's environment variables). Local [`.env`](.env) is gitignored and does not affect Vercel.
 
-To add another flag, add a key on `flags` in [`lib/flags.ts`](lib/flags.ts), pass the env name through `env` in [`next.config.ts`](next.config.ts), and branch on it in the UI.
+To add another flag, add a key on `flags` in [`src/lib/flags.ts`](src/lib/flags.ts), pass the env name through `env` in [`next.config.ts`](next.config.ts), and branch on it in the UI.
 
 ## Stop a running preview
 
@@ -134,16 +134,15 @@ remove docs install later
 ## api gen ref
 
 ```bash
-mkdir -p docs/api
 npx supabase login
-npx supabase gen types typescript --project-id yahduosmchkyapkvpdn --schema public > app/docs/api/database.types.ts
+npx supabase gen types typescript --project-id yahduosmchkyapkvpdn --schema public > src/app/docs/api/database.types.ts
 ```
 
 If you prefer a token instead of npx supabase login: Dashboard → Account → Access Tokens, then:
 
 ```bash
 export SUPABASE_ACCESS_TOKEN=your_token
-npx supabase gen types typescript --project-id yahduosmchkyapkvpdn --schema public > app/docs/api/database.types.ts
+npx supabase gen types typescript --project-id yahduosmchkyapkvpdn --schema public > src/app/docs/api/database.types.ts
 ```
 
 need to do this for public docs too

@@ -1111,13 +1111,13 @@ function isPublicDocs() {
 }
 
 function docsRoot() {
-  return path.resolve(process.cwd(), "app/docs");
+  return path.resolve(process.cwd(), "src/app/docs");
 }
 
 function assertUnderDocs(resolved) {
   const rel = path.relative(docsRoot(), resolved);
   if (rel.startsWith("..") || path.isAbsolute(rel)) {
-    throw new Error(`Docs embed must stay under app/docs: ${resolved}`);
+    throw new Error(`Docs embed must stay under src/app/docs: ${resolved}`);
   }
 }
 
