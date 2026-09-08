@@ -3,6 +3,7 @@ import { Suspense } from "react";
 import { Jost, Kaisei_HarunoUmi, Libre_Baskerville } from "next/font/google";
 import { AdminAuthErrorOverlay } from "@/components/_shared/AdminAuthErrorOverlay";
 import { CustomTheme } from "@/components/_shared/CustomTheme";
+import { flags } from "@/lib/flags";
 import { GuestbookSettingsProvider } from "@/lib/guestbookSettings";
 import { loadGuestbookSettings } from "@/lib/loadGuestbookSettings";
 import "./globals.css";
@@ -39,13 +40,29 @@ export const viewport: Viewport = {
 };
 
 export default async function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+  const fontClassName = `${jost.variable} ${baskerville.variable} ${kaisei.variable} h-full antialiased`;
+
+  if (flags.docsOnly) {
+    return (
+      <html lang="en" className={fontClassName}>
+        <head>
+          <link
+            rel="preload"
+            href="/fonts/Peony-Regular.otf"
+            as="font"
+            type="font/otf"
+            crossOrigin="anonymous"
+          />
+        </head>
+        <body className="min-h-full">{children}</body>
+      </html>
+    );
+  }
+
   const settings = await loadGuestbookSettings();
 
   return (
-    <html
-      lang="en"
-      className={`${jost.variable} ${baskerville.variable} ${kaisei.variable} h-full antialiased`}
-    >
+    <html lang="en" className={fontClassName}>
       <head>
         <link
           rel="preload"

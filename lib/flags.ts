@@ -11,6 +11,7 @@ function envString(value: string | undefined, fallback: string) {
 export const flags = {
   // Static process.env.* access so Next can inline these for client components.
   docs: envFlag(process.env.FLAG_DOCS, true), // Show docs link
+  docsOnly: envFlag(process.env.FLAG_DOCSONLY, false), // Only serve /docs (skip desk, guestbook, admin)
   hitCounter: envFlag(process.env.FLAG_COUNTER, true), // Show hit counter
   /** Comma-separated paths/URLs for unique-visitor query (empty = all $pageview events). */
   hitCounterUrl: envString(process.env.FLAG_COUNTER_URL, ""),

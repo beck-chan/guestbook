@@ -13,21 +13,33 @@ const nextConfig: NextConfig = {
   agentRules: false,
   env: {
     FLAG_DOCS: process.env.FLAG_DOCS,
+    FLAG_DOCSONLY: process.env.FLAG_DOCSONLY,
     FLAG_COUNTER: process.env.FLAG_COUNTER,
     FLAG_COUNTER_URL: process.env.FLAG_COUNTER_URL,
     FLAG_PUBLIC: process.env.FLAG_PUBLIC,
   },
   pageExtensions: ["js", "jsx", "md", "mdx", "ts", "tsx"],
   async redirects() {
+    if (flags.docsOnly) {
+      const admin = guestbookAdminPath();
+      return [
+        { source: "/", destination: "/docs", permanent: false },
+        { source: "/guestbook", destination: "/docs", permanent: false },
+        { source: admin, destination: "/docs", permanent: false },
+        { source: `${admin}/:path*`, destination: "/docs", permanent: false },
+      ];
+    }
     return flags.public
       ? [{ source: "/guestbook", destination: "/", permanent: false }]
       : [];
   },
   async rewrites() {
     return {
-      beforeFiles: flags.public
-        ? [{ source: "/", destination: "/guestbook" }]
-        : [],
+      beforeFiles: flags.docsOnly
+        ? []
+        : flags.public
+          ? [{ source: "/", destination: "/guestbook" }]
+          : [],
       afterFiles: [
         {
           source: `${guestbookAdminPath()}/example.css`,

@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "docs": "node scripts/docs-dev.mjs",
     "dev:stop": "node scripts/stop-dev.mjs",
     "build": "next build",
     "start": "next start",

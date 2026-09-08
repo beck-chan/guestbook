@@ -59,6 +59,14 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000).
 
+Docs-only preview (same as `FLAG_DOCSONLY=true`, without editing `.env.local`):
+
+```bash
+npm run docs
+```
+
+`http://localhost:3000` then serves `/docs`. Stop with `npm run dev:stop`, then `npm run dev` for the poetry desk.
+
 ## Feature flags
 
 Flags are compile-time values in [`lib/flags.ts`](lib/flags.ts). Override them with env vars, then restart `npm run dev` or run `npm run build` again. Unset vars use the defaults in `lib/flags.ts`.
@@ -66,6 +74,7 @@ Flags are compile-time values in [`lib/flags.ts`](lib/flags.ts). Override them w
 | Env var | Flag | Default | Effect |
 | --- | --- | --- | --- |
 | `FLAG_DOCS` | `docs` | `true` | Desk bookmarks: **view docs** plus a short **admin login** ribbon. Off: the labeled bookmark is **admin login** only. |
+| `FLAG_DOCSONLY` | `docsOnly` | `false` | Serve only `/docs` (redirect desk, guestbook, and admin URLs). Skip the settings fetch and guestbook theme/admin overlay. Wins over `FLAG_PUBLIC`. `npm run docs` sets this for that process (overrides `.env.local`). Local preview only — do not set on Vercel. |
 | `FLAG_COUNTER` | `hitCounter` | `true` | Hit-counter on the home cover, guestbook page, and comment sidebar. |
 | `FLAG_COUNTER_URL` | `hitCounterUrl` | *(empty)* | Comma-separated guestbook paths/URLs for unique visitors (e.g. `/guestbook,/`). Paths match `$pathname` exactly; full URLs match `$current_url`. Empty counts all `$pageview` events. |
 | `FLAG_PUBLIC` | `public` | `false` | Public guestbook home (rewrite `/` to `/guestbook`), dark green favicon, `y2k-guestbook` GitHub links. |
@@ -127,14 +136,14 @@ remove docs install later
 ```bash
 mkdir -p docs/api
 npx supabase login
-npx supabase gen types typescript --project-id yahduosmchkyapkvpdn --schema public > docs/api/database.types.ts
+npx supabase gen types typescript --project-id yahduosmchkyapkvpdn --schema public > app/docs/api/database.types.ts
 ```
 
 If you prefer a token instead of npx supabase login: Dashboard → Account → Access Tokens, then:
 
 ```bash
 export SUPABASE_ACCESS_TOKEN=your_token
-npx supabase gen types typescript --project-id YOUR_PROJECT_REF --schema public > docs/api/database.types.ts
+npx supabase gen types typescript --project-id yahduosmchkyapkvpdn --schema public > app/docs/api/database.types.ts
 ```
 
 need to do this for public docs too

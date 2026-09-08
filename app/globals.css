@@ -268,7 +268,8 @@ body {
 }
 
 .desk-split.is-open .stage,
-.stage.is-open {
+.stage.is-open,
+.desk-split:has(.book.is-animating) .stage {
   padding-left: calc(var(--sticky-size) * 2 / 3 + 1.25rem);
   padding-right: 2.5rem;
 }
@@ -282,7 +283,8 @@ body {
   transform-style: preserve-3d;
 }
 
-.stage.is-open .book-scene {
+.stage.is-open .book-scene,
+.stage:has(.book.is-animating) .book-scene {
   width: min(var(--book-width), calc(var(--page-side) * 2));
 }
 
@@ -325,12 +327,28 @@ body {
   transform: rotateX(4deg) rotateY(0deg);
 }
 
-.book.is-animating:not(.is-open) .spread {
+.book-shadow-clip {
+  position: absolute;
+  top: -12px;
+  bottom: -12px;
+  right: 100%;
+  width: 0;
   overflow: hidden;
+  pointer-events: none;
+  z-index: 0;
 }
 
-.book.is-open.is-stacked,
-.book.is-open:not(.is-animating) {
+.book.is-open:not(.is-animating) .book-shadow-clip {
+  width: 28px;
+}
+
+.book-shadow-left {
+  position: absolute;
+  top: 12px;
+  bottom: 12px;
+  right: 0;
+  width: 1px;
+  pointer-events: none;
   box-shadow:
     -1px 1px 0 var(--paper-edge),
     -2px 1px 0 var(--paper-hi),
@@ -353,36 +371,14 @@ body {
     -19px 10px 0 var(--paper-mid),
     -20px 10px 0 var(--paper-shadow),
     -22px 11px 0 var(--paper-edge),
-    -24px 12px 0 var(--paper-shadow),
-    1px 1px 0 var(--paper-edge),
-    2px 1px 0 var(--paper-hi),
-    3px 2px 0 var(--paper-edge),
-    4px 2px 0 var(--paper-mid),
-    5px 3px 0 var(--paper-shadow),
-    6px 3px 0 var(--paper-edge),
-    7px 4px 0 var(--paper-warm),
-    8px 4px 0 var(--paper-dim),
-    9px 5px 0 var(--paper-shadow),
-    10px 5px 0 var(--paper-edge),
-    11px 6px 0 var(--paper-mid),
-    12px 6px 0 var(--paper-shadow),
-    13px 7px 0 var(--paper-edge),
-    14px 7px 0 var(--paper-shadow),
-    15px 8px 0 var(--paper-edge),
-    16px 8px 0 var(--paper-hi),
-    17px 9px 0 var(--paper-shadow),
-    18px 9px 0 var(--paper-edge),
-    19px 10px 0 var(--paper-mid),
-    20px 10px 0 var(--paper-shadow),
-    22px 11px 0 var(--paper-edge),
-    24px 12px 0 var(--paper-shadow),
-    16px 24px 44px rgb(70 50 55 / 0.09);
+    -24px 12px 0 var(--paper-shadow);
 }
 
 .spread {
   position: absolute;
   top: 0;
   right: 0;
+  z-index: 3;
   width: 200%;
   height: 100%;
   pointer-events: none;
@@ -438,7 +434,7 @@ body {
   transform: rotateY(0deg) translateZ(3px);
   transform-origin: left center;
   transform-style: preserve-3d;
-  z-index: 3;
+  z-index: 4;
 }
 
 .book.is-open:not(.is-animating) .cover {
@@ -1041,7 +1037,8 @@ body {
   }
 
   .desk-split.is-open .stage,
-  .stage.is-open {
+  .stage.is-open,
+  .desk-split:has(.book.is-animating) .stage {
     padding-left: calc(var(--sticky-size) * 2 / 3 + 1.25rem);
     padding-right: 2.25rem;
   }
@@ -2405,7 +2402,8 @@ body {
   }
 
   .desk-split.is-open .stage,
-  .stage.is-open {
+  .stage.is-open,
+  .desk-split:has(.book.is-animating) .stage {
     padding-left: calc(var(--sticky-size) * 2 / 3 + 1rem);
     padding-right: 1.5rem;
   }
