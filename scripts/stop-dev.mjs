@@ -3,9 +3,14 @@ import { rmSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
-const root = path.join(path.dirname(fileURLToPath(import.meta.url)), "..");
+const root = path.resolve(path.join(path.dirname(fileURLToPath(import.meta.url)), ".."));
 const nextDir = path.join(root, ".next");
-const ports = [3000, 3001];
+const appRoots = [
+  root,
+  path.resolve(root, "..", "guestbook"),
+  path.resolve(root, "..", "y2k-guestbook"),
+  path.resolve(root, "..", "y2k-demobook"),
+].filter((value, index, all) => all.indexOf(value) === index);
 
 function sleep(ms) {
   Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, ms);
@@ -13,9 +18,10 @@ function sleep(ms) {
 
 function listeningPids(port) {
   const out = execFileSync("netstat", ["-ano"], { encoding: "utf8" });
+  const bound = new RegExp(`:${port}(?!\\d)`);
   const pids = new Set();
   for (const line of out.split(/\r?\n/)) {
-    if (!line.includes(`:${port}`) || !line.includes("LISTENING")) continue;
+    if (!line.includes("LISTENING") || !bound.test(line)) continue;
     const pid = line.trim().split(/\s+/).at(-1);
     if (pid && pid !== "0") pids.add(pid);
   }
@@ -33,16 +39,23 @@ function killPid(pid) {
   }
 }
 
+function powershellEscape(value) {
+  return value.replace(/'/g, "''");
+}
+
 function leftoverNextPids() {
-  const needle = root.replace(/'/g, "''");
+  const needles = appRoots.map(
+    (dir) => `$_.CommandLine.Contains('${powershellEscape(dir)}')`,
+  );
   const cmd = [
-    "Get-CimInstance Win32_Process -Filter \"name='node.exe'\" |",
+    "Get-CimInstance Win32_Process |",
     "Where-Object {",
     "  $_.CommandLine -and",
-    `  $_.CommandLine.Contains('${needle}') -and`,
     "  $_.CommandLine -notmatch 'tsserver|typingsInstaller' -and",
     "  $_.CommandLine -notmatch 'Local\\\\Programs\\\\cursor' -and",
-    "  ($_.CommandLine -match '\\.next|next\\\\dist|start-server|pool_entry')",
+    "  $_.CommandLine -notmatch 'stop-dev' -and",
+    `  (${needles.join(" -or ")}) -and`,
+    "  ($_.CommandLine -match 'docs-dev|next dev|next\\\\dist|start-server|pool_entry|\\\\.next')",
     "} | Select-Object -ExpandProperty ProcessId",
   ].join(" ");
   try {
@@ -58,13 +71,8 @@ function leftoverNextPids() {
 }
 
 const pids = new Set();
-for (const port of ports) {
-  const found = listeningPids(port);
-  if (found.length === 0) {
-    console.log(`nothing listening on ${port}`);
-    continue;
-  }
-  for (const pid of found) pids.add(pid);
+for (let port = 3000; port <= 3010; port++) {
+  for (const pid of listeningPids(port)) pids.add(pid);
 }
 for (const pid of leftoverNextPids()) pids.add(pid);
 
@@ -74,6 +82,8 @@ for (const pid of pids) {
 }
 if (killed === 0) {
   console.log("no Next preview processes to stop");
+} else {
+  console.log(`stopped ${killed} process tree(s)`);
 }
 
 sleep(400);
@@ -87,7 +97,7 @@ for (let i = 0; i < 8; i++) {
       maxRetries: 8,
       retryDelay: 150,
     });
-    console.log("removed .next");
+    console.log(`removed ${nextDir}`);
     lastErr = null;
     break;
   } catch (err) {
