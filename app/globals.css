@@ -452,6 +452,10 @@ body {
   will-change: transform;
 }
 
+.book.is-animating .sticky-note {
+  transition: none;
+}
+
 .cover-front,
 .cover-inside {
   position: absolute;

@@ -241,7 +241,7 @@ export function Book({
         z: 3,
         transformOrigin: "left center",
       });
-      gsap.set(parts.note, { clearProps: "transform,x,y,z,zIndex" });
+      gsap.set(parts.note, { clearProps: "transform,x,y,z,zIndex,boxShadow" });
       const openLabel = noteOpenLabel(parts.note);
       const closeLabel = noteCloseLabel(parts.note);
       if (openLabel) {
@@ -448,7 +448,14 @@ export function Book({
     tl.to(note, { y: 0, duration: 0.62, ease: "power2.inOut" }, "noteFly+=0.26");
     tl.to(
       note,
-      { z: 40, zIndex: 8, duration: 0.22, ease: "power2.out" },
+      {
+        z: 40,
+        zIndex: 8,
+        boxShadow:
+          "1px 1px 0 rgb(210 160 165 / 0.4), 5px 10px 18px rgb(40 38 34 / 0.16)",
+        duration: 0.34,
+        ease: "power2.out",
+      },
       "noteFly+=1.02",
     );
 
@@ -459,7 +466,7 @@ export function Book({
       tl.add(() => {
         note.classList.add("is-label-open");
         gsap.set(closeLetters, { opacity: 0, y: 6 });
-      }, "noteFly+=1.24");
+      }, "noteFly+=1.36");
       tl.to(
         closeLetters,
         {
@@ -469,7 +476,7 @@ export function Book({
           stagger: 0.07,
           ease: "power1.out",
         },
-        "noteFly+=1.24",
+        "noteFly+=1.36",
       );
     }
 
