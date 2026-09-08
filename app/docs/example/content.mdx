@@ -64,6 +64,8 @@ Custom-install copy (`FLAG_PUBLIC=false`).
 :::
 ```
 
+::: {.callout}
+
 ::: {.private}
 This sentence is the private variant — compiled in when `FLAG_PUBLIC=false`.
 :::
@@ -72,22 +74,26 @@ This sentence is the private variant — compiled in when `FLAG_PUBLIC=false`.
 This sentence is the public variant — compiled in when `FLAG_PUBLIC=true`.
 :::
 
+:::
+
 For longer or generated copy, keep a sibling pair next to the host file and embed it. Shared `_snippets` imports are not rewritten. `.ts`, `.sql`, and `.feature` siblings render as a highlighted code block. 
 
 - Unmarked `name.mdx` is the private file
 - `name-public.mdx` is the public file
 
-::: {.callout}
 A missing pair file fails the build. 
 
-:::
 
 ```markdown
 ::: {.embed src="conditional-embed"}
 :::
 ```
 
+::: {.callout}
+
 ::: {.embed src="conditional-embed"}
+:::
+
 :::
 
 `src` is relative to the file that contains the fence. Headings inside an embedded `.mdx` join the host table of contents.
