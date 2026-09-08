@@ -6,6 +6,7 @@ export type Json =
   | { [key: string]: Json | undefined }
   | Json[]
 
+/** Stand-in types from y2k-guestbook `scripts/schema.sql` (board only, no poetry desk). */
 export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
@@ -56,24 +57,6 @@ export type Database = {
           id?: string
           is_read?: boolean
           updated_at?: string
-        }
-        Relationships: []
-      }
-      guestbook_rate_limits: {
-        Row: {
-          expire: number | null
-          key: string
-          points: number
-        }
-        Insert: {
-          expire?: number | null
-          key: string
-          points?: number
-        }
-        Update: {
-          expire?: number | null
-          key?: string
-          points?: number
         }
         Relationships: []
       }
@@ -137,27 +120,6 @@ export type Database = {
         }
         Relationships: []
       }
-      poem_hearts: {
-        Row: {
-          created_at: string
-          id: string
-          poem_id: string
-          visitor_key: string
-        }
-        Insert: {
-          created_at?: string
-          id?: string
-          poem_id: string
-          visitor_key: string
-        }
-        Update: {
-          created_at?: string
-          id?: string
-          poem_id?: string
-          visitor_key?: string
-        }
-        Relationships: []
-      }
     }
     Views: {
       comments_public: {
@@ -184,32 +146,11 @@ export type Database = {
         }
         Relationships: []
       }
-      poem_heart_counts: {
-        Row: {
-          heart_count: number | null
-          poem_id: string | null
-        }
-        Relationships: []
-      }
-      poem_heart_total: {
-        Row: {
-          total_hearts: number | null
-        }
-        Relationships: []
-      }
     }
     Functions: {
       ensure_admin_role: { Args: never; Returns: boolean }
       hook_before_user_created: { Args: { event: Json }; Returns: Json }
       is_admin: { Args: never; Returns: boolean }
-      poem_heart_state: {
-        Args: { p_poem_id: string; p_visitor_key: string }
-        Returns: Json
-      }
-      toggle_poem_heart: {
-        Args: { p_poem_id: string; p_visitor_key: string }
-        Returns: Json
-      }
     }
     Enums: {
       [_ in never]: never
