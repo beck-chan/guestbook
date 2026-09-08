@@ -47,7 +47,14 @@ export type OpenApiNavSection = {
 export type OpenApiSpec = {
   openapi: "3.1.0";
   info: { title: string; version: string; description: string };
-  servers?: { url: string }[];
+  servers?: {
+    url: string;
+    description?: string;
+    variables?: Record<
+      string,
+      { default: string; description?: string; enum?: string[] }
+    >;
+  }[];
   tags: { name: string }[];
   paths: Record<string, Record<string, OpenApiOperation>>;
   components: {

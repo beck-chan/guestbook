@@ -491,6 +491,7 @@ body {
   visibility: hidden;
 }
 
+.book.is-animating .cover,
 .book.is-animating .sticky-note {
   will-change: transform;
 }

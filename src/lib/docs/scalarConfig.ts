@@ -4,7 +4,7 @@ export const SCALAR_CUSTOM_CSS = `
 .scalar-app,
 .scalar-app.light-mode {
   --scalar-font: var(--futura-font);
-  --scalar-font-code: var(--futura-font);
+  --scalar-font-code: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
   --scalar-color-1: var(--cover, #0b2a12);
   --scalar-color-2: var(--ink-muted, #6a6864);
   --scalar-color-3: var(--ink-muted, #6a6864);
@@ -20,8 +20,17 @@ export const SCALAR_CUSTOM_CSS = `
 }
 
 .scalar-app,
-.scalar-app * {
+.scalar-app *:not(code):not(pre):not(.hljs) {
   font-family: var(--futura-font) !important;
+}
+
+.scalar-app code,
+.scalar-app pre,
+.scalar-app .hljs,
+.scalar-app code *,
+.scalar-app pre *,
+.scalar-app .hljs * {
+  font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace !important;
 }
 
 /* OpenAPI info.title stays in the spec; hide the on-page document H1. */
@@ -74,6 +83,63 @@ export const SCALAR_CUSTOM_CSS = `
 .scalar-app [style*="--scalar-color-orange"] {
   color: var(--peony, #ff6162) !important;
   border-color: var(--peony, #ff6162) !important;
+}
+
+/* Match docs .docs-code highlighting (ink ground, foil/peony tokens). */
+.scalar-app .scalar-card.dark-mode {
+  --scalar-background-1: var(--docs-ink, #8a6a52);
+  --scalar-background-2: var(--docs-ink, #8a6a52);
+  --scalar-background-3: var(--docs-ink, #8a6a52);
+  --scalar-color-1: var(--paper, #faf6ea);
+  --scalar-color-2: var(--paper, #faf6ea);
+  --scalar-color-3: color-mix(in srgb, var(--paper, #faf6ea) 48%, #6a6864);
+}
+
+.scalar-app code.hljs,
+.scalar-app .hljs,
+.scalar-app pre {
+  background: var(--docs-ink, #8a6a52) !important;
+  color: var(--paper, #faf6ea) !important;
+}
+
+.scalar-app .hljs-comment,
+.scalar-app .hljs-quote {
+  color: color-mix(in srgb, var(--paper, #faf6ea) 48%, #6a6864) !important;
+  font-style: italic;
+}
+
+.scalar-app .hljs-keyword,
+.scalar-app .hljs-selector-tag,
+.scalar-app .hljs-literal,
+.scalar-app .hljs-built_in,
+.scalar-app .hljs-builtin-name {
+  color: var(--foil-lit, #e8b85a) !important;
+}
+
+.scalar-app .hljs-string,
+.scalar-app .hljs-title,
+.scalar-app .hljs-name,
+.scalar-app .hljs-type,
+.scalar-app .hljs-section,
+.scalar-app .hljs-regexp {
+  color: var(--peony-soft, #ffb3ba) !important;
+}
+
+.scalar-app .hljs-attr,
+.scalar-app .hljs-attribute,
+.scalar-app .hljs-variable,
+.scalar-app .hljs-template-variable,
+.scalar-app .hljs-params {
+  color: color-mix(in srgb, var(--paper, #faf6ea) 72%, var(--foil, #df9a49)) !important;
+}
+
+.scalar-app .hljs-number,
+.scalar-app .hljs-symbol,
+.scalar-app .hljs-bullet,
+.scalar-app .hljs-link,
+.scalar-app .hljs-meta,
+.scalar-app .hljs-title.function_ {
+  color: var(--foil, #df9a49) !important;
 }
 `;
 

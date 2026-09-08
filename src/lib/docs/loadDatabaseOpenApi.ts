@@ -39,7 +39,17 @@ export function loadDatabaseOpenApi(isPublic = flags.public): OpenApiSpec {
 
   if (isPublic) {
     spec.servers = [
-      { url: "https://<your-database-url>.supabase.co/rest/v1" },
+      {
+        url: "https://{projectRef}.supabase.co/rest/v1",
+        description: "Your Supabase project",
+        variables: {
+          projectRef: {
+            default: "your-database-url",
+            description:
+              "Project ID from NEXT_PUBLIC_SUPABASE_URL (the subdomain before .supabase.co).",
+          },
+        },
+      },
     ];
   }
 
