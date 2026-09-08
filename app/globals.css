@@ -292,6 +292,7 @@ body {
   position: relative;
   width: 100%;
   height: 100%;
+  overflow: visible;
   transform: rotateX(5deg) rotateY(-9deg);
   transform-style: preserve-3d;
   background: var(--paper);
@@ -328,7 +329,7 @@ body {
 }
 
 .book.is-closing-clip {
-  clip-path: inset(-12% -14rem -12% 0);
+  clip-path: inset(-12% -100vw -12% 0);
 }
 
 .book-shadow-left {
@@ -1007,13 +1008,36 @@ body {
   text-align: center;
 }
 
+.sticky-note-label-open .sticky-note-letter,
+.sticky-note-label-close .sticky-note-letter {
+  display: inline-block;
+}
+
 .sticky-note-label-close {
   visibility: hidden;
 }
 
 .sticky-note-label-close .sticky-note-letter {
-  display: inline-block;
   opacity: 0;
+}
+
+.sticky-note-departing {
+  position: fixed;
+  z-index: 40;
+  margin: 0;
+  pointer-events: none;
+}
+
+.sticky-note-departing .sticky-note-label-open {
+  visibility: hidden;
+}
+
+.sticky-note-departing .sticky-note-label-close {
+  visibility: visible;
+}
+
+.sticky-note-departing .sticky-note-label-close .sticky-note-letter {
+  opacity: 1;
 }
 
 .book.is-open:not(.is-animating) .sticky-note-label-close .sticky-note-letter {

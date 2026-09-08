@@ -108,6 +108,53 @@ function noteEraser(note: HTMLElement) {
   return note.querySelector<HTMLElement>(".sticky-note-eraser");
 }
 
+function noteOpenLetters(note: HTMLElement) {
+  return note.querySelectorAll<HTMLElement>(
+    ".sticky-note-label-open .sticky-note-letter",
+  );
+}
+
+function noteCloseLetters(note: HTMLElement) {
+  return note.querySelectorAll<HTMLElement>(
+    ".sticky-note-label-close .sticky-note-letter",
+  );
+}
+
+function discardDepartingNotes() {
+  document.querySelectorAll(".sticky-note-departing").forEach((el) => el.remove());
+}
+
+function spawnDepartingNote(note: HTMLButtonElement) {
+  const clone = note.cloneNode(true) as HTMLButtonElement;
+  clone.classList.add("sticky-note-departing");
+  clone.removeAttribute("aria-label");
+  clone.setAttribute("aria-hidden", "true");
+  clone.tabIndex = -1;
+  clone.disabled = true;
+  const bounds = note.getBoundingClientRect();
+  const rotation = Number(gsap.getProperty(note, "rotation")) || 0;
+  const width = note.offsetWidth;
+  const height = note.offsetHeight;
+  document.body.appendChild(clone);
+  gsap.set(clone, {
+    position: "fixed",
+    left: bounds.left + bounds.width / 2 - width / 2,
+    top: bounds.top + bounds.height / 2 - height / 2,
+    width,
+    height,
+    x: 0,
+    y: 0,
+    rotation,
+    z: 0,
+    zIndex: 40,
+    margin: 0,
+    transformOrigin: "center center",
+    pointerEvents: "none",
+    boxShadow: window.getComputedStyle(note).boxShadow,
+  });
+  return clone;
+}
+
 function spreadWidthForCover(sceneW: number, leaf: number, openW: number) {
   if (sceneW <= leaf) {
     return leaf * 2;
@@ -191,7 +238,9 @@ export function Book({
     gsap.set(parts.scene, { clearProps: "width" });
     gsap.set(parts.spread, { clearProps: "width" });
     gsap.set(parts.cover, { clearProps: "transform,z" });
-    gsap.set(parts.note, { clearProps: "transform,x,y,z,zIndex" });
+    gsap.set(parts.note, {
+      clearProps: "transform,x,y,z,zIndex,boxShadow,opacity,visibility,pointerEvents",
+    });
     parts.spread.style.width = "";
   }
 
@@ -210,7 +259,11 @@ export function Book({
     if (closing && !pastMid) {
       gsap.set(scene, { width: leaf });
       spread.style.width = `${leaf * 2}px`;
-      book.classList.add("is-closing-clip");
+      if (rotationY < -1) {
+        book.classList.add("is-closing-clip");
+      } else {
+        book.classList.remove("is-closing-clip");
+      }
       return;
     }
 
@@ -254,6 +307,8 @@ export function Book({
       if (eraser) {
         gsap.set(eraser, { clearProps: "transform,x,y,rotation,opacity" });
       }
+      gsap.set(noteOpenLetters(parts.note), { clearProps: "opacity,y,transform" });
+      gsap.set(noteCloseLetters(parts.note), { clearProps: "opacity,y,transform" });
       parts.note.classList.add("is-label-open");
     }
   }
@@ -263,6 +318,7 @@ export function Book({
     const parts = nodes();
     parts?.book.classList.remove("is-animating", "is-closing-clip");
     parts?.pageLeft.classList.remove("is-revealed");
+    discardDepartingNotes();
     if (parts) {
       gsap.set(parts.gutter, { clearProps: "opacity" });
       gsap.set(parts.shadowLeft, { clearProps: "clipPath" });
@@ -279,6 +335,8 @@ export function Book({
       if (eraser) {
         gsap.set(eraser, { clearProps: "transform,x,y,rotation,opacity" });
       }
+      gsap.set(noteOpenLetters(parts.note), { clearProps: "opacity,y,transform" });
+      gsap.set(noteCloseLetters(parts.note), { clearProps: "opacity,y,transform" });
       parts.note.classList.remove("is-label-open");
     }
     clearMotionProps();
@@ -287,6 +345,11 @@ export function Book({
   function killAnim() {
     tlRef.current?.kill();
     tlRef.current = null;
+    discardDepartingNotes();
+    const note = noteRef.current;
+    if (note) {
+      gsap.set(note, { autoAlpha: 1, pointerEvents: "auto" });
+    }
   }
 
   function measure() {
@@ -503,10 +566,30 @@ export function Book({
         x: landX,
         y: 0,
         rotation: -6,
-        z: 90,
+        z: 40,
         zIndex: 8,
+        boxShadow:
+          "1px 1px 0 rgb(210 160 165 / 0.4), 5px 10px 18px rgb(40 38 34 / 0.16)",
       });
     }
+
+    gsap.set(cover, {
+      rotationY,
+      z: Number(gsap.getProperty(cover, "z")) || 3,
+      transformOrigin: "left center",
+    });
+    gsap.set(gutter, { opacity: 1 });
+    gsap.set(shadowLeft, { clipPath: STACK_CLIP_OPEN });
+    gsap.set(shadowDepth, { opacity: 1 });
+
+    const clone = spawnDepartingNote(note);
+    const cloneBounds = clone.getBoundingClientRect();
+    const flyLeft = -(cloneBounds.left + cloneBounds.width + 64);
+    const openLetters = noteOpenLetters(note);
+
+    note.classList.remove("is-label-open");
+    gsap.set(openLetters, { opacity: 0, y: 6 });
+    gsap.set(note, { autoAlpha: 0, pointerEvents: "none" });
 
     applyFlipLayout(true);
 
@@ -514,16 +597,97 @@ export function Book({
     const tl = gsap.timeline({
       defaults: { ease: "power2.inOut" },
       onUpdate: () => applyFlipLayout(true),
-      onComplete: settleClosed,
+      onComplete: () => {
+        clone.remove();
+        settleClosed();
+      },
     });
 
-    tl.to(gutter, { opacity: 0, duration: 0.48, ease: "power1.in" }, 0);
+    tl.to(
+      clone,
+      {
+        x: flyLeft,
+        y: "-=36",
+        rotation: "-=16",
+        duration: 0.78,
+        ease: "power2.in",
+      },
+      0,
+    );
+    tl.to(clone, { autoAlpha: 0, duration: 0.12, ease: "power1.in" }, 0.66);
+
+    tl.addLabel("noteEnter", 0.72);
+    tl.add(() => {
+      parts.book.classList.remove("is-closing-clip");
+      gsap.set(note, {
+        x: 0,
+        y: 0,
+        rotation: -90,
+        z: 0,
+        zIndex: 10,
+        autoAlpha: 0,
+      });
+      const tab = note.getBoundingClientRect();
+      const enterX = Math.max(window.innerWidth - tab.left + 48, 280);
+      gsap.set(note, {
+        autoAlpha: 1,
+        x: enterX,
+        y: -32,
+        rotation: 8,
+        z: 70,
+        zIndex: 10,
+        boxShadow:
+          "1px 1px 0 rgb(210 160 165 / 0.4), 5px 10px 18px rgb(40 38 34 / 0.16)",
+      });
+    }, "noteEnter");
+
+    tl.to(
+      note,
+      {
+        x: hoverX,
+        y: hoverY,
+        rotation: -16,
+        z: 48,
+        duration: 0.72,
+        ease: "power2.out",
+      },
+      "noteEnter+=0.01",
+    );
+
+    if (openLetters.length > 0) {
+      tl.to(
+        openLetters,
+        {
+          opacity: 1,
+          y: 0,
+          duration: 0.11,
+          stagger: 0.07,
+          ease: "power1.out",
+        },
+        ">-0.08",
+      );
+    }
+
+    tl.to(note, {
+      x: 0,
+      y: 0,
+      rotation: -90,
+      z: 0,
+      zIndex: 2,
+      boxShadow:
+        "1px 1px 0 rgb(210 160 165 / 0.45), 3px 6px 14px rgb(40 38 34 / 0.14)",
+      duration: 0.58,
+      ease: "power2.inOut",
+    });
+
+    tl.addLabel("coverClose");
+    tl.to(gutter, { opacity: 0, duration: 0.48, ease: "power1.in" }, "coverClose");
     tl.to(
       shadowLeft,
       { clipPath: STACK_CLIP_CLOSED, duration: 0.55, ease: "power2.in" },
-      0,
+      "coverClose",
     );
-    tl.to(shadowDepth, { opacity: 0, duration: 0.5, ease: "power1.in" }, 0);
+    tl.to(shadowDepth, { opacity: 0, duration: 0.5, ease: "power1.in" }, "coverClose");
 
     if (rotationY < -90) {
       tl.to(
@@ -534,23 +698,9 @@ export function Book({
           duration: toAjar * 0.58,
           ease: "power2.inOut",
         },
-        0,
+        "coverClose+=0.12",
       );
     }
-
-    tl.to(
-      note,
-      {
-        x: hoverX,
-        y: hoverY,
-        rotation: -12,
-        z: 90,
-        zIndex: 8,
-        duration: Math.min(0.82, toAjar * 0.8),
-        ease: "power1.inOut",
-      },
-      0,
-    );
 
     tl.to(cover, {
       rotationY: AJAR,
@@ -558,16 +708,6 @@ export function Book({
       duration: 0.46,
       ease: "power2.out",
     });
-
-    tl.to(note, {
-      x: 0,
-      y: 0,
-      rotation: -90,
-      z: 0,
-      zIndex: 2,
-      duration: 0.48,
-      ease: "power2.inOut",
-    }, "<0.08");
 
     tl.to(cover, {
       rotationY: AJAR,
