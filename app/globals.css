@@ -1541,6 +1541,14 @@ body {
   box-sizing: border-box;
 }
 
+@media (max-width: 1680px) {
+  .admin-desk .admin-settings {
+    position: static;
+    height: auto;
+    max-height: none;
+  }
+}
+
 .admin-settings-panel {
   width: 100%;
 }
@@ -2215,7 +2223,10 @@ body {
   }
 
   .admin-desk .admin-settings {
-    padding: 1.25rem 1.25rem 5.5rem;
+    position: static;
+    height: auto;
+    max-height: none;
+    padding: 1.25rem 1.25rem 4.75rem;
   }
 
   .admin-setting-rate-row {
