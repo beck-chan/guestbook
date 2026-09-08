@@ -76,7 +76,7 @@ Next only runs auth/session files from *your* project root. Add three small re-e
 
 ::: {.tabset}
 
-# proxy.ts
+# Proxy
 
 Create `proxy.ts` at your app root to keep the Supabase session fresh and block the admin path (default `/admin`) unless `app_metadata.role === "admin"`:
 
@@ -94,9 +94,9 @@ If you already have a `proxy.ts`, import `{ proxy as guestbookProxy }` from `y2k
 
 :::
 
-# Admin login route
+# Route
 
-Create the login route at the default path `app/admin/login/route.ts` (or under your custom admin folder — see [customize the path](#admin-dashboard) below):
+Create the login route at the default path `app/admin/login/route.ts` (or under your custom admin directory — refer to [Add Guestbook Pages: Admin Dashboard](#admin-dashboard) below):
 
 ```typescript
 export { GET } from "y2k-guestbook/admin-login";
@@ -104,7 +104,7 @@ export { GET } from "y2k-guestbook/admin-login";
 
 CLicking **admin login** sends you to Google sign-in. After authenticating, you return to the your configured `${SITE_URL}/auth/callback`.
 
-# app/auth/callback/route.ts
+# Callback
 
 Create `app/auth/callback/route.ts`, which finishes login and sends you to the right page after Google:
 
@@ -116,7 +116,7 @@ export { GET } from "y2k-guestbook/callback";
 
 ### Add Guestbook Pages
 
-Next only serves pages from *your* `app/` folder. Re-export the packaged entrypoints:
+Next only serves pages from *your* `app/` directory. Re-export the packaged entrypoints:
 
 ::: {.tabset}
 
@@ -135,7 +135,7 @@ After you create the public comment board, set matching `homeHref` for the admin
 
 # Admin Dashboard
 
-Create your admin dashboard at the default path `app/admin/page.tsx`. `basePath` is optional — the page reads `NEXT_PUBLIC_GUESTBOOK_ADMIN_PATH` (unset = `/admin`):
+To host your admin dashboard at the default path (`/admin`), create `app/admin/page.tsx`:
 
 ```typescript
 import {
@@ -158,30 +158,33 @@ export default function AdminPage({
   );
 }
 ```
+::: {.callout}
+Set `homeHref=` according to where your public comment board lives:
+
+- `app/page.tsx` — When the guestbook *is* the site, then use `homeHref="/"`.
+- `app/guestbook/page.tsx` — When `/` (root) is already your site, then use `homeHref="/guestbook"`.
+
+:::
 
 To customize the path for the admin dashboard (for example `/guestbook/admin`):
 
 1. Set `NEXT_PUBLIC_GUESTBOOK_ADMIN_PATH=/guestbook/admin` in `.env.local` (no trailing slash).
 
-2. Create the same re-exports under that folder:
+2. Create the following re-exports under that directory:
 
-    - `app/guestbook/admin/page.tsx` — same admin page as above (`basePath` can be omitted).
-    - `app/guestbook/admin/login/route.ts` — same login re-export as the Protect Admin Login tab.
-    - `app/guestbook/admin/example/route.ts` — same example re-export as the theme example tab.
+    - `app/guestbook/admin/page.tsx` — Your admin dashboard page.
+    - `app/guestbook/admin/login/route.ts` — [The admin login route.](#protect-admin-login)
+    - `app/guestbook/admin/example/route.ts` — [The theme example route.](#configure-nextjs)
 
-3. Restart `npm run dev` after changing the env.
+3. Restart `npm run dev` after changing the `NEXT_PUBLIC_GUESTBOOK_ADMIN_PATH` in `.env`.
 
 ::: {.callout}
 # Do not mix paths.
 
-Files under `/guestbook/admin` with the env still unset (`/admin`) will break login and the proxy. `/auth/callback` does not move.
+- Files under `/guestbook/admin` with unset `NEXT_PUBLIC_GUESTBOOK_ADMIN_PATH` will break login and the proxy. 
+- Note that `/auth/callback` does not need to be changed even if you change `/admin` paths.
 
 :::
-
-Set `homeHref=` according to where your public comment board lives:
-
-- `app/page.tsx` — When the guestbook *is* the site, then use `homeHref="/"`.
-- `app/guestbook/page.tsx` — When `/` (root) is already your site, then use `homeHref="/guestbook"`.
 
 :::
 
