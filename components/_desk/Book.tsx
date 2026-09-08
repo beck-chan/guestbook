@@ -11,6 +11,8 @@ import { StickyNote } from "@/components/_desk/StickyNote";
 gsap.registerPlugin(useGSAP);
 
 const AJAR = -20;
+const STACK_CLIP_CLOSED = "inset(-12px 0px -12px 0px)";
+const STACK_CLIP_OPEN = "inset(-12px 0px -12px -28px)";
 
 type BookProps = {
   isOpen: boolean;
@@ -27,14 +29,25 @@ function prefersReducedMotion() {
   return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 }
 
-function openSceneWidth(scene: HTMLElement, leaf: number) {
-  const stage = scene.closest(".stage");
-  if (!(stage instanceof HTMLElement)) {
-    return leaf * 2;
-  }
-  const raw = getComputedStyle(stage).getPropertyValue("--book-width");
-  const percent = Number.parseFloat(raw) || 90;
-  return Math.min(stage.clientWidth * (percent / 100), leaf * 2);
+function stageInnerWidth(stage: HTMLElement) {
+  const styles = getComputedStyle(stage);
+  return (
+    stage.clientWidth -
+    Number.parseFloat(styles.paddingLeft) -
+    Number.parseFloat(styles.paddingRight)
+  );
+}
+
+function measureStageToken(stage: HTMLElement, widthValue: string) {
+  const box = document.createElement("div");
+  box.style.cssText = `position:absolute;left:0;top:0;width:${stageInnerWidth(stage)}px;height:0;overflow:hidden;visibility:hidden;pointer-events:none`;
+  const probe = document.createElement("div");
+  probe.style.width = widthValue;
+  box.appendChild(probe);
+  stage.appendChild(box);
+  const width = probe.offsetWidth;
+  box.remove();
+  return width;
 }
 
 function measureLeaf(scene: HTMLElement) {
@@ -42,12 +55,20 @@ function measureLeaf(scene: HTMLElement) {
   if (!(stage instanceof HTMLElement)) {
     return scene.offsetWidth;
   }
-  const probe = document.createElement("div");
-  probe.style.cssText = "position:absolute;visibility:hidden;pointer-events:none;width:var(--page-side)";
-  stage.appendChild(probe);
-  const leaf = probe.offsetWidth;
-  probe.remove();
-  return leaf || scene.offsetWidth;
+  return measureStageToken(stage, "var(--page-side)") || scene.offsetWidth;
+}
+
+function openSceneWidth(scene: HTMLElement, leaf: number) {
+  const stage = scene.closest(".stage");
+  if (!(stage instanceof HTMLElement)) {
+    return leaf * 2;
+  }
+  return (
+    measureStageToken(
+      stage,
+      "min(var(--book-width), calc(var(--page-side) * 2))",
+    ) || leaf * 2
+  );
 }
 
 type BookPoses = {
@@ -105,6 +126,7 @@ export function Book({
   const pageLeftRef = useRef<HTMLDivElement>(null);
   const gutterRef = useRef<HTMLDivElement>(null);
   const shadowLeftRef = useRef<HTMLDivElement>(null);
+  const shadowDepthRef = useRef<HTMLDivElement>(null);
   const leafRef = useRef(0);
   const posesRef = useRef<BookPoses | null>(null);
   const tlRef = useRef<gsap.core.Timeline | null>(null);
@@ -122,10 +144,31 @@ export function Book({
     const pageLeft = pageLeftRef.current;
     const gutter = gutterRef.current;
     const shadowLeft = shadowLeftRef.current;
-    if (!scene || !book || !spread || !cover || !note || !pageLeft || !gutter || !shadowLeft) {
+    const shadowDepth = shadowDepthRef.current;
+    if (
+      !scene ||
+      !book ||
+      !spread ||
+      !cover ||
+      !note ||
+      !pageLeft ||
+      !gutter ||
+      !shadowLeft ||
+      !shadowDepth
+    ) {
       return null;
     }
-    return { scene, book, spread, cover, note, pageLeft, gutter, shadowLeft };
+    return {
+      scene,
+      book,
+      spread,
+      cover,
+      note,
+      pageLeft,
+      gutter,
+      shadowLeft,
+      shadowDepth,
+    };
   }
 
   function clearMotionProps() {
@@ -181,12 +224,10 @@ export function Book({
     parts?.book.classList.remove("is-animating", "is-closing-clip");
     parts?.pageLeft.classList.add("is-revealed");
     if (parts) {
-      gsap.set(parts.gutter, { clearProps: "opacity" });
-      gsap.set(parts.shadowLeft, { clearProps: "opacity" });
-    }
-    clearMotionProps();
-    if (parts) {
       parts.spread.style.width = "100%";
+      gsap.set(parts.scene, { clearProps: "width" });
+      gsap.set(parts.cover, { clearProps: "transform,z" });
+      gsap.set(parts.note, { clearProps: "transform,x,y,z,zIndex" });
     }
   }
 
@@ -197,7 +238,8 @@ export function Book({
     parts?.pageLeft.classList.remove("is-revealed");
     if (parts) {
       gsap.set(parts.gutter, { clearProps: "opacity" });
-      gsap.set(parts.shadowLeft, { clearProps: "opacity" });
+      gsap.set(parts.shadowLeft, { clearProps: "clipPath" });
+      gsap.set(parts.shadowDepth, { clearProps: "opacity" });
     }
     clearMotionProps();
   }
@@ -227,7 +269,7 @@ export function Book({
       return;
     }
     killAnim();
-    const { cover, note, gutter, shadowLeft } = parts;
+    const { cover, note, gutter, shadowLeft, shadowDepth } = parts;
     const { hoverX, hoverY, landX, arcY } = poses;
     const rotationY = Number(gsap.getProperty(cover, "rotationY")) || 0;
     const noteX = Number(gsap.getProperty(note, "x")) || 0;
@@ -273,8 +315,15 @@ export function Book({
     tl.to(cover, { z: 3, duration: Math.min(0.56, coverDur * 0.46), ease: "power2.in" }, ">-0.04");
 
     const shadowAt = Math.max(0.2, coverDur * 0.42);
+    gsap.set(shadowLeft, { clipPath: STACK_CLIP_CLOSED });
+    gsap.set(shadowDepth, { opacity: 0 });
     tl.to(gutter, { opacity: 1, duration: 0.72, ease: "power1.out" }, shadowAt);
-    tl.to(shadowLeft, { opacity: 1, duration: 0.8, ease: "power1.out" }, shadowAt);
+    tl.to(
+      shadowLeft,
+      { clipPath: STACK_CLIP_OPEN, duration: 0.95, ease: "power2.out" },
+      shadowAt,
+    );
+    tl.to(shadowDepth, { opacity: 1, duration: 0.9, ease: "power1.out" }, shadowAt);
 
     tl.to(
       note,
@@ -300,7 +349,7 @@ export function Book({
       return;
     }
     killAnim();
-    const { cover, note, gutter, shadowLeft } = parts;
+    const { cover, note, gutter, shadowLeft, shadowDepth } = parts;
     const { hoverX, hoverY, landX } = poses;
     let rotationY = Number(gsap.getProperty(cover, "rotationY"));
     if (Number.isNaN(rotationY)) {
@@ -327,7 +376,12 @@ export function Book({
     });
 
     tl.to(gutter, { opacity: 0, duration: 0.48, ease: "power1.in" }, 0);
-    tl.to(shadowLeft, { opacity: 0, duration: 0.55, ease: "power1.in" }, 0);
+    tl.to(
+      shadowLeft,
+      { clipPath: STACK_CLIP_CLOSED, duration: 0.55, ease: "power2.in" },
+      0,
+    );
+    tl.to(shadowDepth, { opacity: 0, duration: 0.5, ease: "power1.in" }, 0);
 
     if (rotationY < -90) {
       tl.to(
@@ -404,13 +458,15 @@ export function Book({
     if (isOpenRef.current) {
       parts.pageLeft.classList.add("is-revealed");
       gsap.set(parts.gutter, { opacity: 1 });
-      gsap.set(parts.shadowLeft, { opacity: 1 });
+      gsap.set(parts.shadowLeft, { clipPath: STACK_CLIP_OPEN });
+      gsap.set(parts.shadowDepth, { opacity: 1 });
       gsap.set(parts.note, { clearProps: "transform,x,y,z,zIndex" });
       parts.spread.style.width = "100%";
     } else {
       parts.pageLeft.classList.remove("is-revealed");
       gsap.set(parts.gutter, { opacity: 0 });
-      gsap.set(parts.shadowLeft, { opacity: 0 });
+      gsap.set(parts.shadowLeft, { clipPath: STACK_CLIP_CLOSED });
+      gsap.set(parts.shadowDepth, { opacity: 0 });
       gsap.set(parts.note, { clearProps: "transform,x,y,z,zIndex" });
       parts.spread.style.width = "";
     }
@@ -479,7 +535,8 @@ export function Book({
         gsap.set(parts.cover, { rotationY: 0, z: 3, transformOrigin: "left center" });
         gsap.set(parts.note, { x: 0, y: 0, rotation: -90, z: 0, zIndex: 2 });
         gsap.set(parts.gutter, { opacity: 0 });
-        gsap.set(parts.shadowLeft, { opacity: 0 });
+        gsap.set(parts.shadowLeft, { clipPath: STACK_CLIP_CLOSED });
+        gsap.set(parts.shadowDepth, { opacity: 0 });
       }
       gsap.set(parts.scene, { width: leaf });
       parts.spread.style.width = `${leaf * 2}px`;
@@ -499,7 +556,8 @@ export function Book({
           zIndex: 8,
         });
         gsap.set(parts.gutter, { opacity: 1 });
-        gsap.set(parts.shadowLeft, { opacity: 1 });
+        gsap.set(parts.shadowLeft, { clipPath: STACK_CLIP_OPEN });
+        gsap.set(parts.shadowDepth, { opacity: 1 });
       }
       if (poses) {
         gsap.set(parts.scene, { width: poses.openW });
@@ -516,6 +574,7 @@ export function Book({
         className={`book${isOpen || heldOpen ? " is-open" : ""}${heldOpen ? " is-animating" : ""}`}
       >
         <div className="book-shadow-left" aria-hidden="true" ref={shadowLeftRef} />
+        <div className="book-shadow-depth" aria-hidden="true" ref={shadowDepthRef} />
         <div className="spread" ref={spreadRef}>
           <div className="spread-gutter" aria-hidden="true" ref={gutterRef} />
           <div className="page-left" aria-hidden="true" ref={pageLeftRef}>

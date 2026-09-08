@@ -336,7 +336,7 @@ body {
   inset: 0;
   z-index: 0;
   pointer-events: none;
-  opacity: 0;
+  clip-path: inset(-12px 0 -12px 0);
   box-shadow:
     -1px 1px 0 var(--paper-edge),
     -2px 1px 0 var(--paper-hi),
@@ -363,6 +363,21 @@ body {
 }
 
 .book.is-open:not(.is-animating) .book-shadow-left {
+  clip-path: inset(-12px 0 -12px -28px);
+}
+
+.book-shadow-depth {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0;
+  box-shadow:
+    -16px 22px 40px rgb(70 50 55 / 0.08),
+    16px 22px 40px rgb(70 50 55 / 0.08);
+}
+
+.book.is-open:not(.is-animating) .book-shadow-depth {
   opacity: 1;
 }
 
