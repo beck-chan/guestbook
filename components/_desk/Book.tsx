@@ -120,38 +120,50 @@ function noteCloseLetters(note: HTMLElement) {
   );
 }
 
-function discardDepartingNotes() {
-  document.querySelectorAll(".sticky-note-departing").forEach((el) => el.remove());
+function discardFlyingNotes() {
+  document.querySelectorAll(".sticky-note-flying").forEach((el) => el.remove());
 }
 
-function spawnDepartingNote(note: HTMLButtonElement) {
-  const clone = note.cloneNode(true) as HTMLButtonElement;
-  clone.classList.add("sticky-note-departing");
-  clone.removeAttribute("aria-label");
-  clone.setAttribute("aria-hidden", "true");
-  clone.tabIndex = -1;
-  clone.disabled = true;
+function poseFlyingNote(clone: HTMLElement, note: HTMLElement, extras?: gsap.TweenVars) {
   const bounds = note.getBoundingClientRect();
-  const rotation = Number(gsap.getProperty(note, "rotation")) || 0;
   const width = note.offsetWidth;
   const height = note.offsetHeight;
-  document.body.appendChild(clone);
   gsap.set(clone, {
     position: "fixed",
     left: bounds.left + bounds.width / 2 - width / 2,
     top: bounds.top + bounds.height / 2 - height / 2,
     width,
     height,
-    x: 0,
-    y: 0,
-    rotation,
-    z: 0,
-    zIndex: 40,
     margin: 0,
     transformOrigin: "center center",
     pointerEvents: "none",
+    zIndex: 40,
+    ...extras,
+  });
+}
+
+function spawnFlyingNote(note: HTMLButtonElement) {
+  const clone = note.cloneNode(true) as HTMLButtonElement;
+  clone.classList.add("sticky-note-flying");
+  clone.removeAttribute("aria-label");
+  clone.setAttribute("aria-hidden", "true");
+  clone.tabIndex = -1;
+  clone.disabled = true;
+  document.body.appendChild(clone);
+  poseFlyingNote(clone, note, {
+    x: 0,
+    y: 0,
+    rotation: Number(gsap.getProperty(note, "rotation")) || 0,
+    z: 0,
+    autoAlpha: 1,
     boxShadow: window.getComputedStyle(note).boxShadow,
   });
+  return clone;
+}
+
+function spawnDepartingNote(note: HTMLButtonElement) {
+  const clone = spawnFlyingNote(note);
+  clone.classList.add("sticky-note-departing");
   return clone;
 }
 
@@ -251,19 +263,25 @@ export function Book({
     if (!parts || !poses || !leaf) {
       return;
     }
-    const { scene, book, spread, cover, pageLeft } = parts;
+    const { scene, book, spread, cover, pageLeft, note } = parts;
     const rotationY = Number(gsap.getProperty(cover, "rotationY"));
     const pastMid = rotationY <= -90;
     pageLeft.classList.toggle("is-revealed", closing || pastMid);
 
+    if (closing) {
+      const coverOverRight = !pastMid;
+      gsap.set(
+        note,
+        coverOverRight
+          ? { z: 1, zIndex: 2, force3D: true }
+          : { z: 40, zIndex: 8, force3D: true },
+      );
+    }
+
     if (closing && !pastMid) {
       gsap.set(scene, { width: leaf });
       spread.style.width = `${leaf * 2}px`;
-      if (rotationY < -1) {
-        book.classList.add("is-closing-clip");
-      } else {
-        book.classList.remove("is-closing-clip");
-      }
+      book.classList.add("is-closing-clip");
       return;
     }
 
@@ -318,7 +336,7 @@ export function Book({
     const parts = nodes();
     parts?.book.classList.remove("is-animating", "is-closing-clip");
     parts?.pageLeft.classList.remove("is-revealed");
-    discardDepartingNotes();
+    discardFlyingNotes();
     if (parts) {
       gsap.set(parts.gutter, { clearProps: "opacity" });
       gsap.set(parts.shadowLeft, { clearProps: "clipPath" });
@@ -345,7 +363,7 @@ export function Book({
   function killAnim() {
     tlRef.current?.kill();
     tlRef.current = null;
-    discardDepartingNotes();
+    discardFlyingNotes();
     const note = noteRef.current;
     if (note) {
       gsap.set(note, { autoAlpha: 1, pointerEvents: "auto" });
@@ -586,10 +604,19 @@ export function Book({
     const cloneBounds = clone.getBoundingClientRect();
     const flyLeft = -(cloneBounds.left + cloneBounds.width + 64);
     const openLetters = noteOpenLetters(note);
+    const flyingShadow =
+      "1px 1px 0 rgb(210 160 165 / 0.4), 5px 10px 18px rgb(40 38 34 / 0.16)";
+    const restShadow =
+      "1px 1px 0 rgb(210 160 165 / 0.45), 3px 6px 14px rgb(40 38 34 / 0.14)";
 
     note.classList.remove("is-label-open");
     gsap.set(openLetters, { opacity: 0, y: 6 });
     gsap.set(note, { autoAlpha: 0, pointerEvents: "none" });
+
+    const arriver = spawnFlyingNote(note);
+    gsap.set(arriver, { autoAlpha: 0 });
+    const arriverLetters = noteOpenLetters(arriver);
+    gsap.set(arriverLetters, { opacity: 0, y: 6 });
 
     applyFlipLayout(true);
 
@@ -599,6 +626,7 @@ export function Book({
       onUpdate: () => applyFlipLayout(true),
       onComplete: () => {
         clone.remove();
+        arriver.remove();
         settleClosed();
       },
     });
@@ -624,25 +652,23 @@ export function Book({
         y: 0,
         rotation: -90,
         z: 0,
-        zIndex: 10,
+        zIndex: 2,
         autoAlpha: 0,
       });
       const tab = note.getBoundingClientRect();
       const enterX = Math.max(window.innerWidth - tab.left + 48, 280);
-      gsap.set(note, {
-        autoAlpha: 1,
+      poseFlyingNote(arriver, note, {
         x: enterX,
         y: -32,
         rotation: 8,
         z: 70,
-        zIndex: 10,
-        boxShadow:
-          "1px 1px 0 rgb(210 160 165 / 0.4), 5px 10px 18px rgb(40 38 34 / 0.16)",
+        autoAlpha: 1,
+        boxShadow: flyingShadow,
       });
     }, "noteEnter");
 
     tl.to(
-      note,
+      arriver,
       {
         x: hoverX,
         y: hoverY,
@@ -654,9 +680,9 @@ export function Book({
       "noteEnter+=0.01",
     );
 
-    if (openLetters.length > 0) {
+    if (arriverLetters.length > 0) {
       tl.to(
-        openLetters,
+        arriverLetters,
         {
           opacity: 1,
           y: 0,
@@ -668,16 +694,27 @@ export function Book({
       );
     }
 
-    tl.to(note, {
+    tl.to(arriver, {
       x: 0,
       y: 0,
       rotation: -90,
       z: 0,
-      zIndex: 2,
-      boxShadow:
-        "1px 1px 0 rgb(210 160 165 / 0.45), 3px 6px 14px rgb(40 38 34 / 0.14)",
       duration: 0.58,
       ease: "power2.inOut",
+    });
+
+    tl.add(() => {
+      gsap.set(note, {
+        x: 0,
+        y: 0,
+        rotation: -90,
+        z: 40,
+        zIndex: 8,
+        autoAlpha: 1,
+        boxShadow: restShadow,
+      });
+      gsap.set(openLetters, { clearProps: "opacity,y,transform" });
+      arriver.remove();
     });
 
     tl.addLabel("coverClose");

@@ -67,6 +67,10 @@
   --font-sans: var(--font-jost);
 }
 
+html {
+  overflow-x: hidden;
+}
+
 body {
   min-height: 100vh;
   margin: 0;
@@ -329,7 +333,7 @@ body {
 }
 
 .book.is-closing-clip {
-  clip-path: inset(-12% -100vw -12% 0);
+  clip-path: inset(-12% calc(var(--sticky-size) * -0.5) -12% 0);
 }
 
 .book-shadow-left {
@@ -1019,6 +1023,13 @@ body {
 
 .sticky-note-label-close .sticky-note-letter {
   opacity: 0;
+}
+
+.sticky-note-flying {
+  position: fixed;
+  z-index: 40;
+  margin: 0;
+  pointer-events: none;
 }
 
 .sticky-note-departing {
