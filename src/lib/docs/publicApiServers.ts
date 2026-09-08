@@ -18,7 +18,7 @@ export function publicApiServers(projectRef = DEFAULT_PROJECT_REF) {
   return [
     {
       url: supabaseRestUrl(projectRef),
-      description: "Your Supabase project",
+      description: "Your Supabase Server URL",
     },
   ];
 }

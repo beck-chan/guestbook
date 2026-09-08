@@ -3,3 +3,69 @@ subtitle: "API library reference for the connected Supabase database."
 ---
 
 # API Library
+
+::: {.public}
+::: {.callout}
+# Before You Begin
+
+To use the **Test Request** feature:
+
+- [x] You've set up the guestbook application with either [Quickstart](/docs/quickstart) or [Install via npm](/docs/install).
+- [x] You have set up your connected Google OAuth client for admin dashboard access.
+
+:::
+
+## Retrieve Admin Auth Token
+
+To test the authenticated calls with this page, you'll need retrieve your admin authentication token. 
+
+Since it's tied to your admin login, it's kind of hacky to snag. For example, in Chrome:
+
+1. Login to your guestbook admin dashboard.
+
+2. Open Developer Tools in your browser (`F12` or `right-click `> **Inspect**).
+
+3. Click **Console**.
+
+4. In the terminal, type **allow pasting** and press Enter.
+
+5. Paste the following command and press Enter:
+
+    ```javascript
+    (() => {
+    const chunks = document.cookie.split("; ")
+        .map((row) => {
+        const i = row.indexOf("=");
+        return [row.slice(0, i), decodeURIComponent(row.slice(i + 1))];
+        })
+        .filter(([name]) => name.includes("-auth-token") && !name.includes("code-verifier"))
+        .sort(([a], [b]) => a.localeCompare(b, undefined, { numeric: true }));
+    const joined = chunks.map(([, value]) => value).join("");
+    const encoded = joined.startsWith("base64-") ? joined.slice(7) : joined;
+    const session = JSON.parse(atob(encoded.replace(/-/g, "+").replace(/_/g, "/")));
+    copy(session.access_token);
+    return session.access_token;
+    })();
+    ```
+
+6. Right click and select **Copy string contents** to copy the output to your clipboard.
+
+7. When you're in the **Test Request** form, or after you set your Supabase Project ID in the section below, paste your copied string into the **Authentication** field:
+
+    a. Select `bearerAuth`.
+    b. Enter your `Bearer Token: <your-admin-auth-token>`.
+
+8. Then, in the Headers section of the **Test Request** form for the call you want to make, add your publishable Supabase key: `apikey: <NEXT_PUBLIC_SUPABASE_ANON_KEY>`
+
+9. Click **Send**.
+
+::: {.callout}
+# For calls that do not require auth, only enter in a Header.
+
+`apikey: <NEXT_PUBLIC_SUPABASE_ANON_KEY>`
+
+:::
+
+## Enter Supabase Project ID
+
+:::
