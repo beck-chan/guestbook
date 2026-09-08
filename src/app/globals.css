@@ -454,27 +454,8 @@ body {
   top: 0;
   bottom: 0;
   left: 50%;
-  width: 7.5rem;
-  pointer-events: none;
-  background: linear-gradient(
-    90deg,
-    transparent 0%,
-    rgb(70 55 40 / 0.04) 32%,
-    rgb(70 55 40 / 0.1) 46%,
-    rgb(70 55 40 / 0.15) 50%,
-    rgb(70 55 40 / 0.1) 54%,
-    rgb(70 55 40 / 0.04) 68%,
-    transparent 100%
-  );
-  filter: blur(6px);
-  transform: translateX(-50%);
-}
-
-.book.is-open:not(.is-animating) .spread-gutter::after {
   width: 4.2rem;
-  left: 50%;
-  transform: translateX(0);
-  filter: blur(0.8px);
+  pointer-events: none;
   background: linear-gradient(
     90deg,
     rgb(70 55 40 / 0.1) 0%,
@@ -484,6 +465,8 @@ body {
     rgb(70 55 40 / 0.006) 80%,
     transparent 100%
   );
+  filter: blur(0.8px);
+  transform: translateX(0);
 }
 
 .cover {
@@ -672,11 +655,11 @@ body {
   );
 }
 
-.book.is-open:not(.is-animating) .page-left .leaf {
+.book.is-open .page-left .leaf {
   box-shadow: none;
 }
 
-.book.is-open:not(.is-animating) .page-right .leaf {
+.book.is-open .page-right .leaf {
   box-shadow: inset 21px 0 32px rgb(70 60 50 / 0.035);
 }
 

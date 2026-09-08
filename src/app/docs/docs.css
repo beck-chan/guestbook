@@ -79,6 +79,10 @@ body:has(.docs-shell) {
   padding-left: 0;
 }
 
+.docs-shell:has(.docs-api-reference) {
+  --docs-sidebar-width: 27rem;
+}
+
 .docs-shell:has(.docs-index) .docs-sidenav {
   display: none;
 }

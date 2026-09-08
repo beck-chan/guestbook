@@ -49,7 +49,7 @@ export function createScalarReferenceConfig() {
     hideTestRequestButton: !flags.public,
     hideDarkModeToggle: true,
     withDefaultFonts: false,
-    defaultOpenAllTags: false,
+    defaultOpenAllTags: true,
     expandAllModelSections: false,
     expandAllSchemaProperties: false,
     orderSchemaPropertiesBy: "alpha" as const,
