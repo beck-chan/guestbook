@@ -178,7 +178,7 @@ export function guestbookRateLimits(settings: GuestbookSettings) {
 
 export function guestbookDisplayTitle(title: string) {
   const trimmed = title.trim();
-  return trimmed || "y2k guestbook";
+  return trimmed || "guestbook";
 }
 
 export function guestbookCommentPlaceholder(placeholder: string) {
@@ -191,8 +191,8 @@ const FONT_STACKS: Record<string, string> = {
   jost: "var(--font-jost), Jost, sans-serif",
   baskerville: 'var(--font-baskerville), "Libre Baskerville", serif',
   kaisei: 'var(--font-kaisei), "Kaisei HarunoUmi", serif',
-  peony: "Peony, cursive",
-  "hello-honey": '"Hello Honey", cursive',
+  peony: "Peony, \"futura-pt\", var(--font-jost), Jost, sans-serif",
+  "hello-honey": '"Hello Honey", "futura-pt", var(--font-jost), Jost, sans-serif',
 };
 
 const SIZE_SCALE: Record<FontSize, string> = {

@@ -16,7 +16,7 @@ export function GuestbookTitle() {
       <title>{title}</title>
       <h1 className={`guestbook-title${settings.marquee ? "" : " is-static"}`}>
         {settings.marquee ? (
-          <span className="demobook-marquee">{title}</span>
+          <span className="guestbook-marquee">{title}</span>
         ) : (
           title
         )}

@@ -46,6 +46,15 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
       lang="en"
       className={`${jost.variable} ${baskerville.variable} ${kaisei.variable} h-full antialiased`}
     >
+      <head>
+        <link
+          rel="preload"
+          href="/fonts/Peony-Regular.otf"
+          as="font"
+          type="font/otf"
+          crossOrigin="anonymous"
+        />
+      </head>
       <body className="min-h-full">
         <GuestbookSettingsProvider initialSettings={settings}>
           {children}

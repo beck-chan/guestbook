@@ -47,7 +47,7 @@
   --peony-soft: #ffb3ba;
   --bubble: #fff8f9;
   --bubble-nested: #fee3e5;
-  --peony-font: Peony, cursive;
+  --peony-font: Peony, "futura-pt", var(--font-jost), Jost, sans-serif;
   --futura-font: "futura-pt", var(--font-jost), Jost, sans-serif;
   --body-font: "futura-pt", var(--font-jost), Jost, var(--font-kaisei), sans-serif;
 }
@@ -59,7 +59,7 @@
   src: url("/fonts/Peony-Regular.otf") format("opentype");
   font-weight: 400;
   font-style: normal;
-  font-display: swap;
+  font-display: block;
 }
 
 @font-face {
@@ -67,7 +67,7 @@
   src: url("/fonts/HelloHoney.otf") format("opentype");
   font-weight: 400;
   font-style: normal;
-  font-display: swap;
+  font-display: block;
 }
 
 body {

@@ -7,8 +7,8 @@ import { ReportIssueLink } from "@/components/_shared/ReportIssueLink";
 import { getUniqueVisitors } from "@/lib/uniqueVisitors";
 
 export const metadata: Metadata = {
-  title: "y2k guestbook",
-  description: "Sign the retro-inspired guestbook.",
+  title: "guestbook",
+  description: "Sign the guestbook.",
 };
 
 export default async function GuestbookPage() {

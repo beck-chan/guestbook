@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { AdminGuestbook } from "@/components/_admin/AdminGuestbook";
 import { loadAdminComments } from "@/app/actions/comments";
 import {
+  countAdminComments,
   filterComments,
   paginateComments,
   sortComments,
@@ -50,6 +51,7 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
     sortComments(filterComments(allComments, filters), filters.sort),
     pageFrom(params),
   );
+  const { totalComments, unreadComments } = countAdminComments(allComments);
 
   return (
     <AdminGuestbook
@@ -58,6 +60,8 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
       totalPages={totalPages}
       filters={filters}
       totalHearts={totalHearts}
+      totalComments={totalComments}
+      unreadComments={unreadComments}
     />
   );
 }

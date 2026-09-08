@@ -77,6 +77,16 @@ export function mapAdminComment(row: AdminCommentRow): GuestbookComment {
 
 export const ADMIN_PAGE_SIZE = 10;
 
+export function countAdminComments(comments: GuestbookComment[]) {
+  let unreadComments = 0;
+  for (const note of comments) {
+    if (!note.read) {
+      unreadComments += 1;
+    }
+  }
+  return { totalComments: comments.length, unreadComments };
+}
+
 export type EmailFilter = "all" | "has" | "none";
 export type StatusFilter = "all" | "unread" | "read";
 export type SortOrder = "newest" | "oldest";

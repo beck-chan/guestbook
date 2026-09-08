@@ -7,7 +7,7 @@
   src: url("/fonts/Peony-Regular.otf") format("opentype");
   font-weight: 400;
   font-style: normal;
-  font-display: swap;
+  font-display: block;
 }
 
 @font-face {
@@ -15,7 +15,7 @@
   src: url("/fonts/HelloHoney.otf") format("opentype");
   font-weight: 400;
   font-style: normal;
-  font-display: swap;
+  font-display: block;
 }
 
 :root {
@@ -55,7 +55,7 @@
   --bubble: #fff8f9;
   --bubble-nested: #fee3e5;
   --black: #000;
-  --peony-font: Peony, cursive;
+  --peony-font: Peony, "futura-pt", var(--font-jost), Jost, sans-serif;
   --futura-font: "futura-pt", var(--font-jost), Jost, sans-serif;
   --body-font: "futura-pt", var(--font-jost), Jost, var(--font-kaisei), sans-serif;
   --poem-font: var(--font-baskerville), "Libre Baskerville", Baskerville, var(--font-kaisei), serif;
@@ -1672,18 +1672,27 @@ body {
   font-size: calc(1.2rem * var(--guestbook-accent-scale));
 }
 
+.guestbook-themed .admin-comment-counts-search {
+  font-size: calc(1.15rem * var(--guestbook-main-scale));
+}
+
+.guestbook-themed .admin-comment-count-value {
+  font-family: var(--guestbook-accent-font);
+  font-size: calc(1.45rem * var(--guestbook-accent-scale));
+}
+
 .guestbook-page .comment-compose {
   margin-top: 0.2rem;
 }
 
-.demobook-marquee {
+.guestbook-marquee {
   display: inline-block;
   padding: 0.12em 0 0.28em;
   padding-left: 100%;
-  animation: demobook-marquee 14s linear infinite;
+  animation: guestbook-marquee 14s linear infinite;
 }
 
-@keyframes demobook-marquee {
+@keyframes guestbook-marquee {
   to {
     transform: translateX(-100%);
   }
@@ -1700,25 +1709,19 @@ body {
 .admin-filters {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
-  grid-template-rows: auto auto;
+  grid-template-rows: auto auto auto;
   column-gap: 1.25rem;
   row-gap: 0.85rem;
   margin: 0 0 1.75rem;
 }
 
 .admin-header {
-  grid-column: 1;
+  grid-column: 1 / -1;
   grid-row: 1;
 }
 
 .admin-tools {
-  grid-column: 2;
-  grid-row: 1 / span 2;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: 0.85rem;
+  display: contents;
 }
 
 .admin-tools-toggle {
@@ -1768,6 +1771,8 @@ body {
 }
 
 .admin-filter-row {
+  grid-column: 2;
+  grid-row: 2;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
@@ -1778,7 +1783,7 @@ body {
 .admin-lede {
   grid-column: 1;
   grid-row: 2;
-  align-self: center;
+  align-self: start;
   margin: 0;
   color: var(--cover-soft);
   font-family: var(--futura-font);
@@ -1811,10 +1816,36 @@ body {
 }
 
 .admin-search-row {
+  grid-column: 1 / -1;
+  grid-row: 3;
   display: flex;
   align-items: baseline;
   justify-content: flex-end;
   gap: 0.85rem;
+}
+
+.admin-comment-counts-search {
+  margin-right: auto;
+  color: var(--cover-soft);
+  font-family: var(--futura-font);
+  font-size: 1.15rem;
+  font-weight: 400;
+  line-height: 1.2;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.admin-comment-count-value {
+  color: var(--cover);
+  font-family: var(--peony-font);
+  font-size: 1.45rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.admin-comment-counts-menu,
+.admin-tools-toggle-meta {
+  display: none;
 }
 
 .admin-filter-search::placeholder {
@@ -2011,7 +2042,9 @@ body {
   }
 
   .admin-header,
-  .admin-lede {
+  .admin-lede,
+  .admin-filter-row,
+  .admin-search-row {
     grid-column: auto;
     grid-row: auto;
   }
@@ -2050,6 +2083,71 @@ body {
     border-radius: 0 0 0.65rem 0.65rem;
     transform: none;
     -webkit-tap-highlight-color: transparent;
+  }
+
+  .admin-comment-counts-search {
+    display: none;
+  }
+
+  .admin-tools-toggle-meta {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+  }
+
+  .admin-comment-counts-menu {
+    position: relative;
+    display: inline-flex;
+    flex: 0 0 auto;
+    padding: 0.12rem 0.12rem 0 0;
+  }
+
+  .admin-comment-count-total {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    min-width: 1.55rem;
+    height: 1.55rem;
+    padding: 0 0.28rem;
+    border: 1.5px solid var(--cover);
+    border-radius: 0.32rem;
+    background: var(--bubble);
+    color: var(--cover);
+    font-family: var(--futura-font);
+    font-size: 0.78rem;
+    font-weight: 700;
+    line-height: 1;
+  }
+
+  .admin-comment-count-unread {
+    position: absolute;
+    top: -0.38rem;
+    right: -0.38rem;
+    z-index: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    min-width: 1.05rem;
+    height: 1.05rem;
+    padding: 0 0.22rem;
+    border-radius: 999px;
+    background: var(--peony);
+    color: #fff;
+    font-family: var(--futura-font);
+    font-size: 0.62rem;
+    font-weight: 700;
+    line-height: 1;
+  }
+
+  .guestbook-themed .admin-comment-count-total,
+  .guestbook-themed .admin-comment-count-unread {
+    font-family: var(--guestbook-main-font);
+  }
+
+  .admin-tools {
+    overflow: visible;
   }
 
   .admin-tools-toggle {
@@ -2276,7 +2374,7 @@ body {
     transition: none;
   }
 
-  .demobook-marquee {
+  .guestbook-marquee {
     animation: none;
     padding-left: 0;
   }

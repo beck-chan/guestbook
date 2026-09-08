@@ -7,14 +7,54 @@ import { DocsHeart } from "@/app/docs/_components/DocsHeart";
 import { adminHref, type AdminFilters } from "@/lib/comments";
 import { guestbookAdminPath } from "@/lib/guestbookPaths";
 
+function SearchCommentCounts({
+  totalComments,
+  unreadComments,
+}: {
+  totalComments: number;
+  unreadComments: number;
+}) {
+  return (
+    <div className="admin-comment-counts admin-comment-counts-search">
+      <strong className="admin-comment-count-value">{totalComments}</strong>{" "}
+      total comments /{" "}
+      <strong className="admin-comment-count-value">{unreadComments}</strong>{" "}
+      unread comments
+    </div>
+  );
+}
+
+function MenuCommentCounts({
+  totalComments,
+  unreadComments,
+}: {
+  totalComments: number;
+  unreadComments: number;
+}) {
+  return (
+    <span className="admin-comment-counts admin-comment-counts-menu">
+      <span className="admin-comment-count-total">{totalComments}</span>
+      {unreadComments > 0 ? (
+        <span className="admin-comment-count-unread">
+          {unreadComments > 99 ? "99+" : unreadComments}
+        </span>
+      ) : null}
+    </span>
+  );
+}
+
 export function AdminFilters({
   filters,
   basePath = guestbookAdminPath(),
   totalHearts = 0,
+  totalComments = 0,
+  unreadComments = 0,
 }: {
   filters: AdminFilters;
   basePath?: string;
   totalHearts?: number;
+  totalComments?: number;
+  unreadComments?: number;
 }) {
   const router = useRouter();
   const [toolsOpen, setToolsOpen] = useState(false);
@@ -64,11 +104,18 @@ export function AdminFilters({
           className="admin-tools-toggle"
           aria-expanded={toolsOpen}
           aria-controls="admin-tools-panel"
+          aria-label={`comments menu, ${totalComments} comments${unreadComments > 0 ? `, ${unreadComments} unread` : ""}`}
           onMouseDown={(event) => event.preventDefault()}
           onClick={() => setToolsOpen((open) => !open)}
         >
           comments menu
-          <span className="admin-tools-caret" aria-hidden="true" />
+          <span className="admin-tools-toggle-meta">
+            <MenuCommentCounts
+              totalComments={totalComments}
+              unreadComments={unreadComments}
+            />
+            <span className="admin-tools-caret" aria-hidden="true" />
+          </span>
         </button>
         <div id="admin-tools-panel" className="admin-tools-panel">
           <div className="admin-tools-panel-inner">
@@ -148,6 +195,10 @@ export function AdminFilters({
               </div>
             </div>
             <div className="admin-search-row">
+              <SearchCommentCounts
+                totalComments={totalComments}
+                unreadComments={unreadComments}
+              />
               <Link
                 className="admin-comment-link"
                 href={basePath}

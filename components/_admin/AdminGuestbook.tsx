@@ -15,6 +15,8 @@ type AdminGuestbookProps = {
   totalPages: number;
   filters: FilterState;
   totalHearts?: number;
+  totalComments?: number;
+  unreadComments?: number;
   basePath?: string;
   homeHref?: string;
 };
@@ -25,6 +27,8 @@ export function AdminGuestbook({
   totalPages,
   filters,
   totalHearts = 0,
+  totalComments = 0,
+  unreadComments = 0,
   basePath = guestbookAdminPath(),
   homeHref = "/",
 }: AdminGuestbookProps) {
@@ -59,6 +63,8 @@ export function AdminGuestbook({
               filters={filters}
               basePath={basePath}
               totalHearts={totalHearts}
+              totalComments={totalComments}
+              unreadComments={unreadComments}
             />
             <AdminCommentThread
               key={comments.map((note) => note.id).join("|")}
