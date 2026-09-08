@@ -60,7 +60,7 @@ export function CommentBubbles({
   const [pending, startTransition] = useTransition();
 
   useEffect(() => {
-    if (initialComments) {
+    if (initialComments !== undefined) {
       return;
     }
     startTransition(async () => {

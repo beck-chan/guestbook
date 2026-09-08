@@ -458,7 +458,6 @@ body {
   transform: rotateY(-180deg) translateZ(3px);
 }
 
-.book.is-animating .cover,
 .book.is-animating .sticky-note {
   will-change: transform;
 }
@@ -484,6 +483,7 @@ body {
   background:
     linear-gradient(165deg, rgb(255 255 255 / 0.07) 0%, transparent 46%),
     var(--cover);
+  transform: translateZ(1px);
 }
 
 .cover-front::after {
@@ -543,7 +543,7 @@ body {
 }
 
 .cover-inside {
-  transform: rotateY(180deg);
+  transform: rotateY(180deg) translateZ(1px);
   background: var(--paper);
 }
 

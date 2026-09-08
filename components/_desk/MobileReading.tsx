@@ -6,6 +6,7 @@ import { DocsHeart } from "@/app/docs/_components/DocsHeart";
 import { EasterEgg } from "@/components/_desk/EasterEgg";
 import { HitCounter } from "@/components/_shared/HitCounter";
 import { MobileMenu } from "@/components/_shared/MobileMenu";
+import type { GuestbookComment } from "@/lib/comments";
 import { pickPoemIndex, poemMeasureLines, type Poem } from "@/lib/poems";
 
 type MobileReadingProps = {
@@ -18,6 +19,10 @@ type MobileReadingProps = {
   heartPending?: boolean;
   poemIndex?: number;
   onPoemIndexChange?: (index: number) => void;
+  initialComments: GuestbookComment[];
+  initialPage: number;
+  initialTotalPages: number;
+  commentPageSize: number;
 };
 
 const FONT_BOOST_MAX = 4;
@@ -119,6 +124,10 @@ export function MobileReading({
   heartPending = false,
   poemIndex: controlledIndex,
   onPoemIndexChange,
+  initialComments,
+  initialPage,
+  initialTotalPages,
+  commentPageSize,
 }: MobileReadingProps) {
   const scrollerRef = useRef<HTMLElement>(null);
   const poemCopyRef = useRef<HTMLElement>(null);
@@ -222,7 +231,14 @@ export function MobileReading({
             <span className="mobile-comments-close-label">close</span>
           </button>
         </div>
-        <CommentBubbles showHits={false} idPrefix="mobile-" limit={4} />
+        <CommentBubbles
+          showHits={false}
+          idPrefix="mobile-"
+          limit={commentPageSize}
+          initialComments={initialComments}
+          initialPage={initialPage}
+          initialTotalPages={initialTotalPages}
+        />
       </div>
 
       <main

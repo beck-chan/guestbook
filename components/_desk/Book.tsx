@@ -255,10 +255,10 @@ export function Book({
     if (!parts) {
       return;
     }
-    gsap.set(parts.scene, { clearProps: "width" });
+    gsap.set(parts.scene, { clearProps: "width,x" });
     gsap.set(parts.spread, { clearProps: "width" });
     gsap.set(parts.book, { clearProps: "transform,rotationX,rotationY" });
-    gsap.set(parts.cover, { clearProps: "transform,z" });
+    gsap.set(parts.cover, { clearProps: "transform,z,backfaceVisibility" });
     gsap.set(parts.note, {
       clearProps: "transform,x,y,z,zIndex,boxShadow,opacity,visibility,pointerEvents",
     });
@@ -275,23 +275,28 @@ export function Book({
     const { scene, book, spread, cover, pageLeft } = parts;
     const rotationY = Number(gsap.getProperty(cover, "rotationY"));
     const pastMid = rotationY <= -90;
-    pageLeft.classList.toggle("is-revealed", closing || pastMid);
+    pageLeft.classList.toggle("is-revealed", pastMid);
+    const inside = cover.querySelector(".cover-inside");
+    if (inside instanceof HTMLElement) {
+      gsap.set(inside, { visibility: pastMid ? "visible" : "hidden" });
+    }
 
     if (closing) {
       const span = poses.openW - leaf;
-      let sceneW = poses.openW;
       if (!pastMid) {
         const t = Math.max(0, Math.min(1, (rotationY + 90) / 90));
-        sceneW = poses.openW - span * t;
+        gsap.set(scene, { width: leaf, x: (span / 2) * (1 - t) });
+        spread.style.width = `${leaf * 2}px`;
         book.setAttribute("data-closing-clip", "");
       } else {
         book.removeAttribute("data-closing-clip");
+        gsap.set(scene, { width: poses.openW, x: 0 });
+        spread.style.width = `${poses.openW}px`;
       }
-      gsap.set(scene, { width: sceneW });
-      spread.style.width = `${spreadWidthForCover(sceneW, leaf, poses.openW)}px`;
       return;
     }
 
+    gsap.set(scene, { x: 0 });
     book.removeAttribute("data-closing-clip");
     if (pastMid) {
       const span = poses.openW - leaf;
@@ -318,7 +323,12 @@ export function Book({
         rotationY: -180,
         z: 3,
         transformOrigin: "left center",
+        clearProps: "backfaceVisibility",
       });
+      const coverInside = parts.cover.querySelector(".cover-inside");
+      if (coverInside instanceof HTMLElement) {
+        gsap.set(coverInside, { clearProps: "visibility" });
+      }
       gsap.set(parts.note, { clearProps: "transform,x,y,z,zIndex,boxShadow" });
       const openLabel = noteOpenLabel(parts.note);
       const closeLabel = noteCloseLabel(parts.note);
@@ -368,6 +378,10 @@ export function Book({
       gsap.set(noteOpenLetters(parts.note), { clearProps: "opacity,y,transform" });
       gsap.set(noteCloseLetters(parts.note), { clearProps: "opacity,y,transform" });
       parts.note.classList.remove("is-label-open");
+      const coverInside = parts.cover.querySelector(".cover-inside");
+      if (coverInside instanceof HTMLElement) {
+        gsap.set(coverInside, { clearProps: "visibility" });
+      }
     }
     clearMotionProps();
     if (parts) {
@@ -614,6 +628,7 @@ export function Book({
       rotationY,
       z: Number(gsap.getProperty(cover, "z")) || 3,
       transformOrigin: "left center",
+      backfaceVisibility: "visible",
     });
     gsap.set(book, bookTilt(true));
     gsap.set(gutter, { opacity: 1 });
@@ -814,7 +829,7 @@ export function Book({
       gsap.set(parts.note, { clearProps: "transform,x,y,z,zIndex" });
       parts.spread.style.width = "";
     }
-    gsap.set(parts.scene, { clearProps: "width" });
+    gsap.set(parts.scene, { clearProps: "width,x" });
     void poses;
   }
 
@@ -872,11 +887,11 @@ export function Book({
 
     setHeldOpen(true);
     parts.book.classList.add("is-open", "is-animating");
-    gsap.set(parts.cover, { transformOrigin: "left center" });
+    gsap.set(parts.cover, { transformOrigin: "left center", backfaceVisibility: "visible" });
 
     if (isOpen) {
       if (fromIdle) {
-        gsap.set(parts.cover, { rotationY: 0, z: 3, transformOrigin: "left center" });
+        gsap.set(parts.cover, { rotationY: 0, z: 3, transformOrigin: "left center", backfaceVisibility: "visible" });
         gsap.set(parts.note, { x: 0, y: 0, rotation: -90, z: 0, zIndex: 2 });
         gsap.set(parts.gutter, { opacity: 0 });
         gsap.set(parts.shadowLeft, { clipPath: STACK_CLIP_CLOSED });
@@ -891,6 +906,7 @@ export function Book({
           rotationY: -180,
           z: 3,
           transformOrigin: "left center",
+          backfaceVisibility: "visible",
         });
         gsap.set(parts.note, {
           x: poses.landX,

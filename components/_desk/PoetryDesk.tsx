@@ -11,6 +11,7 @@ import { CommentBubbles } from "@/components/_shared/CommentBubbles";
 import { DeskBookmarks } from "@/components/_shared/DeskBookmarks";
 import { MobileReading } from "@/components/_desk/MobileReading";
 import { ReportIssueLink } from "@/components/_shared/ReportIssueLink";
+import type { GuestbookComment } from "@/lib/comments";
 import { pickPoemIndex, type Poem } from "@/lib/poems";
 
 type PoetryDeskProps = {
@@ -19,6 +20,10 @@ type PoetryDeskProps = {
   hitCount: number;
   initialHeart?: PoemHeartState;
   heartCounts?: Record<string, number>;
+  initialComments: GuestbookComment[];
+  initialPage: number;
+  initialTotalPages: number;
+  commentPageSize: number;
 };
 
 const EMPTY_HEART: PoemHeartState = {
@@ -54,6 +59,10 @@ export function PoetryDesk({
   hitCount,
   initialHeart,
   heartCounts = {},
+  initialComments,
+  initialPage,
+  initialTotalPages,
+  commentPageSize,
 }: PoetryDeskProps) {
   const initialPoemId = poems[initialIndex]?.id;
   const seededHeart = initialHeart ?? {
@@ -213,8 +222,11 @@ export function PoetryDesk({
           </div>
           <CommentBubbles
             sectionId="guestbook"
-            limit={4}
+            limit={commentPageSize}
             hitCount={hitCount}
+            initialComments={initialComments}
+            initialPage={initialPage}
+            initialTotalPages={initialTotalPages}
           />
         </div>
       </div>
@@ -228,6 +240,10 @@ export function PoetryDesk({
         heartPending={heartPending}
         onToggleHeart={onToggleHeart}
         hitCount={hitCount}
+        initialComments={initialComments}
+        initialPage={initialPage}
+        initialTotalPages={initialTotalPages}
+        commentPageSize={commentPageSize}
       />
     </>
   );
