@@ -1,5 +1,9 @@
 import { execFileSync } from "node:child_process";
+import { rmSync } from "node:fs";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 
+const root = path.join(path.dirname(fileURLToPath(import.meta.url)), "..");
 const ports = [3000, 3001];
 
 function listeningPids(port) {
@@ -29,3 +33,7 @@ for (const port of ports) {
 if (killed === 0) {
   console.log("no Next preview processes to stop");
 }
+
+const nextDir = path.join(root, ".next");
+rmSync(nextDir, { recursive: true, force: true });
+console.log("removed .next");
