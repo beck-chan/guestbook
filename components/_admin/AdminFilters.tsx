@@ -16,10 +16,10 @@ function SearchCommentCounts({
 }) {
   return (
     <div className="admin-comment-counts admin-comment-counts-search">
-      <strong className="admin-comment-count-value">{totalComments}</strong>{" "}
-      total comments /{" "}
       <strong className="admin-comment-count-value">{unreadComments}</strong>{" "}
-      unread comments
+      unread comments /{" "}
+      <strong className="admin-comment-count-value">{totalComments}</strong>{" "}
+      total comments
     </div>
   );
 }
