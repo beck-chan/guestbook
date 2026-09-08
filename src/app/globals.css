@@ -281,29 +281,7 @@ body {
 }
 
 .book-scene {
-  position: relative;
-  width: var(--page-side);
-  height: calc(var(--page-side) * 1.5);
-  flex: 0 0 auto;
-  overflow: visible;
-  transform-style: preserve-3d;
-}
-
-.stage.is-open .book-scene,
-.stage:has(.book.is-open) .book-scene,
-.stage:has(.book.is-animating):not(:has(.book[data-closing-clip])) .book-scene {
-  width: min(var(--book-width), calc(var(--page-side) * 2));
-}
-
-.book {
-  position: relative;
-  width: 100%;
-  height: 100%;
-  overflow: visible;
-  transform: rotateX(5deg) rotateY(-9deg);
-  transform-style: preserve-3d;
-  background: var(--paper);
-  box-shadow:
+  --book-stack-right:
     1px 1px 0 var(--paper-edge),
     2px 1px 0 var(--paper-hi),
     3px 2px 0 var(--paper-edge),
@@ -328,6 +306,38 @@ body {
     22px 11px 0 var(--paper-shadow),
     24px 12px 0 var(--paper-shadow),
     32px 28px 44px rgb(70 50 55 / 0.1);
+  position: relative;
+  width: var(--page-side);
+  height: calc(var(--page-side) * 1.5);
+  flex: 0 0 auto;
+  overflow: visible;
+  transform-style: preserve-3d;
+}
+
+.stage.is-open .book-scene,
+.stage:has(.book.is-open) .book-scene,
+.stage:has(.book.is-animating):not(:has(.book[data-closing-clip])) .book-scene {
+  width: min(var(--book-width), calc(var(--page-side) * 2));
+}
+
+.book-fx {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  transform-style: flat;
+}
+
+.book {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  transform: rotateX(5deg) rotateY(-9deg);
+  transform-style: preserve-3d;
+  background: var(--paper);
+  box-shadow: var(--book-stack-right);
   transition: transform 1.05s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -335,8 +345,13 @@ body {
   transition: none;
 }
 
+.stage:has(.book.is-animating) {
+  transition: none;
+}
+
 .book.is-open {
   transform: none;
+  box-shadow: none;
 }
 
 .book.is-open:not(.is-animating) {
@@ -348,12 +363,17 @@ body {
   clip-path: inset(-12% calc(var(--sticky-size) * -0.5) -12% 0);
 }
 
-.book-shadow-left {
+.book-shadow-left,
+.book-shadow-right,
+.book-shadow-depth {
   position: absolute;
   inset: 0;
   z-index: 0;
   pointer-events: none;
-  clip-path: inset(-12px 0 -12px 0);
+}
+
+.book-shadow-left {
+  clip-path: inset(-12px 0px -12px 0px);
   box-shadow:
     -1px 1px 0 var(--paper-edge),
     -2px 1px 0 var(--paper-hi),
@@ -379,22 +399,27 @@ body {
     -24px 12px 0 var(--paper-shadow);
 }
 
-.book.is-open:not(.is-animating) .book-shadow-left {
-  clip-path: inset(-12px 0 -12px -28px);
+.book-scene:has(.book.is-open) .book-shadow-left {
+  clip-path: inset(-12px 0px -12px -28px);
+}
+
+.book-shadow-right {
+  opacity: 0;
+  box-shadow: var(--book-stack-right);
+}
+
+.book-scene:has(.book.is-open) .book-shadow-right {
+  opacity: 1;
 }
 
 .book-shadow-depth {
-  position: absolute;
-  inset: 0;
-  z-index: 0;
-  pointer-events: none;
   opacity: 0;
   box-shadow:
     -16px 22px 40px rgb(70 50 55 / 0.08),
     16px 22px 40px rgb(70 50 55 / 0.08);
 }
 
-.book.is-open:not(.is-animating) .book-shadow-depth {
+.book-scene:has(.book.is-open) .book-shadow-depth {
   opacity: 1;
 }
 
@@ -1021,7 +1046,8 @@ body {
 }
 
 .book.is-open:not(.is-animating) .sticky-note-caption,
-.sticky-note.is-label-open .sticky-note-caption {
+.sticky-note.is-label-open .sticky-note-caption,
+.sticky-note.is-upright .sticky-note-caption {
   top: 52%;
   bottom: auto;
   transform: translate(-50%, -50%);

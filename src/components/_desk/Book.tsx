@@ -169,6 +169,14 @@ function leafCopyUnderPoint(root: HTMLElement, x: number, y: number) {
   return null;
 }
 
+function flyingNoteRotation(note: HTMLElement) {
+  const rotation = Number(gsap.getProperty(note, "rotation"));
+  if (Number.isFinite(rotation) && Math.abs(rotation) > 1) {
+    return rotation;
+  }
+  return -6;
+}
+
 function poseFlyingNote(clone: HTMLElement, note: HTMLElement, extras?: gsap.TweenVars) {
   const bounds = note.getBoundingClientRect();
   const width = note.offsetWidth;
@@ -198,7 +206,7 @@ function spawnFlyingNote(note: HTMLButtonElement) {
   poseFlyingNote(clone, note, {
     x: 0,
     y: 0,
-    rotation: Number(gsap.getProperty(note, "rotation")) || 0,
+    rotation: flyingNoteRotation(note),
     z: 0,
     autoAlpha: 1,
     boxShadow: window.getComputedStyle(note).boxShadow,
@@ -250,6 +258,7 @@ export function Book({
   const pageLeftRef = useRef<HTMLDivElement>(null);
   const gutterRef = useRef<HTMLDivElement>(null);
   const shadowLeftRef = useRef<HTMLDivElement>(null);
+  const shadowRightRef = useRef<HTMLDivElement>(null);
   const shadowDepthRef = useRef<HTMLDivElement>(null);
   const leafRef = useRef(0);
   const posesRef = useRef<BookPoses | null>(null);
@@ -269,6 +278,7 @@ export function Book({
     const pageLeft = pageLeftRef.current;
     const gutter = gutterRef.current;
     const shadowLeft = shadowLeftRef.current;
+    const shadowRight = shadowRightRef.current;
     const shadowDepth = shadowDepthRef.current;
     if (
       !scene ||
@@ -279,6 +289,7 @@ export function Book({
       !pageLeft ||
       !gutter ||
       !shadowLeft ||
+      !shadowRight ||
       !shadowDepth
     ) {
       return null;
@@ -292,6 +303,7 @@ export function Book({
       pageLeft,
       gutter,
       shadowLeft,
+      shadowRight,
       shadowDepth,
     };
   }
@@ -306,7 +318,7 @@ export function Book({
     gsap.set(parts.book, { clearProps: "transform,rotationX,rotationY" });
     gsap.set(parts.cover, { clearProps: "transform,z,backfaceVisibility" });
     gsap.set(parts.note, {
-      clearProps: "transform,x,y,z,zIndex,boxShadow,opacity,visibility,pointerEvents",
+      clearProps: "transform,x,y,z,zIndex,left,boxShadow,opacity,visibility,pointerEvents",
     });
     parts.spread.style.width = "";
   }
@@ -371,11 +383,14 @@ export function Book({
         transformOrigin: "left center",
         clearProps: "backfaceVisibility",
       });
+      gsap.set(parts.shadowLeft, { clipPath: STACK_CLIP_OPEN });
+      gsap.set(parts.shadowRight, { opacity: 1 });
+      gsap.set(parts.shadowDepth, { opacity: 1 });
       const coverInside = parts.cover.querySelector(".cover-inside");
       if (coverInside instanceof HTMLElement) {
         gsap.set(coverInside, { clearProps: "visibility" });
       }
-      gsap.set(parts.note, { clearProps: "transform,x,y,z,zIndex,boxShadow" });
+      gsap.set(parts.note, { clearProps: "transform,x,y,z,zIndex,left,boxShadow" });
       const openLabel = noteOpenLabel(parts.note);
       const closeLabel = noteCloseLabel(parts.note);
       if (openLabel) {
@@ -409,6 +424,7 @@ export function Book({
     if (parts) {
       gsap.set(parts.gutter, { clearProps: "opacity" });
       gsap.set(parts.shadowLeft, { clearProps: "clipPath" });
+      gsap.set(parts.shadowRight, { clearProps: "opacity" });
       gsap.set(parts.shadowDepth, { clearProps: "opacity" });
       const openLabel = noteOpenLabel(parts.note);
       const closeLabel = noteCloseLabel(parts.note);
@@ -446,6 +462,21 @@ export function Book({
     if (note) {
       gsap.set(note, { autoAlpha: 1, pointerEvents: "auto" });
     }
+  }
+
+  function beginCoverClose() {
+    const parts = nodes();
+    if (!parts) {
+      return;
+    }
+    const { scene, book, spread } = parts;
+    book.style.transition = "none";
+    gsap.set(scene, { width: scene.getBoundingClientRect().width });
+    if (!spread.style.width) {
+      spread.style.width = "100%";
+    }
+    book.classList.add("is-animating");
+    setAnimating(true);
   }
 
   function measure() {
@@ -652,23 +683,11 @@ export function Book({
       return;
     }
     killAnim();
-    const { book, cover, note, gutter, shadowLeft, shadowDepth } = parts;
-    const { hoverX, hoverY, landX } = poses;
+    const { book, cover, note, gutter, shadowLeft, shadowRight, shadowDepth } = parts;
+    const { hoverX, hoverY } = poses;
     let rotationY = Number(gsap.getProperty(cover, "rotationY"));
     if (Number.isNaN(rotationY) || Math.abs(rotationY) < 2) {
       rotationY = -180;
-    }
-
-    if (Math.abs(Number(gsap.getProperty(note, "x")) || 0) < 2 && rotationY <= -160) {
-      gsap.set(note, {
-        x: landX,
-        y: 0,
-        rotation: -6,
-        z: 40,
-        zIndex: 8,
-        boxShadow:
-          "1px 1px 0 rgb(210 160 165 / 0.4), 5px 10px 18px rgb(40 38 34 / 0.16)",
-      });
     }
 
     gsap.set(cover, {
@@ -679,6 +698,7 @@ export function Book({
     });
     gsap.set(gutter, { opacity: 1 });
     gsap.set(shadowLeft, { clipPath: STACK_CLIP_OPEN });
+    gsap.set(shadowRight, { opacity: 1 });
     gsap.set(shadowDepth, { opacity: 1 });
 
     const clone = spawnDepartingNote(note);
@@ -697,7 +717,16 @@ export function Book({
     const arriver = spawnFlyingNote(note);
     gsap.set(arriver, { autoAlpha: 0 });
     const arriverLetters = noteOpenLetters(arriver);
-    gsap.set(arriverLetters, { opacity: 0, y: 6 });
+    gsap.set(arriverLetters, {
+      opacity: 0,
+      y: 10,
+      rotation: -12,
+      transformOrigin: "left bottom",
+    });
+    const arriverEraser = noteEraser(arriver);
+    if (arriverEraser) {
+      gsap.set(arriverEraser, { autoAlpha: 0 });
+    }
 
     applyFlipLayout(true);
 
@@ -725,7 +754,7 @@ export function Book({
     );
     tl.to(clone, { autoAlpha: 0, duration: 0.12, ease: "power1.in" }, 0.66);
 
-    tl.addLabel("noteEnter", 0.72);
+    tl.addLabel("noteEnter", 0.82);
     tl.add(() => {
       parts.book.removeAttribute("data-closing-clip");
       gsap.set(note, {
@@ -735,9 +764,11 @@ export function Book({
         z: 0,
         zIndex: 2,
         autoAlpha: 0,
+        left: "calc(100% - var(--sticky-size) * 0.55)",
       });
       const tab = note.getBoundingClientRect();
       const enterX = Math.max(window.innerWidth - tab.left + 48, 280);
+      arriver.classList.add("is-upright");
       poseFlyingNote(arriver, note, {
         x: enterX,
         y: -32,
@@ -753,12 +784,12 @@ export function Book({
       {
         x: hoverX,
         y: hoverY,
-        rotation: -16,
+        rotation: -12,
         z: 48,
-        duration: 0.72,
+        duration: 1.22,
         ease: "power2.out",
       },
-      "noteEnter+=0.01",
+      "noteEnter+=0.02",
     );
 
     if (arriverLetters.length > 0) {
@@ -767,20 +798,26 @@ export function Book({
         {
           opacity: 1,
           y: 0,
-          duration: 0.11,
-          stagger: 0.07,
-          ease: "power1.out",
+          rotation: 0,
+          duration: 0.18,
+          stagger: 0.11,
+          ease: "power2.out",
         },
-        ">-0.08",
+        "+=0.28",
       );
+    } else {
+      tl.to(arriver, { duration: 0.28 });
     }
 
+    tl.add(() => {
+      arriver.classList.remove("is-upright");
+    }, "+=0.22");
     tl.to(arriver, {
       x: 0,
       y: 0,
       rotation: -90,
       z: 0,
-      duration: 0.58,
+      duration: 0.78,
       ease: "power2.inOut",
     });
 
@@ -792,12 +829,17 @@ export function Book({
         z: 0,
         zIndex: 2,
         autoAlpha: 1,
+        pointerEvents: "auto",
+        left: "calc(100% - var(--sticky-size) * 0.55)",
         boxShadow: restShadow,
       });
       gsap.set(openLetters, { clearProps: "opacity,y,transform" });
       arriver.remove();
     });
 
+    tl.add(() => {
+      beginCoverClose();
+    }, "+=0.12");
     tl.addLabel("coverClose");
     tl.to(gutter, { opacity: 0, duration: 0.48, ease: "power1.in" }, "coverClose");
     tl.to(
@@ -805,6 +847,7 @@ export function Book({
       { clipPath: STACK_CLIP_CLOSED, duration: 0.55, ease: "power2.in" },
       "coverClose",
     );
+    tl.to(shadowRight, { opacity: 0, duration: 0.5, ease: "power1.in" }, "coverClose");
     tl.to(shadowDepth, { opacity: 0, duration: 0.5, ease: "power1.in" }, "coverClose");
 
     if (rotationY < -90) {
@@ -864,6 +907,7 @@ export function Book({
       parts.pageLeft.classList.add("is-revealed");
       gsap.set(parts.gutter, { opacity: 1 });
       gsap.set(parts.shadowLeft, { clipPath: STACK_CLIP_OPEN });
+      gsap.set(parts.shadowRight, { opacity: 1 });
       gsap.set(parts.shadowDepth, { opacity: 1 });
       gsap.set(parts.note, { clearProps: "transform,x,y,z,zIndex" });
       parts.spread.style.width = "100%";
@@ -871,6 +915,7 @@ export function Book({
       parts.pageLeft.classList.remove("is-revealed");
       gsap.set(parts.gutter, { opacity: 0 });
       gsap.set(parts.shadowLeft, { clipPath: STACK_CLIP_CLOSED });
+      gsap.set(parts.shadowRight, { opacity: 0 });
       gsap.set(parts.shadowDepth, { opacity: 0 });
       gsap.set(parts.note, { clearProps: "transform,x,y,z,zIndex" });
       parts.spread.style.width = "";
@@ -969,11 +1014,12 @@ export function Book({
     leafRef.current = leaf;
 
     setHeldOpen(true);
-    setAnimating(true);
-    parts.book.classList.add("is-open", "is-animating");
+    parts.book.classList.add("is-open");
     gsap.set(parts.cover, { transformOrigin: "left center", backfaceVisibility: "visible" });
 
     if (isOpen) {
+      setAnimating(true);
+      parts.book.classList.add("is-animating");
       if (fromIdle) {
         gsap.set(parts.cover, { rotationY: 0, z: 3, transformOrigin: "left center", backfaceVisibility: "visible" });
         gsap.set(parts.note, { x: 0, y: 0, rotation: -90, z: 0, zIndex: 2 });
@@ -992,15 +1038,9 @@ export function Book({
           transformOrigin: "left center",
           backfaceVisibility: "visible",
         });
-        gsap.set(parts.note, {
-          x: poses.landX,
-          y: 0,
-          rotation: -6,
-          z: 90,
-          zIndex: 8,
-        });
         gsap.set(parts.gutter, { opacity: 1 });
         gsap.set(parts.shadowLeft, { clipPath: STACK_CLIP_OPEN });
+        gsap.set(parts.shadowRight, { opacity: 1 });
         gsap.set(parts.shadowDepth, { opacity: 1 });
       }
       playToClose();
@@ -1009,12 +1049,15 @@ export function Book({
 
   return (
     <div className="book-scene" data-open={isOpen} ref={sceneRef}>
+      <div className="book-fx" aria-hidden="true">
+        <div className="book-shadow-left" ref={shadowLeftRef} />
+        <div className="book-shadow-right" ref={shadowRightRef} />
+        <div className="book-shadow-depth" ref={shadowDepthRef} />
+      </div>
       <div
         ref={bookRef}
         className={`book${isOpen || heldOpen ? " is-open" : ""}${animating ? " is-animating" : ""}`}
       >
-        <div className="book-shadow-left" aria-hidden="true" ref={shadowLeftRef} />
-        <div className="book-shadow-depth" aria-hidden="true" ref={shadowDepthRef} />
         <div className="spread" ref={spreadRef}>
           <div className="spread-gutter" aria-hidden="true" ref={gutterRef} />
           <div className="page-left" aria-hidden="true" ref={pageLeftRef}>
