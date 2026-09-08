@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { createScalarReferenceConfig } from "@/lib/docs/scalarConfig";
 import type { OpenApiSpec } from "@/lib/docs/typesToOpenApi";
 
 type ScalarInstance = {
@@ -13,29 +14,6 @@ type ScalarGlobal = {
     configuration: Record<string, unknown>,
   ) => ScalarInstance | void;
 };
-
-const SCALAR_CSS = `
-.scalar-app,
-.scalar-app * {
-  font-family: var(--futura-font) !important;
-}
-`;
-
-function scalarConfig(spec: OpenApiSpec) {
-  return {
-    content: spec,
-    layout: "classic",
-    theme: "none",
-    darkMode: false,
-    forceDarkModeState: "light",
-    hideDarkModeToggle: true,
-    isEditable: false,
-    documentDownloadType: "none",
-    showSidebar: true,
-    showDeveloperTools: "always",
-    customCss: SCALAR_CSS,
-  };
-}
 
 function loadStandalone() {
   const existing = document.querySelector<HTMLScriptElement>(
@@ -88,7 +66,10 @@ export function DocsApiReferenceView({ spec }: { spec: OpenApiSpec }) {
         if (!Scalar) {
           throw new Error("Scalar global is missing");
         }
-        instance = Scalar.createApiReference(hostRef.current, scalarConfig(spec));
+        instance = Scalar.createApiReference(hostRef.current, {
+          ...createScalarReferenceConfig(),
+          content: spec,
+        });
       })
       .catch((error: unknown) => {
         if (!cancelled) {

@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import { loadDatabaseOpenApi } from "@/lib/docs/loadDatabaseOpenApi";
+import { openApiNav } from "@/lib/docs/typesToOpenApi";
 import { DocsSidenav } from "./_nav/DocsSidenav";
 import "./docs.css";
 
@@ -15,9 +17,11 @@ export default function DocsLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const apiNav = openApiNav(loadDatabaseOpenApi());
+
   return (
     <div className="docs-shell">
-      <DocsSidenav />
+      <DocsSidenav apiNav={apiNav} />
       <main className="docs-main">{children}</main>
     </div>
   );

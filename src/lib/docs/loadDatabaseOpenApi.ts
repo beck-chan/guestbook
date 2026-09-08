@@ -28,7 +28,7 @@ export function resolveDatabaseTypesPath(isPublic = flags.public) {
 export function loadDatabaseOpenApi(isPublic = flags.public): OpenApiSpec {
   const file = resolveDatabaseTypesPath(isPublic);
   const source = fs.readFileSync(file, "utf8");
-  return typesToOpenApi(source, {
+  const spec = typesToOpenApi(source, {
     title: isPublic
       ? "y2k Guestbook API"
       : "Beck's y2k Guestbook API",
@@ -36,4 +36,13 @@ export function loadDatabaseOpenApi(isPublic = flags.public): OpenApiSpec {
       ? "The API reference below reflects the calls you can make to your connected Supabase database when the guestbook is fully installed."
       : "The API reference below reflects the functionality of Beck's custom guestbook install. [View Public API Library](https://y2k-guestbook.vercel.app/docs/api)",
   });
+
+  if (isPublic) {
+    const origin = process.env.NEXT_PUBLIC_SUPABASE_URL?.replace(/\/$/, "");
+    if (origin) {
+      spec.servers = [{ url: `${origin}/rest/v1` }];
+    }
+  }
+
+  return spec;
 }

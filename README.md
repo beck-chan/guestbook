@@ -67,6 +67,15 @@ npm run docs
 
 `http://localhost:3000` then serves `/docs`. Stop with `npm run dev:stop`, then `npm run dev` for the poetry desk.
 
+## Editor (tsserver)
+
+These only affect Cursor/VS Code IntelliSense, not `npm run docs` / `npm run dev`.
+
+- [`tsconfig.json`](tsconfig.json) comments out `"src/**/*.mdx"` in `include` so tsserver does not load docs MDX. Uncomment that line when you want docs autocomplete (`mdx.server.enable`).
+- [`.vscode/settings.json`](.vscode/settings.json) sets `mdx.server.enable` to `false` (docs autocomplete off; Next still compiles MDX) and `typescript.disableAutomaticTypeAcquisition` so tsserver does not download `@types` packages in the background.
+
+If a Cursor chat still behaves like the parent `beck-chan` folder, the window was opened on that parent, not on `guestbook/`. Opening a guestbook file does not change the workspace root — use **File → Open Folder** on this repo.
+
 ## Feature flags
 
 Flags are compile-time values in [`src/lib/flags.ts`](src/lib/flags.ts). Override them with env vars, then restart `npm run dev` or run `npm run build` again. Unset vars use the defaults in `src/lib/flags.ts`.

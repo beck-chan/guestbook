@@ -1,6 +1,7 @@
+import { createScalarReferenceConfig } from "@/lib/docs/scalarConfig";
 import { loadDatabaseOpenApi } from "@/lib/docs/loadDatabaseOpenApi";
 
-function explorerHtml(specJson: string) {
+function explorerHtml(specJson: string, configJson: string) {
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -13,22 +14,14 @@ function explorerHtml(specJson: string) {
   <style>
     :root {
       --futura-font: "futura-pt", Jost, sans-serif;
+      --cover: #0b2a12;
       --peony: #ff6162;
+      --peony-hot: #ff8586;
       --ink: #2f2e2c;
       --ink-muted: #6a6864;
       --paper: #faf6ea;
       --paper-hi: #f7f1e4;
       --paper-dim: #e9e6df;
-      --scalar-font: var(--futura-font);
-      --scalar-font-code: var(--futura-font);
-      --scalar-color-1: var(--ink);
-      --scalar-color-2: var(--ink-muted);
-      --scalar-color-3: var(--ink-muted);
-      --scalar-color-accent: var(--peony);
-      --scalar-background-1: #fff;
-      --scalar-background-2: var(--paper);
-      --scalar-background-3: var(--paper-hi);
-      --scalar-border-color: var(--paper-dim);
     }
     html, body, #app {
       margin: 0;
@@ -37,29 +30,16 @@ function explorerHtml(specJson: string) {
       color: var(--ink);
       font-family: var(--futura-font);
     }
-    .scalar-app, .scalar-app * {
-      font-family: var(--futura-font) !important;
-    }
   </style>
 </head>
 <body>
   <div id="app"></div>
   <script>window.__OPENAPI__ = ${specJson};</script>
+  <script>window.__SCALAR_CONFIG__ = ${configJson};</script>
   <script src="/docs/api/scalar-standalone"></script>
   <script>
-    window.Scalar.createApiReference("#app", {
-      content: window.__OPENAPI__,
-      layout: "classic",
-      theme: "none",
-      darkMode: false,
-      forceDarkModeState: "light",
-      hideDarkModeToggle: true,
-      isEditable: false,
-      documentDownloadType: "none",
-      showSidebar: true,
-      showDeveloperTools: "always",
-      customCss: ".scalar-app,.scalar-app *{font-family:var(--futura-font)!important}"
-    });
+    window.__SCALAR_CONFIG__.content = window.__OPENAPI__;
+    window.Scalar.createApiReference("#app", window.__SCALAR_CONFIG__);
   </script>
 </body>
 </html>`;
@@ -71,8 +51,12 @@ export async function GET() {
     .replace(/</g, "\\u003c")
     .replace(/\u2028/g, "\\u2028")
     .replace(/\u2029/g, "\\u2029");
+  const configJson = JSON.stringify(createScalarReferenceConfig())
+    .replace(/</g, "\\u003c")
+    .replace(/\u2028/g, "\\u2028")
+    .replace(/\u2029/g, "\\u2029");
 
-  return new Response(explorerHtml(specJson), {
+  return new Response(explorerHtml(specJson, configJson), {
     headers: {
       "Content-Type": "text/html; charset=utf-8",
       "Cache-Control": "no-store",

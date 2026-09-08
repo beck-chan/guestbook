@@ -3,13 +3,32 @@
 import { useEffect, useId, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { DocsSearch } from "../_components/DocsSearch";
+import { DocsSearch, openScalarSearch } from "../_components/DocsSearch";
+import { DocsApiNav } from "./DocsApiNav";
 import { DocsNav } from "./DocsNav";
+import type { OpenApiNavSection } from "@/lib/docs/typesToOpenApi";
 
 const MOBILE_QUERY = "(max-width: 720px)";
 
-export function DocsSidenav() {
+function isApiPath(pathname: string) {
+  return pathname === "/docs/api" || pathname === "/docs/api/";
+}
+
+function BrandTitle({ isApi }: { isApi: boolean }) {
+  return (
+    <>
+      {isApi ? "API" : "Doc"}
+      <span className="docs-brand-heart">
+        {/* Hello Honey s.1 (\uE019) is the ending heart flourish */}
+        {"\uE019"}
+      </span>
+    </>
+  );
+}
+
+export function DocsSidenav({ apiNav }: { apiNav: OpenApiNavSection[] }) {
   const pathname = usePathname();
+  const isApi = isApiPath(pathname);
   const panelId = useId();
   const [open, setOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
@@ -56,6 +75,13 @@ export function DocsSidenav() {
     };
   }, [open, isMobile]);
 
+  const brandHref = isApi ? "/docs/api" : "/docs";
+  const brandLabel = isApi
+    ? "y2k Guestbook API home"
+    : "y2k Guestbook Docs home";
+  const searchLabel = isApi ? "Search API" : "Search docs";
+  const searchClick = isApi ? openScalarSearch : undefined;
+
   return (
     <>
       <aside className={`docs-sidenav${open ? " is-open" : ""}`}>
@@ -75,21 +101,21 @@ export function DocsSidenav() {
             </span>
           </button>
           <Link
-            href="/docs"
+            href={brandHref}
             className="docs-topbar-title"
-            aria-label="y2k Guestbook Docs home"
+            aria-label={brandLabel}
             onClick={() => setOpen(false)}
           >
             <span className="docs-brand-kicker">y2k guestbook</span>
             <span className="docs-brand-title">
-              Doc
-              <span className="docs-brand-heart">
-                {/* Hello Honey s.1 (\uE019) is the ending heart flourish */}
-                {"\uE019"}
-              </span>
+              <BrandTitle isApi={isApi} />
             </span>
           </Link>
-          <DocsSearch variant="icon" />
+          <DocsSearch
+            variant="icon"
+            label={searchLabel}
+            onClick={searchClick}
+          />
         </div>
         <div
           id={panelId}
@@ -99,20 +125,27 @@ export function DocsSidenav() {
           <div className="docs-brand">
             <p className="docs-brand-kicker">y2k guestbook</p>
             <Link
-              href="/docs"
+              href={brandHref}
               className="docs-brand-title"
-              aria-label="y2k Guestbook Docs home"
+              aria-label={brandLabel}
               onClick={() => setOpen(false)}
             >
-              Doc
-              <span className="docs-brand-heart">
-                {/* Hello Honey s.1 (\uE019) is the ending heart flourish */}
-                {"\uE019"}
-              </span>
+              <BrandTitle isApi={isApi} />
             </Link>
           </div>
-          <DocsSearch variant="bar" />
-          <DocsNav onNavigate={() => setOpen(false)} />
+          <DocsSearch
+            variant="bar"
+            label={searchLabel}
+            onClick={searchClick}
+          />
+          {isApi ? (
+            <DocsApiNav
+              sections={apiNav}
+              onNavigate={() => setOpen(false)}
+            />
+          ) : (
+            <DocsNav onNavigate={() => setOpen(false)} />
+          )}
         </div>
       </aside>
       {open ? (

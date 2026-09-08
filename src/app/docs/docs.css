@@ -478,16 +478,36 @@ body:has(.docs-shell) {
   max-width: 58rem;
 }
 
-.docs-article:has(.docs-api-reference) {
-  max-width: min(72rem, 100%);
-}
-
 .docs-api-reference {
-  margin-top: 1.5rem;
-  min-height: 42rem;
+  margin-top: 0;
+  min-height: calc(100vh - 5rem);
   background: #fff;
   color: var(--ink);
   font-family: var(--futura-font);
+}
+
+.docs-main:has(> .docs-api-reference) {
+  max-width: none;
+  padding: 1.35rem 1.5rem 3rem;
+}
+
+.docs-api-nav-link {
+  align-items: baseline;
+  max-width: 100%;
+}
+
+.docs-api-nav-method {
+  flex: 0 0 2.6rem;
+  color: var(--peony);
+  font-family: var(--futura-font);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  line-height: 1.4;
+}
+
+.docs-api-nav-label {
+  min-width: 0;
 }
 
 .docs-article p {

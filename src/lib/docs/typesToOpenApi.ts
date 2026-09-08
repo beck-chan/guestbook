@@ -9,10 +9,13 @@ export type JsonSchema = {
   $ref?: string;
 };
 
+export type OpenApiSecurityRequirement = Record<string, string[]>;
+
 export type OpenApiOperation = {
   operationId: string;
   tags: string[];
   summary: string;
+  security?: OpenApiSecurityRequirement[];
   requestBody?: {
     required: boolean;
     content: {
@@ -30,13 +33,84 @@ export type OpenApiOperation = {
   >;
 };
 
+export type OpenApiNavItem = {
+  label: string;
+  method: string;
+  href: string;
+};
+
+export type OpenApiNavSection = {
+  title: string;
+  items: OpenApiNavItem[];
+};
+
 export type OpenApiSpec = {
   openapi: "3.1.0";
   info: { title: string; version: string; description: string };
+  servers?: { url: string }[];
   tags: { name: string }[];
   paths: Record<string, Record<string, OpenApiOperation>>;
-  components: { schemas: Record<string, JsonSchema> };
+  components: {
+    schemas: Record<string, JsonSchema>;
+    securitySchemes?: {
+      bearerAuth: {
+        type: "http";
+        scheme: "bearer";
+        bearerFormat: "JWT";
+        description: string;
+      };
+    };
+  };
 };
+
+const ANON_OPERATIONS = new Set([
+  "POST /comments",
+  "GET /comments_public",
+  "GET /guestbook_settings",
+  "GET /poem_heart_counts",
+  "GET /poem_heart_total",
+  "POST /rpc/toggle_poem_heart",
+  "POST /rpc/poem_heart_state",
+]);
+
+const BEARER_SECURITY: OpenApiSecurityRequirement[] = [{ bearerAuth: [] }];
+
+function applyOperationSecurity(paths: OpenApiSpec["paths"]) {
+  for (const [path, methods] of Object.entries(paths)) {
+    for (const [method, operationItem] of Object.entries(methods)) {
+      const key = `${method.toUpperCase()} ${path}`;
+      if (!ANON_OPERATIONS.has(key)) {
+        operationItem.security = BEARER_SECURITY;
+      }
+    }
+  }
+}
+
+export function openApiNav(spec: OpenApiSpec): OpenApiNavSection[] {
+  const byTag = new Map<string, OpenApiNavItem[]>();
+
+  for (const tag of spec.tags) {
+    byTag.set(tag.name, []);
+  }
+
+  for (const [path, methods] of Object.entries(spec.paths)) {
+    for (const [method, operationItem] of Object.entries(methods)) {
+      const tag = operationItem.tags[0] ?? "other";
+      const list = byTag.get(tag) ?? [];
+      const verb = method.toLowerCase();
+      list.push({
+        label: operationItem.summary || `${method.toUpperCase()} ${path}`,
+        method: method.toUpperCase(),
+        href: `#tag/${tag}/${verb}${path}`,
+      });
+      byTag.set(tag, list);
+    }
+  }
+
+  return [...byTag.entries()]
+    .filter(([, items]) => items.length > 0)
+    .map(([title, items]) => ({ title, items }));
+}
 
 type Field = {
   name: string;
@@ -499,6 +573,8 @@ export function typesToOpenApi(
     };
   }
 
+  applyOperationSecurity(paths);
+
   return {
     openapi: "3.1.0",
     info: {
@@ -508,6 +584,17 @@ export function typesToOpenApi(
     },
     tags: [...tags.values()],
     paths,
-    components: { schemas },
+    components: {
+      schemas,
+      securitySchemes: {
+        bearerAuth: {
+          type: "http",
+          scheme: "bearer",
+          bearerFormat: "JWT",
+          description:
+            "Supabase user JWT for authenticated admin calls. Anon-callable operations do not require this.",
+        },
+      },
+    },
   };
 }
