@@ -14,10 +14,10 @@ function isApiPath(pathname: string) {
   return pathname === "/docs/api" || pathname === "/docs/api/";
 }
 
-function BrandTitle({ isApi }: { isApi: boolean }) {
+function BrandTitle() {
   return (
     <>
-      {isApi ? "API" : "Doc"}
+      Doc
       <span className="docs-brand-heart">
         {/* Hello Honey s.1 (\uE019) is the ending heart flourish */}
         {"\uE019"}
@@ -75,10 +75,8 @@ export function DocsSidenav({ apiNav }: { apiNav: OpenApiNavSection[] }) {
     };
   }, [open, isMobile]);
 
-  const brandHref = isApi ? "/docs/api" : "/docs";
-  const brandLabel = isApi
-    ? "y2k Guestbook API home"
-    : "y2k Guestbook Docs home";
+  const brandHref = "/docs";
+  const brandLabel = "y2k Guestbook Docs home";
   const searchLabel = isApi ? "Search API" : "Search docs";
   const searchClick = isApi ? openScalarSearch : undefined;
 
@@ -108,7 +106,7 @@ export function DocsSidenav({ apiNav }: { apiNav: OpenApiNavSection[] }) {
           >
             <span className="docs-brand-kicker">y2k guestbook</span>
             <span className="docs-brand-title">
-              <BrandTitle isApi={isApi} />
+              <BrandTitle />
             </span>
           </Link>
           <DocsSearch
@@ -130,7 +128,7 @@ export function DocsSidenav({ apiNav }: { apiNav: OpenApiNavSection[] }) {
               aria-label={brandLabel}
               onClick={() => setOpen(false)}
             >
-              <BrandTitle isApi={isApi} />
+              <BrandTitle />
             </Link>
           </div>
           <DocsSearch

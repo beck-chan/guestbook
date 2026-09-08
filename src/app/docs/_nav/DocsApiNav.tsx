@@ -1,9 +1,22 @@
 "use client";
 
-import Link from "next/link";
 import { useEffect, useState } from "react";
 import { DocsHeart } from "../_components/DocsHeart";
 import type { OpenApiNavSection } from "@/lib/docs/typesToOpenApi";
+
+function scrollToScalarHash(hash: string) {
+  const id = hash.startsWith("#") ? hash.slice(1) : hash;
+  if (window.location.hash !== `#${id}`) {
+    window.location.hash = id;
+  } else {
+    window.dispatchEvent(new HashChangeEvent("hashchange"));
+  }
+
+  const target =
+    document.getElementById(id) ??
+    document.querySelector(`[id="${CSS.escape(id)}"]`);
+  target?.scrollIntoView({ block: "start" });
+}
 
 export function DocsApiNav({
   sections,
@@ -35,10 +48,14 @@ export function DocsApiNav({
                 const active = hash === item.href;
                 return (
                   <li key={item.href}>
-                    <Link
+                    <a
                       className={`docs-nav-link docs-api-nav-link${active ? " is-active" : ""}`}
                       href={item.href}
-                      onClick={onNavigate}
+                      onClick={(event) => {
+                        event.preventDefault();
+                        scrollToScalarHash(item.href);
+                        onNavigate?.();
+                      }}
                     >
                       <span className="docs-api-nav-method" data-method={item.method}>
                         {item.method}
@@ -47,7 +64,7 @@ export function DocsApiNav({
                       {active ? (
                         <DocsHeart filled className="docs-nav-heart" />
                       ) : null}
-                    </Link>
+                    </a>
                   </li>
                 );
               })}

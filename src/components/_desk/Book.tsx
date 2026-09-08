@@ -806,7 +806,6 @@ export function Book({
       });
       const tab = note.getBoundingClientRect();
       const enterX = Math.max(window.innerWidth - tab.left + 48, 280);
-      arriver.classList.add("is-upright");
       poseFlyingNote(arriver, note, {
         x: enterX,
         y: -32,
@@ -847,17 +846,18 @@ export function Book({
       tl.to(arriver, { duration: 0.28 });
     }
 
-    tl.add(() => {
-      arriver.classList.remove("is-upright");
-    }, "+=0.22");
-    tl.to(arriver, {
-      x: 0,
-      y: 0,
-      rotation: -90,
-      z: 0,
-      duration: 0.78,
-      ease: "power2.inOut",
-    });
+    tl.to(
+      arriver,
+      {
+        x: 0,
+        y: 0,
+        rotation: -90,
+        z: 0,
+        duration: 0.78,
+        ease: "power2.inOut",
+      },
+      "+=0.22",
+    );
 
     tl.add(() => {
       arriver.remove();

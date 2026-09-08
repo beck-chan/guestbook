@@ -28,6 +28,12 @@ export const SCALAR_CUSTOM_CSS = `
 .scalar-app .introduction h1 {
   display: none !important;
 }
+
+/* Keep Scalar SearchButton mounted (cmd+K) but hide its own chrome. */
+.scalar-app .t-doc__sidebar,
+.scalar-app [class*="sidebar-search"] {
+  display: none !important;
+}
 `;
 
 export function createScalarReferenceConfig() {
@@ -36,7 +42,7 @@ export function createScalarReferenceConfig() {
     theme: "none" as const,
     hideClientButton: true,
     defaultOpenFirstTag: false,
-    hideSearch: true,
+    hideSearch: false,
     showOperationId: true,
     showSidebar: false,
     expandAllResponses: true,
@@ -49,6 +55,7 @@ export function createScalarReferenceConfig() {
     hideTestRequestButton: !flags.public,
     hideDarkModeToggle: true,
     withDefaultFonts: false,
+    slug: "api",
     defaultOpenAllTags: true,
     expandAllModelSections: false,
     expandAllSchemaProperties: false,

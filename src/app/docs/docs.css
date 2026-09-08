@@ -502,12 +502,27 @@ body:has(.docs-shell) {
 
 .docs-api-nav-method {
   flex: 0 0 2.6rem;
-  color: var(--peony);
   font-family: var(--futura-font);
   font-size: 0.72rem;
   font-weight: 600;
   letter-spacing: 0.04em;
   line-height: 1.4;
+}
+
+.docs-api-nav-method[data-method="GET"] {
+  color: color-mix(in srgb, #6f4e37 55%, white);
+}
+
+.docs-api-nav-method[data-method="POST"] {
+  color: color-mix(in srgb, var(--cover) 42%, white);
+}
+
+.docs-api-nav-method[data-method="PATCH"] {
+  color: var(--peony-soft);
+}
+
+.docs-api-nav-method[data-method="DELETE"] {
+  color: var(--peony);
 }
 
 .docs-api-nav-label {

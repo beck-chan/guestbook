@@ -24,20 +24,26 @@ function SearchGlyph() {
 }
 
 export function openScalarSearch() {
-  const isMac = /Mac|iPhone|iPad|iPod/i.test(navigator.platform);
-  const eventInit: KeyboardEventInit = {
-    key: "k",
-    code: "KeyK",
-    keyCode: 75,
-    which: 75,
-    metaKey: isMac,
-    ctrlKey: !isMac,
-    bubbles: true,
-    cancelable: true,
-  };
+  const host = document.querySelector(".docs-api-reference, .scalar-app");
+  const trigger = host?.querySelector<HTMLElement>(
+    'button[aria-label*="Search" i], button[class*="search" i], [class*="sidebar-search"] button',
+  );
+  if (trigger) {
+    trigger.click();
+    return;
+  }
 
-  window.dispatchEvent(new KeyboardEvent("keydown", eventInit));
-  document.dispatchEvent(new KeyboardEvent("keydown", eventInit));
+  const isMac = /Mac|iPhone|iPad|iPod/i.test(navigator.platform);
+  window.dispatchEvent(
+    new KeyboardEvent("keydown", {
+      key: "k",
+      code: "KeyK",
+      metaKey: isMac,
+      ctrlKey: !isMac,
+      bubbles: true,
+      cancelable: true,
+    }),
+  );
 }
 
 export function DocsSearch({

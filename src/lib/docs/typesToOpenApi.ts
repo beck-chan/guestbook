@@ -86,6 +86,16 @@ function applyOperationSecurity(paths: OpenApiSpec["paths"]) {
   }
 }
 
+function scalarNavSlug(value: string) {
+  return value
+    .slice(0, 255)
+    .trim()
+    .toLowerCase()
+    .replace(/[^\p{L}\p{M}\p{N}\s_-]/gu, "")
+    .replace(/[\s_-]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
 export function openApiNav(spec: OpenApiSpec): OpenApiNavSection[] {
   const byTag = new Map<string, OpenApiNavItem[]>();
 
@@ -97,11 +107,11 @@ export function openApiNav(spec: OpenApiSpec): OpenApiNavSection[] {
     for (const [method, operationItem] of Object.entries(methods)) {
       const tag = operationItem.tags[0] ?? "other";
       const list = byTag.get(tag) ?? [];
-      const verb = method.toLowerCase();
+      const verb = method.toUpperCase();
       list.push({
-        label: operationItem.summary || `${method.toUpperCase()} ${path}`,
-        method: method.toUpperCase(),
-        href: `#tag/${tag}/${verb}${path}`,
+        label: operationItem.summary || `${verb} ${path}`,
+        method: verb,
+        href: `#api/tag/${scalarNavSlug(tag)}/${verb}${path}`,
       });
       byTag.set(tag, list);
     }

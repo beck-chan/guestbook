@@ -1050,8 +1050,7 @@ body {
   pointer-events: none;
 }
 
-.sticky-note.is-label-open .sticky-note-caption,
-.sticky-note.is-upright .sticky-note-caption {
+.sticky-note.is-label-open .sticky-note-caption {
   top: 52%;
   bottom: auto;
   transform: translate(-50%, -50%);
