@@ -336,7 +336,11 @@ body {
 }
 
 .book.is-open {
-  transform: rotateX(4deg) rotateY(0deg);
+  transform: none;
+}
+
+.book.is-open:not(.is-animating) {
+  transform-style: flat;
 }
 
 .book.is-closing-clip,
@@ -449,16 +453,19 @@ body {
   left: 50%;
   width: 50%;
   height: 100%;
-  pointer-events: none;
+  pointer-events: auto;
   transform: rotateY(0deg) translateZ(3px);
   transform-origin: left center;
   transform-style: preserve-3d;
   z-index: 3;
 }
 
+.book.is-open .cover {
+  pointer-events: none;
+}
+
 .book.is-open:not(.is-animating) .cover {
   transform: rotateY(-180deg) translateZ(3px);
-  pointer-events: none;
   visibility: hidden;
 }
 
@@ -632,7 +639,7 @@ body {
   height: 100%;
   overflow: auto;
   overscroll-behavior: contain;
-  padding: 4.75rem 4.6rem 9rem 5.6rem;
+  padding: 4.75rem 4.6rem 4.5rem 5.6rem;
   color: color-mix(in srgb, #6f4e37 80%, white);
   font-family: var(--body-font);
   scrollbar-width: thin;
@@ -660,7 +667,7 @@ body {
 }
 
 .leaf-left .leaf-copy {
-  padding: 4.75rem 5.6rem 10rem 4.6rem;
+  padding: 4.75rem 5.6rem 5rem 4.6rem;
   direction: rtl;
 }
 

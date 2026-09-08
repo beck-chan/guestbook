@@ -120,7 +120,7 @@ async function measure(send, waitEvent, viewport) {
   await call("Runtime.enable");
   await call("Input.enable").catch(() => {});
   const loaded = waitEvent("Page.domContentEventFired");
-  await call("Page.navigate", { url: "http://127.0.0.1:3000/" });
+  await call("Page.navigate", { url: "http://localhost:3000/" });
   await loaded;
   await wait(4000);
 
@@ -131,80 +131,140 @@ async function measure(send, waitEvent, viewport) {
         const note = document.querySelector(".desk-desktop .sticky-note");
         if (!note) return null;
         const r = note.getBoundingClientRect();
-        return { x: r.left + r.width / 2, y: r.top + r.height / 2, w: r.width, h: r.height };
+        const x = r.left + r.width / 2;
+        const y = r.top + r.height / 2;
+        const hit = document.elementFromPoint(x, y);
+        return {
+          x, y, w: r.width, h: r.height,
+          hit: hit && (hit.tagName + "." + String(hit.className).split(" ")[0]),
+        };
       })()
     `,
   });
   if (!noteBox.value) {
     return { error: "no sticky note" };
   }
-  await call("Input.dispatchMouseEvent", {
-    type: "mousePressed",
-    x: noteBox.value.x,
-    y: noteBox.value.y,
-    button: "left",
-    clickCount: 1,
+  await call("Runtime.evaluate", {
+    expression: `
+      const note = document.querySelector(".desk-desktop .sticky-note");
+      note?.click();
+    `,
   });
-  await call("Input.dispatchMouseEvent", {
-    type: "mouseReleased",
-    x: noteBox.value.x,
-    y: noteBox.value.y,
-    button: "left",
-    clickCount: 1,
-  });
-  await wait(4000);
+  let openedClass = "";
+  for (let i = 0; i < 50; i += 1) {
+    const { result: opened } = await call("Runtime.evaluate", {
+      returnByValue: true,
+      expression: `
+        (() => {
+          const book = document.querySelector(".desk-desktop .book");
+          return book ? book.className : "";
+        })()
+      `,
+    });
+    openedClass = String(opened.value);
+    if (openedClass.includes("is-open") && !openedClass.includes("is-animating")) {
+      break;
+    }
+    await wait(200);
+  }
+  await wait(200);
 
-  const { result } = await call("Runtime.evaluate", {
+  const { result: layout } = await call("Runtime.evaluate", {
     returnByValue: true,
     expression: `
       (() => {
-        const book = document.querySelector(".book");
-        const cover = document.querySelector(".cover");
-        const pageRight = document.querySelector(".page-right");
-        const copy = document.querySelector(".page-right .leaf-copy");
+        const book = document.querySelector(".desk-desktop .book");
+        const cover = document.querySelector(".desk-desktop .cover");
+        const pageRight = document.querySelector(".desk-desktop .page-right");
+        const copy = document.querySelector(".desk-desktop .page-right .leaf-copy");
+        const leftCopy = document.querySelector(".desk-desktop .page-left .leaf-copy");
         if (!book || !cover || !pageRight || !copy) {
           return { error: "missing nodes" };
         }
-        const pageBox = pageRight.getBoundingClientRect();
-        const x = Math.round(pageBox.left + pageBox.width * 0.45);
-        const y = Math.round(pageBox.top + pageBox.height * 0.4);
-        const hit = document.elementFromPoint(x, y);
-        const before = copy.scrollTop;
-        const wheel = new WheelEvent("wheel", {
-          bubbles: true,
-          cancelable: true,
-          deltaY: 120,
-          clientX: x,
-          clientY: y,
+        const pageBox = copy.getBoundingClientRect();
+        const leftBox = leftCopy?.getBoundingClientRect();
+        const samples = [0.2, 0.45, 0.7].map((t) => ({
+          x: Math.round(pageBox.left + pageBox.width * t),
+          y: Math.round(pageBox.top + pageBox.height * 0.42),
+        }));
+        if (leftBox) {
+          samples.push({
+            x: Math.round(leftBox.left + leftBox.width * 0.45),
+            y: Math.round(leftBox.top + leftBox.height * 0.42),
+          });
+        }
+        const hits = samples.map((pt) => {
+          const hit = document.elementFromPoint(pt.x, pt.y);
+          return {
+            ...pt,
+            hit: hit && (hit.tagName + "." + String(hit.className).split(" ")[0]),
+            hitCover: Boolean(hit?.closest(".cover")),
+            hitCopy: Boolean(hit?.closest(".leaf-copy")),
+          };
         });
-        (hit || copy).dispatchEvent(wheel);
-        const afterWheel = copy.scrollTop;
-        copy.scrollTop = 80;
-        const afterSet = copy.scrollTop;
-        copy.scrollTop = before;
-        const leftCopy = document.querySelector(".page-left .leaf-copy");
         return {
+          noteClick: ${JSON.stringify(noteBox.value)},
           open: book.className,
           coverPe: getComputedStyle(cover).pointerEvents,
-          pageLeftPe: getComputedStyle(document.querySelector(".page-left")).pointerEvents,
-          hit: hit && (hit.tagName + "." + hit.className),
-          hitCover: Boolean(hit?.closest(".cover")),
-          hitCopy: Boolean(hit?.closest(".leaf-copy")),
+          coverVis: getComputedStyle(cover).visibility,
+          pageRightPe: getComputedStyle(pageRight).pointerEvents,
           scrollHeight: copy.scrollHeight,
           clientHeight: copy.clientHeight,
           canScroll: copy.scrollHeight - copy.clientHeight > 20,
-          afterWheel,
-          afterSet,
           leftCanScroll: leftCopy
             ? leftCopy.scrollHeight - leftCopy.clientHeight > 20
             : null,
+          samples: hits,
         };
       })()
     `,
   });
+  if (!layout.value || layout.value.error) {
+    await send("Target.closeTarget", { targetId });
+    return layout.value ?? { error: "no layout" };
+  }
+
+  const wheelHits = [];
+  for (const sample of layout.value.samples) {
+    await call("Runtime.evaluate", {
+      expression: `
+        document.querySelector(".desk-desktop .page-right .leaf-copy").scrollTop = 0;
+        const left = document.querySelector(".desk-desktop .page-left .leaf-copy");
+        if (left) left.scrollTop = 0;
+      `,
+    });
+    await wait(50);
+    await call("Input.dispatchMouseEvent", {
+      type: "mouseMoved",
+      x: sample.x,
+      y: sample.y,
+    });
+    await call("Input.dispatchMouseEvent", {
+      type: "mouseWheel",
+      x: sample.x,
+      y: sample.y,
+      deltaX: 0,
+      deltaY: 180,
+    });
+    await wait(80);
+    const { result: scrolled } = await call("Runtime.evaluate", {
+      returnByValue: true,
+      expression: `
+        (() => {
+          const right = document.querySelector(".desk-desktop .page-right .leaf-copy");
+          const left = document.querySelector(".desk-desktop .page-left .leaf-copy");
+          return {
+            right: right?.scrollTop ?? null,
+            left: left?.scrollTop ?? null,
+          };
+        })()
+      `,
+    });
+    wheelHits.push({ ...sample, scrolled: scrolled.value });
+  }
 
   await send("Target.closeTarget", { targetId });
-  return result.value;
+  return { ...layout.value, wheelHits };
 }
 
 const results = await withCdp(async ({ send, waitEvent }) => {

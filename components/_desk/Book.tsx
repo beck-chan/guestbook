@@ -135,14 +135,36 @@ function wheelDeltaY(event: WheelEvent) {
 }
 
 function leafCopyUnderPoint(root: HTMLElement, x: number, y: number) {
-  const copies = root.querySelectorAll<HTMLElement>(
-    ".page-left .leaf-copy, .page-right .leaf-copy",
+  const right = root.querySelector<HTMLElement>(".page-right .leaf-copy");
+  const left = root.querySelector<HTMLElement>(".page-left .leaf-copy");
+  const rightBox = right?.getBoundingClientRect();
+  const leftBox = left?.getBoundingClientRect();
+  const inRight = Boolean(
+    right &&
+      rightBox &&
+      x >= rightBox.left &&
+      x <= rightBox.right &&
+      y >= rightBox.top &&
+      y <= rightBox.bottom,
   );
-  for (const copy of copies) {
-    const box = copy.getBoundingClientRect();
-    if (x >= box.left && x <= box.right && y >= box.top && y <= box.bottom) {
-      return copy;
-    }
+  const inLeft = Boolean(
+    left &&
+      leftBox &&
+      x >= leftBox.left &&
+      x <= leftBox.right &&
+      y >= leftBox.top &&
+      y <= leftBox.bottom,
+  );
+  if (inRight && inLeft && rightBox && leftBox) {
+    const rightMid = rightBox.left + rightBox.width / 2;
+    const leftMid = leftBox.left + leftBox.width / 2;
+    return Math.abs(x - rightMid) <= Math.abs(x - leftMid) ? right : left;
+  }
+  if (inRight) {
+    return right;
+  }
+  if (inLeft) {
+    return left;
   }
   return null;
 }
@@ -205,7 +227,7 @@ function spreadWidthForCover(sceneW: number, leaf: number, openW: number) {
 function bookTilt(open: boolean) {
   const narrow = window.matchMedia("(max-width: 720px)").matches;
   if (open) {
-    return narrow ? { rotationX: 3, rotationY: 0 } : { rotationX: 4, rotationY: 0 };
+    return { rotationX: 0, rotationY: 0 };
   }
   return narrow ? { rotationX: 4, rotationY: -6 } : { rotationX: 5, rotationY: -9 };
 }
@@ -889,11 +911,8 @@ export function Book({
       if (event.ctrlKey || event.defaultPrevented) {
         return;
       }
-      if (!isOpenRef.current) {
-        return;
-      }
       const book = bookRef.current;
-      if (!book) {
+      if (!book?.classList.contains("is-open")) {
         return;
       }
       const target = event.target;
@@ -917,8 +936,11 @@ export function Book({
     }
 
     window.addEventListener("wheel", onWheel, { passive: false, capture: true });
-    return () =>
+    bookRef.current?.addEventListener("wheel", onWheel, { passive: false });
+    return () => {
       window.removeEventListener("wheel", onWheel, { capture: true });
+      bookRef.current?.removeEventListener("wheel", onWheel);
+    };
   }, []);
 
   useLayoutEffect(() => {
