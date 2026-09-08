@@ -158,3 +158,17 @@ Copy the JSON snippet in that panel.
 Paste the keys you want into the createApiReference config in src/app/docs/_components/DocsApiReferenceView.tsx (scalarConfig). If you still use the iframe explorer, copy the same keys into src/app/docs/api/explorer/route.ts.
 Refresh /docs/api.
 
+
+3. Automating Transactional Emails (Resend or SendGrid)When someone signs up for your app, you usually want to send them a welcome email. [1] (https://www.youtube.com/watch?v=g9vYovJgsA4&t=406)How it works: You can trigger an Edge Function right after a user signs up.Action: The function talks to an email provider like Resend to instantly dispatch a custom, beautiful email to the user's inbox.
+
+can we do this for authed admins only
+
+1. Vector Search for AI (pgvector)Supabase has built-in support for pgvector, an open-source extension for your PostgreSQL database that lets you store and search through AI embeddings.What it does: It allows your database to understand the "meaning" of sentences, images, or documents instead of just matching exact words.Real-world Example (Semantic Search): If a user searches an e-commerce app for "something warm to wear in the rain," a traditional database looking for those exact words might fail. A vector search can understand the conceptual meaning and instantly surface a Waterproof Winter Jacket.AI Knowledge Base Example: You can cut up a 500-page instruction manual into tiny paragraphs, turn them into vectors, and store them in Supabase. When a user asks a chatbot a question, Supabase instantly finds the 3 most relevant paragraphs and feeds them to OpenAI to generate an accurate answer.
+
+can we integrate this into the LLM ingestion
+
+3. Advanced Row Level Security (RLS) with Custom ClaimsRow Level Security (RLS) is the security engine of Supabase. It forces the database to check if a user is allowed to see or change a specific row of data before fulfilling their request.What it does: Instead of writing complex security code in a custom backend API, you write security rules directly on your database tables using SQL.Multi-tenant SaaS Example: Imagine a business software tool used by Nike and Adidas at the same time. You can write one RLS rule that says: auth.jwt() ->> 'company_id' = company_id. This guarantees a Nike employee can absolutely never view or accidentally leak an Adidas spreadsheet.Time-Locked Content Example: You can write a rule that prevents premium video content from being downloaded until a specific launch date: USING (release_date <= NOW()).
+
+4. Database WebhooksDatabase Webhooks trigger external actions automatically whenever a specific change happens inside your database tables.What it does: It listens for any INSERT, UPDATE, or DELETE event inside your data rows and instantly alerts an outside server via an HTTP request.Fraud Detection Example: If a row is inserted into your transactions table with an amount over $10,000, a database webhook instantly alerts an external security service to freeze the account.Slack/Discord Alerts Example: Whenever a new user leaves a 1-star review in your reviews table, a webhook automatically posts an alert straight to your team's internal Slack channel so support can reach out.
+
+email notif on comment row creation to admins
