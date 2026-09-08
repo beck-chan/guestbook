@@ -547,12 +547,12 @@ body:has(.docs-shell) {
 .docs-article li > ol {
   margin-top: 0.65rem;
   margin-bottom: 0.25rem;
-  margin-left: 1.5rem;
-  padding-left: 2.65rem;
+  margin-left: 0;
+  padding-left: 0.65rem;
 }
 
 .docs-article li > ol ol {
-  margin-left: 1.1rem;
+  margin-left: 0.55rem;
 }
 
 .docs-article li > p {
