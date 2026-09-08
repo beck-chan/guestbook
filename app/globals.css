@@ -327,28 +327,16 @@ body {
   transform: rotateX(4deg) rotateY(0deg);
 }
 
-.book-shadow-clip {
-  position: absolute;
-  top: -12px;
-  bottom: -12px;
-  right: 100%;
-  width: 0;
-  overflow: hidden;
-  pointer-events: none;
-  z-index: 0;
-}
-
-.book.is-open:not(.is-animating) .book-shadow-clip {
-  width: 28px;
+.book.is-closing-clip {
+  clip-path: inset(-12% -14rem -12% 0);
 }
 
 .book-shadow-left {
   position: absolute;
-  top: 12px;
-  bottom: 12px;
-  right: 0;
-  width: 1px;
+  inset: 0;
+  z-index: 0;
   pointer-events: none;
+  opacity: 0;
   box-shadow:
     -1px 1px 0 var(--paper-edge),
     -2px 1px 0 var(--paper-hi),
@@ -374,11 +362,14 @@ body {
     -24px 12px 0 var(--paper-shadow);
 }
 
+.book.is-open:not(.is-animating) .book-shadow-left {
+  opacity: 1;
+}
+
 .spread {
   position: absolute;
   top: 0;
   right: 0;
-  z-index: 3;
   width: 200%;
   height: 100%;
   pointer-events: none;
@@ -434,7 +425,7 @@ body {
   transform: rotateY(0deg) translateZ(3px);
   transform-origin: left center;
   transform-style: preserve-3d;
-  z-index: 4;
+  z-index: 3;
 }
 
 .book.is-open:not(.is-animating) .cover {
