@@ -6,7 +6,7 @@ const EASTER_EGG = {
     "You found the silly little Easter egg, with a retro twist.",
     "I am a human that hates talking about myself, which you wouldn’t believe if you managed to corner me into an interview.",
     "The best I can do is some original poetry, some of which may or may not be autobiographical.",
-    "Turn the page to receive a slightly-randomized one, y’know, in honour of the ephemeral.",
+    "Turn the page to receive a slightly randomized one, y’know, in honour of the ephemeral.",
     "No, I will not be taking any constructive criticism, thank you very kindly — but please do <3 the poems you like and leave a comment in the guestbook.",
   ],
   signoff: {

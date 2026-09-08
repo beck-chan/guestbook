@@ -3,15 +3,18 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { DocsHeart } from "@/app/docs/_components/DocsHeart";
 import { adminHref, type AdminFilters } from "@/lib/comments";
 import { guestbookAdminPath } from "@/lib/guestbookPaths";
 
 export function AdminFilters({
   filters,
   basePath = guestbookAdminPath(),
+  totalHearts = 0,
 }: {
   filters: AdminFilters;
   basePath?: string;
+  totalHearts?: number;
 }) {
   const router = useRouter();
   const [toolsOpen, setToolsOpen] = useState(false);
@@ -167,7 +170,14 @@ export function AdminFilters({
         </div>
       </div>
       <div className="admin-header">
-        <h1 className="admin-title">comments</h1>
+        <h1 className="admin-title">
+          comments
+          <span className="admin-heart-total">
+            <DocsHeart filled className="admin-heart-total-icon" />
+            <span className="admin-heart-total-count">{totalHearts}</span>
+            <span className="sr-only"> total hearts</span>
+          </span>
+        </h1>
       </div>
       <p className="admin-lede">
         posted comments, {filters.sort === "oldest" ? "oldest first" : "newest first"}.

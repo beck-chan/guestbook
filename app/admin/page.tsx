@@ -7,6 +7,7 @@ import {
   sortComments,
   type AdminFilters,
 } from "@/lib/comments";
+import { getPoemHeartTotal } from "@/lib/actions/hearts";
 
 export const metadata: Metadata = {
   title: "Admin Dashboard",
@@ -41,7 +42,10 @@ function pageFrom(searchParams: Record<string, string | string[] | undefined>) {
 export default async function AdminPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   const params = await searchParams;
   const filters = filtersFrom(params);
-  const allComments = await loadAdminComments();
+  const [allComments, totalHearts] = await Promise.all([
+    loadAdminComments(),
+    getPoemHeartTotal(),
+  ]);
   const { comments, page, totalPages } = paginateComments(
     sortComments(filterComments(allComments, filters), filters.sort),
     pageFrom(params),
@@ -53,6 +57,7 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
       page={page}
       totalPages={totalPages}
       filters={filters}
+      totalHearts={totalHearts}
     />
   );
 }

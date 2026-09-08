@@ -174,7 +174,6 @@ export function PoetryDesk({
               isOpen={isOpen}
               poem={poem}
               heartCount={heart.heart_count}
-              totalHearts={heart.total_hearts}
               liked={heart.liked}
               heartPending={heartPending}
               onToggleHeart={onToggleHeart}
@@ -225,7 +224,6 @@ export function PoetryDesk({
         poemIndex={poemIndex}
         onPoemIndexChange={setPoemIndex}
         heartCount={heart.heart_count}
-        totalHearts={heart.total_hearts}
         liked={heart.liked}
         heartPending={heartPending}
         onToggleHeart={onToggleHeart}

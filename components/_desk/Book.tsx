@@ -1,7 +1,6 @@
 import type { Poem } from "@/lib/poems";
 import { DocsHeart } from "@/app/docs/_components/DocsHeart";
 import { EasterEgg } from "@/components/_desk/EasterEgg";
-import { PoemHeartTotal } from "@/components/_desk/PoemHeartTotal";
 import { StickyNote } from "@/components/_desk/StickyNote";
 
 type BookProps = {
@@ -10,7 +9,6 @@ type BookProps = {
   onTurnPage: () => void;
   onToggle: () => void;
   heartCount?: number;
-  totalHearts?: number;
   liked?: boolean;
   onToggleHeart?: () => void;
   heartPending?: boolean;
@@ -22,7 +20,6 @@ export function Book({
   onTurnPage,
   onToggle,
   heartCount = 0,
-  totalHearts = 0,
   liked = false,
   onToggleHeart,
   heartPending = false,
@@ -82,7 +79,6 @@ export function Book({
               </span>
             </button>
           </div>
-          {isOpen ? <PoemHeartTotal count={totalHearts} /> : null}
         </div>
         <div className="cover">
           <div className="cover-front">

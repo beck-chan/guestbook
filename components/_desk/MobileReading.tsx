@@ -6,7 +6,6 @@ import { DocsHeart } from "@/app/docs/_components/DocsHeart";
 import { EasterEgg } from "@/components/_desk/EasterEgg";
 import { HitCounter } from "@/components/_shared/HitCounter";
 import { MobileMenu } from "@/components/_shared/MobileMenu";
-import { PoemHeartTotal } from "@/components/_desk/PoemHeartTotal";
 import { pickPoemIndex, poemMeasureLines, type Poem } from "@/lib/poems";
 
 type MobileReadingProps = {
@@ -14,7 +13,6 @@ type MobileReadingProps = {
   initialIndex: number;
   hitCount: number;
   heartCount?: number;
-  totalHearts?: number;
   liked?: boolean;
   onToggleHeart?: () => void;
   heartPending?: boolean;
@@ -116,7 +114,6 @@ export function MobileReading({
   initialIndex,
   hitCount,
   heartCount = 0,
-  totalHearts = 0,
   liked = false,
   onToggleHeart,
   heartPending = false,
@@ -258,7 +255,6 @@ export function MobileReading({
         <div className="leaf leaf-left">
           <EasterEgg />
         </div>
-        <PoemHeartTotal count={totalHearts} />
         <ScrollHint
           label="Turn Page"
           onPaper
