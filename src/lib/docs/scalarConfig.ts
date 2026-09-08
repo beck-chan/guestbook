@@ -127,6 +127,12 @@ export const SCALAR_CUSTOM_CSS = `
   background: var(--paper, #faf6ea) !important;
   color: var(--peony, #ff6162) !important;
   border-radius: 0.35rem;
+  padding-top: 0;
+}
+
+.scalar-app .scalar-code-copy-backdrop {
+  top: -2px !important;
+  right: -4px !important;
 }
 
 .scalar-app .scalar-code-copy svg,

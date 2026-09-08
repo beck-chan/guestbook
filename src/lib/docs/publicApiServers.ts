@@ -1,7 +1,7 @@
 export const PUBLIC_API_SERVERS = [
   {
     url: "https://{projectRef}.supabase.co/rest/v1",
-    description: "Set your project ID",
+    description: "Set your project ID, then select your server URL from the drop-down for test calls",
     variables: {
       projectRef: {
         default: "your-database-url",
@@ -13,6 +13,6 @@ export const PUBLIC_API_SERVERS = [
   {
     url: "https://your-database-url.supabase.co/rest/v1",
     description:
-      "Test call URL — select this, then replace your-database-url with your project ID",
+      "Test call URL — select this server URL, once you've provided your project ID",
   },
 ];
