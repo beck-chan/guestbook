@@ -43,7 +43,7 @@ const withMDX = createMDX({
     // bust @mdx-js/loader's processor cache (functions alone hash as null).
     remarkPlugins: [
       "remark-gfm",
-      [path.join(root, "lib/mdx/remark-docs-syntax.mjs"), { rev: 8 }],
+      [path.join(root, "lib/mdx/remark-docs-syntax.mjs"), { rev: 11 }],
     ],
     rehypePlugins: [
       "rehype-slug",

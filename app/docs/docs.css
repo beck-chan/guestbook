@@ -1589,6 +1589,7 @@ body:has(.docs-shell) {
   }
 
   .docs-index-subtitle {
+    margin-top: 1.15rem;
     font-size: 0.88rem;
     gap: 0.4rem;
   }

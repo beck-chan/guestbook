@@ -44,6 +44,54 @@ import Example from "../_snippets/example.mdx"
 
 Leave YAML and `# h1` on the host page. Snippet `##` / `###` headings are included in the host table of contents automatically, in the order the snippet appears on the page.
 
+### Conditional Content
+
+`public: false` in YAML hides an entire page when `FLAG_PUBLIC=true`. Leave it off and the page will display in both builds. 
+
+To swap a chunk, not the page, use a fence — copy outside fences is always shown regardless of flags.  The other fence is dropped at compile time, including its headings. 
+
+- `{.public}` is kept when `FLAG_PUBLIC=true`
+- `{.private}` is kept when `FLAG_PUBLIC=false`
+
+
+```markdown
+::: {.public}
+Public-build copy (`FLAG_PUBLIC=true`).
+:::
+
+::: {.private}
+Custom-install copy (`FLAG_PUBLIC=false`).
+:::
+```
+
+::: {.private}
+This sentence is the private variant — compiled in when `FLAG_PUBLIC=false`.
+:::
+
+::: {.public}
+This sentence is the public variant — compiled in when `FLAG_PUBLIC=true`.
+:::
+
+For longer or generated copy, keep a sibling pair next to the host file and embed it. Shared `_snippets` imports are not rewritten. `.ts`, `.sql`, and `.feature` siblings render as a highlighted code block. 
+
+- Unmarked `name.mdx` is the private file
+- `name-public.mdx` is the public file
+
+::: {.callout}
+A missing pair file fails the build. 
+
+:::
+
+```markdown
+::: {.embed src="conditional-embed"}
+:::
+```
+
+::: {.embed src="conditional-embed"}
+:::
+
+`src` is relative to the file that contains the fence. Headings inside an embedded `.mdx` join the host table of contents.
+
 ## Content
 
 ### Headings
