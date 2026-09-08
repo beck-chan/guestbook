@@ -21,12 +21,12 @@ Feature: Original Poetry volume
 
         Scenario: Original Poetry book closes on mobile
         Given the user is on the introduction page of the Original Poetry book on mobile
-        When a user scrolls up or clicks the up caret
+        When a user clicks the up caret
         They are taken back up to the cover page of the Original Poetry book
 
         Scenario: Original Poetry book poem pages turn
         Given the user is on the introduction page of the Original Poetry book on mobile
-        When a user scrolls down or clicks the `Turn Page` button 
+        When a user clicks the `Turn Page` button 
         Then they are taken to the poem page of the Original Poetry book
 
 
