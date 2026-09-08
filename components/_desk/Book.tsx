@@ -179,6 +179,14 @@ function spreadWidthForCover(sceneW: number, leaf: number, openW: number) {
   return leaf * 2 + (openW - leaf * 2) * t;
 }
 
+function bookTilt(open: boolean) {
+  const narrow = window.matchMedia("(max-width: 720px)").matches;
+  if (open) {
+    return narrow ? { rotationX: 3, rotationY: 0 } : { rotationX: 4, rotationY: 0 };
+  }
+  return narrow ? { rotationX: 4, rotationY: -6 } : { rotationX: 5, rotationY: -9 };
+}
+
 export function Book({
   isOpen,
   poem,
@@ -249,6 +257,7 @@ export function Book({
     }
     gsap.set(parts.scene, { clearProps: "width" });
     gsap.set(parts.spread, { clearProps: "width" });
+    gsap.set(parts.book, { clearProps: "transform,rotationX,rotationY" });
     gsap.set(parts.cover, { clearProps: "transform,z" });
     gsap.set(parts.note, {
       clearProps: "transform,x,y,z,zIndex,boxShadow,opacity,visibility,pointerEvents",
@@ -268,22 +277,28 @@ export function Book({
     const pastMid = rotationY <= -90;
     pageLeft.classList.toggle("is-revealed", closing || pastMid);
 
-    if (closing && !pastMid) {
-      gsap.set(scene, { width: leaf });
-      spread.style.width = `${leaf * 2}px`;
-      book.classList.add("is-closing-clip");
+    if (closing) {
+      const span = poses.openW - leaf;
+      let sceneW = poses.openW;
+      if (!pastMid) {
+        const t = Math.max(0, Math.min(1, (rotationY + 90) / 90));
+        sceneW = poses.openW - span * t;
+        book.setAttribute("data-closing-clip", "");
+      } else {
+        book.removeAttribute("data-closing-clip");
+      }
+      gsap.set(scene, { width: sceneW });
+      spread.style.width = `${spreadWidthForCover(sceneW, leaf, poses.openW)}px`;
       return;
     }
 
-    book.classList.remove("is-closing-clip");
-    if (closing || pastMid) {
+    book.removeAttribute("data-closing-clip");
+    if (pastMid) {
       const span = poses.openW - leaf;
-      const t = pastMid ? (rotationY + 90) / -90 : 1;
-      const sceneW = closing ? poses.openW : leaf + span * Math.max(0, Math.min(1, t));
+      const t = (rotationY + 90) / -90;
+      const sceneW = leaf + span * Math.max(0, Math.min(1, t));
       gsap.set(scene, { width: sceneW });
-      spread.style.width = closing
-        ? `${poses.openW}px`
-        : `${spreadWidthForCover(sceneW, leaf, poses.openW)}px`;
+      spread.style.width = `${spreadWidthForCover(sceneW, leaf, poses.openW)}px`;
       return;
     }
 
@@ -295,8 +310,10 @@ export function Book({
     setHeldOpen(false);
     const parts = nodes();
     parts?.book.classList.remove("is-animating", "is-closing-clip");
+    parts?.book.removeAttribute("data-closing-clip");
     parts?.pageLeft.classList.add("is-revealed");
     if (parts) {
+      gsap.set(parts.book, { clearProps: "transform,rotationX,rotationY" });
       gsap.set(parts.cover, {
         rotationY: -180,
         z: 3,
@@ -322,9 +339,14 @@ export function Book({
   }
 
   function settleClosed() {
-    setHeldOpen(false);
     const parts = nodes();
-    parts?.book.classList.remove("is-animating", "is-closing-clip");
+    if (parts) {
+      parts.book.style.transition = "none";
+      parts.book.classList.remove("is-open", "is-animating", "is-closing-clip");
+      parts.book.removeAttribute("data-closing-clip");
+      gsap.set(parts.book, bookTilt(false));
+    }
+    setHeldOpen(false);
     parts?.pageLeft.classList.remove("is-revealed");
     discardFlyingNotes();
     if (parts) {
@@ -348,6 +370,11 @@ export function Book({
       parts.note.classList.remove("is-label-open");
     }
     clearMotionProps();
+    if (parts) {
+      requestAnimationFrame(() => {
+        parts.book.style.transition = "";
+      });
+    }
   }
 
   function killAnim() {
@@ -380,12 +407,13 @@ export function Book({
       return;
     }
     killAnim();
-    const { cover, note, gutter, shadowLeft, shadowDepth } = parts;
+    const { book, cover, note, gutter, shadowLeft, shadowDepth } = parts;
     const { hoverX, hoverY, landX, arcY } = poses;
     const rotationY = Number(gsap.getProperty(cover, "rotationY")) || 0;
     const noteX = Number(gsap.getProperty(note, "x")) || 0;
     const onRight = noteX > landX * 0.5;
 
+    gsap.set(book, bookTilt(false));
     applyFlipLayout(false);
 
     const coverDur = 1.18 * Math.max(0.28, Math.abs(rotationY + 180) / 180);
@@ -394,6 +422,7 @@ export function Book({
       onUpdate: () => applyFlipLayout(false),
       onComplete: settleOpen,
     });
+    tl.to(book, { ...bookTilt(true), duration: coverDur, ease: "power2.inOut" }, 0);
 
     if (onRight) {
       tl.to(
@@ -562,7 +591,7 @@ export function Book({
       return;
     }
     killAnim();
-    const { cover, note, gutter, shadowLeft, shadowDepth } = parts;
+    const { book, cover, note, gutter, shadowLeft, shadowDepth } = parts;
     const { hoverX, hoverY, landX } = poses;
     let rotationY = Number(gsap.getProperty(cover, "rotationY"));
     if (Number.isNaN(rotationY)) {
@@ -586,6 +615,7 @@ export function Book({
       z: Number(gsap.getProperty(cover, "z")) || 3,
       transformOrigin: "left center",
     });
+    gsap.set(book, bookTilt(true));
     gsap.set(gutter, { opacity: 1 });
     gsap.set(shadowLeft, { clipPath: STACK_CLIP_OPEN });
     gsap.set(shadowDepth, { opacity: 1 });
@@ -636,7 +666,7 @@ export function Book({
 
     tl.addLabel("noteEnter", 0.72);
     tl.add(() => {
-      parts.book.classList.remove("is-closing-clip");
+      parts.book.removeAttribute("data-closing-clip");
       gsap.set(note, {
         x: 0,
         y: 0,
@@ -749,6 +779,11 @@ export function Book({
       duration: 0.52,
       ease: "power3.in",
     });
+    tl.to(
+      book,
+      { ...bookTilt(false), duration: 1.15, ease: "power2.inOut" },
+      "coverClose",
+    );
 
     tlRef.current = tl;
   }

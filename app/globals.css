@@ -106,6 +106,7 @@ body {
   justify-content: center;
   padding: 4rem 3.5rem 2.5rem;
   perspective: 1800px;
+  transition: padding 0.95s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .desk-guestbook-hint {
@@ -273,7 +274,7 @@ body {
 
 .desk-split.is-open .stage,
 .stage.is-open,
-.desk-split:has(.book.is-animating) .stage {
+.desk-split:has(.book.is-animating):not(:has(.book[data-closing-clip])) .stage {
   padding-left: calc(var(--sticky-size) * 2 / 3 + 1.25rem);
   padding-right: 2.5rem;
 }
@@ -288,7 +289,7 @@ body {
 }
 
 .stage.is-open .book-scene,
-.stage:has(.book.is-animating) .book-scene {
+.stage:has(.book.is-animating):not(:has(.book[data-closing-clip])) .book-scene {
   width: min(var(--book-width), calc(var(--page-side) * 2));
 }
 
@@ -328,11 +329,16 @@ body {
   transition: transform 1.05s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+.book.is-animating {
+  transition: none;
+}
+
 .book.is-open {
   transform: rotateX(4deg) rotateY(0deg);
 }
 
-.book.is-closing-clip {
+.book.is-closing-clip,
+.book[data-closing-clip] {
   clip-path: inset(-12% calc(var(--sticky-size) * -0.5) -12% 0);
 }
 
@@ -1147,7 +1153,7 @@ body {
 
   .desk-split.is-open .stage,
   .stage.is-open,
-  .desk-split:has(.book.is-animating) .stage {
+  .desk-split:has(.book.is-animating):not(:has(.book[data-closing-clip])) .stage {
     padding-left: calc(var(--sticky-size) * 2 / 3 + 1.25rem);
     padding-right: 2.25rem;
   }
@@ -2512,7 +2518,7 @@ body {
 
   .desk-split.is-open .stage,
   .stage.is-open,
-  .desk-split:has(.book.is-animating) .stage {
+  .desk-split:has(.book.is-animating):not(:has(.book[data-closing-clip])) .stage {
     padding-left: calc(var(--sticky-size) * 2 / 3 + 1rem);
     padding-right: 1.5rem;
   }
@@ -2530,6 +2536,7 @@ body {
   .book,
   .cover,
   .book-scene,
+  .stage,
   .sticky-note {
     transition: none;
   }
