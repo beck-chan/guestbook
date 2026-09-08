@@ -32,7 +32,7 @@ export const DOCS_NAV_SECTIONS: DocsNavSection[] = [
   },
   {
     title: "Reference",
-    items: [{ label: "API Reference", href: "/docs/api" }, 
+    items: [{ label: "API Library", href: "/docs/api" }, 
       { label: "Cucumber Specs", href: "/docs/specs" }
     ],
   },

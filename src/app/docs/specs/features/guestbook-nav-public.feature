@@ -1,13 +1,16 @@
-Feature: Admin dashboard login
+Feature: Guestbook page navigation 
 
     Background:
-        Given a user is on the guestbook page 
+        Given a user is on the guestbook page on mobile 
 
-            Rule: Admin Login link takes users to the repo Issues page
+            Rule: Admin Login is a button
+
+                Scenario: Admin Login link works
+                When users click on the `admin login` link 
+                Then users are directed to the Google SSO page for the admin dashboard 
 
                 Scenario: Admin Login works with authorization
-                When a user clicks on the `admin login` link
-                Then users are directed to the Google SSO page for the admin dashboard 
+                When a user has clicked on the `admin login` link
                 And the user has admin authorization
                 Then signing in successfully with Google redirects users to the `/admin` dashboard
 

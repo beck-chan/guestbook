@@ -470,6 +470,21 @@ body {
   transform: translateX(-50%);
 }
 
+.book.is-open:not(.is-animating) .spread-gutter::after {
+  width: 3.8rem;
+  filter: blur(1.5px);
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgb(70 55 40 / 0.04) 28%,
+    rgb(70 55 40 / 0.11) 44%,
+    rgb(70 55 40 / 0.16) 50%,
+    rgb(70 55 40 / 0.11) 56%,
+    rgb(70 55 40 / 0.04) 72%,
+    transparent 100%
+  );
+}
+
 .cover {
   position: absolute;
   top: 0;
@@ -654,6 +669,14 @@ body {
     calc(100% - var(--dog-ear-size)) 100%,
     0 100%
   );
+}
+
+.book.is-open:not(.is-animating) .page-left .leaf {
+  box-shadow: inset -10px 0 12px rgb(70 60 50 / 0.05);
+}
+
+.book.is-open:not(.is-animating) .page-right .leaf {
+  box-shadow: inset 10px 0 12px rgb(70 60 50 / 0.05);
 }
 
 .leaf-copy {
