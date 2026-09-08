@@ -25,12 +25,22 @@
   "include": [
     "next-env.d.ts",
     "mdx.d.ts",
-    "**/*.ts",
-    "**/*.tsx",
-    "**/*.mdx",
+    "*.ts",
+    "*.tsx",
+    "*.mts",
+    "app/**/*.ts",
+    "app/**/*.tsx",
+    "app/**/*.mdx",
+    "components/**/*.ts",
+    "components/**/*.tsx",
+    "lib/**/*.ts",
+    "lib/**/*.tsx",
+    "scripts/**/*.ts",
     ".next/types/**/*.ts",
-    ".next/dev/types/**/*.ts",
-    "**/*.mts"
+    ".next/dev/types/**/*.ts"
   ],
-  "exclude": ["node_modules"]
+  "exclude": ["node_modules"],
+  "mdx": {
+    "checkMdx": false
+  }
 }

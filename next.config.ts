@@ -10,6 +10,7 @@ import {
 const root = process.cwd(); // docs MDX plugins resolve from here
 
 const nextConfig: NextConfig = {
+  agentRules: false,
   env: {
     FLAG_DOCS: process.env.FLAG_DOCS,
     FLAG_COUNTER: process.env.FLAG_COUNTER,

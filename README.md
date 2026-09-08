@@ -78,6 +78,13 @@ To add another flag, add a key on `flags` in [`lib/flags.ts`](lib/flags.ts), pas
 
 ## Stop a running preview
 
+
+```bash
+npm run dev:stop
+```
+
+(not ctrl+c)
+
 `npm run dev` listens on port 3000. In Git Bash, check whether anything is already bound to that port:
 
 ```bash
