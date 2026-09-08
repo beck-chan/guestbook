@@ -135,14 +135,14 @@ remove docs install later
 
 ```bash
 npx supabase login
-npx supabase gen types typescript --project-id yahduosmchkyapkvpdn --schema public > src/app/docs/api/database.types.ts
+npx supabase gen types typescript --project-id yahduqsmchkyapakpvdh --schema public > src/app/docs/api/database.types.ts
 ```
 
 If you prefer a token instead of npx supabase login: Dashboard → Account → Access Tokens, then:
 
 ```bash
 export SUPABASE_ACCESS_TOKEN=your_token
-npx supabase gen types typescript --project-id yahduosmchkyapkvpdn --schema public > src/app/docs/api/database.types.ts
+npx supabase gen types typescript --project-id yahduqsmchkyapakpvdh --schema public > src/app/docs/api/database.types.ts
 ```
 
 need to do this for public docs too
