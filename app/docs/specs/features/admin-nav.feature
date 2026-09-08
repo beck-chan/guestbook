@@ -10,7 +10,7 @@ Feature: Admin Dashboard page navigation
 
     Background:
         Given an authorized admin is signed in with Google SSO
-        When they are on the admin dashboard on mobile
+        When they are on the admin dashboard on mobile  (`/admin`) 
 
             Rule: Navigation is handled by a button on mobile
 

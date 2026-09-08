@@ -10,7 +10,7 @@ Feature: Admin Dashboard settings
                 When an admin updates any guestbook settings
                 And they click the `Save Changes` link
                 Then those changes are applied to the admin dashboard
-                And the standalone guestbook page
+                And the guestbook page
 
                 Scenario: Admin can undo changes to guestbook settings
                 When an admin updates any guestbook settings
@@ -21,14 +21,12 @@ Feature: Admin Dashboard settings
                 Scenario: Admin can set custom comment lengths and rate limits
                 When an admin adjusts the Comment Length or Rate Limits settings to allowed limits
                 And they click the `Save Changes` link
-                Then those new limits are applied to both the standalone guestbook 
-                And the main Original Poetry landing guestbook
+                Then those new limits are applied to the guestbook commenting 
 
                 Scenario: Admin can allow-list profanity
                 When an admin enters a comma-separated values in the Profanity Allow-List 
                 And they click the `Save Changes` link
-                Then those new allowances are applied to both the standalone guestbook 
-                And the main Original Poetry landing guestbook
+                Then those new allowances are applied to the guestbook commenting
 
                 Scenario: Admin can view custom CSS example file
                 When an admin clicks on the `View Example` link for the custom theme setting

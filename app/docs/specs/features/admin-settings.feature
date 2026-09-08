@@ -21,14 +21,14 @@ Feature: Admin Dashboard settings
                 Scenario: Admin can set custom comment lengths and rate limits
                 When an admin adjusts the Comment Length or Rate Limits settings to allowed limits
                 And they click the `Save Changes` link
-                Then those new limits are applied to both the standalone guestbook 
-                And the main Original Poetry landing guestbook
+                Then those new limits are applied to both the standalone guestbook commenting
+                And the main Original Poetry landing guestbook commenting
 
                 Scenario: Admin can allow-list profanity
                 When an admin enters a comma-separated values in the Profanity Allow-List 
                 And they click the `Save Changes` link
-                Then those new allowances are applied to both the standalone guestbook 
-                And the main Original Poetry landing guestbook
+                Then those new allowances are applied to both the standalone guestbook commenting
+                And the main Original Poetry landing guestbook commenting
 
                 Scenario: Admin can view custom CSS example file
                 When an admin clicks on the `View Example` link for the custom theme setting
