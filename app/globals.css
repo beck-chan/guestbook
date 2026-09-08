@@ -2110,10 +2110,10 @@ body {
     min-width: 1.55rem;
     height: 1.55rem;
     padding: 0 0.28rem;
-    border: 1.5px solid var(--cover);
+    border: 1.5px solid var(--foil);
     border-radius: 0.32rem;
-    background: var(--bubble);
-    color: var(--cover);
+    background: var(--cover);
+    color: var(--foil);
     font-family: var(--futura-font);
     font-size: 0.78rem;
     font-weight: 700;
