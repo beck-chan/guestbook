@@ -1,0 +1,72 @@
+---
+subtitle: How are these docs implemented?
+search: false
+public: false
+---
+
+import Example from "../_snippets/example.mdx"
+
+# Documentation Build
+
+::: {.callout}
+# Docs are compiled by [`@next/mdx`](https://www.npmjs.com/package/@next/mdx){.blank}.  
+
+- Each documentation guide is a `page.tsx` that imports `./content.mdx` (the actual markdown content) and wraps it in `DocsPage`. 
+- [`src/app/docs/layout.tsx`](https://github.com/beck-chan/guestbook/blob/main/src/app/docs/layout.tsx){.blank} defines the custom layout, side navigation, and docs-only theme. 
+:::
+
+## Basics
+
+[`next.config.ts`](https://github.com/beck-chan/guestbook/blob/main/next.config.ts){.blank} registers [`remark-gfm`](https://www.npmjs.com/package/remark-gfm){.blank} (GitHub-flavoured markdown) and our custom [Remark](https://www.npmjs.com/package/remark){.blank} (Markdown parsing and serialization) plugin, which allows:
+
+- Defining subtitle and flag visibility within a YAML frontmatter block
+- Using `:::` fences for formatting content 
+- Using shortcodes: `{.heart}` ({.heart}) / `{.button}` (button link) / `{.blank}` (`target="_blank"`) 
+
+
+The Remark plugin also pulls page metadata out of the paired `content.mdx` so `page.tsx` can import it:
+
+- `title` — The `#` heading, which informs the browser tab
+- `toc` — `##` / `###` headings, used for the sticky-note table of contents and anchor links
+- `frontmatter` — The YAML defined at the top of the page
+
+`next.config.ts` also registers our custom [Rehype](https://www.npmjs.com/package/rehype){.blank} (HTML parsing and serialization) plugin, which:
+
+- Adds `id` to each heading from its text so that anchor links are functional.
+- Runs [`rehype-highlight`](https://www.npmjs.com/package/rehype-highlight){.blank} (our themed syntax highlighting) with a small language set we use in the docs.
+
+[`src/mdx-components.tsx`](https://github.com/beck-chan/guestbook/blob/main/src/mdx-components.tsx){.blank} runs last at render, swapping native MDX tags for custom styled ones, and registering our fence components so that they display correctly:
+
+- `h1` / `h2` / `h3` become `.docs-title` / `.docs-heading` / `.docs-subheading`
+- `pre` becomes `DocsCodeBlock`
+- `table` gets `.docs-table`
+- `li` gets the heart list item icon (or `DocsTaskItem` for `- [x]`, which are interactive!! checkboxes)
+- `DocsCallout` becomes a callout box
+- `DocsColumns` becomes mobile-responsive columns 
+- `DocsTabset` becomes mobile-responsive tabbed or drop-down section
+
+## Landing Page
+
+`/docs` is `src/app/docs/page.tsx` — React, not MDX. It reads `DOCS_NAV_SECTIONS` from `_nav/docs-nav-data.ts`, keeps Installation / Guides / Reference as notes, and turns Etc. / Support into footer links. The subtitle comes from `docsIndexSubtitle` in `src/lib/flags.ts` (the extra asterisk line is private-build only). Wrapping the tree in `.docs-index` is what switches the layout.
+
+```tsx
+const LANDING_TITLES = new Set(["Installation", "Guides", "Reference"]);
+
+const sections = DOCS_NAV_SECTIONS.filter((section) =>
+  LANDING_TITLES.has(section.title),
+);
+```
+
+Desktop rotation is hard-coded for three notes (`nth-child(1–3)` in `docs.css`). More than three notes needs extra rules; mobile already uses odd / even. 
+
+
+## Theme
+
+The look is `src/app/docs/docs.css`. It reuses guestbook tokens (`--peony`, `--paper`, `--peony-font`, `--body-font`, `--poem-font`) and loads Peony / Hello Honey with `font-display: block`. Article pages get a paper sidenav and a sticky-note table of contents. The landing page is a different shell: `.docs-shell:has(.docs-index)` hides the sidenav, centers the main column, and restyles `.docs-toc` as the large rotated notes.
+
+The API page is a third shell (`.docs-api-reference` widens the sidenav and skips `DocsPage`).
+
+## WIP
+
+`npm run docs` starts Next with `FLAG_DOCSONLY=true` so the root `/` redirects into `/docs` and we don't render the guestbook application.
+

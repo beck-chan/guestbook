@@ -94,6 +94,14 @@ export const DOCS_NAV_SECTIONS: DocsNavSection[] = [
         {
           title: "Internal",
           items: [
+            // {
+            //   label: "Guestbook Build",
+            //   href: "/docs/book-build/",
+            //   },
+            {
+              label: "Documentation Build",
+              href: "/docs/docs-build/",
+              },
             {
             label: "Search & LLM Ingestion",
             href: "/docs/search/",
