@@ -17,6 +17,7 @@ const nextConfig: NextConfig = {
     FLAG_COUNTER: process.env.FLAG_COUNTER,
     FLAG_COUNTER_URL: process.env.FLAG_COUNTER_URL,
     FLAG_PUBLIC: process.env.FLAG_PUBLIC,
+    FLAG_APITEST: process.env.FLAG_APITEST,
   },
   pageExtensions: ["js", "jsx", "md", "mdx", "ts", "tsx"],
   async redirects() {

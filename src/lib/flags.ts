@@ -16,6 +16,7 @@ export const flags = {
   /** Comma-separated paths/URLs for unique-visitor query (empty = all $pageview events). */
   hitCounterUrl: envString(process.env.FLAG_COUNTER_URL, ""),
   public: envFlag(process.env.FLAG_PUBLIC, false), // Show public guestbook home/public repo + dark green favicon
+  apiTest: envFlag(process.env.FLAG_APITEST, false), // Show API Test Request on private docs
 };
 
 const githubRepo = flags.public ? "y2k-guestbook" : "guestbook";

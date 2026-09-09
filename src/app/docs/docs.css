@@ -485,6 +485,7 @@ body:has(.docs-shell) {
 .docs-api-reference {
   margin-top: 0;
   min-height: calc(100vh - 5rem);
+  border-top: 1px solid var(--paper-dim, #e9e6df);
   background: #fff;
   color: var(--ink);
   font-family: var(--futura-font);

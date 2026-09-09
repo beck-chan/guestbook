@@ -1,5 +1,5 @@
 import { flags } from "@/lib/flags";
-import { publicApiServers } from "./publicApiServers";
+import { envSupabaseProjectRef, publicApiServers } from "./publicApiServers";
 
 export const SCALAR_CUSTOM_CSS = `
 .scalar-app,
@@ -363,7 +363,7 @@ export function createScalarReferenceConfig() {
     isEditable: false,
     hideModels: false,
     documentDownloadType: "none" as const,
-    hideTestRequestButton: !flags.public,
+    hideTestRequestButton: !(flags.public || flags.apiTest),
     hideDarkModeToggle: true,
     withDefaultFonts: false,
     slug: "api",
@@ -376,6 +376,10 @@ export function createScalarReferenceConfig() {
     forceDarkModeState: "light" as const,
     modelsSectionLabel: "Models",
     customCss: SCALAR_CUSTOM_CSS,
-    ...(flags.public ? { servers: publicApiServers() } : {}),
+    ...(flags.public
+      ? { servers: publicApiServers() }
+      : flags.apiTest
+        ? { servers: publicApiServers(envSupabaseProjectRef()) }
+        : {}),
   };
 }

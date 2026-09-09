@@ -14,6 +14,11 @@ export function supabaseRestUrl(projectRef = DEFAULT_PROJECT_REF): string {
   return `https://${ref}.supabase.co/rest/v1`;
 }
 
+export function envSupabaseProjectRef() {
+  return parseProjectRef(process.env.NEXT_PUBLIC_SUPABASE_URL ?? "")
+    || DEFAULT_PROJECT_REF;
+}
+
 export function publicApiServers(projectRef = DEFAULT_PROJECT_REF) {
   return [
     {

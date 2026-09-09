@@ -5,6 +5,7 @@ import { flags } from "@/lib/flags";
 import { createScalarReferenceConfig } from "@/lib/docs/scalarConfig";
 import {
   DEFAULT_PROJECT_REF,
+  envSupabaseProjectRef,
   parseProjectRef,
   publicApiServers,
   supabaseRestUrl,
@@ -99,7 +100,11 @@ export function DocsApiReferenceView({ spec }: { spec: OpenApiSpec }) {
         instance = Scalar.createApiReference(hostRef.current, {
           ...createScalarReferenceConfig(),
           content: spec,
-          ...(flags.public ? { servers: publicApiServers(appliedRef) } : {}),
+          ...(flags.public
+            ? { servers: publicApiServers(appliedRef) }
+            : flags.apiTest
+              ? { servers: publicApiServers(envSupabaseProjectRef()) }
+              : {}),
         });
       })
       .catch((error: unknown) => {

@@ -137,10 +137,7 @@ AfterAll(async function () {
 
 Step definitions under `features/step_definitions/` map each `Given` / `When` / `Then` to clicks in the browser. There should be step definitions for the functionality that ships with the guestbook repository, but you will need to write step definitions for any additional functionality you add.
 
-::: {.callout}
-#  If a `Given` / `When` / `Then` already has a matching function, Cucumber runs that function. 
-
-Stubs are returned in the terminal console for Gherkin lines with no match. For example:
+If a `Given` / `When` / `Then` already has a matching function, Cucumber runs that function. Stubs are returned in the terminal console for Gherkin lines with no match. For example:
 
 ```typescript
 Given('a user is on the guestbook page', async function () {
@@ -149,10 +146,24 @@ Given('a user is on the guestbook page', async function () {
 });
 ```
 
-- Create a file in `features/step_definitions/`, paste the stub into it, and fill in the body with the appropriate code to execute the step. 
-- It doesn't matter what the file is called, as long as it's in the `features/step_definitions/` directory and has the `.ts` extension.
+Create a file in `features/step_definitions/`, paste the stub into it, and fill in the body with the appropriate code to execute the step. Instruction should be written the way a human user would find things on the page — for example, reference the `submit` button, the `display name` field, the `prev` / `next` links, and not CSS class names or code.
 
-Instruction should be written the way a human user would find things on the page — for example, reference the `submit` button, the `display name` field, the `prev` / `next` links, and not CSS class names or code.
+- It doesn't matter what the file is called, as long as it's in the `features/step_definitions/` directory and has the `.ts` extension.
+- Stash values you will need later on the World object (for example `this.postedName`).
+
+
+::: {.callout}
+# Example Functions
+
+| Function | Description |
+| --- | --- |
+| `this.page.goto(url)` | Open a page. Build the URL from `this.baseUrl` so the same steps work on `localhost` and a deployed site. |
+| `this.page.getByLabel("display name").fill(text)` | Type into a field by its visible name (`display name`). |
+| `this.page.getByRole("button", { name: "submit" }).click()` | Role is the kind of control (`button`, `link`). Name is the text on it (`submit`, `prev`, `next`). |
+| `this.page.locator('textarea[name="comment"]').fill(text)` | Reach a field that has no visible label. Use name or role over CSS class names. |
+| `locator.waitFor()` and `assert.match(await locator.innerText(), /…/)` | Wait until the result is on the page, then fail the step if the visible text does not match. |
+| `this.page.setViewportSize({ width, height })` | Shrink the window *before* `goto` when the Gherkin line says *on mobile*. |
+
 :::
 
 
@@ -234,7 +245,22 @@ BASE_URL=https://<your-deployed-url>.vercel.app npx cucumber-js
 
 ::: {.private}
 ::: {.callout}
-# This version of the `.feature` files displayed on this page reflect Beck's custom installation of the guestbook.
+
+::: {.columns}
+
+::: {.60}
+### This version of the `.feature` files displayed on this page reflect Beck's custom installation of the guestbook.
+
+:::
+
+::: {.40}
+
+[View Public Cucumber Specs](https://y2k-guestbook.vercel.app/docs/specs){.button .blank}
+
+:::
+
+:::
+
 :::
 
 :::

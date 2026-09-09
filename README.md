@@ -87,6 +87,7 @@ Flags are compile-time values in [`src/lib/flags.ts`](src/lib/flags.ts). Overrid
 | `FLAG_COUNTER` | `hitCounter` | `true` | Hit-counter on the home cover, guestbook page, and comment sidebar. |
 | `FLAG_COUNTER_URL` | `hitCounterUrl` | *(empty)* | Comma-separated guestbook paths/URLs for unique visitors (e.g. `/guestbook,/`). Paths match `$pathname` exactly; full URLs match `$current_url`. Empty counts all `$pageview` events. |
 | `FLAG_PUBLIC` | `public` | `false` | Public guestbook home (rewrite `/` to `/guestbook`), dark green favicon, `y2k-guestbook` GitHub links. |
+| `FLAG_APITEST` | `apiTest` | `false` | Show Scalar **Test Request** on the private API docs (`FLAG_PUBLIC=false`). Uses `NEXT_PUBLIC_SUPABASE_URL`. Public docs already show Test Request. |
 
 Accepted values are `true` / `1` and `false` / `0`. When `docs` is on, `docsUrl` in the same file sets the docs href (default `/docs`).
 

@@ -22,6 +22,44 @@ Navigation with sections linked to the documentation landing page is defined in 
 
 :::
 
+## Build Reference
+
+Documentation is a Next App Router tree under `src/app/docs`, compiled by `@next/mdx` — not a third-party docs framework.
+
+`next.config.ts` registers `remark-gfm`, the custom `src/lib/mdx/remark-docs-syntax.mjs` plugin (YAML frontmatter, `:::` fences, `{.heart}` / `{.button}` / `{.blank}`, TOC / title / frontmatter exports), `rehype-slug`, and `src/lib/mdx/rehype-docs-highlight.mjs`. `src/mdx-components.tsx` maps headings, tables, lists, and those fence components (`DocsCallout`, `DocsColumns`, `DocsTabset`, …) onto docs classes.
+
+Each article page is a `page.tsx` that imports `./content.mdx` and wraps it in `DocsPage`. `src/app/docs/layout.tsx` supplies the `.docs-shell`, sidenav, and theme stylesheet. `npm run docs` starts Next with `FLAG_DOCSONLY=true` so `/` redirects into `/docs`.
+
+### Theme
+
+The look is `src/app/docs/docs.css`. It reuses guestbook tokens (`--peony`, `--paper`, `--peony-font`, `--body-font`, `--poem-font`) and loads Peony / Hello Honey with `font-display: block`. Article pages get a paper sidenav and a sticky-note table of contents. The landing page is a different shell: `.docs-shell:has(.docs-index)` hides the sidenav, centers the main column, and restyles `.docs-toc` as the large rotated notes.
+
+The API page is a third shell (`.docs-api-reference` widens the sidenav and skips `DocsPage`).
+
+### Landing Page
+
+`/docs` is `src/app/docs/page.tsx` — React, not MDX. It reads `DOCS_NAV_SECTIONS` from `_nav/docs-nav-data.ts`, keeps Installation / Guides / Reference as notes, and turns Etc. / Support into footer links. The subtitle comes from `docsIndexSubtitle` in `src/lib/flags.ts` (the extra asterisk line is private-build only). Wrapping the tree in `.docs-index` is what switches the layout.
+
+```tsx
+const LANDING_TITLES = new Set(["Installation", "Guides", "Reference"]);
+
+const sections = DOCS_NAV_SECTIONS.filter((section) =>
+  LANDING_TITLES.has(section.title),
+);
+```
+
+### Additional Landing Pages
+
+Copy that page to a new slug (for example `src/app/docs/guides/page.tsx`) and keep the `.docs-index` wrapper so the same CSS applies. Filter a different subset of `DOCS_NAV_SECTIONS` — or extract a shared component that takes section titles and footer titles.
+
+::: {.callout}
+
+Do not wrap a landing in `DocsPage`. That helper is for MDX articles (sticky-note TOC + `.docs-article`). A landing only needs the `.docs-index` class on a React tree.
+
+:::
+
+Desktop rotation is hard-coded for three notes (`nth-child(1–3)` in `docs.css`). More than three notes needs extra rules; mobile already uses odd / even. Add the route to `docs-nav-data.ts` if it should appear in the sidenav on article pages.
+
 ## YAML Frontmatter
 
 ```yaml
