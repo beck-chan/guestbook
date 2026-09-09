@@ -34,8 +34,8 @@ export function loadDatabaseOpenApi(isPublic = flags.public): OpenApiSpec {
       ? "y2k Guestbook API"
       : "Beck's y2k Guestbook API",
     description: isPublic
-      ? "### The API below reflects the calls you can make to your connected Supabase database when the guestbook is fully installed.\n\n<br>\n\n> To hook up the Test Request functionality to your instance of Supabase, you'll need to [enter your Project ID above](#enter-supabase-connection-details) and [your admin auth token](#retrieve-admin-auth-token) as your JWT (**Auth Type**: `bearerAuth`, Bearer Token) under **Authentication**.\n\n<br>Project IDs and keys you enter on this page when testing requests stay in your browser — we do not collect them. Send goes from your browser direct to your Supabase project."
-      : "### The API below reflects the functionality of Beck's custom guestbook install.\n\n> [View Public API Library](https://y2k-guestbook.vercel.app/docs/api)",
+      ? "### The API below reflects the calls you can make to your connected Supabase database when the guestbook is fully installed.<br><br>\n\n> To hook up the Test Request functionality to your instance of Supabase, you'll need to [enter your Project ID above](#enter-supabase-connection-details) and [your admin auth token](#retrieve-admin-auth-token) as your JWT (**Auth Type**: `bearerAuth`, Bearer Token) under **Authentication**.\n\n<br>Project IDs and keys you enter on this page when testing requests stay in your browser — we do not collect them. Send goes from your browser direct to your Supabase project."
+      : "The API below reflects the functionality of Beck's custom guestbook install. These docs do not allow you to enter API keys or project IDs for testing. <br><br>\n\n> [View Public API Library](https://y2k-guestbook.vercel.app/docs/api)",
   });
 
   if (isPublic) {

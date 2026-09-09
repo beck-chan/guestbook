@@ -357,7 +357,7 @@ export function createScalarReferenceConfig() {
     showOperationId: true,
     showSidebar: false,
     expandAllResponses: true,
-    showDeveloperTools: "always" as const,
+    showDeveloperTools: "localhost" as const,
     operationTitleSource: "summary" as const,
     persistAuth: false,
     isEditable: false,
