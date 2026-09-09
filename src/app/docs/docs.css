@@ -490,6 +490,12 @@ body:has(.docs-shell) {
   font-family: var(--futura-font);
 }
 
+/* Scalar's sticky mobile search header; keep the trigger in the DOM via customCss. */
+.docs-api-reference .t-doc__header {
+  display: none !important;
+  --scalar-header-height: 0px;
+}
+
 .docs-api-server {
   display: flex;
   flex-wrap: wrap;

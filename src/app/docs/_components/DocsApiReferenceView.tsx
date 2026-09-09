@@ -132,7 +132,7 @@ export function DocsApiReferenceView({ spec }: { spec: OpenApiSpec }) {
       {flags.public ? (
         <form className="docs-api-server" onSubmit={applyProjectRef}>
           <label>
-            Your Supabase Project ID
+            Enter Your Supabase Project ID
             <input
               value={draftRef}
               onChange={(event) => setDraftRef(event.target.value)}

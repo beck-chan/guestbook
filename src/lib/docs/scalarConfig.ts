@@ -21,7 +21,7 @@ export const SCALAR_CUSTOM_CSS = `
 }
 
 .scalar-app,
-.scalar-app *:not(code):not(pre):not(.hljs) {
+.scalar-app *:not(code):not(pre):not(.hljs):not(h3) {
   font-family: var(--futura-font) !important;
 }
 
@@ -36,11 +36,31 @@ export const SCALAR_CUSTOM_CSS = `
   font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace !important;
 }
 
-/* OpenAPI info.title stays in the spec; hide the on-page document H1. */
+/* OpenAPI info.title stays in the spec; hide the on-page document H1
+   and collapse the heading slot / intro padding it occupied. */
 .scalar-app .introduction-section > h1,
 .scalar-app .introduction-section h1,
 .scalar-app .introduction h1 {
   display: none !important;
+}
+
+.scalar-app .introduction-section,
+.scalar-app .introduction,
+.scalar-app [id="description"] {
+  padding-top: 1.35rem !important;
+  margin-top: 0 !important;
+}
+
+.scalar-app .introduction-section .section-header,
+.scalar-app .introduction-section header:has(> h1) {
+  min-height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+.scalar-app .introduction-section .markdown > :first-child,
+.scalar-app .introduction .markdown > :first-child {
+  margin-top: 0 !important;
 }
 
 .scalar-app .introduction-section p,
@@ -50,10 +70,67 @@ export const SCALAR_CUSTOM_CSS = `
   line-height: 1.35 !important;
 }
 
-/* Keep Scalar SearchButton mounted (cmd+K) but hide its own chrome. */
+/* Match docs .docs-subheading for markdown ### in API descriptions. */
+.scalar-app .markdown h3,
+.scalar-app .introduction-section h3,
+.scalar-app .introduction h3 {
+  scroll-margin-top: 1.25rem !important;
+  margin: 1.75rem 0 0 !important;
+  color: color-mix(in srgb, #6f4e37 48%, white) !important;
+  font-family: var(--peony-font) !important;
+  font-size: clamp(1.35rem, 2vw, 1.7rem) !important;
+  font-weight: 400 !important;
+  letter-spacing: 0.02em !important;
+  line-height: 1.2 !important;
+}
+
+/* Match docs .docs-callout for markdown blockquotes and GitHub alerts. */
+.scalar-app .markdown blockquote,
+.scalar-app .markdown .markdown-alert,
+.scalar-app .markdown .admonition {
+  box-sizing: border-box;
+  display: block !important;
+  margin: 1.1rem 0 0 1.5rem !important;
+  padding: 0.85rem 1.1rem 1.05rem !important;
+  border: 1px solid color-mix(in srgb, #6f4e37 28%, white) !important;
+  border-radius: 0.4rem !important;
+  background: transparent !important;
+  color: inherit !important;
+  font-style: normal !important;
+}
+
+.scalar-app .markdown-alert-title,
+.scalar-app .admonition-title,
+.scalar-app .markdown-alert-icon {
+  display: none !important;
+}
+
+.scalar-app .markdown blockquote > :first-child,
+.scalar-app .markdown .markdown-alert > :first-child,
+.scalar-app .markdown .admonition > :first-child {
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+}
+
+.scalar-app .markdown blockquote p,
+.scalar-app .markdown .markdown-alert p {
+  font-size: clamp(1rem, 1.5vw, 1.28rem) !important;
+  line-height: 1.55 !important;
+}
+
+/* Keep Scalar SearchButton mounted (cmd+K / docs search) but hide its chrome.
+   Modern layout always mounts a sticky .t-doc__header below Tailwind lg
+   (1000px), even with showSidebar: false. That bar sits in the page and
+   sticks over the docs topbar on scroll. SearchModal still portals to body. */
 .scalar-app .t-doc__sidebar,
+.scalar-app .t-doc__header,
 .scalar-app [class*="sidebar-search"] {
   display: none !important;
+}
+
+.scalar-app.scalar-api-reference,
+.scalar-app .references-layout {
+  --scalar-header-height: 0px;
 }
 
 /* Match sidebar method colors on Scalar operation labels. */
