@@ -107,7 +107,7 @@ export const DOCS_NAV_SECTIONS: DocsNavSection[] = [
             href: "/docs/search/",
             },
             {
-              label: "MDX Reference",
+              label: "Documentation Reference",
               href: "/docs/example/",
             },
           ],

@@ -4,8 +4,9 @@ import { valueToEstree } from "estree-util-value-to-estree";
 import GithubSlugger from "github-slugger";
 import { visit } from "unist-util-visit";
 
-// Dots are percent-encoded so a trailing "." after `{.blank}` is not swallowed.
-const ATTR_FOLLOW = /^\s*docsattr\.([A-Za-z0-9%_~!'()*+\-]+)/;
+// Payload is percent-encoded alphanumeric so punctuation after `{.blank}`
+// (`.` `)` `,`) is not swallowed as part of the encoded attrs.
+const ATTR_FOLLOW = /^\s*docsattr\.((?:[A-Za-z0-9]|%[0-9A-Fa-f]{2})+)/;
 const HEART_MARK = /docsheart\./g;
 const LINK_ATTRS = /\]\(([^)]*)\)\{([^}]+)\}/g;
 const INLINE_CODE = /(`+)((?:(?!\1).)*?)\1/g;
@@ -28,7 +29,11 @@ const STYLED_LIST_LINE =
   /^([ \t]*)(?:xx|xix|xviii|xvii|xvi|xv|xiv|xiii|xii|xi|x|ix|viii|vii|vi|v|iv|iii|ii|i|[a-z])\.[ \t]+/i;
 
 function encodeLinkAttrs(attrs) {
-  return encodeURIComponent(attrs).replace(/\./g, "%2E");
+  // encodeURIComponent leaves A-Z a-z 0-9 - _ . ! ~ * ' ( ). Extra-encode
+  // those so ATTR_FOLLOW can stop at any following punctuation.
+  return encodeURIComponent(attrs).replace(/[!'()*~._-]/g, (ch) => {
+    return `%${ch.charCodeAt(0).toString(16).toUpperCase().padStart(2, "0")}`;
+  });
 }
 
 function leadingIndent(line) {

@@ -178,3 +178,12 @@ can we do this for authed admins only
 4. Database WebhooksDatabase Webhooks trigger external actions automatically whenever a specific change happens inside your database tables.What it does: It listens for any INSERT, UPDATE, or DELETE event inside your data rows and instantly alerts an outside server via an HTTP request.Fraud Detection Example: If a row is inserted into your transactions table with an amount over $10,000, a database webhook instantly alerts an external security service to freeze the account.Slack/Discord Alerts Example: Whenever a new user leaves a 1-star review in your reviews table, a webhook automatically posts an alert straight to your team's internal Slack channel so support can reach out.
 
 email notif on comment row creation to admins
+
+# more notes
+
+DocsPage: On the public build, pages marked `public: false` in YAML become a 404.
+
+- [`DocsPage`](https://github.com/beck-chan/guestbook/blob/main/src/app/docs/_components/DocsPage.tsx){.blank} — Puts the markdown in the article column and, if the page has `##` / `###` headings, shows those table of contents via the sticky notes on the side. 
+- [`DocsSidenav`](https://github.com/beck-chan/guestbook/blob/main/src/app/docs/_nav/DocsSidenav.tsx){.blank} — the left menu. Most pages use the section links in `docs-nav-data.ts`. On `/docs/api` only, that menu becomes a list of HTTP methods and calls.
+
+

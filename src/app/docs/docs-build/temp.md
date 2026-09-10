@@ -1,1 +1,0 @@
-implement conventions shown on [MDX Reference](/docs/example/)
