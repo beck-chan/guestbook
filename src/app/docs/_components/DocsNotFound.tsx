@@ -22,7 +22,7 @@ export function DocsNotFound() {
         <p className="docs-brand-kicker docs-not-found-kicker">404!</p>
       </header>
       <p className="docs-index-subtitle">
-        The page you're looking for cannot be found.
+        The page you&apos;re looking for cannot be found.
       </p>
       <DocsSearch variant="bar" />
       <div className="docs-index-notes docs-not-found-notes">

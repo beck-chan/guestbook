@@ -1,3 +1,38 @@
+"use client";
+
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useId,
+  useRef,
+  useState,
+  type ReactNode,
+} from "react";
+import { createPortal } from "react-dom";
+import MiniSearch from "minisearch";
+import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
+import type { DocsSearchDoc } from "@/lib/docs/searchTypes";
+
+type DocsSearchContextValue = {
+  documents: DocsSearchDoc[];
+  open: boolean;
+  openSearch: () => void;
+  closeSearch: () => void;
+};
+
+const DocsSearchContext = createContext<DocsSearchContextValue>({
+  documents: [],
+  open: false,
+  openSearch: () => {},
+  closeSearch: () => {},
+});
+
+function useDocsSearch() {
+  return useContext(DocsSearchContext);
+}
+
 function SearchGlyph() {
   return (
     <svg
@@ -46,22 +81,312 @@ export function openScalarSearch() {
   );
 }
 
+function isApiPath(pathname: string) {
+  return pathname === "/docs/api" || pathname === "/docs/api/";
+}
+
+function buildMiniSearch(documents: DocsSearchDoc[]) {
+  const mini = new MiniSearch<DocsSearchDoc>({
+    fields: ["title", "heading", "body", "section"],
+    storeFields: ["id", "href", "title", "heading", "section", "body"],
+    idField: "id",
+    searchOptions: {
+      boost: { heading: 3, title: 2, section: 1.5, body: 1 },
+      prefix: true,
+      fuzzy: 0.2,
+    },
+  });
+  const unique: DocsSearchDoc[] = [];
+  const seen = new Set<string>();
+  for (const doc of documents) {
+    if (seen.has(doc.id)) continue;
+    seen.add(doc.id);
+    unique.push(doc);
+  }
+  if (unique.length > 0) {
+    mini.addAll(unique);
+  }
+  return mini;
+}
+
+type Hit = DocsSearchDoc & { score?: number };
+
+function DocsSearchOverlay({
+  documents,
+  open,
+  onClose,
+}: {
+  documents: DocsSearchDoc[];
+  open: boolean;
+  onClose: () => void;
+}) {
+  const router = useRouter();
+  const dialogId = useId();
+  const listId = useId();
+  const inputRef = useRef<HTMLInputElement>(null);
+  const dialogRef = useRef<HTMLDivElement>(null);
+  const miniRef = useRef<MiniSearch<DocsSearchDoc> | null>(null);
+  const docsRef = useRef<DocsSearchDoc[]>([]);
+  const [query, setQuery] = useState("");
+  const [active, setActive] = useState(0);
+  const [hits, setHits] = useState<Hit[]>([]);
+  const [mounted, setMounted] = useState(false);
+
+  if (docsRef.current !== documents) {
+    docsRef.current = documents;
+    miniRef.current = buildMiniSearch(documents);
+  }
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (!open) {
+      setQuery("");
+      setHits([]);
+      setActive(0);
+      return;
+    }
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    const focusTimer = window.setTimeout(() => inputRef.current?.focus(), 0);
+
+    return () => {
+      window.clearTimeout(focusTimer);
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [open]);
+
+  useEffect(() => {
+    const q = query.trim();
+    if (!open || !q || !miniRef.current) {
+      setHits([]);
+      setActive(0);
+      return;
+    }
+    setHits(miniRef.current.search(q).slice(0, 10) as unknown as Hit[]);
+    setActive(0);
+  }, [query, documents, open]);
+
+  useEffect(() => {
+    if (!open) return;
+
+    function onKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        onClose();
+      }
+    }
+
+    document.addEventListener("keydown", onKeyDown);
+    return () => document.removeEventListener("keydown", onKeyDown);
+  }, [open, onClose]);
+
+  function closeAndGo(href: string) {
+    onClose();
+    router.push(href);
+  }
+
+  function onInputKeyDown(event: React.KeyboardEvent<HTMLInputElement>) {
+    if (event.key === "ArrowDown") {
+      event.preventDefault();
+      setActive((current) =>
+        hits.length === 0 ? 0 : Math.min(current + 1, hits.length - 1),
+      );
+      return;
+    }
+    if (event.key === "ArrowUp") {
+      event.preventDefault();
+      setActive((current) => Math.max(current - 1, 0));
+      return;
+    }
+    if (event.key === "Enter") {
+      event.preventDefault();
+      const hit = hits[active] ?? hits[0];
+      if (hit) {
+        closeAndGo(hit.href);
+      }
+    }
+  }
+
+  if (!mounted || !open) {
+    return null;
+  }
+
+  return createPortal(
+    <div className="docs-search-overlay" role="presentation">
+      <button
+        type="button"
+        className="docs-search-backdrop"
+        aria-label="Close search"
+        onClick={onClose}
+      />
+      <div
+        ref={dialogRef}
+        id={dialogId}
+        className="docs-search-dialog"
+        role="dialog"
+        aria-modal="true"
+        aria-label="Search"
+      >
+        <div className="docs-search-dialog-bar">
+          <SearchGlyph />
+          <input
+            ref={inputRef}
+            className="docs-search-input"
+            type="search"
+            value={query}
+            placeholder="Search"
+            aria-label="Search"
+            aria-autocomplete="list"
+            aria-controls={listId}
+            aria-activedescendant={
+              hits[active] ? `${listId}-opt-${active}` : undefined
+            }
+            onChange={(event) => setQuery(event.target.value)}
+            onKeyDown={onInputKeyDown}
+          />
+          <kbd className="docs-search-esc">esc</kbd>
+        </div>
+        {query.trim() ? (
+          <ul id={listId} className="docs-search-results" role="listbox">
+            {hits.length === 0 ? (
+              <li className="docs-search-empty">No Results Found</li>
+            ) : (
+              hits.map((hit, index) => (
+                <li key={hit.id} role="option" aria-selected={index === active}>
+                  <Link
+                    id={`${listId}-opt-${index}`}
+                    className={`docs-search-hit${index === active ? " is-active" : ""}`}
+                    href={hit.href}
+                    onClick={() => onClose()}
+                    onMouseEnter={() => setActive(index)}
+                  >
+                    <span className="docs-search-hit-heading">
+                      {hit.heading}
+                    </span>
+                    <span className="docs-search-hit-meta">
+                      {hit.section ? `${hit.section} · ` : ""}
+                      {hit.title}
+                    </span>
+                  </Link>
+                </li>
+              ))
+            )}
+          </ul>
+        ) : (
+          <p className="docs-search-hint">Begin typing to search documentation ...</p>
+        )}
+      </div>
+    </div>,
+    document.body,
+  );
+}
+
+export function DocsSearchProvider({
+  documents,
+  children,
+}: {
+  documents: DocsSearchDoc[];
+  children: ReactNode;
+}) {
+  const pathname = usePathname() ?? "";
+  const [open, setOpen] = useState(false);
+  const openSearch = () => setOpen(true);
+  const closeSearch = () => setOpen(false);
+
+  useEffect(() => {
+    setOpen(false);
+  }, [pathname]);
+
+  useEffect(() => {
+    function onKeyDown(event: KeyboardEvent) {
+      const isChord =
+        (event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k";
+      if (!isChord) return;
+      if (isApiPath(window.location.pathname)) return;
+      event.preventDefault();
+      setOpen(true);
+    }
+
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, []);
+
+  return (
+    <DocsSearchContext.Provider
+      value={{ documents, open, openSearch, closeSearch }}
+    >
+      {children}
+      <DocsSearchOverlay
+        documents={documents}
+        open={open}
+        onClose={closeSearch}
+      />
+    </DocsSearchContext.Provider>
+  );
+}
+
 export function DocsSearch({
   variant,
   onClick,
-  label = "Search docs",
+  label = "Search Docs",
+  onNavigate,
 }: {
   variant: "bar" | "icon";
   onClick?: () => void;
   label?: string;
+  onNavigate?: () => void;
 }) {
+  const pathname = usePathname() ?? "";
+  const { open, openSearch } = useDocsSearch();
+  const isApi = isApiPath(pathname);
+  const useMini = !isApi && !onClick;
+
+  function handleOpen() {
+    openSearch();
+    onNavigate?.();
+  }
+
+  if (!useMini) {
+    const handleClick = onClick ?? (isApi ? openScalarSearch : undefined);
+    if (variant === "icon") {
+      return (
+        <button
+          type="button"
+          className="docs-search docs-search-icon"
+          aria-label={label}
+          onClick={handleClick}
+        >
+          <SearchGlyph />
+        </button>
+      );
+    }
+
+    return (
+      <button
+        type="button"
+        className="docs-search docs-search-bar"
+        aria-label={label}
+        onClick={handleClick}
+      >
+        <SearchGlyph />
+        <span className="docs-search-label">{label}</span>
+      </button>
+    );
+  }
+
   if (variant === "icon") {
     return (
       <button
         type="button"
         className="docs-search docs-search-icon"
         aria-label={label}
-        onClick={onClick}
+        aria-expanded={open}
+        aria-haspopup="dialog"
+        onClick={handleOpen}
       >
         <SearchGlyph />
       </button>
@@ -73,10 +398,12 @@ export function DocsSearch({
       type="button"
       className="docs-search docs-search-bar"
       aria-label={label}
-      onClick={onClick}
+      aria-expanded={open}
+      aria-haspopup="dialog"
+      onClick={handleOpen}
     >
       <SearchGlyph />
-      <span className="docs-search-label">Search</span>
+      <span className="docs-search-label">{label}</span>
     </button>
   );
 }
