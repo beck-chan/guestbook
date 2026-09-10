@@ -11,6 +11,7 @@ import {
 } from "react";
 import { createPortal } from "react-dom";
 import MiniSearch from "minisearch";
+import { expandDocsSearchTerm } from "@/lib/docs/searchTerms";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import type { DocsSearchDoc } from "@/lib/docs/searchTypes";
@@ -90,10 +91,12 @@ function buildMiniSearch(documents: DocsSearchDoc[]) {
     fields: ["title", "heading", "body", "section"],
     storeFields: ["id", "href", "title", "heading", "section", "body"],
     idField: "id",
+    processTerm: (term) => expandDocsSearchTerm(term),
     searchOptions: {
       boost: { heading: 3, title: 2, section: 1.5, body: 1 },
       prefix: true,
-      fuzzy: 0.2,
+      // Longer queries need more edit budget so typos still match stems.
+      fuzzy: (term) => (term.length >= 6 ? 0.35 : 0.2),
     },
   });
   const unique: DocsSearchDoc[] = [];
@@ -238,8 +241,8 @@ function DocsSearchOverlay({
             className="docs-search-input"
             type="search"
             value={query}
-            placeholder="Search"
-            aria-label="Search"
+            placeholder="Search Documentation"
+            aria-label="Search Documentation"
             aria-autocomplete="list"
             aria-controls={listId}
             aria-activedescendant={

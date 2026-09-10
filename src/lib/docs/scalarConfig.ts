@@ -128,6 +128,115 @@ export const SCALAR_CUSTOM_CSS = `
   display: none !important;
 }
 
+/* Hide OpenAPI info/section "Heading" entries in Scalar search results. */
+a[role="option"][data-docs-hide-heading="true"] {
+  display: none !important;
+}
+
+/* Match docs-search-dialog: size, sharp box, fonts. Modal portals to body. */
+.scalar-modal.scalar-modal-search,
+.scalar-modal-search {
+  box-sizing: border-box !important;
+  width: min(36rem, calc(100vw - 2rem)) !important;
+  max-width: min(36rem, calc(100vw - 2rem)) !important;
+  max-height: min(28rem, calc(100vh - 4rem)) !important;
+  margin-top: min(12vh, 5.5rem) !important;
+  padding: 0.7rem !important;
+  border: 1px solid #c9c5bc !important;
+  border-radius: 1px !important;
+  background: #fff !important;
+  color: var(--docs-ink, #8a6a52) !important;
+  box-shadow: 0 16px 40px rgb(47 46 44 / 0.22) !important;
+  font-family: var(--body-font) !important;
+  overflow: hidden !important;
+}
+
+.scalar-modal-search .scalar-modal-body {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 0.55rem !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+  font-family: var(--body-font) !important;
+}
+
+/* Drop Navigate / Select keyboard hint bar. */
+.scalar-modal-search .ref-search-meta,
+.ref-search-meta {
+  display: none !important;
+}
+
+/* Search field chrome like .docs-search-dialog-bar */
+.scalar-modal-search [role="search"] > label {
+  height: auto !important;
+  margin: 0 !important;
+  padding: 0.15rem 0.25rem 0.15rem 0.45rem !important;
+  border: 1px solid #c9c5bc !important;
+  border-radius: 1px !important;
+  background: #fff !important;
+  color: var(--docs-ink, #8a6a52) !important;
+  font-family: var(--body-font) !important;
+  font-size: 1.05rem !important;
+  font-weight: 400 !important;
+  line-height: 1.35 !important;
+}
+
+.scalar-modal-search [role="search"] input {
+  padding: 0.55rem 0.25rem !important;
+  color: var(--docs-ink, #8a6a52) !important;
+  font-family: var(--body-font) !important;
+  font-size: 1.05rem !important;
+  font-weight: 400 !important;
+  line-height: 1.35 !important;
+}
+
+.scalar-modal-search [role="search"] input::placeholder {
+  color: color-mix(in srgb, #6f4e37 48%, white);
+  opacity: 1;
+}
+
+.scalar-modal-search [role="search"] svg {
+  color: color-mix(in srgb, #6f4e37 48%, white) !important;
+}
+
+.scalar-modal-search [role="listbox"] {
+  min-height: 0 !important;
+  overflow: auto !important;
+  font-family: var(--body-font) !important;
+}
+
+.scalar-modal-search a[role="option"] {
+  border-radius: 1px !important;
+  color: var(--docs-ink, #8a6a52) !important;
+  font-family: var(--body-font) !important;
+  text-decoration: none !important;
+}
+
+.scalar-modal-search a[role="option"]:hover,
+.scalar-modal-search a[role="option"][aria-selected="true"] {
+  background: rgb(47 46 44 / 0.06) !important;
+  color: var(--cover-soft, #6f4e37) !important;
+  text-decoration: none !important;
+}
+
+/* Result title ~ .docs-search-hit-heading */
+.scalar-modal-search a[role="option"] .flex-1.truncate.font-medium,
+.scalar-modal-search a[role="option"] .font-medium {
+  font-family: var(--poem-font) !important;
+  font-size: 1.05rem !important;
+  font-weight: 400 !important;
+  line-height: 1.35 !important;
+}
+
+/* Result meta ~ .docs-search-hit-meta */
+.scalar-modal-search a[role="option"] .text-c-2 {
+  color: color-mix(in srgb, #6f4e37 48%, white) !important;
+  font-family: var(--body-font) !important;
+  font-size: 0.95rem !important;
+  line-height: 1.25 !important;
+}
+
 .scalar-app.scalar-api-reference,
 .scalar-app .references-layout {
   --scalar-header-height: 0px;
@@ -376,6 +485,13 @@ export function createScalarReferenceConfig() {
     forceDarkModeState: "light" as const,
     modelsSectionLabel: "Models",
     customCss: SCALAR_CUSTOM_CSS,
+    localization: {
+      translations: {
+        search: {
+          placeholder: "Search API",
+        },
+      },
+    },
     ...(flags.public
       ? { servers: publicApiServers() }
       : flags.apiTest

@@ -65,6 +65,18 @@ function readStoredProjectRef() {
   }
 }
 
+/** Hide Scalar search rows typed as "heading" (info intro / section labels). */
+function hideScalarHeadingSearchResults(root: ParentNode = document) {
+  for (const option of root.querySelectorAll<HTMLElement>(
+    'a[role="option"]:not([data-docs-hide-heading="true"])',
+  )) {
+    const label = option.querySelector(".sr-only")?.textContent?.trimStart();
+    if (label?.startsWith("Heading")) {
+      option.setAttribute("data-docs-hide-heading", "true");
+    }
+  }
+}
+
 export function DocsApiReferenceView({ spec }: { spec: OpenApiSpec }) {
   const hostRef = useRef<HTMLDivElement>(null);
   const [draftRef, setDraftRef] = useState(DEFAULT_PROJECT_REF);
@@ -77,6 +89,21 @@ export function DocsApiReferenceView({ spec }: { spec: OpenApiSpec }) {
     const stored = readStoredProjectRef();
     setDraftRef(stored);
     setAppliedRef(stored);
+  }, []);
+
+  useEffect(() => {
+    hideScalarHeadingSearchResults();
+    const observer = new MutationObserver((mutations) => {
+      for (const mutation of mutations) {
+        for (const node of mutation.addedNodes) {
+          if (node instanceof HTMLElement) {
+            hideScalarHeadingSearchResults(node);
+          }
+        }
+      }
+    });
+    observer.observe(document.body, { childList: true, subtree: true });
+    return () => observer.disconnect();
   }, []);
 
   useEffect(() => {
