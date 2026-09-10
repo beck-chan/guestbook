@@ -1,13 +1,99 @@
 ---
-subtitle: How the documentation search works and is indexed for ingestion.
+subtitle: How guide search, API search, and LLM ingestion share one composed corpus.
 search: false
 public: false
 ---
 
 # Search & LLM Ingestion
 
-This page is a placeholder for the search and LLM ingestion features of the *y2k Guestbook*.
+::: {.callout}
+# One composed MDX corpus powers three surfaces.
 
-## Search
+[`composeDocsCorpus`](https://github.com/beck-chan/guestbook/blob/main/src/lib/docs/compose.ts){.blank} walks host `content.mdx` pages under `src/app/docs`, inlines `_snippets`, and applies the same `search: false` / `public: false` / flag-fence rules as the live site. Humans search that corpus with **MiniSearch** (guides) or **Scalar** (API). Agents discover and fetch it via [`/llms.txt`](/llms.txt){.blank} and `/docs/<slug>.md`. This is not pgvector or product RAG.
+:::
+
+## Guide Search (MiniSearch)
+
+On every docs route except `/docs/api`, the sidenav **Search Docs** control (and `⌘K` / `Ctrl+K`) opens the shared overlay in [`DocsSearch.tsx`](https://github.com/beck-chan/guestbook/blob/main/src/app/docs/_components/DocsSearch.tsx){.blank}.
+
+[`src/app/docs/layout.tsx`](https://github.com/beck-chan/guestbook/blob/main/src/app/docs/layout.tsx){.blank} loads [`getDocsSearchIndex()`](https://github.com/beck-chan/guestbook/blob/main/src/lib/docs/compose.ts){.blank} once and passes the flat document list into `DocsSearchProvider`. The landing page and app `not-found` reuse the same chrome as consumers — they are **not** corpus pages themselves.
+
+### What Gets Indexed
+
+- Host pages only (`**/content.mdx`); `_snippets` are never their own routes
+- Snippet imports are inlined into the host before flattening headings/body
+- Pages with `search: false` are omitted (this page, [example](/docs/example), [docs-build](/docs/docs-build), [book-build](/docs/book-build))
+- When `FLAG_PUBLIC=true`, pages with `public: false` are omitted
+- `{.public}` / `{.private}` fences and `*-public` embed pairs resolve through the live remark plugin so public deploys never index private-only copy
+- OpenAPI / Scalar operations are **not** in MiniSearch — only guide MDX (including `/docs/api` prose from `api/content.mdx` when it is searchable)
+
+[`searchTerms.ts`](https://github.com/beck-chan/guestbook/blob/main/src/lib/docs/searchTerms.ts){.blank} expands light English inflections at index and query time (`managing` ↔ `manage`), with prefix match and a bit of fuzzy room on longer terms.
+
+## API Search (Scalar)
+
+::: {.tabset}
+
+# Human search chrome
+
+On [`/docs/api`](/docs/api), [`DocsSidenav`](https://github.com/beck-chan/guestbook/blob/main/src/app/docs/_nav/DocsSidenav.tsx){.blank} labels the control **Search API** and calls [`openScalarSearch()`](https://github.com/beck-chan/guestbook/blob/main/src/app/docs/_components/DocsSearch.tsx){.blank} instead of MiniSearch. That opens Scalar’s native search modal (⌘K / Ctrl+K is left to Scalar on this route).
+
+[`scalarConfig.ts`](https://github.com/beck-chan/guestbook/blob/main/src/lib/docs/scalarConfig.ts){.blank} keeps Scalar’s SearchButton mounted but hides its sticky chrome; the modal is restyled toward the docs search dialog. OpenAPI **Heading** intro rows are filtered out of results.
+
+# Why not MiniSearch here
+
+Generated operations come from [`loadDatabaseOpenApi`](https://github.com/beck-chan/guestbook/blob/main/src/lib/docs/loadDatabaseOpenApi.ts){.blank} / [`typesToOpenApi`](https://github.com/beck-chan/guestbook/blob/main/src/lib/docs/typesToOpenApi.ts){.blank}, versioned by `FLAG_PUBLIC`. Scalar already indexes that document. Dumping schemas into MiniSearch (or into `/llms.txt`) would duplicate a large, flag-sensitive surface and fight Scalar’s own search.
+
+:::
 
 ## LLM Ingestion
+
+Agents follow **discover → fetch → cite** against the **same** composed guides as MiniSearch — not embeddings.
+
+::: {.tabset}
+
+# `/llms.txt`
+
+[`src/app/llms.txt/route.ts`](https://github.com/beck-chan/guestbook/blob/main/src/app/llms.txt/route.ts){.blank} serves a plain-text catalog from [`buildLlmsTxt()`](https://github.com/beck-chan/guestbook/blob/main/src/lib/docs/llmIngestion.ts){.blank}:
+
+- One line per indexed guide with HTML and `.md` links
+- Grouped by nav section when available
+- A short **API** pointer to `/docs/api` (Scalar) — **no** OpenAPI schema dump
+- Same opt-outs as MiniSearch (`search: false`, `public: false` under `FLAG_PUBLIC`)
+
+# `/docs/<slug>.md`
+
+[`next.config.ts`](https://github.com/beck-chan/guestbook/blob/main/next.config.ts){.blank} rewrites `/docs/:path*.md` to the handler under [`src/app/docs/raw/`](https://github.com/beck-chan/guestbook/tree/main/src/app/docs/raw){.blank}. Each response is the composed markdown for that host (`#` title, sections, inlined snippets). Unknown or opted-out slugs return **404**. There are no mirrors of individual Scalar operations.
+
+:::
+
+Public and private deploys each bake their own corpus: a public site’s `/llms.txt` and `.md` mirrors must not leak private-only guides or fence content.
+
+## Indexing & Authoring
+
+Nothing is hand-maintained for search or LLM catalogs. On each deploy (and when the docs layout loads the index), compose re-reads MDX from disk for that build’s flags.
+
+### Adding a Guide Page
+
+1. Copy [`example/page.tsx`](https://github.com/beck-chan/guestbook/blob/main/src/app/docs/example/page.tsx){.blank} + a `content.mdx` into `src/app/docs/<slug>/`.
+2. Leave YAML and the `#` title on the **host**; put reusable prose in [`_snippets/`](https://github.com/beck-chan/guestbook/tree/main/src/app/docs/_snippets){.blank} and import it.
+3. Add the route to [`docs-nav-data.ts`](https://github.com/beck-chan/guestbook/blob/main/src/app/docs/_nav/docs-nav-data.ts){.blank} if it should appear in the sidebar / landing.
+4. Omit `search: false` if the page should appear in MiniSearch, `/llms.txt`, and `/docs/<slug>.md`.
+
+Deep styling and fence syntax live on [Documentation Reference](/docs/example) and [Documentation Build](/docs/docs-build).
+
+## Opt-Out & Conditional Content
+
+| Mechanism | Effect on search / LLM surfaces |
+| --- | --- |
+| `search: false` | Page dropped from MiniSearch, `/llms.txt`, and `.md` mirrors |
+| `public: false` + `FLAG_PUBLIC=true` | Page dropped from the composed corpus for that deploy |
+| `{.public}` / `{.private}` fences | Only the active fence’s copy is composed/indexed |
+| `*-public` embed pairs | Remark picks the embed that matches the flag |
+
+This page uses `search: false` and `public: false` on purpose: maintainers can read it privately, but it stays out of the searchable / agent corpus.
+
+::: {.callout}
+# Not product RAG
+
+There is no pgvector index and no chatbot retrieval pipeline here. If you later ship an in-app docs assistant, embed the **same** composed corpus (per `FLAG_PUBLIC`) rather than replacing `/llms.txt` or `.md` mirrors.
+:::

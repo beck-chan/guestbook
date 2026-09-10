@@ -95,8 +95,28 @@ A second Vercel project can deploy the same `main` branch with different `FLAG_*
 
 To add another flag, add a key on `flags` in [`src/lib/flags.ts`](src/lib/flags.ts), pass the env name through `env` in [`next.config.ts`](next.config.ts), and branch on it in the UI.
 
-## Stop a running preview
 
+# NOTE TO SELF
+
+- how to change hardcoded display name and email limits
+- what RLS did we implement
+- DON'T FORGET TO REWRITE Y2K-GUESTBOOK HISTORY EXPOSED TOKENS IN .ENV
+
+## generating typescript schemas
+
+```bash
+npx supabase login
+npx supabase gen types typescript --project-id yahduqsmchkyapakpvdh --schema public > src/app/docs/api/database.types.ts
+```
+
+If you prefer a token instead of npx supabase login: Dashboard → Account → Access Tokens, then:
+
+```bash
+export SUPABASE_ACCESS_TOKEN=your_token
+npx supabase gen types typescript --project-id yahduqsmchkyapakpvdh --schema public > src/app/docs/api/database.types.ts
+```
+
+## kill command why
 
 ```bash
 npm run dev:stop
@@ -116,6 +136,7 @@ Use it when you’re done looking at the app and don’t want that background pr
 
 `npm run dev` listens on port 3000. In Git Bash, check whether anything is already bound to that port:
 
+
 ```bash
 netstat -ano | grep :3000
 ```
@@ -131,50 +152,4 @@ kill all:
 ```bash
 taskkill //F //IM node.exe
 ```
-
-
-# NOTE TO SELF
-
-don't forgor to 
-
-Optional: rewrite history (git filter-repo / BFG) and force-push to scrub the old blob — still rotate first; assume the secrets were already copied.
-
-remove docs install later
-
-## api gen ref
-
-```bash
-npx supabase login
-npx supabase gen types typescript --project-id yahduqsmchkyapakpvdh --schema public > src/app/docs/api/database.types.ts
-```
-
-If you prefer a token instead of npx supabase login: Dashboard → Account → Access Tokens, then:
-
-```bash
-export SUPABASE_ACCESS_TOKEN=your_token
-npx supabase gen types typescript --project-id yahduqsmchkyapakpvdh --schema public > src/app/docs/api/database.types.ts
-```
-
-need to do this for public docs too
-
-
-Display name: 128 characters
-Email: 254 characters (the usual max for an email address)
-
-To keep a change:
-
-Open Configure and tweak theme/layout/options.
-Copy the JSON snippet in that panel.
-Paste the keys you want into the createApiReference config in src/app/docs/_components/DocsApiReferenceView.tsx (scalarConfig). If you still use the iframe explorer, copy the same keys into src/app/docs/api/explorer/route.ts.
-Refresh /docs/api.
-
-
-3. Automating Transactional Emails (Resend or SendGrid)When someone signs up for your app, you usually want to send them a welcome email. [1] (https://www.youtube.com/watch?v=g9vYovJgsA4&t=406)How it works: You can trigger an Edge Function right after a user signs up.Action: The function talks to an email provider like Resend to instantly dispatch a custom, beautiful email to the user's inbox.
-
-can we do this for authed admins only
-
-3. Advanced Row Level Security (RLS) with Custom ClaimsRow Level Security (RLS) is the security engine of Supabase. It forces the database to check if a user is allowed to see or change a specific row of data before fulfilling their request.What it does: Instead of writing complex security code in a custom backend API, you write security rules directly on your database tables using SQL.Multi-tenant SaaS Example: Imagine a business software tool used by Nike and Adidas at the same time. You can write one RLS rule that says: auth.jwt() ->> 'company_id' = company_id. This guarantees a Nike employee can absolutely never view or accidentally leak an Adidas spreadsheet.Time-Locked Content Example: You can write a rule that prevents premium video content from being downloaded until a specific launch date: USING (release_date <= NOW()).
-
-
-
 
