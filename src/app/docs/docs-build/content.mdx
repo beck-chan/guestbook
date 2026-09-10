@@ -9,8 +9,9 @@ public: false
 ::: {.callout}
 # Docs are compiled by [`@next/mdx`](https://www.npmjs.com/package/@next/mdx){.blank}.  
 
-- Each documentation guide is a [`page.tsx`](https://github.com/beck-chan/guestbook/blob/main/src/app/docs/example/page.tsx){.blank} that imports [`./content.mdx`](https://github.com/beck-chan/guestbook/blob/main/src/app/docs/example/content.mdx){.blank} (the actual markdown content). 
+- Each documentation guide is a [`page.tsx`](https://github.com/beck-chan/guestbook/blob/main/src/app/docs/example/page.tsx){.blank} that imports [`./content.mdx`](https://github.com/beck-chan/guestbook/blob/main/src/app/docs/example/content.mdx){.blank} (the actual markdown content), wrapped in [`DocsPage`](https://github.com/beck-chan/guestbook/blob/main/src/app/docs/_components/DocsPage.tsx){.blank}.
 - [`src/app/docs/layout.tsx`](https://github.com/beck-chan/guestbook/blob/main/src/app/docs/layout.tsx){.blank} defines the custom layout, side navigation, and docs-only theme. 
+- [`DocsNav`](https://github.com/beck-chan/guestbook/blob/main/src/app/docs/_components/DocsNav.tsx){.blank} builds the sidebar navigation from [`docs-nav-data.ts`](https://github.com/beck-chan/guestbook/blob/main/src/app/docs/_nav/docs-nav-data.ts){.blank}.
 :::
 
 ## Docs-Only Build
@@ -109,9 +110,7 @@ Then, translated the generated types into an OpenAPI 3.1 document that is what g
 
 :::
 
-::: {.tabset}
-
-# Schema Translation
+### Schema Translation
 
 Since Scalar only supports OpenAPI 3.1, we need to translate our generated typescript types into an OpenAPI 3.1 document. 
 
@@ -120,14 +119,29 @@ Since Scalar only supports OpenAPI 3.1, we need to translate our generated types
 - `database.types.ts` when `FLAG_PUBLIC` is off (Beck's custom install)
 - `database.types-public.ts` when `FLAG_PUBLIC` is on (the packaged public guestbook)
 
-[`layout.tsx`](https://github.com/beck-chan/guestbook/blob/main/src/app/docs/layout.tsx){.blank} builds sidebar links from the the `*types.ts` files, but on `/docs/api`, [`DocsSidenav`](https://github.com/beck-chan/guestbook/blob/main/src/app/docs/_nav/DocsSidenav.tsx){.blank} swaps the usual docs nav for [`DocsApiNav`](https://github.com/beck-chan/guestbook/blob/main/src/app/docs/_nav/DocsApiNav.tsx){.blank}, linking to the inline method and operation anchors within the Scalar API explorer.
+[`layout.tsx`](https://github.com/beck-chan/guestbook/blob/main/src/app/docs/layout.tsx){.blank} builds sidebar links from the the `database-types*.ts` files, but on `/docs/api`, [`DocsSidenav`](https://github.com/beck-chan/guestbook/blob/main/src/app/docs/_nav/DocsSidenav.tsx){.blank} swaps the usual docs nav for [`DocsApiNav`](https://github.com/beck-chan/guestbook/blob/main/src/app/docs/_nav/DocsApiNav.tsx){.blank}, linking instead to the inline method and operation anchors within the Scalar API explorer.
 
-# Scalar API Explorer
 
-[`DocsApiReferenceView`](https://github.com/beck-chan/guestbook/blob/main/src/app/docs/_components/DocsApiReferenceView.tsx){.blank} loads the [`@scalar/api-reference`](https://www.npmjs.com/package/@scalar/api-reference){.blank} browser bundle from [`/docs/api/scalar-standalone`](https://github.com/beck-chan/guestbook/blob/main/src/app/docs/api/scalar-standalone/route.ts){.blank} and renders it into `.docs-api-reference`.
+### Scalar API Explorer
 
-[`scalarConfig.ts`](https://github.com/beck-chan/guestbook/blob/main/src/lib/docs/scalarConfig.ts){.blank} turns Scalar's own theme off (`theme: "none"`) and injects `customCss` that remaps Scalar onto guestbook tokens (`--peony`, `--paper`, `--futura-font`, `--docs-ink`). It also hides Scalar's sidebar and sticky search bar — docs search still opens Scalar's search — and hides **Test Request** unless `FLAG_PUBLIC` or `FLAG_APITEST` is on.
+::: {.tabset}
 
-`docs.css` still does the chrome: `.docs-shell:has(.docs-api-reference)` widens the sidenav. On the public build, a project-ID form above the explorer points Test Request at the visitor's Supabase project.
+# `DocsApiReferenceView`
+
+[`DocsApiReferenceView`](https://github.com/beck-chan/guestbook/blob/main/src/app/docs/_components/DocsApiReferenceView.tsx){.blank}:
+
+- Loads the [`@scalar/api-reference`](https://www.npmjs.com/package/@scalar/api-reference){.blank} browser bundle from [`/docs/api/scalar-standalone`](https://github.com/beck-chan/guestbook/blob/main/src/app/docs/api/scalar-standalone/route.ts){.blank} and renders it after the content in `src/app/docs/api/content.mdx`, which also displays differently depending on the build.
+- Enables the **Enter Your Supabase Project ID** field above the explorer, pointing test requests at the visitor's entered project on the public build.
+
+# `scalarConfig.ts`
+
+[`scalarConfig.ts`](https://github.com/beck-chan/guestbook/blob/main/src/lib/docs/scalarConfig.ts){.blank}:
+
+- Turns Scalar's own theme off and injects our `customCss` that remaps Scalar onto guestbook tokens instead. 
+- Hides Scalar's native sidebar and sticky search bar, instead, the sidebar search opens Scalar's search.
+- Hides the **Test Request** functionality unless `FLAG_PUBLIC` (public build) or `FLAG_APITEST` (private build, for Beck's custom testing) flags are on.
+
+
+
 
 :::
