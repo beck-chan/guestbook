@@ -25,6 +25,7 @@ export const DOCS_NAV_SECTIONS: DocsNavSection[] = [
     title: "Guides",
     items: [
       { label: "Manage Admin Auth", href: "/docs/admin" },
+      { label: "Enable Notifications", href: "/docs/notifs" },
       { label: "Add Analytics", href: "/docs/analytics" },
       { label: "Customize Settings", href: "/docs/settings" },
       { label: "Manage Comments", href: "/docs/manage" },

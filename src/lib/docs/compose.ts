@@ -434,3 +434,6 @@ export function composeDocsCorpus(): ComposedDoc[] {
 export const getDocsSearchIndex = cache((): DocsSearchDoc[] => {
   return flattenSearchDocs(composeDocsCorpus());
 });
+
+/** Cached composed guide corpus (same filter as MiniSearch / llms.txt). */
+export const getDocsCorpus = cache((): ComposedDoc[] => composeDocsCorpus());

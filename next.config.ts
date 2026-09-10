@@ -46,6 +46,11 @@ const nextConfig: NextConfig = {
           source: `${guestbookAdminPath()}/example.css`,
           destination: guestbookAdminExamplePath(),
         },
+        {
+          // Composed guide markdown mirrors (Track B). Not OpenAPI dumps.
+          source: "/docs/:path*.md",
+          destination: "/docs/raw/:path*",
+        },
       ],
     };
   },

@@ -3,6 +3,7 @@ import "server-only";
 export {
   composeDocsCorpus,
   flattenSearchDocs,
+  getDocsCorpus,
   getDocsSearchIndex,
 } from "./compose";
 export type {
