@@ -195,12 +195,20 @@ body:has(.docs-shell) {
   animation: easter-heading-float 4.6s cubic-bezier(0.42, 0, 0.22, 1.28) infinite;
 }
 
+.docs-index-head .docs-not-found-kicker {
+  font-size: clamp(7.8rem, 13.5vw, 10.8rem);
+}
+
 .docs-index-head .docs-brand-title {
   font-family: "Hello Honey", cursive;
   font-size: clamp(7.5rem, 12.75vw, 10.8rem);
   font-weight: 400;
   letter-spacing: 0.03em;
   line-height: 1.05;
+}
+
+.docs-shell:has(.docs-index) .docs-not-found-notes .docs-toc {
+  --docs-toc-band: 0;
 }
 
 .docs-index-subtitle {
@@ -1721,6 +1729,10 @@ body:has(.docs-shell) {
     line-height: 0.9;
   }
 
+  .docs-index-head .docs-not-found-kicker {
+    font-size: clamp(4.388rem, 7.65vw, 6.076rem);
+  }
+
   .docs-index-head .docs-brand-title {
     font-size: clamp(4.219rem, 7.2vw, 6.075rem);
     line-height: 0.78;
@@ -1791,6 +1803,10 @@ body:has(.docs-shell) {
     max-width: min(18.5625rem, calc(100vw - 0.8rem));
     min-height: min(18.5625rem, calc(100vw - 0.8rem));
     flex-shrink: 0;
+  }
+
+  .docs-shell:has(.docs-index) .docs-not-found-notes .docs-toc {
+    --docs-toc-band: 0;
   }
 
   .docs-shell:has(.docs-index) .docs-toc ol {
