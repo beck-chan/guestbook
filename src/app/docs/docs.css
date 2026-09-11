@@ -1541,6 +1541,18 @@ body:has(.docs-shell) {
   overflow-x: auto;
 }
 
+.docs-article li > .docs-table-wrap {
+  margin-top: 0.65rem;
+  margin-bottom: 0.25rem;
+}
+
+.docs-article ol.docs-ol-alpha > li > .docs-table-wrap,
+.docs-article ol.docs-ol-roman > li > .docs-table-wrap,
+.docs-article ol[type="a"] > li > .docs-table-wrap,
+.docs-article ol[type="i"] > li > .docs-table-wrap {
+  padding-left: 1.15em;
+}
+
 .docs-article table {
   width: 100%;
   border-collapse: collapse;

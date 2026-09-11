@@ -6,7 +6,10 @@ subtitle: Use Gmail and Supabase edge functions to send notifications for guestb
 # Enable Notifications
 
 ::: {.callout}
-- [x] This guide assumes that you've set up the guestbook application with either [Quickstart](/docs/quickstart) or [Install via npm](/docs/install).
+This guide assumes that:
+
+- [x] You've set up the guestbook application with either [Quickstart](/docs/quickstart) or [Install via npm](/docs/install).
+- [x] (For cloud deployment) You have a Vercel account and project.
 
 :::
 
@@ -26,7 +29,7 @@ When notifications are enabled, emails are sent for:
 
 [Supabase Edge Functions](https://supabase.com/docs/guides/functions){.blank} check a shared secret instead of a user JSON Web Token (JWT). 
 
-We'll first generate a shared secret that will be used with our Supabase database webhooks. 
+We'll first generate a shared secret that will be used with our [Supabase Database Webhooks](https://supabase.com/docs/guides/database/webhooks). 
 
 1. Use a secure password generator like [Bitwarden's password generator](https://bitwarden.com/password-generator/){.blank}:
 
@@ -146,24 +149,86 @@ If Google revokes the refresh token, you'll need to create a new token and updat
 
 :::
 
+## Create Supabase Access Token
+
+From within [Supabase](https://supabase.com/):
+
+1. Click on your profile icon in the top right corner, then select **Account**.
+
+2. In the left sidebar, click **Access Tokens**.
+
+3. Click **Generate new token**:
+
+    - Enter in a **Name** for the token.
+    - Set the time the token **Expires in**.
+
+4. Scope the **Resource** access to **Project**, then under **Select projects** choose your guestbook project.
+
+5. Under **Permissions**, select *`Preset - Read only*.
+
+6. Click **Project**, then under **Project Settings**, select `Read`.
+
+7. Click Application services:
+
+    - Under **Edge Functions**, select `Read-write`.
+    - Under **Edge Function Secrets**, select `Read-write`.
+
+8. Click **Review access >**.
+
+9. Click **Create token**.
+
+10. Copy the token to your clipboard. Hang on to this — we'll need to store this as Supabase secret in the next section under `SUPABASE_ACCESS_TOKEN`:
+
+    ```bash
+    SUPABASE_ACCESS_TOKEN=<sbp_your_access_token>
+    ```
+
 ## Deploy Edge Functions
 
-Let's deploy the edge functions in [`supabase/functions`](https://github.com/beck-chan/y2k-guestbook/blob/main/supabase/functions/README.md){.blank} to Supabase that will handle your notifications.
+Let's deploy the edge functions in [`supabase/functions`](https://github.com/beck-chan/y2k-guestbook/blob/main/supabase/functions/){.blank} to Supabase that will handle your notifications.
 
 ::: {.callout}
 # You'll need your Supabase Project ID snagged from your `NEXT_PUBLIC_SUPABASE_URL`: `https://<your-database-url>.supabase.co`.
 
 :::
 
-1. From your guestbook project root, call:
+a. From your guestbook project root, call:
+
+    ::: {.tabset}
+
+    # Deployment
 
     ```bash
-    # Make sure you're logged in
-    npx supabase login
+    export SUPABASE_ACCESS_TOKEN=<sbp_your_access_token>
     npx supabase functions deploy notify-admins on-user-created --project-ref <your-database-url>
     ```
 
+    # Output
+
+    You should see the following output:
+
+    ```bash
+    Deploying Function: notify-admins
+    Uploading asset (notify-admins): supabase/functions/notify-admins/index.ts
+    Uploading asset (notify-admins): supabase/functions/_shared/gmail.ts
+    Uploading asset (notify-admins): supabase/functions/_shared/env.ts
+    Uploading asset (notify-admins): supabase/functions/_shared/allowlist.ts
+    Deploying Function: on-user-created
+    Uploading asset (on-user-created): supabase/functions/on-user-created/index.ts
+    Uploading asset (on-user-created): supabase/functions/_shared/gmail.ts
+    Uploading asset (on-user-created): supabase/functions/_shared/env.ts
+    Uploading asset (on-user-created): supabase/functions/_shared/allowlist.ts
+    Deployed Functions on project <your-database-url>: notify-admins, on-user-created
+    You can inspect your deployment in the Dashboard: https://supabase.com/dashboard/project/<your-database-url>/functions
+    ```
+
+    :::
+
 2. Set the following Supabase secrets:
+
+    ::: {.tabset}
+
+    # Secrets
 
     ```bash
     npx supabase secrets set --project-ref <your-database-url> GMAIL_USER=you@gmail.com
@@ -178,119 +243,99 @@ Let's deploy the edge functions in [`supabase/functions`](https://github.com/bec
 
     If your admin dashboard is not at `/admin`, also set your `GUESTBOOK_ADMIN_PATH`.
 
-## Configuring Webhooks
+    # Output
 
-### Configure Database Webhooks
+    You should see the following output for each of the set secrets:
 
-Within Supabase, select **Database** from the left sidebar, then click **Webhooks**:
+    ```bash
+    Finished supabase secrets set.
+    ```
 
-::: {.tabset}
+    :::
 
-# 1. Create the notify-admins hook
+## Configure Database Webhooks
 
-a. Click **Create a new hook**.
+1. Within your Supabase project for the guestbook, select **Integrations** from the left sidebar.
 
-b. Give the hook a **Name**. For example: `notify-admins`.
+2. From the Explore all landing page, select **Database Webhooks**.
 
-c. For **Table**, you will add one hook per table (or enable each table/event below on this hook, depending on the Dashboard).
+3. Click **Install integration**.
 
-d. Set **HTTP Request** to:
+4. Click **Install integration** again to confirm the installation.
 
-    - **Method:** `POST`
-    - **URL:** `https://<your-database-url>.supabase.co/functions/v1/notify-admins`
+5. Select the **Webhooks** tab. For each hook in the following list:
 
-    Replace `<your-database-url>` with the ref in your `NEXT_PUBLIC_SUPABASE_URL`.
+    ::: {.tabset}
 
-e. Under **HTTP Headers**, add:
+    # 1. Notify Admins Hooks
 
-    | Name | Value |
+    | Table | Events |
     | --- | --- |
-    | `x-notify-webhook-secret` | The same string as `NOTIFY_WEBHOOK_SECRET` |
-    | `Content-Type` | `application/json` |
+    | `public.admin_allowlist` | INSERT, DELETE |
+    | `public.comments` | INSERT, UPDATE, DELETE |
+    | `public.guestbook_settings` | UPDATE |
 
-f. Click **Create webhook**.
+    ::: {.callout}
+    # Do *not* enable UPDATE on `admin_allowlist`. 
 
-# 2. Tables and events
+    Re-running `npm run allow-admin` for an existing address should not send a notification.
 
-Create hooks (or extra table events) so `notify-admins` receives:
+    :::
 
-| Table | Events |
-| --- | --- |
-| `public.admin_allowlist` | INSERT, DELETE |
-| `public.comments` | INSERT, UPDATE, DELETE |
-| `public.guestbook_settings` | UPDATE |
+    ## 2. Admin User Authenticated Hook
 
-Do **not** enable UPDATE on `admin_allowlist`. Re-running `npm run allow-admin` for an existing address must not send mail.
+    | Table | Events |
+    | --- | --- |
+    | `auth.users` | INSERT |
 
-:::
+    :::
 
-### After User Created Hook
+    a. Click **Create a new hook**.
 
-This emails the new admin and the rest of the allowlist the first time an allowlisted Google account is created in Auth. Later logins do not send mail.
+    b. Enter a **Name**, such as `admin_added`.
 
-a. Within Supabase, select **Authentication** from the left sidebar, then click **Hooks**.
+    c. Under **Table**, select the table you want to add a hook for (you'll need to repeat these steps for each table).
 
-b. Click **Add hook**, then select **After User Created**:
+    d. Set **Type of webhook** to **HTTP Request**.
 
-    - For **Hook type**, select `HTTPS`.
-    - For **URL**, enter `https://<your-database-url>.supabase.co/functions/v1/on-user-created`.
+    e. Then set **HTTP Request** to:
 
-c. Set the hook secret / Authorization bearer token to the same `NOTIFY_WEBHOOK_SECRET` value.
+        - **Method:** `POST`
+        - **URL:** `https://<your-database-url>.supabase.co/functions/v1/notify-admins`
 
-d. Click **Create hook**.
+    f. Under **HTTP Headers**, click **Add header** and add the following headers:
 
-::: {.callout}
-# Keep the existing Before User Created Postgres hook.
+        | Name | Value |
+        | --- | --- |
+        | `Content-Type` | `application/json` |
+        | `x-notify-webhook-secret` | The same string as `NOTIFY_WEBHOOK_SECRET` |
 
-That hook (`hook_before_user_created`) still blocks Google accounts that are not on the allowlist. After User Created only runs when a new Auth user is actually created.
-:::
+    g. Click **Create webhook**.
+
 
 ## Enable Notifications
 
-`FLAG_NOTIF` must be on in **two** places. Next.js env vars never reach Edge Functions.
+Notifications are gated behind a feature flag. You'll need to set this flag to `true` in two places:
 
-In `.env.local` (for local development) or your Vercel environment variables (for cloud deployment):
+::: {.tabset}
 
-1. Toggle **`FLAG_NOTIF=`** to `true`.
+# 1. Local Development or Deployment
 
-    ```bash
-    FLAG_NOTIF=true
-    ```
+To set in `.env.local` (for local development) or your Vercel [**Environment Variables**](https://vercel.com/docs/environment-variables){.blank} (for cloud deployment):
 
-2. On the same Supabase project, turn the send gate on:
+```bash
+FLAG_NOTIF=true
+```
 
-    ```bash
-    npx supabase secrets set FLAG_NOTIF=true
-    ```
+# 2. Supabase Project
 
-::: {.callout}
-# `.env.local` / Vercel `FLAG_NOTIF=true` alone does not send mail.
+To set in your Supabase project for the guestbook:
 
-The Edge Function reads the **Supabase secret**. Set both so the Next flag and the mailer agree. Leave the secret `false` until the Gmail API refresh token and the webhooks are ready.
-:::
+```bash
+npx supabase secrets set --project-ref <your-database-url> FLAG_NOTIF=true
+```
 
-For cloud deployment, add `FLAG_NOTIF` as a Vercel environment variable (`true` / `false`) the same way you set `FLAG_COUNTER`. Restart or redeploy after changing Next flags.
 
-## Test Notifications
-
-With `FLAG_NOTIF=true` as a Supabase secret and the Gmail refresh token working:
-
-1. Run `npm run allow-admin -- someone@gmail.com` for an address that is not already listed. That inbox, and other allowlisted inboxes, should receive mail. Run the same command again for that address — no second mail.
-
-2. Run `npm run delete-admin -- someone@gmail.com`. The removed address and remaining admins should receive mail.
-
-3. Submit a comment on the public guestbook. Allowlisted inboxes should receive mail. Mark the comment read in `/admin` — no mail. Edit or delete it — mail.
-
-4. Save guestbook settings. Allowlisted inboxes should receive a short list of changed fields.
-
-5. Sign in with Google using a newly allowlisted account that has never had an Auth user. That address and other admins should receive mail. Sign out and in again — no mail.
-
-Inserting a comment row in the Supabase **SQL Editor** should still send mail. That confirms the webhook, not the Next action.
-
-::: {.callout}
-# Gmail does not dedupe retries.
-
-If a Database Webhook retries, the same event can send twice. Re-running `allow-admin` for an address that is already listed still must not mail (that is an UPDATE, and the function skips it).
 :::
 
 ## What's Next

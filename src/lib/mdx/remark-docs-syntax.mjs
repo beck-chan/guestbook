@@ -257,13 +257,14 @@ function normalizeStyledListContinuationIndent(line, listIndent) {
   }
 
   const rest = line.slice(indent.length);
-  // Keep nested decimal/bullet lists and fences; only unwrap prose indents.
+  // Keep nested decimal/bullet lists, fences, and pipe tables; only unwrap prose.
   if (
     /^\d+\.[ \t]/.test(rest) ||
     /^[-*+][ \t]/.test(rest) ||
     rest.startsWith("```") ||
     rest.startsWith("~~~") ||
-    rest.startsWith(":::")
+    rest.startsWith(":::") ||
+    rest.startsWith("|")
   ) {
     return { line, listIndent };
   }
@@ -623,6 +624,7 @@ function isAttachableContinuation(node) {
   return (
     node?.type === "list" ||
     node?.type === "code" ||
+    node?.type === "table" ||
     node?.type === "blockquote" ||
     node?.type === "mdxJsxFlowElement"
   );

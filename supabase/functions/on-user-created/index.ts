@@ -84,6 +84,11 @@ function userEmail(payload: unknown): string | null {
   const root = payload as Record<string, unknown>;
   const direct = asEmail(root.email);
   if (direct) return direct;
+  const record = root.record;
+  if (record && typeof record === "object") {
+    const fromRecord = asEmail((record as Record<string, unknown>).email);
+    if (fromRecord) return fromRecord;
+  }
   const user = root.user;
   if (user && typeof user === "object") {
     const fromUser = asEmail((user as Record<string, unknown>).email);
