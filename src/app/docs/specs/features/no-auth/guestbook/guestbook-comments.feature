@@ -29,7 +29,8 @@ Feature: Standalone guestbook page (`/guestbook`)
             Then the comment is not submitted
 
         Scenario: User submits a comment with English profanity
-            When a user enters a valid display name and a comment body that contains English profanity
+            When a user enters a valid display name
+            And enters a comment body that contains English profanity
             And they click the `submit` button
             Then their comment is rejected and not submitted
             And the user is shown an error message

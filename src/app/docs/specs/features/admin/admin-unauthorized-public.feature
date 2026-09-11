@@ -7,7 +7,7 @@ Feature: Unauthorized admin login
     Scenario: Unauthorized user is denied the dashboard
         When a user clicks the `admin login` link
         And they sign in successfully with Google
-        Then they are redirected to the landing page
+        Then they are redirected to the guestbook page
         And they are shown a message that they do not have admin authorization
 
     Scenario: Unauthorized visitor message can be dismissed

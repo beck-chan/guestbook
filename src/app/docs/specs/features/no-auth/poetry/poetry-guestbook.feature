@@ -30,7 +30,7 @@ Feature: Original Poetry landing page guestbook (`/`)
 
         Scenario: User submits a comment with English profanity
             When a user enters a valid display name 
-            And a comment body that contains English profanity
+            And enters a comment body that contains English profanity
             And they click the `submit` button
             Then their comment is rejected and not submitted
             And the user is shown an error message

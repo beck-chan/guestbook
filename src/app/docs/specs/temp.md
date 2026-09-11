@@ -186,3 +186,7 @@ Given(
 
 :::
 
+Pagination needs enough comments in the DB; there is no Given for that. Public page size defaults to 6, admin is fixed at 10.
+Email scenarios assume capture email is on (y2k default). The settings scenario that turns it off persists in the live DB.
+Admin filters at 1280px are inside comments menu. Keep those Whens abstract so the step can open the menu when needed.
+Title on admin: the comments heading stays comments; the setting updates the public title (and document title). applied to the admin dashboard is the saved field, not a visible board title.
