@@ -176,14 +176,20 @@ export function AdminCommentThread({
           mark all read
         </button>
       </nav>
-      {notes.map((note) => {
+      {notes.map((note, index) => {
         const editing = mode?.kind === "edit" && mode.id === note.id;
         const confirming = mode?.kind === "delete" && mode.id === note.id;
+        const nested = index % 2 === 1;
 
         return (
-          <article key={note.id} className="admin-comment">
+          <article
+            key={note.id}
+            className={`admin-comment${nested ? " is-nested" : ""}`}
+          >
             <figure
-              className={`comment-bubble${editing ? " is-editing" : ""}`}
+              className={`comment-bubble${nested ? " is-nested" : ""}${
+                editing ? " is-editing" : ""
+              }`}
               onBlur={(event) => {
                 const next = event.relatedTarget;
                 if (

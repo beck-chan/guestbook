@@ -162,8 +162,11 @@ export function CommentBubbles({
         </button>
       </form>
       <div className="comment-thread">
-        {comments.map((note) => (
-          <figure key={note.id} className="comment-bubble">
+        {comments.map((note, index) => (
+          <figure
+            key={note.id}
+            className={`comment-bubble${index % 2 === 1 ? " is-nested" : ""}`}
+          >
             <figcaption className="comment-meta">
               <span className="comment-name">{note.name}</span>
               <time

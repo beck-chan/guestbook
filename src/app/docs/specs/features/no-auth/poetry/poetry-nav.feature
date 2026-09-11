@@ -35,9 +35,9 @@ Feature: Original Poetry landing page navigation (`/`)
         Scenario: Report Issue link works on desktop
             Given a user is on the main landing page of the poetry guestbook on desktop
             When a user clicks the `report issue` link
-            Then a new tab or window opens to the Beck's guestbook repo Issues page
+            Then a new tab or window opens to `https://github.com/beck-chan/guestbook/issues`
 
         Scenario: Report Issue link works on mobile
             Given a user is on the main landing page of the poetry guestbook on mobile
             When a user clicks the drop-down `menu` button and selects the `report issue` link
-            Then a new tab or window opens to the Beck's guestbook repo Issues page
+            Then a new tab or window opens to `https://github.com/beck-chan/guestbook/issues`

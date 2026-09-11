@@ -315,7 +315,8 @@ export function MobileReading({
             <button
               type="button"
               className="poem-heart"
-              aria-label={`Heart this poem, ${heartCount} hearts`}
+              title="Like This Poem"
+              aria-label={`Like This Poem, ${heartCount} likes`}
               aria-pressed={liked}
               disabled={heartPending || !poem}
               onClick={onToggleHeart}

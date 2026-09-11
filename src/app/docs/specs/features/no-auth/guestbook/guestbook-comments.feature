@@ -46,13 +46,13 @@ Feature: Standalone guestbook page (`/guestbook`)
             Then their comment is rejected and not submitted
             And the user is shown an error message
 
-        # Default comment body limit is 1k characters; 10k is the maximum allowed configured length                
+        # Default comment body limit is 1k characters; 10k is the maximum allowed configuration             
         Scenario: User submits a comment body above the configured character limit
             When a user submits a comment with a comment body longer than 10000 characters
             Then their comment is rejected and not submitted
             And the user is shown an error message
 
-        # Default rate limit is 1 comment every 5 minutes and 2 comments per 24 hours.
+        # Default rate limit is 1 comment every 5 minutes and 2 comments per 24 hours
         Scenario: User submissions are rate limited
             When a user submits more than 1 comment within 5 minutes
             Then their comment is rejected and not submitted

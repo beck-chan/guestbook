@@ -8,7 +8,7 @@ Feature: Admin Dashboard page navigation
 
         Scenario: View Book link works
             When an admin clicks the `view book` link
-            Then they are taken to the Original Poetry landing page
+            Then they are taken to the Original Poetry landing page (`/`)
 
     Rule: Navigation is handled by a button on mobile
 
@@ -17,8 +17,8 @@ Feature: Admin Dashboard page navigation
             And they are on the admin dashboard on mobile (`/admin`)
 
         Scenario: Return to book works on mobile
-            When an admin clicks the `return to book` link
-            Then they are taken to the Original Poetry landing page
+            When an admin clicks the `return` link
+            Then they are taken to the Original Poetry landing page (`/`)
 
     Rule: Comment sort, filter, and search are in a drop-down menu on mobile
 

@@ -34,7 +34,7 @@ export function AdminGuestbook({
 }: AdminGuestbookProps) {
   return (
     <AdminPageFrame className="admin-page admin-desk">
-      <a className="admin-book-tab" href={homeHref} aria-label="return to book">
+      <a className="admin-book-tab" href={homeHref} aria-label="return">
         <span className="admin-book-tab-ribbon" aria-hidden="true">
           <svg viewBox="0 0 100 40" preserveAspectRatio="none">
             <path d="M1.5,40 V9.5 Q1.5,1.5 9.5,1.5 H90.5 Q98.5,1.5 98.5,9.5 V40 Z" />

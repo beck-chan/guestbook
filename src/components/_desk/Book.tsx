@@ -1107,7 +1107,8 @@ export function Book({
                   className="poem-heart"
                   disabled={!isOpen || heartPending || !poem}
                   tabIndex={isOpen ? 0 : -1}
-                  aria-label={`Heart this poem, ${heartCount} hearts`}
+                  title="Like This Poem"
+                  aria-label={`Like This Poem, ${heartCount} likes`}
                   aria-pressed={liked}
                   onClick={onToggleHeart}
                 >

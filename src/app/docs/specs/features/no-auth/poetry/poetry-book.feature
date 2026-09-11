@@ -37,7 +37,7 @@ Feature: Original Poetry volume
     Rule: Book pages are interactive
 
         Background:
-            Given the Original Poetry book is opened
+            Given the Original Poetry book is opened on desktop
 
         Scenario: Portfolio link works
             Given the user is on the introduction page of the Original Poetry book
@@ -45,20 +45,29 @@ Feature: Original Poetry volume
             Then a new tab or window opens to Beck's portfolio
 
         Scenario: Original Poetry heart function
-            When a user clicks the `Heart this poem` button
+            When a user clicks the `Like This Poem` button
             Then the heart fills with colour
             And the count of likes increases by 1
+
+        Scenario: Original Poetry unlike function
+            Given the heart is filled with colour
+            When a user clicks the `Like This Poem` button
+            Then the heart is no longer filled with colour
+            And the count of likes decreases by 1
 
         Scenario: Poem page turn
             When a user clicks the `Turn Page` button on a poem page
             Then the poem text on the page changes
 
-        Scenario: Users can increase poem font size on mobile
+    Rule: Poem font size can be changed on mobile
+
+        Background:
             Given a user is interacting with a poem page on mobile
+
+        Scenario: Users can increase poem font size
             When they click the `Increase font size` button
             Then the poem page font increases in size
 
-        Scenario: Users can decrease poem font size on mobile
-            Given a user is interacting with a poem page on mobile
+        Scenario: Users can decrease poem font size
             When they click the `Decrease font size` button
             Then the poem page font decreases in size
