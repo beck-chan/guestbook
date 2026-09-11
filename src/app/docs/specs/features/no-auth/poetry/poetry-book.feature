@@ -3,7 +3,7 @@ Feature: Original Poetry volume
     Rule: Original Poetry volume behaves as a book on desktop
 
         Scenario: Original Poetry book opens flat
-            Given a user is on the main landing page of the poetry guestbook on desktop (`/`)
+            Given a user is on the poetry guestbook page on desktop (`/`)
             When a user clicks the `Open Book` button
             Then the Original Poetry book opens flat
 
@@ -15,12 +15,12 @@ Feature: Original Poetry volume
     Rule: Original Poetry volume scrolls on mobile
 
         Scenario: Original Poetry book opens on mobile by scrolling
-            Given a user is on the main landing page of the poetry guestbook on mobile (`/`)
+            Given a user is on the poetry guestbook page on mobile (`/`)
             When a user scrolls down
             Then the introduction page of the Original Poetry book reveals
 
         Scenario: Original Poetry book opens on mobile with Open Book
-            Given a user is on the main landing page of the poetry guestbook on mobile
+            Given a user is on the poetry guestbook page on mobile
             When a user clicks the `Open Book` button
             Then the introduction page of the Original Poetry book reveals
 

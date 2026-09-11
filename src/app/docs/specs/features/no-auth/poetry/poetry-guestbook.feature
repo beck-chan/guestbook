@@ -29,7 +29,8 @@ Feature: Original Poetry landing page guestbook (`/`)
             Then the comment is not submitted
 
         Scenario: User submits a comment with English profanity
-            When a user enters a valid display name and a comment body that contains English profanity
+            When a user enters a valid display name 
+            And a comment body that contains English profanity
             And they click the `submit` button
             Then their comment is rejected and not submitted
             And the user is shown an error message
@@ -61,7 +62,7 @@ Feature: Original Poetry landing page guestbook (`/`)
     Rule: Guestbook is hidden on mobile by default
 
         Background:
-            Given a user is on the main landing page of the poetry guestbook on mobile
+            Given a user is on the poetry landing page on mobile  (`/`)
 
         Scenario: Guestbook can be opened on mobile
             Given a user is interacting with the poetry book
