@@ -16,7 +16,7 @@ const CLOSE_FENCE = /^::: *$/;
 const FRONTMATTER = /^---\r?\n([\s\S]*?)\r?\n---(?:\r?\n|$)/;
 const FENCE_OPEN_LINE = /^::: *\{([^}]*)\} *(?:#.*)?$/;
 const FENCE_CLOSE_LINE = /^::: *$/;
-const CODE_FENCE_LINE = /^(`{3,}|~{3,})(.*)$/;
+const CODE_FENCE_LINE = /^[ \t]*(`{3,}|~{3,})(.*)$/;
 const TASK_MARKER = /^\[([ xX])\](?:[ \t]+|$)/;
 // Longer roman forms first so "viii." is not parsed as "i" + "ii.".
 const ROMAN_ITEM =
@@ -69,6 +69,34 @@ function rewriteFenceLine(line) {
 
 function isFenceControlLine(line) {
   return /^[ \t]*(:::docs-fence(?:\s|$)|::: *$)/.test(line);
+}
+
+function isDocsFenceOpen(trimmed) {
+  return FENCE_OPEN_LINE.test(trimmed) || OPEN_FENCE.test(trimmed);
+}
+
+function isDocsFenceClose(trimmed) {
+  return FENCE_CLOSE_LINE.test(trimmed);
+}
+
+function listContinuationColumn(line) {
+  const styled = line.match(STYLED_LIST_LINE);
+  if (styled) {
+    const marker = line.slice(styled[1].length).match(/^\S+[ \t]+/);
+    return styled[1].length + (marker ? marker[0].length : 0);
+  }
+
+  const decimal = line.match(/^([ \t]*)\d+\.[ \t]+/);
+  if (decimal) {
+    return decimal[0].length;
+  }
+
+  const bullet = line.match(/^([ \t]*)[-*+][ \t]+/);
+  if (bullet) {
+    return bullet[0].length;
+  }
+
+  return null;
 }
 
 function rewriteLinkAttrs(text) {
@@ -250,6 +278,7 @@ function rewriteDocsMarkdown(value) {
   let fenceChar = "";
   let fenceLen = 0;
   let styledListIndent = null;
+  let listContinueCol = 0;
 
   function push(line, isolate) {
     if (isolate && out.length > 0 && out[out.length - 1] !== "") {
@@ -261,7 +290,35 @@ function rewriteDocsMarkdown(value) {
     }
   }
 
-  for (const line of lines) {
+  for (const rawLine of lines) {
+    const indent = leadingIndent(rawLine);
+    const trimmed = rawLine.slice(indent.length);
+
+    if (!inCode) {
+      const col = listContinuationColumn(rawLine);
+      if (col != null) {
+        listContinueCol = col;
+      } else if (
+        listContinueCol > 0 &&
+        trimmed &&
+        indent.length === 0 &&
+        !isDocsFenceOpen(trimmed) &&
+        !isDocsFenceClose(trimmed)
+      ) {
+        listContinueCol = 0;
+      }
+    }
+
+    // 2-space fences or prose under `2. ` would otherwise close the list
+    // (CommonMark needs indent >= the marker width). Pad to stay in the item.
+    const extraPad =
+      listContinueCol > 0 &&
+      trimmed &&
+      indent.length > 0 &&
+      indent.length < listContinueCol
+        ? listContinueCol - indent.length
+        : 0;
+    const line = extraPad > 0 ? `${" ".repeat(extraPad)}${rawLine}` : rawLine;
     const fence = line.match(CODE_FENCE_LINE);
     if (fence) {
       const mark = fence[1];

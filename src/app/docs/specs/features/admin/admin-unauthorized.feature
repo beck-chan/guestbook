@@ -1,18 +1,12 @@
-Feature: Admin login link
+Feature: Unauthorized admin login
 
-    Rule: Only allow-listed admins can access the admin dashboard on desktop
+    Rule: Visitors without admin authorization are denied the dashboard on desktop
 
         Background:
             Given a user is on the main landing page of the poetry guestbook on desktop
-
-        Scenario: Authorized admin reaches the dashboard on desktop
-            Given the user has admin authorization
-            When a user clicks the `admin login` link
-            And they sign in successfully with Google
-            Then they are redirected to the `/admin` dashboard
+            And the user does not have admin authorization
 
         Scenario: Unauthorized user is denied the dashboard on desktop
-            Given the user does not have admin authorization
             When a user clicks the `admin login` link
             And they sign in successfully with Google
             Then they are redirected to the landing page
@@ -23,19 +17,13 @@ Feature: Admin login link
             When they click the `Boo hiss! Fine.` button
             Then the message closes
 
-    Rule: Only allow-listed admins can access the admin dashboard on mobile
+    Rule: Visitors without admin authorization are denied the dashboard on mobile
 
         Background:
             Given a user is on the main landing page of the poetry guestbook on mobile
-
-        Scenario: Authorized admin reaches the dashboard on mobile
-            Given the user has admin authorization
-            When a user clicks the drop-down `menu` button and selects the `admin login` link
-            And they sign in successfully with Google
-            Then they are redirected to the `/admin` dashboard
+            And the user does not have admin authorization
 
         Scenario: Unauthorized user is denied the dashboard on mobile
-            Given the user does not have admin authorization
             When a user clicks the drop-down `menu` button and selects the `admin login` link
             And they sign in successfully with Google
             Then they are redirected to the landing page

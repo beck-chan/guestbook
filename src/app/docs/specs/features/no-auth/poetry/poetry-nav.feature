@@ -1,4 +1,4 @@
-Feature: Original Poetry landing page navigation
+Feature: Original Poetry landing page navigation (`/`)
 
     Rule: Hanging bookmarks serve as navigation on desktop
 

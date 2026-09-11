@@ -1,9 +1,9 @@
-Feature: Original Poetry volume
+Feature: Original Poetry volume 
 
     Rule: Original Poetry volume behaves as a book on desktop
 
         Scenario: Original Poetry book opens flat
-            Given a user is on the main landing page of the poetry guestbook on desktop
+            Given a user is on the main landing page of the poetry guestbook on desktop (`/`)
             When a user clicks the `Open Book` button
             Then the Original Poetry book opens flat
 
@@ -15,7 +15,7 @@ Feature: Original Poetry volume
     Rule: Original Poetry volume scrolls on mobile
 
         Scenario: Original Poetry book opens on mobile by scrolling
-            Given a user is on the main landing page of the poetry guestbook on mobile
+            Given a user is on the main landing page of the poetry guestbook on mobile  (`/`)
             When a user scrolls down
             Then the introduction page of the Original Poetry book reveals
 
@@ -40,7 +40,7 @@ Feature: Original Poetry volume
             Given the Original Poetry book is opened
 
         Scenario: Portfolio link works
-            Given a user is interacting with the introduction page
+            Given the user is on the introduction page of the Original Poetry book
             When a user clicks the `Visit Beck's Portfolio` link
             Then a new tab or window opens to Beck's portfolio
 

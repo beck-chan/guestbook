@@ -1,7 +1,7 @@
-Feature: Standalone guestbook page
+Feature: Guestbook page
 
     Background:
-        Given a user is on the standalone guestbook page of the poetry guestbook
+        Given a user is on the guestbook page
 
     Rule: Guestbook allows users to submit comments
 
@@ -34,13 +34,27 @@ Feature: Standalone guestbook page
             Then their comment is rejected and not submitted
             And the user is shown an error message
 
-        Scenario: User submits a comment above the configured character limit
-            When a user submits a comment with a display name and comment body longer than 10000 characters
+        # Default display name limit is 128 characters
+        Scenario: User submits a display name above the character limit
+            When a user submits a comment with a display name longer than 128 characters
             Then their comment is rejected and not submitted
             And the user is shown an error message
 
+        # Default email limit is 254 characters
+        Scenario: User submits an email above the character limit
+            When a user submits a comment with an email longer than 254 characters
+            Then their comment is rejected and not submitted
+            And the user is shown an error message
+
+        # Default comment body limit is 1k characters; 10k is the maximum allowed configured length                
+        Scenario: User submits a comment body above the configured character limit
+            When a user submits a comment with a comment body longer than 10000 characters
+            Then their comment is rejected and not submitted
+            And the user is shown an error message
+
+        # Default rate limit is 1 comment every 5 minutes and 2 comments per 24 hours.
         Scenario: User submissions are rate limited
-            When a user submits too many comments within the configured time period
+            When a user submits more than 1 comment within 5 minutes
             Then their comment is rejected and not submitted
             And the user is shown an error message
 

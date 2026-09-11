@@ -10,7 +10,7 @@ Feature: Admin Dashboard settings
             When an admin updates the `title` setting
             And they click the `save changes` button
             Then those changes are applied to the admin dashboard
-            And those changes are applied to the guestbook page
+            And those changes are applied to the standalone guestbook page (`/guestbook`)
 
         Scenario: Admin can undo changes to guestbook settings
             When an admin updates the `title` setting
@@ -21,17 +21,20 @@ Feature: Admin Dashboard settings
         Scenario: Admin can set a custom comment length
             When an admin adjusts the `comment length` setting to an allowed limit
             And they click the `save changes` button
-            Then those new limits are applied to the guestbook commenting
+            Then those new limits are applied to the standalone guestbook commenting (`/guestbook`)
+            And those new limits are applied to the Original Poetry landing guestbook (`/`)
 
         Scenario: Admin can set custom rate limits
             When an admin adjusts the `rate limits` settings to allowed limits
             And they click the `save changes` button
-            Then those new limits are applied to the guestbook commenting
+            Then those new limits are applied to the standalone guestbook commenting (`/guestbook`)
+            And those new limits are applied to the Original Poetry landing guestbook (`/`)
 
         Scenario: Admin can allow-list profanity
             When an admin enters comma-separated values in the `profanity allow-list`
             And they click the `save changes` button
-            Then those new allowances are applied to the guestbook commenting
+            Then the new allow-list is applied to the standalone guestbook 
+            And the new allow-list is applied to the Original Poetry landing guestbook (`/`)
 
         Scenario: Admin can view custom CSS example file
             When an admin clicks on the `view example` link for the `custom theme` setting
