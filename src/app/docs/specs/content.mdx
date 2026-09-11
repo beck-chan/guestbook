@@ -48,7 +48,7 @@ At the project root lives `cucumber.yaml` which configures Cucumber:
 ```yaml
 default:
   paths:
-    - features/no-auth/**/*.feature
+    - features/features/no-auth/**/*.feature
   requireModule:
     - tsx/cjs
   require:
@@ -64,7 +64,7 @@ default:
 
 admin:
   paths:
-    - features/admin/**/*.feature
+    - features/features/admin/**/*.feature
   requireModule:
     - tsx/cjs
   require:
@@ -206,7 +206,7 @@ These tests do not require any admin authentication, so they can be run without 
   # To Run All User Tests
 
   ```bash
-  npx cucumber-js features/no-auth
+  npx cucumber-js features/features/no-auth
   ```
 
   # To Run One User Test
@@ -214,7 +214,7 @@ These tests do not require any admin authentication, so they can be run without 
   For example, the `guestbook-comments.feature` file:
 
   ```bash
-  npx cucumber-js  features/no-auth/guestbook-nav.feature
+  npx cucumber-js features/features/no-auth/guestbook-nav.feature
   ```
 
   :::
@@ -232,7 +232,7 @@ Playwright cannot finish Google's login screen by itself. Run these scenarios wi
   # To Run All Admin Tests
 
   ```bash
-  HEADED=1 npx cucumber-js features/admin
+  HEADED=1 npx cucumber-js features/features/admin
   ```
 
   # To Run One Admin Test
@@ -240,7 +240,7 @@ Playwright cannot finish Google's login screen by itself. Run these scenarios wi
   For example, the `admin-nav.feature` file:
 
   ```bash
-  HEADED=1 npx cucumber-js features/admin/admin-nav.feature
+  HEADED=1 npx cucumber-js features/features/admin/admin-nav.feature
   ```
 
   :::
