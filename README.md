@@ -158,3 +158,5 @@ taskkill //F //IM node.exe
 
 Seed, then delete that seed (usual Cucumber pattern). The step should post a unique comment (stash this.postedName on World), then delete that row, not “whatever is on screen.” Same idea for edit.
 Seed first — post enough comments in a Given (or use a test DB that already has them), then click next.
+
+8cb6b605f383ceac8a78720684c9af3dcdb0ec99 is last good function commit
