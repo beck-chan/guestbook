@@ -1,5 +1,5 @@
 ---
-subject: y2k Guestbook: +Comment ({{name}})
+subject: Comment Received
 ---
 
 {{name}} signed the y2k Guestbook:

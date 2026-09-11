@@ -1,5 +1,5 @@
 ---
-subject: y2k Guestbook: Settings Updated
+subject: Settings Updated
 ---
 
 y2k Guestbook settings were updated:

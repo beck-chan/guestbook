@@ -2,6 +2,7 @@
 subtitle: Use Gmail and Supabase edge functions to send notifications for guestbook events.
 ---
 
+import OAuth from "../_snippets/oauth.mdx"
 
 # Enable Notifications
 
@@ -155,7 +156,7 @@ j. Click **Exchange authorization code for tokens**, then copy the **Refresh tok
 # Treat your refresh token like a password. 
 
 - If Google revokes the refresh token, you'll need to create a new token and update the Supabase secret if mail stops.
-- By default, unless you publish your OAuth client for the guestbook notifications, the refresh token will expire in 7 days.
+- By default, unless you publish your OAuth client for the guestbook notifications, the refresh token will expire in seven days.
 
 :::
 
@@ -197,13 +198,25 @@ From within [Supabase](https://supabase.com/):
 
 ## Customize Notification Templates
 
+::: {.tabset}
+
+# Sender Name
+
+Sender name is hardcoded in [`supabase/functions/_shared/gmail.ts`](https://github.com/beck-chan/y2k-guestbook/blob/main/supabase/functions/_shared/gmail.ts){.blank}. Change the `FROM_NAME` to your desired name:
+
+```typescript
+const FROM_NAME = "y2k Guestbook";
+```
+
+# Templates
+
 Subject lines and body copy live as Markdown in [`supabase/functions/_shared/templates`](https://github.com/beck-chan/y2k-guestbook/tree/main/supabase/functions/_shared/templates){.blank}. Each email template is plain text with a `subject:` frontmatter block. 
 
 ::: {.callout}
 # Mail is sent as `text/plain`, so Markdown emphasis is not rendered.
 
 - Keep the filename, the `---` fences, and the `subject:` key. Renaming a file means the function will not find it. Do not add extra frontmatter keys. 
-- Leave placeholders as `{{name}}` — the function fills them at send time. `{{admin}}` is the admin dashboard URL. 
+- Leave `{{placeholders}}` as is — the function fills them at send time. `{{admin}}` is the admin dashboard URL. 
 
 Any time you edit these templates, you'll need to [redeploy the Edge Functions](#deploy-edge-functions) for the change to go out.
 
@@ -221,6 +234,8 @@ Any time you edit these templates, you'll need to [redeploy the Edge Functions](
 | `settings-update.md` | Guestbook settings saved | Admin list | `{{summary}}`, `{{admin}}` |
 | `auth-created-self.md` | Invited admin completes sign-in for the first time | The new user | `{{email}}`, `{{admin}}` |
 | `auth-created.md` | Same event | Existing admin list | `{{email}}`, `{{admin}}` |
+
+:::
 
 ## Configuring Supabase
 
@@ -475,7 +490,11 @@ order by created desc
 limit 50;
 ```
 
-## Publish Notif Google OAuth Client
+## Publish Notifications Client
+
+If you want your `GMAIL_REFRESH_TOKEN` to last more than seven days, you'll need to publish your Google OAuth client to production, and generate a fresh token when your application is verified.
+
+<OAuth />
 
 ## What's Next
 

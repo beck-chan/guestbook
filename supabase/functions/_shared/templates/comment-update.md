@@ -1,5 +1,5 @@
 ---
-subject: y2k Guestbook: ~Comment ({{name}})
+subject: Comment Edited
 ---
 
 A comment by {{name}} was edited on the y2k Guestbook:

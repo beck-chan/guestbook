@@ -1,5 +1,5 @@
 ---
-subject: Original Poetry: {{poem_id}} Liked
+subject: {{poem_id}} Liked
 ---
 
 Someone liked {{poem_id}}.

@@ -1,5 +1,5 @@
 ---
-subject: y2k Guestbook: +Admin Access
+subject: Admin Login
 ---
 
 You've been invited to the y2k Guestbook as an admin user.

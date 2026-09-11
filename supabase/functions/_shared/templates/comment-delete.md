@@ -1,5 +1,5 @@
 ---
-subject: y2k Guestbook: -Comment ({{name}})
+subject: Comment Deleted
 ---
 
 A comment by {{name}} was deleted from the y2k Guestbook:

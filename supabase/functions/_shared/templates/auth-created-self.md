@@ -1,5 +1,5 @@
 ---
-subject: y2k Guestbook: Admin Sign In
+subject: Admin Sign In
 ---
 
 You've successfully authenticated to the y2k Guestbook with your admin user.

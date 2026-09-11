@@ -25,6 +25,13 @@ function toBase64Url(value: string): string {
     .replace(/=+$/, "");
 }
 
+const FROM_NAME = "y2k Guestbook";
+
+function fromHeader(email: string): string {
+  const name = FROM_NAME.replace(/\\/g, "\\\\").replace(/"/g, '\\"');
+  return `"${name}" <${email}>`;
+}
+
 function rfc2822(mail: Mail, from: string): string {
   const subject = `=?UTF-8?B?${btoa(utf8ToBinary(mail.subject))}?=`;
   return [
@@ -104,7 +111,7 @@ export async function sendGmail(
         Authorization: `Bearer ${token.token}`,
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ raw: toBase64Url(rfc2822(mail, from)) }),
+      body: JSON.stringify({ raw: toBase64Url(rfc2822(mail, fromHeader(from))) }),
     },
   );
 
