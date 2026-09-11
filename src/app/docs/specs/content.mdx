@@ -202,30 +202,13 @@ That writes `features/reports/guestbook.html` and leaves `results.html` alone.
 # Note that commenting, rate limits, and admin edits are live — if you're hooked up to a production database or guestbook instance, these tests will affect real data.
 :::
 
-### Set Up Admin Testing
-
-Cucumber cannot finish Google's login screen on its own, so you will need to run a special session to log your authorized admin user in, then save the session once in order for subsequent runs to reuse it in order to test the scenarios under [Admin Dashboard](#admin-dashboard).
-
-1. Start the guestbook preview server: `npm run dev`
-
-2. In a second terminal at the app root, call:
-
-    ```bash
-    npm run save-admin-session
-    ```
-
-3. Sign in with your admin user. 
-
-    When `/admin` loads, the script writes `features/support/.auth/admin.json` (already excluded from tracking by`.gitignore`).
-
-::: {.callout}
-# After that, `npx cucumber-js` loads that file in `hooks.ts` when it exists, so you skip the Google prompt.
-
-Re-run `npm run save-admin-session` if the session expires or Google asks you to log in again.
-
-:::
-
 ### Run `.feature` Tests
+
+::: {.tabset}
+
+# Run User Tests
+
+These tests do not require any admin authentication, so they can be run without any additional setup.
 
 1. Start the guestbook preview server: `npm run dev`
 
@@ -233,19 +216,36 @@ Re-run `npm run save-admin-session` if the session expires or Google asks you to
 
 ::: {.tabset}
 
-# To Run All  `.feature` Tests
+# To Run All User Tests
 
 ```bash
-npx cucumber-js
+npx cucumber-js features/no-auth
 ```
 
-# To Run One  `.feature` Test
+# To Run One User Test
 
 For example, the `guestbook-comments.feature` file:
 
 ```bash
-npx cucumber-js features/guestbook-comments.feature
+npx cucumber-js  features/no-auth/guestbook-nav.feature
 ```
+
+:::
+
+# Run Admin Tests
+
+::: {.tabset}
+
+Cucumber cannot finish Google's login screen on its own, so you will need to run a special session to log your authorized admin user in in order to test the scenarios under [Admin Dashboard](#admin-dashboard).
+
+:::
+
+1. Start the guestbook preview server: `npm run dev`
+
+2. Sign in with your admin user. 
+
+
+
 
 :::
 
