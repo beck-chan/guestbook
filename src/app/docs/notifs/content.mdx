@@ -312,14 +312,42 @@ a. From your guestbook project root, call:
 
     ::: {.tabset}
 
+    # From Within Supabase
+
+    a. From within your Supabase project, click **Edge Functions** in the left sidebar.
+
+    b. Select **Secrets**.
+
+    c. Under [add or replace secrets]{.smallcaps}, add the following secrets:
+
+        | Name | Value |
+        | --- | --- |
+        | `GMAIL_USER` | `you@gmail.com` |
+        | `GMAIL_CLIENT_ID` | `<your-client-id>.apps.googleusercontent.com` |
+        | `GMAIL_CLIENT_SECRET` | `<your-client-secret>` |
+        | `GMAIL_REFRESH_TOKEN` | `<your-refresh-token>` |
+        | `SITE_URL` | `https://<your-project-url>.vercel.app` |
+        | `NOTIFY_WEBHOOK_SECRET` | `<your-webhook-secret>` |
+        | `FLAG_NOTIF` | `false` |
+
+    ## From the CLI
+
+    Call the following commands via your terminal (requires [Supabase CLI](https://supabase.com/docs/guides/cli){.blank} installed and an active Supabase login):
+
+    ::: {.tabset}
+
     # Secrets
 
     ```bash
+    # Make sure you're logged in to your Supabase project
+    npx supabase login
+
     npx supabase secrets set --project-ref <your-database-url> GMAIL_USER=you@gmail.com
     npx supabase secrets set --project-ref <your-database-url> GMAIL_CLIENT_ID=<your-client-id>.apps.googleusercontent.com
     npx supabase secrets set --project-ref <your-database-url> GMAIL_CLIENT_SECRET=<your-client-secret>
     npx supabase secrets set --project-ref <your-database-url> GMAIL_REFRESH_TOKEN=<your-refresh-token>
-    # Use localhost:3000 for local previews, your deployed site URL in production
+    # Use localhost:3000 for local previews, your deployed site URL in production 
+    # Populates the root URL for the {{admin}} placeholder in the notification templates
     npx supabase secrets set --project-ref <your-database-url> SITE_URL=https://<your-project-url>.vercel.app
     npx supabase secrets set --project-ref <your-database-url> NOTIFY_WEBHOOK_SECRET=<your-webhook-secret>
     npx supabase secrets set --project-ref <your-database-url> FLAG_NOTIF=false
@@ -334,6 +362,8 @@ a. From your guestbook project root, call:
     ```bash
     Finished supabase secrets set.
     ```
+
+    :::
 
     :::
 

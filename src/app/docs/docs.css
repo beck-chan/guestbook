@@ -1246,12 +1246,17 @@ body:has(.docs-shell) {
 .docs-article strong,
 .docs-article b,
 .docs-article em,
-.docs-article i {
+.docs-article i,
+.docs-article .docs-smallcaps {
   color: color-mix(in srgb, #6f4e37 48%, white);
 }
 
-.docs-article a :is(strong, b, em, i),
-.docs-code :is(strong, b, em, i) {
+.docs-article .docs-smallcaps {
+  font-variant: small-caps;
+}
+
+.docs-article a :is(strong, b, em, i, .docs-smallcaps),
+.docs-code :is(strong, b, em, i, .docs-smallcaps) {
   color: inherit;
 }
 

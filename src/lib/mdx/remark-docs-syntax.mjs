@@ -8,7 +8,10 @@ import { visit } from "unist-util-visit";
 // (`.` `)` `,`) is not swallowed as part of the encoded attrs.
 const ATTR_FOLLOW = /^\s*docsattr\.((?:[A-Za-z0-9]|%[0-9A-Fa-f]{2})+)/;
 const HEART_MARK = /docsheart\./g;
+const SMALLCAPS_MARK =
+  /docssmallcaps\.((?:[A-Za-z0-9]|%[0-9A-Fa-f]{2})+)/g;
 const LINK_ATTRS = /\]\(([^)]*)\)\{([^}]+)\}/g;
+const SPAN_ATTRS = /\[([^\]]+)\]\s*\{([^}]+)\}/g;
 const INLINE_CODE = /(`+)((?:(?!\1).)*?)\1/g;
 const ALLOWED_ATTRS = new Set(["target", "rel", "title"]);
 const OPEN_FENCE = /^:::docs-fence(?:\s|$)/;
@@ -122,8 +125,20 @@ function rewriteSpacedLinkDestinations(text) {
   });
 }
 
+function rewriteSpanAttrs(text) {
+  return text.replace(SPAN_ATTRS, (full, inner, attrs) => {
+    const parsed = parseAttrList(attrs.trim());
+    if (!parsed.className.includes("docs-smallcaps")) {
+      return full;
+    }
+    return `docssmallcaps.${encodeLinkAttrs(inner)}`;
+  });
+}
+
 function rewriteInlineMarkup(text) {
-  return rewriteSpacedLinkDestinations(rewriteLinkAttrs(text));
+  return rewriteSpacedLinkDestinations(
+    rewriteSpanAttrs(rewriteLinkAttrs(text)),
+  );
 }
 
 function rewriteHeartMarks(text) {
@@ -221,6 +236,90 @@ function transformHeartMarks(tree) {
       }
 
       const parts = splitTextWithHearts(child.value);
+      if (!parts) {
+        next.push(child);
+        continue;
+      }
+
+      changed = true;
+      next.push(...parts);
+    }
+
+    if (changed) {
+      node.children = next;
+    }
+  });
+}
+
+function restoreSmallcapsSyntax(text) {
+  return text.replace(SMALLCAPS_MARK, (_, payload) => {
+    return `[${decodeURIComponent(payload)}]{.smallcaps}`;
+  });
+}
+
+function toInlineSmallcaps(text) {
+  return {
+    type: "mdxJsxTextElement",
+    name: "span",
+    attributes: [
+      {
+        type: "mdxJsxAttribute",
+        name: "className",
+        value: "docs-smallcaps",
+      },
+    ],
+    children: [{ type: "text", value: text }],
+  };
+}
+
+function splitTextWithSmallcaps(value) {
+  if (!value.includes("docssmallcaps.")) {
+    return null;
+  }
+
+  const parts = [];
+  let last = 0;
+  SMALLCAPS_MARK.lastIndex = 0;
+  let match;
+  while ((match = SMALLCAPS_MARK.exec(value))) {
+    if (match.index > last) {
+      parts.push({ type: "text", value: value.slice(last, match.index) });
+    }
+    parts.push(toInlineSmallcaps(decodeURIComponent(match[1])));
+    last = match.index + match[0].length;
+  }
+  if (last < value.length) {
+    parts.push({ type: "text", value: value.slice(last) });
+  }
+  return parts;
+}
+
+function transformSmallcapsMarks(tree) {
+  visit(tree, (node) => {
+    if (
+      (node.type === "inlineCode" || node.type === "code") &&
+      typeof node.value === "string" &&
+      node.value.includes("docssmallcaps.")
+    ) {
+      node.value = restoreSmallcapsSyntax(node.value);
+      return;
+    }
+
+    const children = node.children;
+    if (!children?.length) {
+      return;
+    }
+
+    const next = [];
+    let changed = false;
+
+    for (const child of children) {
+      if (child.type !== "text" || typeof child.value !== "string") {
+        next.push(child);
+        continue;
+      }
+
+      const parts = splitTextWithSmallcaps(child.value);
       if (!parts) {
         next.push(child);
         continue;
@@ -428,6 +527,8 @@ function parseAttrList(raw) {
           className.push("docs-cta");
         } else if (cls === "blank") {
           attrs.target = "_blank";
+        } else if (cls === "smallcaps") {
+          className.push("docs-smallcaps");
         } else {
           className.push(cls);
         }
@@ -1601,6 +1702,7 @@ function applyDocsTransforms(tree, context = {}) {
   };
   transformLinkAttrs(tree);
   transformHeartMarks(tree);
+  transformSmallcapsMarks(tree);
   transformFences(tree, next);
   if (next.root === tree && next.embedImports.length > 0) {
     tree.children.unshift(...next.embedImports);
