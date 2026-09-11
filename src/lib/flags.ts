@@ -15,6 +15,7 @@ export const flags = {
   hitCounter: envFlag(process.env.FLAG_COUNTER, true), // Show hit counter
   /** Comma-separated paths/URLs for unique-visitor query (empty = all $pageview events). */
   hitCounterUrl: envString(process.env.FLAG_COUNTER_URL, ""),
+  notif: envFlag(process.env.FLAG_NOTIF, false), // Docs/copy only; mail is gated by the Supabase FLAG_NOTIF secret
   public: envFlag(process.env.FLAG_PUBLIC, false), // Show public guestbook home/public repo + dark green favicon
   apiTest: envFlag(process.env.FLAG_APITEST, false), // Show API Test Request on private docs
 };

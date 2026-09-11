@@ -27,7 +27,12 @@ Under **comment length**, set the maximum number of characters allowed in a comm
 
 Comments over the limit are rejected on submit with an error, the same way as profanity and rate limits.
 
-Limit for display name is hard-coded at `128` characters, and email is set to `254` characters.
+Limit for display name is hard-coded at `128` characters, and email is set to `254` characters. To adjust these, edit [`commentLimits.ts`](https://github.com/beck-chan/y2k-guestbook/blob/main/src/lib/commentLimits.ts){.blank}:
+
+```typescript
+export const COMMENT_NAME_MAX_LENGTH = 128;
+export const COMMENT_EMAIL_MAX_LENGTH = 254;
+```
 
 :::
 
@@ -135,19 +140,19 @@ Click **save changes** to apply your changes.
 
 ::: {.columns}
 
-::: {.50}
+::: {.40}
 
-Add analytics to display a hit counter, or manage comments:
-
-:::
-
-::: {.25}
-
-[Add Analytics](/docs/analytics){.button}
+Enable notifications and manage comments:
 
 :::
 
-::: {.25}
+::: {.30}
+
+[Enable Notifications](/docs/notifs){.button}
+
+:::
+
+::: {.30}
 
 [Manage Comments](/docs/manage){.button}
 

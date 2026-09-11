@@ -82,23 +82,39 @@ c. Click **Confirm** to publish your client to production.
 
 :::
 
+## Configure Unauthorized Access Error
+
+If you want to customize the error message that is displayed to users who are not authorized to access the admin dashboard after they attempted to sign in, you can do so by editing the hardcoded message in [`AdminAuthErrorOverlay.tsx`](https://github.com/beck-chan/y2k-guestbook/blob/main/src/components/_shared/AdminAuthErrorOverlay.tsx){.blank}:
+
+
+```typescript
+        <h2 id="admin-auth-error-title" className="admin-auth-error-title">
+          Oh no!
+        </h2>
+        <p id="admin-auth-error-body" className="admin-auth-error-body">
+          The Google account you used to sign in isn&apos;t an administrator.
+        </p>
+        <button type="button" className="admin-auth-error-ok" onClick={dismiss}>
+          Close
+        </button>
+```
+
 ## What's Next
 
 ::: {.columns}
 
 ::: {.50}
 
-Customize guestbook settings and add analytics to display a hit counter:
+Enable notifications and customize guestbook settings:
 
+:::
+
+::: {.25}
+[Enable Notifications](/docs/notifs){.button}
 :::
 
 ::: {.25}
 [Add Analytics](/docs/analytics){.button}
-
-:::
-
-::: {.25}
-[Customize Settings](/docs/settings){.button}
 
 :::
 

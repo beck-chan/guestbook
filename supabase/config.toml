@@ -1,0 +1,8 @@
+# Edge Functions for admin notification emails (Resend).
+# Remote project ref is stored in supabase/.temp (gitignored).
+
+[functions.notify-admins]
+verify_jwt = false
+
+[functions.on-user-created]
+verify_jwt = false

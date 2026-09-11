@@ -10,11 +10,248 @@ import Setup from "../_snippets/setup.mdx"
 
 {/* DO NOT CHANGE ABOVE HERE */}
 
-{/* insert a table here with the notifications that get send when enabled */}
+Use [Resend](https://resend.com/){.blank} and Supabase Edge Functions to email allowlisted admins when guestbook events happen. Next.js does not send these messages; a row change (or first Google signup) triggers the function.
+
+When notifications are enabled, mail is sent for:
+
+| Event | Recipients |
+| --- | --- |
+| A Google account is added to the admin allowlist | The new address, and everyone else already on the allowlist |
+| A Google account is removed from the admin allowlist | The removed address, and everyone still on the allowlist |
+| A visitor submits a comment | Everyone on the allowlist |
+| An admin edits or deletes a comment | Everyone on the allowlist |
+| Guestbook settings are saved | Everyone on the allowlist |
+| An allowlisted admin completes Google sign-in for the first time | The new user, and everyone else on the allowlist |
+
+Marking comments read, and running `allow-admin` again for an address that is already listed, does not send mail.
+
+::: {.callout}
+This guide also assumes:
+
+- [x] You already have a [Resend](https://resend.com/){.blank} account.
+- [x] (For cloud deployment) You have a Vercel account and project.
+:::
 
 ## Resend Setup
 
+### Retrieve Resend Variables
+
+From the [Resend](https://resend.com/){.blank} dashboard:
+
+::: {.tabset}
+
+# 1. Create an API Key
+
+a. In the left sidebar, click **API Keys**.
+
+b. Click **Create API Key**.
+
+c. Give the key a **Name**. For example: `Guestbook notifications`.
+
+d. Click **Add**.
+
+e. Copy the key after it generates. You will store it as the Supabase secret `RESEND_API_KEY` in [Supabase Setup](#supabase-setup) (not in Next.js `package.json`):
+
+    ```bash
+    RESEND_API_KEY=re_<your-api-key>
+    ```
+
+::: {.callout}
+# Resend shows the full API key once.
+
+If you lose it, create a new key and update the Supabase secret.
+:::
+
+# 2. Verify a Sending Domain
+
+a. In the left sidebar, click **Domains**.
+
+b. Click **Add Domain**.
+
+c. Enter the domain you will send from. For example: `yourdomain.com`.
+
+d. Add the DNS records Resend shows, then wait until the domain is **Verified**.
+
+e. Choose a From address on that domain. You will store it as the Supabase secret `RESEND_FROM`:
+
+    ```bash
+    RESEND_FROM=Guestbook <admin@yourdomain.com>
+    ```
+
+::: {.callout}
+# Resend will not reliably send from an unverified Gmail `from` address.
+
+Use a domain you control.
+:::
+
+:::
+
 ## Supabase Setup
 
-## Enable Notifications 
+Functions live in [`supabase/functions`](https://github.com/beck-chan/y2k-guestbook/blob/main/supabase/functions/README.md){.blank} on the guestbook repo you deploy. `notify-admins` handles table changes. `on-user-created` handles first Google signup.
 
+### Deploy Edge Functions
+
+From your guestbook project root, after `npx supabase link` to *your* project:
+
+```bash
+npx supabase functions deploy notify-admins on-user-created
+```
+
+::: {.callout}
+# These functions set `verify_jwt = false`.
+
+Database Webhooks and Auth hooks do not send a user JWT. The functions check `NOTIFY_WEBHOOK_SECRET` instead.
+:::
+
+### Set Function Secrets
+
+Secrets are set on the **Supabase project**, not in Next `.env.local` (except `FLAG_NOTIF`, which you set in both places later).
+
+a. Generate a long random string for the webhook secret.
+
+b. In a terminal, from your guestbook project:
+
+    ```bash
+    npx supabase secrets set RESEND_API_KEY=re_<your-api-key>
+    npx supabase secrets set RESEND_FROM="Guestbook <admin@yourdomain.com>"
+    npx supabase secrets set SITE_URL=https://<your-project-url>.vercel.app
+    npx supabase secrets set NOTIFY_WEBHOOK_SECRET=<your-webhook-secret>
+    npx supabase secrets set FLAG_NOTIF=false
+    ```
+
+c. For local previews, `SITE_URL` can be `http://localhost:3000`. Use your deployed origin in production.
+
+d. (Optional) If the admin dashboard is not at `/admin`, also set `GUESTBOOK_ADMIN_PATH` to that path (no trailing slash).
+
+`SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` are provided to Edge Functions automatically.
+
+### Database Webhooks
+
+Within Supabase, select **Database** from the left sidebar, then click **Webhooks**:
+
+::: {.tabset}
+
+# 1. Create the notify-admins hook
+
+a. Click **Create a new hook**.
+
+b. Give the hook a **Name**. For example: `notify-admins`.
+
+c. For **Table**, you will add one hook per table (or enable each table/event below on this hook, depending on the Dashboard).
+
+d. Set **HTTP Request** to:
+
+    - **Method:** `POST`
+    - **URL:** `https://<your-project-ref>.supabase.co/functions/v1/notify-admins`
+
+    Replace `<your-project-ref>` with the ref in your `NEXT_PUBLIC_SUPABASE_URL`.
+
+e. Under **HTTP Headers**, add:
+
+    | Name | Value |
+    | --- | --- |
+    | `x-notify-webhook-secret` | The same string as `NOTIFY_WEBHOOK_SECRET` |
+    | `Content-Type` | `application/json` |
+
+f. Click **Create webhook**.
+
+# 2. Tables and events
+
+Create hooks (or extra table events) so `notify-admins` receives:
+
+| Table | Events |
+| --- | --- |
+| `public.admin_allowlist` | INSERT, DELETE |
+| `public.comments` | INSERT, UPDATE, DELETE |
+| `public.guestbook_settings` | UPDATE |
+
+Do **not** enable UPDATE on `admin_allowlist`. Re-running `npm run allow-admin` for an existing address must not send mail.
+
+:::
+
+### After User Created Hook
+
+This emails the new admin and the rest of the allowlist the first time an allowlisted Google account is created in Auth. Later logins do not send mail.
+
+a. Within Supabase, select **Authentication** from the left sidebar, then click **Hooks**.
+
+b. Click **Add hook**, then select **After User Created**:
+
+    - For **Hook type**, select `HTTPS`.
+    - For **URL**, enter `https://<your-project-ref>.supabase.co/functions/v1/on-user-created`.
+
+c. Set the hook secret / Authorization bearer token to the same `NOTIFY_WEBHOOK_SECRET` value.
+
+d. Click **Create hook**.
+
+::: {.callout}
+# Keep the existing Before User Created Postgres hook.
+
+That hook (`hook_before_user_created`) still blocks Google accounts that are not on the allowlist. After User Created only runs when a new Auth user is actually created.
+:::
+
+## Enable Notifications
+
+`FLAG_NOTIF` must be on in **two** places. Next.js env vars never reach Edge Functions.
+
+In `.env.local` (for local development) or your Vercel environment variables (for cloud deployment):
+
+1. Toggle **`FLAG_NOTIF=`** to `true`.
+
+    ```bash
+    FLAG_NOTIF=true
+    ```
+
+2. On the same Supabase project, turn the send gate on:
+
+    ```bash
+    npx supabase secrets set FLAG_NOTIF=true
+    ```
+
+::: {.callout}
+# `.env.local` / Vercel `FLAG_NOTIF=true` alone does not send mail.
+
+The Edge Function reads the **Supabase secret**. Set both so the Next flag and the mailer agree. Leave the secret `false` until Resend and the webhooks are ready.
+:::
+
+For cloud deployment, add `FLAG_NOTIF` as a Vercel environment variable (`true` / `false`) the same way you set `FLAG_COUNTER`. Restart or redeploy after changing Next flags.
+
+## Test Notifications
+
+With `FLAG_NOTIF=true` as a Supabase secret and Resend verified:
+
+1. Run `npm run allow-admin -- someone@gmail.com` for an address that is not already listed. That inbox, and other allowlisted inboxes, should receive mail. Run the same command again for that address — no second mail.
+
+2. Run `npm run delete-admin -- someone@gmail.com`. The removed address and remaining admins should receive mail.
+
+3. Submit a comment on the public guestbook. Allowlisted inboxes should receive mail. Mark the comment read in `/admin` — no mail. Edit or delete it — mail.
+
+4. Save guestbook settings. Allowlisted inboxes should receive a short list of changed fields.
+
+5. Sign in with Google using a newly allowlisted account that has never had an Auth user. That address and other admins should receive mail. Sign out and in again — no mail.
+
+Inserting a comment row in the Supabase **SQL Editor** should still send mail. That confirms the webhook, not the Next action.
+
+## What's Next
+
+::: {.columns}
+
+::: {.50}
+Add a hit counter and customize guestbook settings:
+
+:::
+
+::: {.25}
+
+[Add Analytics](/docs/analytics){.button}
+
+:::
+
+::: {.25}
+
+[Customize Settings](/docs/settings){.button}
+
+:::
+
+:::
