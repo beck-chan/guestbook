@@ -878,6 +878,15 @@ body:has(.docs-shell) {
   overflow: visible;
 }
 
+.docs-article .docs-inline-gear {
+  display: inline-block;
+  width: 1em;
+  height: 1em;
+  margin: 0 0.12em;
+  vertical-align: -0.15em;
+  color: inherit;
+}
+
 .docs-article .docs-list-heart {
   display: none;
 }

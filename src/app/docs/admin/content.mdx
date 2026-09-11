@@ -38,6 +38,23 @@ Their access will be revoked after their most recent authentication session expi
 
 :::
 
+## Configure Unauthorized Access Error
+
+If you want to customize the error message that is displayed to users who are not authorized to access the admin dashboard after they attempted to sign in, you can do so by editing the hardcoded message in [`AdminAuthErrorOverlay.tsx`](https://github.com/beck-chan/y2k-guestbook/blob/main/src/components/_shared/AdminAuthErrorOverlay.tsx){.blank}:
+
+
+```typescript
+        <h2 id="admin-auth-error-title" className="admin-auth-error-title">
+          Oh no!
+        </h2>
+        <p id="admin-auth-error-body" className="admin-auth-error-body">
+          The Google account you used to sign in isn&apos;t an administrator.
+        </p>
+        <button type="button" className="admin-auth-error-ok" onClick={dismiss}>
+          Close
+        </button>
+```
+
 ## Publish Your Google OAuth Client
 
 If you intend to serve your guestbook application to the general public, you may want to publish your Google OAuth client to production.
@@ -81,23 +98,6 @@ c. Click **Confirm** to publish your client to production.
 
 
 :::
-
-## Configure Unauthorized Access Error
-
-If you want to customize the error message that is displayed to users who are not authorized to access the admin dashboard after they attempted to sign in, you can do so by editing the hardcoded message in [`AdminAuthErrorOverlay.tsx`](https://github.com/beck-chan/y2k-guestbook/blob/main/src/components/_shared/AdminAuthErrorOverlay.tsx){.blank}:
-
-
-```typescript
-        <h2 id="admin-auth-error-title" className="admin-auth-error-title">
-          Oh no!
-        </h2>
-        <p id="admin-auth-error-body" className="admin-auth-error-body">
-          The Google account you used to sign in isn&apos;t an administrator.
-        </p>
-        <button type="button" className="admin-auth-error-ok" onClick={dismiss}>
-          Close
-        </button>
-```
 
 ## What's Next
 

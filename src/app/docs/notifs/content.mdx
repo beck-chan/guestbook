@@ -25,82 +25,112 @@ When notifications are enabled, emails are sent for:
 ## Gmail Setup
 
 ::: {.callout}
-# Mail is sent as your Gmail, not a branded domain.
+# Notifications are send out from your personal Gmail, not a branded domain.
 
-The Edge Functions call the **Gmail API** over HTTPS (the same pattern as any HTTP mailer). Recipients see the mailbox in `GMAIL_USER`.
-
-- This is **not** a Gmail App Password or SMTP. App Passwords only work on SMTP; Edge Functions cannot reliably use Gmail’s SMTP ports.
-- Personal Gmail has a low daily send cap. That is enough for a small admin list.
-- Google can revoke the OAuth refresh token. Create a new token and update the Supabase secret if mail stops.
-- Do **not** add `gmail.send` to guestbook admin Google sign-in. This OAuth client is only for sending notifications.
-- `FLAG_NOTIF` must be `true` as a **Supabase secret** before anything sends.
+- The [Supabase Edge Functions](https://supabase.com/docs/guides/functions){.blank} call the Gmail API over HTTPS, and recipients will be shown the address set in `GMAIL_USER`.
+- Please note that Gmail has a low daily send limit for this type of setup, around ~100–500/day.
 :::
 
 ### Retrieve Gmail Variables
 
-Use the [Google Cloud](https://console.cloud.google.com/){.blank} project you already use for Sign in with Google, or a new project. Keep the existing admin-login OAuth client unchanged.
+As sending emails requires more sensitive scopes, which may delay the approval of your OAuth client if you intend to [publish the OAuth client for the admin authentication](/docs/admin#publish-your-google-oauth-client) to the general public, let's create a new project for notifications.
+
+Log in to your [Google Cloud](https://console.cloud.google.com/){.blank} console:
 
 ::: {.tabset}
 
 # 1. Enable Gmail API
 
-a. In Google Cloud, select your project.
+a. [Create a new Google Cloud project](https://developers.google.com/workspace/guides/create-project){.blank}.
 
-b. In the left sidebar, click **APIs & Services**, then **Library**.
+b. Make sure to select the project you just created by clicking **Select your project** (or the name of the guestbook project, if that is what you have currently selected).
 
-c. Search for **Gmail API**, open it, and click **Enable**.
+c. In the left sidebar, click **APIs & Services**, then **Library**.
 
-d. You will store the sending address as the Supabase secret `GMAIL_USER` (the Gmail that should appear as From):
+d. Under Google Workspace, select **Gmail API**.
 
-    ```bash
-    GMAIL_USER=you@gmail.com
-    ```
+e. Click **Enable**.
 
-# 2. Create an OAuth Client
+# 2. Create Client
 
-a. In **APIs & Services**, click **OAuth consent screen**.
+a. In the left sidebar, click **APIs & Services**, then select **OAuth consent screen**.
 
-    - User type **External** is fine for a personal mailbox.
-    - Publishing status **Testing** is enough. Under **Test users**, add the same Gmail as `GMAIL_USER`.
+b. In OAuth Overview, click **Get started**.
 
-b. In **APIs & Services**, click **Credentials**, then **+ Create credentials** → **OAuth client ID**.
+c. Configure your project, then click **Create**. For example, enter your:
 
-c. Application type **Desktop app** is fine. Name it for example `Guestbook notifications`.
+    - App Information
+    - Audience (for personal Google accounts, select `External`)
+    - Contact Information
+    - Finish (to agree to the Google API Services: User Data Policy)
 
-d. Copy the **Client ID** and **Client secret**. You will store them as Supabase secrets:
+d. Click **Create**.
+
+e. In the left sidebar, click **APIs & Services**, then select **Credentials**.
+
+f. Click **+ Create credentials**, then select **OAuth client ID**.
+
+g. In the **Application type** drop-down, select `Web application`.  
+
+h. Give your application a **Name**.
+
+i. Click **Create**.
+
+j. On the OAuth client created popup, copy the **Client ID** and **Client secret** to your clipboard. Hang on to these — we'll need to store these as Supabase secrets in the next section under `GMAIL_CLIENT_ID` and `GMAIL_CLIENT_SECRET`:
 
     ```bash
     GMAIL_CLIENT_ID=<your-client-id>.apps.googleusercontent.com
     GMAIL_CLIENT_SECRET=<your-client-secret>
     ```
 
-::: {.callout}
-# Do not reuse the Supabase Google provider client for `gmail.send`.
 
-Admin login stays on its current scopes. Notifications use this separate client.
-:::
+    ::: {.callout}
+    Click **Download JSON** to save your OAuth client credentials to a file as a backup.
+    :::
 
-# 3. Create a Refresh Token
+# 3. Create Refresh Token
 
 a. Open [OAuth 2.0 Playground](https://developers.google.com/oauthplayground/){.blank}.
 
-b. Click the gear (OAuth 2.0 configuration). Check **Use your own OAuth credentials**. Paste `GMAIL_CLIENT_ID` and `GMAIL_CLIENT_SECRET`.
+b. Click the <DocsGear /> icon (OAuth 2.0 configuration). 
 
-c. In the scope list, find **Gmail API v1** and select `https://www.googleapis.com/auth/gmail.send`. Click **Authorize APIs**.
+c. Check the **Use your own OAuth credentials** checkbox. 
 
-d. Sign in as `GMAIL_USER` (the test user). Allow access.
+d. Paste in your `GMAIL_CLIENT_ID` and `GMAIL_CLIENT_SECRET` from the OAuth 2.0 client you just created.
 
-e. Click **Exchange authorization code for tokens**. Copy **Refresh token**. You will store it as:
+e. Click **Close**.
+
+f. From the scope list left sidebar, open **Gmail API v1** and select `https://www.googleapis.com/auth/gmail.send`. 
+
+h. Click **Authorize APIs**.
+
+i. Sign in as the user that is connected to the OAuth 2.0 client you just created to allow access.
+
+j. Click **Exchange authorization code for tokens**, then copy the **Refresh token**. 
+
+    Hang on to this — we'll need to store these as Supabase secrets in the next section under `GMAIL_REFRESH_TOKEN`:
 
     ```bash
     GMAIL_REFRESH_TOKEN=<your-refresh-token>
     ```
 
-Treat the refresh token like a password. If Google revokes it, repeat this tab and update the secret.
+::: {.callout}
+# Treat your refresh token like a password. 
+
+If Google revokes the refresh token, you'll need to create a new token and update the Supabase secret if mail stops.
+
+:::
 
 :::
 
 ## Supabase Setup
+
+
+e. You will store the sending address as the Supabase secret `GMAIL_USER` (the Gmail that should appear as From):
+
+    ```bash
+    GMAIL_USER=you@gmail.com
+    ```
 
 Functions live in [`supabase/functions`](https://github.com/beck-chan/y2k-guestbook/blob/main/supabase/functions/README.md){.blank} on the guestbook repo you deploy. `notify-admins` handles table changes. `on-user-created` handles first Google signup.
 
