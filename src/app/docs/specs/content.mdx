@@ -135,7 +135,7 @@ AfterAll(async function () {
 
 ### Step Definitions
 
-Step definitions under `features/step_definitions/` map each `Given` / `When` / `Then` to clicks in the browser. There should be step definitions for the functionality that ships with the guestbook repository, but you will need to write step definitions for any additional functionality you add.
+Step definitions under `features/step_definitions/` map each `Given` / `When` / `Then` to clicks in the browser. There should be step definitions for the functionality that ships with the guestbook repository, but you will need to write step definitions for any additional functionality you opt into or any other features that you add.
 
 If a `Given` / `When` / `Then` already has a matching function, Cucumber runs that function. Stubs are returned in the terminal console for Gherkin lines with no match. For example:
 
@@ -204,7 +204,7 @@ That writes `features/reports/guestbook.html` and leaves `results.html` alone.
 
 ### Set Up Admin Testing
 
-Cucumber cannot finish Google's login screen on its own, so you will need to run a special session to log your authorized admin user in, then save the session once in order for subsequent runs to reuse it.
+Cucumber cannot finish Google's login screen on its own, so you will need to run a special session to log your authorized admin user in, then save the session once in order for subsequent runs to reuse it in order to test the scenarios under [Admin Dashboard](#admin-dashboard).
 
 1. Start the guestbook preview server: `npm run dev`
 
