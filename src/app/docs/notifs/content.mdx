@@ -2,11 +2,14 @@
 subtitle: Use Gmail and Supabase edge functions to send notifications for guestbook events.
 ---
 
-import Setup from "../_snippets/setup.mdx"
 
 # Enable Notifications
 
-<Setup />
+::: {.callout}
+- [x] This guide assumes that you've set up the guestbook application with either [Quickstart](/docs/quickstart) or [Install via npm](/docs/install).
+
+:::
+
 
 When notifications are enabled, emails are sent for:
 
@@ -19,10 +22,32 @@ When notifications are enabled, emails are sent for:
 | Guestbook settings saved | Admin list |
 | Invited admin completes sign-in for the first time | The new user, and existing admin list |
 
+## Create Webhook Secret
 
-{/* DON't EDIT ABOVE HERE */}
+[Supabase Edge Functions](https://supabase.com/docs/guides/functions){.blank} check a shared secret instead of a user JSON Web Token (JWT). 
 
-## Gmail Setup
+We'll first generate a shared secret that will be used with our Supabase database webhooks. 
+
+1. Use a secure password generator like [Bitwarden's password generator](https://bitwarden.com/password-generator/){.blank}:
+
+    - Choose **Password** and not Passphrase.
+    - Set the **Characters** length to `32` or longer.
+    - Leave **A–Z**, **a–z**, and **0–9** on, and keep !@#$%^&* off so you can paste the value into `npx supabase secrets set` without quoting.
+
+2. Copy the generated password. Hang on to this — we'll need to store this as Supabase secret when we connect Google OAuth 2.0 to Supabase under `NOTIFY_WEBHOOK_SECRET`:
+
+    ```bash
+    NOTIFY_WEBHOOK_SECRET=<your-webhook-secret>
+    ```
+
+::: {.callout}
+# Treat your webhook secret like a password.
+
+Anyone who gets a hold of your `NOTIFY_WEBHOOK_SECRET` can send emails as you. If it's compromised, generate a new one and update the Supabase secret and your webhooks.
+:::
+
+
+## Create Gmail Google Cloud Project
 
 ::: {.callout}
 # Notifications are send out from your personal Gmail, not a branded domain.
@@ -30,8 +55,6 @@ When notifications are enabled, emails are sent for:
 - The [Supabase Edge Functions](https://supabase.com/docs/guides/functions){.blank} call the Gmail API over HTTPS, and recipients will be shown the address set in `GMAIL_USER`.
 - Please note that Gmail has a low daily send limit for this type of setup, around ~100–500/day.
 :::
-
-### Retrieve Gmail Variables
 
 As sending emails requires more sensitive scopes, which may delay the approval of your OAuth client if you intend to [publish the OAuth client for the admin authentication](/docs/admin#publish-your-google-oauth-client) to the general public, let's create a new project for notifications.
 
@@ -123,7 +146,7 @@ If Google revokes the refresh token, you'll need to create a new token and updat
 
 :::
 
-## Supabase Setup
+## Connect Supabase and Google
 
 
 e. You will store the sending address as the Supabase secret `GMAIL_USER` (the Gmail that should appear as From):
@@ -284,8 +307,6 @@ Inserting a comment row in the Supabase **SQL Editor** should still send mail. T
 
 If a Database Webhook retries, the same event can send twice. Re-running `allow-admin` for an address that is already listed still must not mail (that is an UPDATE, and the function skips it).
 :::
-
-{/* DON'T EDIT BELOW HERE */}
 
 ## What's Next
 
