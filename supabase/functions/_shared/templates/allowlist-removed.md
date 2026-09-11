@@ -1,6 +1,6 @@
 ---
-subject: {{email}} was removed as a guestbook admin
+subject: y2k Guestbook: -Admin Access ({{email}})
 ---
 
-{{email}} was removed from the guestbook admin allowlist.
-Admin: {{admin}}
+{{email}} was removed from the y2k Guestbook as an admin user.
+

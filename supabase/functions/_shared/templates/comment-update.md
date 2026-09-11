@@ -1,9 +1,9 @@
 ---
-subject: Guestbook comment edited ({{name}})
+subject: y2k Guestbook: ~Comment ({{name}})
 ---
 
-A comment by {{name}} was edited.
+A comment by {{name}} was edited on the y2k Guestbook:
 
 {{body}}
 
-Admin: {{admin}}
+Sign in to the admin dashboard at: {{admin}}

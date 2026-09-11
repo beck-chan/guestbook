@@ -1,6 +1,7 @@
 ---
-subject: You were added as a guestbook admin
+subject: y2k Guestbook: +Admin Access
 ---
 
-Your Google account was added to the guestbook admin allowlist.
-Sign in at {{admin}}
+You've been invited to the y2k Guestbook as an admin user.
+
+Sign in to the admin dashboard at: {{admin}}

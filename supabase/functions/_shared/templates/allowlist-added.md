@@ -1,6 +1,5 @@
 ---
-subject: {{email}} was added as a guestbook admin
+subject: y2k Guestbook: +Admin Access ({{email}})
 ---
 
-{{email}} was added to the guestbook admin allowlist.
-Admin: {{admin}}
+{{email}} was added to the y2k Guestbook as an admin user.

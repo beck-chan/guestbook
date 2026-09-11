@@ -1,9 +1,9 @@
 ---
-subject: Guestbook comment deleted ({{name}})
+subject: y2k Guestbook: -Comment ({{name}})
 ---
 
-A comment by {{name}} was deleted.
+A comment by {{name}} was deleted from the y2k Guestbook:
 
 {{body}}
 
-Admin: {{admin}}
+Sign in to the admin dashboard at: {{admin}}

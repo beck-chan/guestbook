@@ -1,6 +1,7 @@
 ---
-subject: Poem hearted: {{poem_id}}
+subject: Original Poetry: {{poem_id}} Liked
 ---
 
-Someone hearted {{poem_id}}.
-Admin: {{admin}}
+Someone liked {{poem_id}}.
+
+Sign in to the admin dashboard at: {{admin}}

@@ -1,9 +1,9 @@
 ---
-subject: New guestbook comment from {{name}}
+subject: y2k Guestbook: +Comment ({{name}})
 ---
 
-{{name}} signed the guestbook.
+{{name}} signed the y2k Guestbook:
 
 {{body}}
 
-Admin: {{admin}}
+Sign in to the admin dashboard at: {{admin}}

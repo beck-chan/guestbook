@@ -1,6 +1,5 @@
 ---
-subject: {{email}} signed in as a guestbook admin
+subject: y2k Guestbook: {{email}} Sign In
 ---
 
-{{email}} completed Google sign-in as a guestbook admin for the first time.
-Admin: {{admin}}
+{{email}} successfully authenticated to the y2k Guestbook as an admin user.

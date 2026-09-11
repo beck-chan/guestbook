@@ -1,6 +1,7 @@
 ---
-subject: Poem unhearted: {{poem_id}}
+subject: Original Poetry: {{poem_id}} Unliked
 ---
 
-Someone unhearted {{poem_id}}.
-Admin: {{admin}}
+Someone unliked {{poem_id}}.
+
+Sign in to the admin dashboard at: {{admin}}

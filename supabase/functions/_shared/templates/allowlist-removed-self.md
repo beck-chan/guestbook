@@ -1,5 +1,5 @@
 ---
-subject: Your guestbook admin access was removed
+subject: y2k Guestbook: -Admin Access
 ---
 
-Your Google account was removed from the guestbook admin allowlist.
+You've been removed from the y2k Guestbook as an admin user.

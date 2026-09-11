@@ -1,9 +1,9 @@
 ---
-subject: Guestbook settings updated
+subject: y2k Guestbook: Settings Updated
 ---
 
-Guestbook settings were saved.
+y2k Guestbook settings were updated:
 
 {{summary}}
 
-Admin: {{admin}}
+Sign in to the admin dashboard at: {{admin}}

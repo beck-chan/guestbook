@@ -1,6 +1,8 @@
 ---
-subject: You signed in as a guestbook admin
+subject: y2k Guestbook: Admin Sign In
 ---
 
-Your Google account signed in to the guestbook admin for the first time.
-Open {{admin}}
+You've successfully authenticated to the y2k Guestbook with your admin user.
+
+Sign in to the admin dashboard at: {{admin}}
+
