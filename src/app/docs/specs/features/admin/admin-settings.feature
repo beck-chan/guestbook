@@ -18,6 +18,38 @@ Feature: Admin Dashboard settings
             Then those changes are not applied to the admin dashboard
             And the settings revert to the previously entered values
 
+        Scenario: Admin can update the comment placeholder
+            When an admin updates the `placeholder` setting
+            And they click the `save changes` button
+            Then those changes are applied to the standalone guestbook (`/guestbook`)
+            And those changes are applied to the Original Poetry landing guestbook (`/`)
+
+        Scenario: Admin can turn off the title marquee
+            When an admin sets the `marquee` setting to `off`
+            And they click the `save changes` button
+            Then the standalone guestbook title (`/guestbook`) displays without a marquee
+
+        Scenario: Admin can set the main font and size
+            When an admin updates the `main font` and its `font size`
+            And they click the `save changes` button
+            Then those changes are applied to the standalone guestbook page (`/guestbook`)
+
+        Scenario: Admin can set the accent font and size
+            When an admin updates the `accent font` and its `font size`
+            And they click the `save changes` button
+            Then those changes are applied to the standalone guestbook page (`/guestbook`)
+
+        Scenario: Admin can set comments per page
+            When an admin updates the `comments per page` setting
+            And they click the `save changes` button
+            Then the standalone guestbook (`/guestbook`) paginates at that page size
+
+        Scenario: Admin can turn off email capture
+            When an admin sets the `capture email` setting to `off`
+            And they click the `save changes` button
+            Then the email field is not shown on the standalone guestbook (`/guestbook`)
+            And the email field is not shown on the Original Poetry landing guestbook (`/`)
+
         Scenario: Admin can set a custom comment length
             When an admin adjusts the `comment length` setting to an allowed limit
             And they click the `save changes` button
@@ -33,7 +65,7 @@ Feature: Admin Dashboard settings
         Scenario: Admin can allow-list profanity
             When an admin enters comma-separated values in the `profanity allow-list`
             And they click the `save changes` button
-            Then the new allow-list is applied to the standalone guestbook 
+            Then the new allow-list is applied to the standalone guestbook
             And the new allow-list is applied to the Original Poetry landing guestbook (`/`)
 
         Scenario: Admin can view custom CSS example file

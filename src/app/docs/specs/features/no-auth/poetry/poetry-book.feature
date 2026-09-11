@@ -15,7 +15,7 @@ Feature: Original Poetry volume
     Rule: Original Poetry volume scrolls on mobile
 
         Scenario: Original Poetry book opens on mobile by scrolling
-            Given a user is on the main landing page of the poetry guestbook on mobile  (`/`)
+            Given a user is on the main landing page of the poetry guestbook on mobile (`/`)
             When a user scrolls down
             Then the introduction page of the Original Poetry book reveals
 
@@ -26,7 +26,7 @@ Feature: Original Poetry volume
 
         Scenario: Original Poetry book closes on mobile
             Given the user is on the introduction page of the Original Poetry book on mobile
-            When a user clicks the up caret
+            When a user clicks the `Close Book` button
             Then they are taken back up to the cover page of the Original Poetry book
 
         Scenario: Original Poetry book poem pages turn

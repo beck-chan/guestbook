@@ -2,9 +2,10 @@ Feature: Admin Dashboard page navigation
 
     Rule: Hanging bookmark works as a link on desktop
 
+        # Hanging bookmarks are visible only above 1280px
         Background:
             Given an authorized admin is signed in with Google SSO
-            And they are on the admin dashboard
+            And they are on the admin dashboard on desktop (`/admin`)
 
         Scenario: View Book link works
             When an admin clicks the `view book` link

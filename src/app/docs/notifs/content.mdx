@@ -480,13 +480,35 @@ npx supabase secrets set --project-ref <your-database-url> FLAG_NOTIF=true
 
 ### Review Webhooks
 
-In your Supabase project, you can review webhook responses by running the following query from the **SQL Editor** in the left sidebar:
+In your Supabase project, you can review webhook responses by running the following query from the **SQL Editor** in the left sidebar.
 
 ```sql
-select id, status_code, error_msg, timed_out, created, left(content, 200) as content
-from net._http_response
-order by created desc
-# Show only the last 50 webhooks
+-- Original POST body is not stored after the request is sent
+-- Rows older than ~6 hours have null status_code / response
+select
+  c.relname as table_name,
+  h.hook_name,
+  r.status_code,
+  left(r.content, 500) as response,
+  r.timed_out,
+  r.error_msg,
+  split_part(encode(t.tgargs, 'escape'), '\000', 1) as url,
+  split_part(encode(t.tgargs, 'escape'), '\000', 2) as method,
+  h.created_at as triggered_at,
+  r.created as responded_at,
+  h.request_id
+from supabase_functions.hooks as h
+left join net._http_response as r
+  on r.id = h.request_id
+left join pg_class as c
+  on c.oid = h.hook_table_id
+left join pg_namespace as n
+  on n.oid = c.relnamespace
+left join pg_trigger as t
+  on t.tgrelid = h.hook_table_id
+ and t.tgname = h.hook_name
+order by h.created_at desc
+-- Limit to the last 50 responses
 limit 50;
 ```
 

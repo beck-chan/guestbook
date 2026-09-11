@@ -41,9 +41,19 @@ Feature: Admin Dashboard comment interactions
             When they click the `clear all` link
             Then search, filter, or sort results are cleared
 
-        Scenario: Admins can change comment read status
-            When admins mark comments read or unread individually or all at once
+        Scenario: Admins can change a comment's read status
+            When admins mark a comment read or unread
             Then the read status saves automatically
+            And the unread count updates accordingly
+
+        Scenario: Admins can mark all comments read
+            When admins click the `mark all read` button
+            Then all comments are marked read
+            And the unread count updates accordingly
+
+        Scenario: Admins can mark all comments unread
+            When admins click the `mark all unread` button
+            Then all comments are marked unread
             And the unread count updates accordingly
 
         Scenario: Admins can edit comments

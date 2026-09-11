@@ -265,7 +265,7 @@ export function MobileReading({
         <ScrollHint
           up
           onPaper
-          ariaLabel="Back to the cover"
+          ariaLabel="Close Book"
           onClick={() => scrollToPanel(0)}
         />
         <div className="leaf leaf-left">

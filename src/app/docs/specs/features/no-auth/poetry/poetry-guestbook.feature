@@ -29,8 +29,8 @@ Feature: Original Poetry landing page guestbook (`/`)
             Then the comment is not submitted
 
         Scenario: User submits a comment with English profanity
-            When a user submits a comment
-            But it contains English profanity in the comment body
+            When a user enters a valid display name and a comment body that contains English profanity
+            And they click the `submit` button
             Then their comment is rejected and not submitted
             And the user is shown an error message
 
@@ -46,9 +46,9 @@ Feature: Original Poetry landing page guestbook (`/`)
             Then their comment is rejected and not submitted
             And the user is shown an error message
 
-        # Default comment body limit is 1k characters; 10k is the maximum allowed configuration             
+        # Default comment body limit is 1000 characters; 10000 is the maximum allowed configuration
         Scenario: User submits a comment body above the configured character limit
-            When a user submits a comment with a comment body longer than 10000 characters
+            When a user submits a comment with a comment body longer than 1000 characters
             Then their comment is rejected and not submitted
             And the user is shown an error message
 
@@ -79,9 +79,9 @@ Feature: Original Poetry landing page guestbook (`/`)
             Given a user is interacting with the guestbook on the poetry landing page
 
         Scenario: User views the next page of comments
-            When a user clicks the `next` button for guestbook comment pagination
+            When a user clicks the `next` button for comment pagination
             Then the next page of comments displays
 
         Scenario: User views the previous page of comments
-            When a user clicks the `prev` button for guestbook comment pagination
+            When a user clicks the `prev` button for comment pagination
             Then the previous page of comments displays
