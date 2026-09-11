@@ -104,10 +104,6 @@ export const DOCS_NAV_SECTIONS: DocsNavSection[] = [
               href: "/docs/docs-build/",
               },
             {
-            label: "Search & LLM Ingestion*",
-            href: "/docs/search/",
-            },
-            {
               label: "Documentation Reference",
               href: "/docs/example/",
             },

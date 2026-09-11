@@ -183,6 +183,43 @@ From within [Supabase](https://supabase.com/):
     SUPABASE_ACCESS_TOKEN=<sbp_your_access_token>
     ```
 
+## Customize Notification Templates
+
+{/* ONLY EDIT HERE */}
+
+Subject lines and body copy live as Markdown in [`supabase/functions/_shared/templates`](https://github.com/beck-chan/y2k-guestbook/tree/main/supabase/functions/_shared/templates){.blank} on the guestbook repo you deploy. Edit the files there (or in your fork), then redeploy the Edge Functions for the change to go out.
+
+Each file is plain text with a `subject:` frontmatter block. Mail is sent as `text/plain`, so Markdown emphasis is not rendered.
+
+```md
+---
+subject: New guestbook comment from {{name}}
+---
+
+{{name}} signed the guestbook.
+
+{{body}}
+
+Admin: {{admin}}
+```
+
+Keep the filename, the `---` fences, and the `subject:` key. Leave placeholders as `{{name}}` — the function fills them at send time.
+
+| File | Sends when | Recipients | Placeholders |
+| --- | --- | --- | --- |
+| `allowlist-added-self.md` | Address added to the admin allow-list | The new address | `{{email}}`, `{{admin}}` |
+| `allowlist-added.md` | Same event | Existing admin list | `{{email}}`, `{{admin}}` |
+| `allowlist-removed-self.md` | Address removed from the admin allow-list | The removed address | `{{email}}`, `{{admin}}` |
+| `allowlist-removed.md` | Same event | Remaining admin list | `{{email}}`, `{{admin}}` |
+| `comment-insert.md` | Comment submitted | Admin list | `{{name}}`, `{{body}}`, `{{admin}}` |
+| `comment-update.md` | Comment edited | Admin list | `{{name}}`, `{{body}}`, `{{admin}}` |
+| `comment-delete.md` | Comment deleted | Admin list | `{{name}}`, `{{body}}`, `{{admin}}` |
+| `settings-update.md` | Guestbook settings saved | Admin list | `{{summary}}`, `{{admin}}` |
+| `auth-created-self.md` | Invited admin completes sign-in for the first time | The new user | `{{email}}`, `{{admin}}` |
+| `auth-created.md` | Same event | Existing admin list | `{{email}}`, `{{admin}}` |
+
+`{{admin}}` is the admin dashboard URL. Do not add extra frontmatter keys. Renaming a file means the function will not find it.
+
 ## Configuring Supabase
 
 ### Deploy Edge Functions
@@ -202,7 +239,7 @@ a. From your guestbook project root, call:
 
     ```bash
     export SUPABASE_ACCESS_TOKEN=<sbp_your_access_token>
-    npx supabase functions deploy notify-admins on-user-created --project-ref <your-database-url>
+    npx supabase functions deploy notify-admins on-user-created --project-ref <your-database-url> --use-api
     ```
 
     # Output
@@ -211,16 +248,59 @@ a. From your guestbook project root, call:
 
     ```bash
     Deploying Function: notify-admins
+    Uploading asset (notify-admins): supabase/functions/_shared/templates/allowlist-added-self.md
+    Uploading asset (notify-admins): supabase/functions/_shared/templates/allowlist-added.md
+    Uploading asset (notify-admins): supabase/functions/_shared/templates/allowlist-removed-self.md
+    Uploading asset (notify-admins): supabase/functions/_shared/templates/allowlist-removed.md
+    Uploading asset (notify-admins): supabase/functions/_shared/templates/auth-created-self.md
+    Uploading asset (notify-admins): supabase/functions/_shared/templates/auth-created.md
+    Uploading asset (notify-admins): supabase/functions/_shared/templates/comment-delete.md
+    Uploading asset (notify-admins): supabase/functions/_shared/templates/comment-insert.md
+    Uploading asset (notify-admins): supabase/functions/_shared/templates/comment-update.md
+    Uploading asset (notify-admins): supabase/functions/_shared/templates/poem-hearted.md
+    Uploading asset (notify-admins): supabase/functions/_shared/templates/poem-unhearted.md
+    Uploading asset (notify-admins): supabase/functions/_shared/templates/settings-update.md
     Uploading asset (notify-admins): supabase/functions/notify-admins/index.ts
+    Uploading asset (notify-admins): supabase/functions/_shared/template.ts
     Uploading asset (notify-admins): supabase/functions/_shared/gmail.ts
     Uploading asset (notify-admins): supabase/functions/_shared/env.ts
     Uploading asset (notify-admins): supabase/functions/_shared/allowlist.ts
     Deploying Function: on-user-created
+    Uploading asset (on-user-created): supabase/functions/_shared/templates/allowlist-added-self.md
+    Uploading asset (on-user-created): supabase/functions/_shared/templates/allowlist-added.md
+    Uploading asset (on-user-created): supabase/functions/_shared/templates/allowlist-removed-self.md
+    Uploading asset (on-user-created): supabase/functions/_shared/templates/allowlist-removed.md
+    Uploading asset (notify-admins): supabase/functions/_shared/templates/settings-update.md
+    Uploading asset (notify-admins): supabase/functions/notify-admins/index.ts
+    Uploading asset (notify-admins): supabase/functions/_shared/template.ts
+    Uploading asset (notify-admins): supabase/functions/_shared/gmail.ts
+    Uploading asset (notify-admins): supabase/functions/_shared/env.ts
+    Uploading asset (notify-admins): supabase/functions/_shared/allowlist.ts
+    Uploading asset (notify-admins): supabase/functions/_shared/templates/settings-update.md
+    Uploading asset (notify-admins): supabase/functions/_shared/templates/settings-update.md
+    Uploading asset (notify-admins): supabase/functions/notify-admins/index.ts
+    Uploading asset (notify-admins): supabase/functions/_shared/template.ts
+    Uploading asset (notify-admins): supabase/functions/_shared/gmail.ts
+    Uploading asset (notify-admins): supabase/functions/_shared/env.ts
+    Uploading asset (notify-admins): supabase/functions/_shared/allowlist.ts
+    Deploying Function: on-user-created
+    Uploading asset (on-user-created): supabase/functions/_shared/templates/allowlist-added-self.md
+    Uploading asset (on-user-created): supabase/functions/_shared/templates/allowlist-added.md
+    Uploading asset (on-user-created): supabase/functions/_shared/templates/allowlist-removed-self.md
+    Uploading asset (on-user-created): supabase/functions/_shared/templates/allowlist-removed.md
+    Uploading asset (on-user-created): supabase/functions/_shared/templates/auth-created-self.md
+    Uploading asset (on-user-created): supabase/functions/_shared/templates/auth-created.md
+    Uploading asset (on-user-created): supabase/functions/_shared/templates/comment-delete.md
+    Uploading asset (on-user-created): supabase/functions/_shared/templates/comment-insert.md
+    Uploading asset (on-user-created): supabase/functions/_shared/templates/comment-update.md
+    Uploading asset (on-user-created): supabase/functions/_shared/templates/poem-hearted.md
+    Uploading asset (on-user-created): supabase/functions/_shared/templates/poem-unhearted.md
+    Uploading asset (on-user-created): supabase/functions/_shared/templates/settings-update.md
     Uploading asset (on-user-created): supabase/functions/on-user-created/index.ts
+    Uploading asset (on-user-created): supabase/functions/_shared/template.ts
     Uploading asset (on-user-created): supabase/functions/_shared/gmail.ts
     Uploading asset (on-user-created): supabase/functions/_shared/env.ts
     Uploading asset (on-user-created): supabase/functions/_shared/allowlist.ts
-    Deployed Functions on project <your-database-url>: notify-admins, on-user-created
     You can inspect your deployment in the Dashboard: https://supabase.com/dashboard/project/<your-database-url>/functions
     ```
 
@@ -313,11 +393,6 @@ a. From your guestbook project root, call:
         | `x-notify-webhook-secret` | The same string as `NOTIFY_WEBHOOK_SECRET` |
 
     g. Click **Create webhook**.
-
-
-## Customize Notification Templates
-
-{/* ONLY EDIT HERE */}
 
 ## Enable Notifications
 

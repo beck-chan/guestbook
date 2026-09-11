@@ -7,6 +7,7 @@ import {
   verifyNotifySecret,
 } from "../_shared/env.ts";
 import { sendAll, type Mail } from "../_shared/gmail.ts";
+import { loadMail } from "../_shared/template.ts";
 
 Deno.serve(async (req) => {
   if (req.method !== "POST") {
@@ -33,37 +34,25 @@ Deno.serve(async (req) => {
 
   const allowlist = await loadAllowlist();
   const admin = adminUrl();
+  const vars = { admin, email };
+  const selfCopy = await loadMail("auth-created-self", vars);
+  const othersCopy = await loadMail("auth-created", vars);
   const mails: Mail[] = allowlist.map((to) => {
-    if (to === email) {
-      return {
-        to,
-        subject: "You signed in as a guestbook admin",
-        text: [
-          "Your Google account signed in to the guestbook admin for the first time.",
-          `Open ${admin}`,
-        ].join("\n"),
-        idempotencyKey: `auth:created:${email}:self`,
-      };
-    }
+    const copy = to === email ? selfCopy : othersCopy;
     return {
       to,
-      subject: `${email} signed in as a guestbook admin`,
-      text: [
-        `${email} completed Google sign-in as a guestbook admin for the first time.`,
-        `Admin: ${admin}`,
-      ].join("\n"),
-      idempotencyKey: `auth:created:${email}:to:${to}`,
+      ...copy,
+      idempotencyKey:
+        to === email
+          ? `auth:created:${email}:self`
+          : `auth:created:${email}:to:${to}`,
     };
   });
 
   if (!allowlist.includes(email)) {
     mails.push({
       to: email,
-      subject: "You signed in as a guestbook admin",
-      text: [
-        "Your Google account signed in to the guestbook admin for the first time.",
-        `Open ${admin}`,
-      ].join("\n"),
+      ...selfCopy,
       idempotencyKey: `auth:created:${email}:self`,
     });
   }

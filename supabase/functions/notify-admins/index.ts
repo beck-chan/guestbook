@@ -9,6 +9,7 @@ import {
   verifyNotifySecret,
 } from "../_shared/env.ts";
 import { sendAll, type Mail } from "../_shared/gmail.ts";
+import { loadMail } from "../_shared/template.ts";
 
 type WebhookPayload = {
   type?: string;
@@ -76,42 +77,31 @@ async function mailsForEvent(
       const added = asEmail(record?.email);
       if (!added) return [];
       const recipients = [...new Set([...allowlist, added])];
+      const vars = { admin, email: added };
+      const selfCopy = await loadMail("allowlist-added-self", vars);
+      const othersCopy = await loadMail("allowlist-added", vars);
       return allowlistMails(
         recipients,
         added,
-        {
-          subject: "You were added as a guestbook admin",
-          text: [
-            "Your Google account was added to the guestbook admin allowlist.",
-            `Sign in at ${admin}`,
-          ].join("\n"),
-        },
-        (email) => ({
-          subject: `${email} was added as a guestbook admin`,
-          text: [
-            `${email} was added to the guestbook admin allowlist.`,
-            `Admin: ${admin}`,
-          ].join("\n"),
-        }),
+        selfCopy,
+        othersCopy,
         `allowlist:insert:${added}`,
       );
     }
     if (type === "DELETE") {
       const removed = asEmail(oldRecord?.email);
       if (!removed) return [];
+      const vars = { admin, email: removed };
+      const othersCopy = await loadMail("allowlist-removed", vars);
+      const selfCopy = await loadMail("allowlist-removed-self", vars);
       const mails: Mail[] = allowlist.map((to) => ({
         to,
-        subject: `${removed} was removed as a guestbook admin`,
-        text: [
-          `${removed} was removed from the guestbook admin allowlist.`,
-          `Admin: ${admin}`,
-        ].join("\n"),
+        ...othersCopy,
         idempotencyKey: `allowlist:delete:${removed}:to:${to}`,
       }));
       mails.push({
         to: removed,
-        subject: "Your guestbook admin access was removed",
-        text: "Your Google account was removed from the guestbook admin allowlist.",
+        ...selfCopy,
         idempotencyKey: `allowlist:delete:${removed}:self`,
       });
       return mails;
@@ -125,12 +115,10 @@ async function mailsForEvent(
       const name = snippet(record?.display_name, 80) || "someone";
       const body = snippet(record?.body);
       const id = str(record?.id) || "new";
+      const copy = await loadMail("comment-insert", { admin, name, body });
       return allowlist.map((to) => ({
         to,
-        subject: `New guestbook comment from ${name}`,
-        text: [`${name} signed the guestbook.`, body, `Admin: ${admin}`]
-          .filter(Boolean)
-          .join("\n\n"),
+        ...copy,
         idempotencyKey: `comment:insert:${id}:${to}`,
       }));
     }
@@ -139,12 +127,10 @@ async function mailsForEvent(
       const name = snippet(record?.display_name, 80) || "someone";
       const body = snippet(record?.body);
       const id = str(record?.id) || "edit";
+      const copy = await loadMail("comment-update", { admin, name, body });
       return allowlist.map((to) => ({
         to,
-        subject: `Guestbook comment edited (${name})`,
-        text: [`A comment by ${name} was edited.`, body, `Admin: ${admin}`]
-          .filter(Boolean)
-          .join("\n\n"),
+        ...copy,
         idempotencyKey: `comment:update:${id}:${to}`,
       }));
     }
@@ -152,12 +138,10 @@ async function mailsForEvent(
       const name = snippet(oldRecord?.display_name, 80) || "someone";
       const body = snippet(oldRecord?.body);
       const id = str(oldRecord?.id) || "deleted";
+      const copy = await loadMail("comment-delete", { admin, name, body });
       return allowlist.map((to) => ({
         to,
-        subject: `Guestbook comment deleted (${name})`,
-        text: [`A comment by ${name} was deleted.`, body, `Admin: ${admin}`]
-          .filter(Boolean)
-          .join("\n\n"),
+        ...copy,
         idempotencyKey: `comment:delete:${id}:${to}`,
       }));
     }
@@ -172,12 +156,10 @@ async function mailsForEvent(
     const summary = changed
       .map((key) => `${key}: ${snippet(str(record?.[key]), 80)}`)
       .join("\n");
+    const copy = await loadMail("settings-update", { admin, summary });
     return allowlist.map((to) => ({
       to,
-      subject: "Guestbook settings updated",
-      text: [`Guestbook settings were saved.`, summary, `Admin: ${admin}`].join(
-        "\n\n",
-      ),
+      ...copy,
       idempotencyKey: `settings:update:${changed.join(",")}:${to}`,
     }));
   }
@@ -187,19 +169,20 @@ async function mailsForEvent(
     const poemId =
       snippet(record?.poem_id ?? oldRecord?.poem_id, 80) || "a poem";
     const id = str(record?.id ?? oldRecord?.id) || poemId;
+    const vars = { admin, poem_id: poemId };
     if (type === "INSERT") {
+      const copy = await loadMail("poem-hearted", vars);
       return allowlist.map((to) => ({
         to,
-        subject: `Poem hearted: ${poemId}`,
-        text: [`Someone hearted ${poemId}.`, `Admin: ${admin}`].join("\n"),
+        ...copy,
         idempotencyKey: `poem_hearts:insert:${id}:${to}`,
       }));
     }
     if (type === "DELETE") {
+      const copy = await loadMail("poem-unhearted", vars);
       return allowlist.map((to) => ({
         to,
-        subject: `Poem unhearted: ${poemId}`,
-        text: [`Someone unhearted ${poemId}.`, `Admin: ${admin}`].join("\n"),
+        ...copy,
         idempotencyKey: `poem_hearts:delete:${id}:${to}`,
       }));
     }
@@ -213,11 +196,11 @@ function allowlistMails(
   allowlist: string[],
   subjectEmail: string,
   self: { subject: string; text: string },
-  others: (email: string) => { subject: string; text: string },
+  others: { subject: string; text: string },
   keyPrefix: string,
 ): Mail[] {
   return allowlist.map((to) => {
-    const copy = to === subjectEmail ? self : others(subjectEmail);
+    const copy = to === subjectEmail ? self : others;
     return {
       to,
       ...copy,

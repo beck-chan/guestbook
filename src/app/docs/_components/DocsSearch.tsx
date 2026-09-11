@@ -59,6 +59,22 @@ function SearchGlyph() {
   );
 }
 
+function isMacPlatform() {
+  return /Mac|iPhone|iPad|iPod/i.test(navigator.platform);
+}
+
+function SearchBarFace({ label }: { label: string }) {
+  return (
+    <>
+      <SearchGlyph />
+      <span className="docs-search-label">{label}</span>
+      <kbd className="docs-search-kbd" aria-hidden="true">
+        ⌘K / Ctrl+K
+      </kbd>
+    </>
+  );
+}
+
 export function openScalarSearch() {
   const host = document.querySelector(".docs-api-reference, .scalar-app");
   const trigger = host?.querySelector<HTMLElement>(
@@ -69,7 +85,7 @@ export function openScalarSearch() {
     return;
   }
 
-  const isMac = /Mac|iPhone|iPad|iPod/i.test(navigator.platform);
+  const isMac = isMacPlatform();
   window.dispatchEvent(
     new KeyboardEvent("keydown", {
       key: "k",
@@ -375,8 +391,7 @@ export function DocsSearch({
         aria-label={label}
         onClick={handleClick}
       >
-        <SearchGlyph />
-        <span className="docs-search-label">{label}</span>
+        <SearchBarFace label={label} />
       </button>
     );
   }
@@ -405,8 +420,7 @@ export function DocsSearch({
       aria-haspopup="dialog"
       onClick={handleOpen}
     >
-      <SearchGlyph />
-      <span className="docs-search-label">{label}</span>
+      <SearchBarFace label={label} />
     </button>
   );
 }

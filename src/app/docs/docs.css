@@ -328,6 +328,24 @@ body:has(.docs-shell) {
 
 .docs-search-label {
   min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.docs-search-kbd {
+  flex-shrink: 0;
+  margin-left: auto;
+  padding: 0.12rem 0.4rem;
+  border: 1px solid #c9c5bc;
+  border-radius: 1px;
+  color: color-mix(in srgb, #6f4e37 48%, white);
+  font-family: var(--body-font);
+  font-size: 0.75rem;
+  font-weight: 400;
+  letter-spacing: 0.02em;
+  line-height: 1.2;
+  white-space: nowrap;
 }
 
 .docs-sidenav-panel .docs-search-bar {
