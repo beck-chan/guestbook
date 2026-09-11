@@ -17,24 +17,6 @@ Feature: Original Poetry landing page navigation
             When a user clicks the `admin login` link
             Then they are directed to the Google SSO page for the admin dashboard
 
-        Scenario: Admin Login works with authorization on desktop
-            Given the user has admin authorization
-            When a user clicks the `admin login` link
-            And they sign in successfully with Google
-            Then they are redirected to the `/admin` dashboard
-
-        Scenario: Admin Login is gated to admins on desktop
-            Given the user does not have admin authorization
-            When a user clicks the `admin login` link
-            And they sign in successfully with Google
-            Then they are redirected to the landing page
-            And show the user a message that they do not have admin authorization
-
-        Scenario: Unauthorized admin message can be dismissed on desktop
-            Given the user is shown a message that they do not have admin authorization
-            When they click the `Boo hiss! Fine.` button
-            Then the message closes
-
     Rule: Drop-down menu serves as navigation on mobile
 
         Background:
@@ -42,7 +24,7 @@ Feature: Original Poetry landing page navigation
 
         Scenario: Drop-down menu works on mobile
             When a user clicks the drop-down `menu` button
-            Then the `menu` opens and show the user navigation links
+            Then the `menu` opens and shows the user navigation links
 
         Scenario: View Docs link works on mobile
             When a user clicks the drop-down `menu` button and selects the `view docs` link
@@ -51,24 +33,6 @@ Feature: Original Poetry landing page navigation
         Scenario: Admin Login link works on mobile
             When a user clicks the drop-down `menu` button and selects the `admin login` link
             Then they are directed to the Google SSO page for the admin dashboard
-
-        Scenario: Admin Login works with authorization on mobile
-            Given the user has admin authorization
-            When a user clicks the drop-down `menu` button and selects the `admin login` link
-            And they sign in successfully with Google
-            Then they are redirected to the `/admin` dashboard
-
-        Scenario: Admin Login is gated to admins on mobile
-            Given the user does not have admin authorization
-            When a user clicks the drop-down `menu` button and selects the `admin login` link
-            And they sign in successfully with Google
-            Then they are redirected to the landing page
-            And show the user a message that they do not have admin authorization
-
-        Scenario: Unauthorized admin message can be dismissed on mobile
-            Given the user is shown a message that they do not have admin authorization
-            When they click the `Boo hiss! Fine.` button
-            Then the message closes
 
     Rule: Report Issue link takes users to the repo Issues page
 

@@ -9,8 +9,8 @@ Feature: Standalone guestbook page commenting
             When a user enters in a valid display name and comment body and clicks the `submit` button
             Then their comment displays below the submission form as the topmost entry
 
-        Scenario: User submits an empty or over-long comment
-            When a user enters a display name or comment body that is empty or above the configured character limit
+        Scenario: User submits an empty comment
+            When a user enters a display name or comment body that is empty
             And they click the `submit` button
             Then the comment is rejected and not submitted
             And the user is shown an error message

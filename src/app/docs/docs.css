@@ -1948,7 +1948,7 @@ body:has(.docs-shell) {
   }
 
   .docs-index-notes .docs-toc + .docs-toc {
-    margin-top: -1.75rem;
+    margin-top: 0.55rem;
   }
 
   .docs-index-notes .docs-toc:nth-child(1) {
