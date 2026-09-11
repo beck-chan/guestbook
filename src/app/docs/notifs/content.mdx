@@ -185,25 +185,20 @@ From within [Supabase](https://supabase.com/):
 
 ## Customize Notification Templates
 
-{/* ONLY EDIT HERE */}
+Subject lines and body copy live as Markdown in [`supabase/functions/_shared/templates`](https://github.com/beck-chan/y2k-guestbook/tree/main/supabase/functions/_shared/templates){.blank}. Each email template is plain text with a `subject:` frontmatter block. 
 
-Subject lines and body copy live as Markdown in [`supabase/functions/_shared/templates`](https://github.com/beck-chan/y2k-guestbook/tree/main/supabase/functions/_shared/templates){.blank} on the guestbook repo you deploy. Edit the files there (or in your fork), then redeploy the Edge Functions for the change to go out.
+::: {.callout}
+# Mail is sent as `text/plain`, so Markdown emphasis is not rendered.
 
-Each file is plain text with a `subject:` frontmatter block. Mail is sent as `text/plain`, so Markdown emphasis is not rendered.
+- Keep the filename, the `---` fences, and the `subject:` key. Renaming a file means the function will not find it. Do not add extra frontmatter keys. 
+- Leave placeholders as `{{name}}` — the function fills them at send time. `{{admin}}` is the admin dashboard URL. 
 
-```md
----
-subject: New guestbook comment from {{name}}
----
+Any time you edit these templates, you'll need to [redeploy the Edge Functions](#deploy-edge-functions) for the change to go out.
 
-{{name}} signed the guestbook.
 
-{{body}}
+:::
 
-Admin: {{admin}}
-```
 
-Keep the filename, the `---` fences, and the `subject:` key. Leave placeholders as `{{name}}` — the function fills them at send time.
 
 | File | Sends when | Recipients | Placeholders |
 | --- | --- | --- | --- |
@@ -217,8 +212,6 @@ Keep the filename, the `---` fences, and the `subject:` key. Leave placeholders 
 | `settings-update.md` | Guestbook settings saved | Admin list | `{{summary}}`, `{{admin}}` |
 | `auth-created-self.md` | Invited admin completes sign-in for the first time | The new user | `{{email}}`, `{{admin}}` |
 | `auth-created.md` | Same event | Existing admin list | `{{email}}`, `{{admin}}` |
-
-`{{admin}}` is the admin dashboard URL. Do not add extra frontmatter keys. Renaming a file means the function will not find it.
 
 ## Configuring Supabase
 

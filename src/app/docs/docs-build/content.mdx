@@ -150,7 +150,7 @@ Since Scalar only supports OpenAPI 3.1, we need to translate the generated types
 # [`composeDocsCorpus`](https://github.com/beck-chan/guestbook/blob/main/src/lib/docs/compose.ts){.blank} reads each `content.mdx` page under `src/app/docs`, inserts shared `_snippets`, and follows the same `search: false`, `public: false`, and public/private fence rules as the rendered documentation. 
 
 - Humans search that copy with the User Guide Search or API Library Search. 
-- Large language models (LLMs) find it through `/llms.txt` and `/docs/<slug>.md`. 
+- Large language models (LLMs) find it through [`/llms.txt`](/llms.txt){.blank} and `/docs/<slug>.md`. 
 
 Nothing is hand-maintained for search or LLM catalogs. On each deploy (and when the docs layout loads the index), compose re-reads `.mdx` pages for that build’s flags.
 :::
