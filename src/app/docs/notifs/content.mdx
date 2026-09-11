@@ -1,5 +1,5 @@
 ---
-subtitle: Use Resend and Supabase edge functions to send notifications for guestbook events.
+subtitle: Use Gmail and Supabase edge functions to send notifications for guestbook events.
 ---
 
 import Setup from "../_snippets/setup.mdx"
@@ -19,35 +19,44 @@ When notifications are enabled, emails are sent for:
 | Guestbook settings saved | Admin list |
 | Invited admin completes sign-in for the first time | The new user, and existing admin list |
 
+
+{/* DON't EDIT ABOVE HERE */}
+
 ## Resend Setup
+
+::: {.callout}
+# Resend cannot send from a generic address, like Gmail.
+
+You'll need a domain you control for the From address (for example: `Guestbook <admin@yourdomain.com>`):
+
+- You cannot add `gmail.com` (or Outlook, Yahoo, etc.) as those providers own the domain.
+- Until your domain is verified, Resend’s test sender can only mail the email you used to sign up for Resend — not the rest of the admin list.
+{/* - Leave `FLAG_NOTIF` off until the domain is verified. The API key **Domain** dropdown stays empty until then. */}
+:::
 
 ### Retrieve Resend Variables
 
-After you sign up for [Resend](https://resend.com/){.blank}, from the dashboard. Verify a sending domain **before** you create the API key so you can lock the key to that domain.
+After you sign up for [Resend](https://resend.com/){.blank}, from the dashboard:
 
 ::: {.tabset}
 
 # 1. Verify Sending Domain
 
+If you have a domain you control, verify a sending domain before you create the API key so you can lock the key to that domain:
+
 a. In the left sidebar, click **Domains**.
 
 b. Click **+ Add domain**.
 
-c. Enter the domain you will send from. For example: `yourdomain.com`.
+c. Enter in the **Name** of your domain you will send from.
 
-d. Add the DNS records Resend shows, then wait until the domain is **Verified**.
+d. Click **+ Add domain** to save.
 
 e. Choose a From address on that domain. You will store it as the Supabase secret `RESEND_FROM`:
 
     ```bash
     RESEND_FROM=Guestbook <admin@yourdomain.com>
     ```
-
-::: {.callout}
-# Resend will not reliably send from an unverified Gmail `from` address.
-
-Use a domain you control. You cannot pick that domain on the API key until it is verified.
-:::
 
 # 2. Create an API Key
 
@@ -221,6 +230,8 @@ With `FLAG_NOTIF=true` as a Supabase secret and Resend verified:
 5. Sign in with Google using a newly allowlisted account that has never had an Auth user. That address and other admins should receive mail. Sign out and in again — no mail.
 
 Inserting a comment row in the Supabase **SQL Editor** should still send mail. That confirms the webhook, not the Next action.
+
+{/* DON'T EDIT BELOW HERE */}
 
 ## What's Next
 
