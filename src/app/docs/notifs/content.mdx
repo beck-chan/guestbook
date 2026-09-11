@@ -372,8 +372,21 @@ a. From your guestbook project root, call:
 
     e. Then set **HTTP Request** to:
 
+        ::: {.tabset}
+
+        # Notify Admins Hook
+
         - **Method:** `POST`
         - **URL:** `https://<your-database-url>.supabase.co/functions/v1/notify-admins`
+
+        # Admin User Authenticated Hook
+
+        - **Method:** `POST`
+        - **URL:** `https://<your-database-url>.supabase.co/functions/v1/on-user-created`
+
+        :::
+
+
 
     f. Under **HTTP Headers**, click **Add header** and add the following headers:
 

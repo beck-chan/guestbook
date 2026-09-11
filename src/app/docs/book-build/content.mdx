@@ -8,14 +8,149 @@ public: false
 
 # Guestbook Build
 
+::: {.callout}
+# This custom install is a poetry desk with a guestbook board attached — not the packaged board-only app.
+
+- [`src/app/page.tsx`](https://github.com/beck-chan/guestbook/blob/main/src/app/page.tsx){.blank} loads poems, hearts, unique visitors, and the first comments page, then renders [`PoetryDesk`](https://github.com/beck-chan/guestbook/blob/main/src/components/_desk/PoetryDesk.tsx){.blank}.
+- [`src/app/guestbook/page.tsx`](https://github.com/beck-chan/guestbook/blob/main/src/app/guestbook/page.tsx){.blank} is the standalone board (same comments UI, no volume).
+- [`src/app/admin/page.tsx`](https://github.com/beck-chan/guestbook/blob/main/src/app/admin/page.tsx){.blank} is the gated dashboard for moderation and settings.
+- Compile-time switches live in [`src/lib/flags.ts`](https://github.com/beck-chan/guestbook/blob/main/src/lib/flags.ts){.blank}. When `FLAG_PUBLIC` is on, `/` is rewritten to `/guestbook` and the desk is skipped.
+:::
+
 ## Poetry Volume
 
-{/* describe how the poetry volume is animated and how the poems are displayed */}
+Poems are Markdown files under [`poetry/`](https://github.com/beck-chan/guestbook/tree/main/poetry){.blank}. [`loadPoems()`](https://github.com/beck-chan/guestbook/blob/main/src/lib/loadPoems.ts){.blank} reads that folder at request time (or `../poetry` if the app is nested), splits on `##` headings, and turns `*emphasis*` / `**strong**` into HTML. Each file becomes a `Poem` (`id` from the filename, `sections` for every heading).
+
+[`pickPoemIndex()`](https://github.com/beck-chan/guestbook/blob/main/src/lib/poems.ts){.blank} picks a random poem for the first paint, and a different one whenever the reader turns the page. `PoetryDesk` keeps that index in client state so desktop and mobile stay on the same poem.
+
+The right-hand leaf renders each section as `.poem-title` + `.poem-body` (`dangerouslySetInnerHTML` of the parsed HTML). The left-hand leaf and the inside of the cover are the same [`EasterEgg`](https://github.com/beck-chan/guestbook/blob/main/src/components/_desk/EasterEgg.tsx){.blank} copy — the “Macte virtute!” note with a portfolio link — not another poem.
+
+Below the poem, a heart button calls [`togglePoemHeart`](https://github.com/beck-chan/guestbook/blob/main/src/lib/actions/hearts.ts){.blank}. Likes are keyed by an httpOnly `poem_visitor_key` cookie and stored in `poem_hearts`. Counts come from the `poem_heart_counts` / `poem_heart_total` views and the `poem_heart_state` / `toggle_poem_heart` RPCs. `PoetryDesk` caches heart state per poem so turning pages does not refetch a poem that was already resolved.
+
+::: {.tabset}
+
+# Desktop
+
+Above `768px`, [`.desk-desktop`](https://github.com/beck-chan/guestbook/blob/main/src/app/globals.css){.blank} shows the 3D volume. [`Book`](https://github.com/beck-chan/guestbook/blob/main/src/components/_desk/Book.tsx){.blank} drives open/close with [GSAP](https://gsap.com/){.blank} (`gsap` + `@gsap/react`).
+
+**Closed.** The cover faces out (`rotationY: 0`), the book sits at a slight desk tilt (`rotationX` / `rotationY`), and [`StickyNote`](https://github.com/beck-chan/guestbook/blob/main/src/components/_desk/StickyNote.tsx){.blank} is a tab on the right edge labeled **Open Book**.
+
+**Opening.** Clicking the note sets `isOpen`. The cover rotates around its left edge to `rotationY: -180`. While it crosses the midpoint, the scene width grows from one leaf (`--page-side`) to a two-page spread, the left page is revealed, and gutter / stack shadows fade in. The sticky note lifts, an eraser mask wipes **Open Book**, then the note flies to the left of the open spread and **Close Book** letters stagger in.
+
+**Open.** The poem sits on the right leaf. Wheel events over `.leaf-copy` scroll that column instead of the page (capture-phase listener). **Turn Page** is the dog-ear; it calls `pickPoemIndex` excluding the current poem. A **guestbook** chevron under the stage scrolls to `#guestbook` (hidden once you leave the top of the page).
+
+**Closing.** A clone of the note flies off-screen; a second clone arrives from the right, settles back into the tab, then the cover eases through an ajar pose (`-20°`) and shuts. Shadows clip closed with it.
+
+Widths are measured from CSS tokens (`--page-side`, `--book-width`, sticky-note size) so a `ResizeObserver` on `.stage` can re-pose the idle book without restarting a flip. If `prefers-reduced-motion: reduce` is set, the timelines are skipped and the book jumps to the open or closed rest pose.
+
+Comments sit beside the book in [`CommentBubbles`](https://github.com/beck-chan/guestbook/blob/main/src/components/_shared/CommentBubbles.tsx){.blank}, seeded with four comments per page (`DESK_COMMENT_PAGE_SIZE`).
+
+# Mobile
+
+At `max-width: 768px`, `.desk-desktop` is hidden and [`MobileReading`](https://github.com/beck-chan/guestbook/blob/main/src/components/_desk/MobileReading.tsx){.blank} takes the viewport. It is a vertical snap scroller (`.mobile-reading`) with three full-height panels:
+
+1. **Cover** — same **ORIGINAL POETRY / by Beck Chan** face as the hardcover, plus the hit counter and an **Open Book** hint.
+2. **Inside cover** — the Easter egg leaf.
+3. **Poem** — the current poem, heart, font zoom, and **Turn Page** (random next poem, same index as desktop).
+
+Poem type is fitted to the leaf with a canvas `measureText` pass (`fitPoemFont`, 11–17px), then the reader can boost it up to four steps (`+` / `−`). A comments FAB opens the same `CommentBubbles` board in a full-screen overlay (`idPrefix="mobile-"` so form ids do not clash with the hidden desktop form). [`MobileMenu`](https://github.com/beck-chan/guestbook/blob/main/src/components/_shared/MobileMenu.tsx){.blank} is the hamburger for docs / admin / report issue.
+
+:::
 
 ## Guestbook Functionality
 
-{/* describe how the commenting functionality and the admin dashboard are implemented */}
+The public board is one client component, [`CommentBubbles`](https://github.com/beck-chan/guestbook/blob/main/src/components/_shared/CommentBubbles.tsx){.blank}, reused on the desk, `/guestbook`, and the mobile overlay. It is a compose form (display name, optional email, body) plus a paginated thread of bubbles. Email is shown only when `guestbook_settings.capture_email` is on; the public list never includes it.
+
+Settings for title, fonts, placeholder, marquee, page size, comment length, rate limits, profanity allow-list, and custom CSS are loaded once in [`src/app/layout.tsx`](https://github.com/beck-chan/guestbook/blob/main/src/app/layout.tsx){.blank} (`loadGuestbookSettings` → `GuestbookSettingsProvider`). [`CustomTheme`](https://github.com/beck-chan/guestbook/blob/main/src/components/_shared/CustomTheme.tsx){.blank} injects font tokens and sanitized custom CSS onto `.admin-page` (the guestbook and admin shells).
+
+::: {.tabset}
+
+# Public comments
+
+Reads go through the `comments_public` view (`id`, `display_name`, `body`, timestamps — no email). [`getPublicCommentsPage`](https://github.com/beck-chan/guestbook/blob/main/src/app/actions/comments.ts){.blank} pages that view newest-first. The desk passes `limit={4}`; `/guestbook` uses `guestbook_settings.page_size` via [`GuestbookBoard`](https://github.com/beck-chan/guestbook/blob/main/src/components/_guestbook/GuestbookBoard.tsx){.blank}.
+
+Submit is the `submitComment` server action:
+
+1. Trim name / body / email; require name and body.
+2. Enforce [`commentLengthError`](https://github.com/beck-chan/guestbook/blob/main/src/lib/commentLimits.ts){.blank} against `comment_length`.
+3. Run [`checkCommentProfanity`](https://github.com/beck-chan/guestbook/blob/main/src/lib/profanity.ts){.blank} ([`obscenity`](https://www.npmjs.com/package/obscenity){.blank} plus the admin allow-list).
+4. Consume [`consumeCommentRateLimit`](https://github.com/beck-chan/guestbook/blob/main/src/lib/rate-limit.ts){.blank} (`rate-limiter-flexible` over `DATABASE_URL`, keyed by a hash of [`clientIp()`](https://github.com/beck-chan/guestbook/blob/main/src/lib/clientIp.ts){.blank}). Burst and daily caps come from settings. A failed insert after consume is **not** refunded.
+5. Insert into `comments`. Then `revalidatePath` for `/`, `/guestbook`, and the admin path.
+
+The compose form also checks length on the client so obvious over-limit posts never hit the action.
+
+# Admin dashboard
+
+[`src/proxy.ts`](https://github.com/beck-chan/guestbook/blob/main/src/proxy.ts){.blank} (Next’s request proxy) refreshes the Supabase session on every matched path. Only `/admin` (or `NEXT_PUBLIC_GUESTBOOK_ADMIN_PATH`) is gated:
+
+- No user → redirect to `/admin/login`.
+- Signed in but `app_metadata.role` is not `admin` → sign out and send home with `?admin_error=1`.
+- Admin hitting login → redirect into the dashboard.
+
+[`/admin/login`](https://github.com/beck-chan/guestbook/blob/main/src/app/admin/login/route.ts){.blank} starts Google OAuth. [`/auth/callback`](https://github.com/beck-chan/guestbook/blob/main/src/app/auth/callback/route.ts){.blank} exchanges the code, then [`resolveAdminSession`](https://github.com/beck-chan/guestbook/blob/main/src/lib/adminAuth.ts){.blank} calls `ensure_admin_role` (allow-list stamp) and refreshes the JWT so `role=admin` is on the cookie.
+
+The dashboard page loads every row from `comments` (including email and `is_read`), plus `poem_heart_total`. Filter / search / date / sort run in [`src/lib/comments.ts`](https://github.com/beck-chan/guestbook/blob/main/src/lib/comments.ts){.blank} on that list; pagination is 10 per page. Query string `q`, `status`, `email`, `from`, `to`, `sort`, and `page` are the source of truth so filters are shareable URLs.
+
+[`AdminGuestbook`](https://github.com/beck-chan/guestbook/blob/main/src/components/_admin/AdminGuestbook.tsx){.blank} splits the desk layout: comments on the left, settings on the right.
+
+- [`AdminFilters`](https://github.com/beck-chan/guestbook/blob/main/src/components/_admin/AdminFilters.tsx){.blank} — search, unread/read, has-email, date range, newest/oldest, unread/total counts, and total poem hearts.
+- [`AdminCommentThread`](https://github.com/beck-chan/guestbook/blob/main/src/components/_admin/AdminCommentThread.tsx){.blank} — mark read (one or all), edit name/email/body (`updateComment`), delete (`deleteComment`). Edit still enforces comment length.
+- [`AdminSettings`](https://github.com/beck-chan/guestbook/blob/main/src/components/_admin/AdminSettings.tsx){.blank} — writes `guestbook_settings` id `1` through [`saveGuestbookSettings`](https://github.com/beck-chan/guestbook/blob/main/src/app/actions/settings.ts){.blank} (admin JWT required). Saving revalidates the root layout so the public board picks up fonts, title, and theme.
+
+:::
 
 ## Feature Flags
 
-{/* describe how the feature flags are implemented and the each feature flag is used give each feature flag its own subheading */}
+Flags are **compile-time**. [`src/lib/flags.ts`](https://github.com/beck-chan/guestbook/blob/main/src/lib/flags.ts){.blank} reads `process.env.FLAG_*` with `envFlag` (`true` / `1` vs `false` / `0`; unset uses the default) and `envString` for `FLAG_COUNTER_URL`. [`next.config.ts`](https://github.com/beck-chan/guestbook/blob/main/next.config.ts){.blank} lists those names under `env` so Next can inline them into client components. Change a flag, then restart `npm run dev` or rebuild.
+
+A second Vercel project can ship the same `main` branch with different `FLAG_*` values. Local `.env` is gitignored and does not affect Vercel. To add a flag: put a key on `flags`, pass the env name through `next.config.ts`, and branch on it in the UI.
+
+`FLAG_DOCSONLY` wins over `FLAG_PUBLIC`: docs-only redirects desk, guestbook, and admin into `/docs` and never loads settings or the guestbook theme.
+
+### FLAG_DOCS
+
+`flags.docs` — default `true`.
+
+Desk bookmarks and the mobile menu: **view docs** plus a short **admin login** ribbon. Off: the labeled bookmark is **admin login** only (no docs link). On the public guestbook page (`publicMode`), the labeled bookmark is **get started** and the short ribbon is **view docs**; if docs is off, those bookmarks are omitted.
+
+`docsUrl` in the same file is the href (default `/docs`).
+
+### FLAG_DOCSONLY
+
+`flags.docsOnly` — default `false`.
+
+Serve only documentation. [`next.config.ts`](https://github.com/beck-chan/guestbook/blob/main/next.config.ts){.blank} redirects `/`, `/guestbook`, and `/admin` to `/docs`. [`src/app/layout.tsx`](https://github.com/beck-chan/guestbook/blob/main/src/app/layout.tsx){.blank} skips the settings fetch, guestbook theme, and admin-error overlay.
+
+`npm run docs` sets `FLAG_DOCSONLY=true` on that process via [`scripts/docs-dev.mjs`](https://github.com/beck-chan/guestbook/blob/main/scripts/docs-dev.mjs){.blank} (overrides `.env.local`). Local preview only — do not set this on Vercel.
+
+### FLAG_COUNTER
+
+`flags.hitCounter` — default `true`.
+
+Shows the six-digit [`HitCounter`](https://github.com/beck-chan/guestbook/blob/main/src/components/_shared/HitCounter.tsx){.blank} on the desk (beside comments), the mobile cover, and `/guestbook`. Off: the component returns `null`.
+
+Counts come from [`getUniqueVisitors()`](https://github.com/beck-chan/guestbook/blob/main/src/lib/uniqueVisitors.ts){.blank} (PostHog `$pageview` uniqueness, cached 60s). Non-production always shows the fallback in [`hitCount.ts`](https://github.com/beck-chan/guestbook/blob/main/src/lib/hitCount.ts){.blank}. In production the counter polls `/api/hits` and adds a one-time first-visit bonus from `localStorage`.
+
+### FLAG_COUNTER_URL
+
+`flags.hitCounterUrl` — default empty string.
+
+Comma-separated paths or URLs that scope the unique-visitor query. A path (for example `/` or `/guestbook`) matches `$pathname` exactly; a full URL substring-matches `$current_url`. Empty counts every `$pageview`. The value is part of the `unstable_cache` key, so changing it busts the cached count.
+
+### FLAG_NOTIF
+
+`flags.notif` — default `false`.
+
+Next/docs copy only. This flag is compiled into the app the same way as the others, but **sending mail is not gated here**. Edge functions [`notify-admins`](https://github.com/beck-chan/guestbook/blob/main/supabase/functions/notify-admins/index.ts){.blank} and [`on-user-created`](https://github.com/beck-chan/guestbook/blob/main/supabase/functions/on-user-created/index.ts){.blank} read the **Supabase secret** `FLAG_NOTIF` and skip with `{ skipped: "FLAG_NOTIF" }` when it is off. Set both the Next env var (for copy) and `npx supabase secrets set FLAG_NOTIF=true` (for delivery). See [Enable Notifications](/docs/notifs).
+
+### FLAG_PUBLIC
+
+`flags.public` — default `false`.
+
+Public guestbook home: rewrite `/` → `/guestbook` and redirect `/guestbook` → `/` so the board is the site root and the poetry desk is not served. Favicon fill switches from coral to dark green in [`src/app/icon.tsx`](https://github.com/beck-chan/guestbook/blob/main/src/app/icon.tsx){.blank}. GitHub links in [`flags.ts`](https://github.com/beck-chan/guestbook/blob/main/src/lib/flags.ts){.blank} (`releasesUrl`, `reportIssueUrl`) point at `y2k-guestbook` instead of `guestbook`. Docs landing subtitle, API schema (`database.types-public.ts`), Scalar **Test Request**, and `{.public}` / `{.private}` fences all follow this flag. Pages with `public: false` (this one included) 404 on a public deploy.
+
+### FLAG_APITEST
+
+`flags.apiTest` — default `false`.
+
+Show Scalar **Test Request** on the **private** API docs (`FLAG_PUBLIC=false`), using `NEXT_PUBLIC_SUPABASE_URL`. Public docs already show Test Request. [`scalarConfig.ts`](https://github.com/beck-chan/guestbook/blob/main/src/lib/docs/scalarConfig.ts){.blank} hides the button unless `public` or `apiTest` is on; [`loadDatabaseOpenApi.ts`](https://github.com/beck-chan/guestbook/blob/main/src/lib/docs/loadDatabaseOpenApi.ts){.blank} points the explorer at this project’s Supabase when api-test is on.
