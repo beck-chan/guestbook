@@ -9,23 +9,20 @@ public: false
 # Guestbook Build
 
 ::: {.callout}
-# This custom install is a poetry desk with a guestbook board attached — not the packaged board-only app.
+# My custom install combines an interactive poetry volume with the guestbook commenting functionality:
 
-- [`src/app/page.tsx`](https://github.com/beck-chan/guestbook/blob/main/src/app/page.tsx){.blank} loads poems, hearts, unique visitors, and the first comments page, then renders [`PoetryDesk`](https://github.com/beck-chan/guestbook/blob/main/src/components/_desk/PoetryDesk.tsx){.blank}.
-- [`src/app/guestbook/page.tsx`](https://github.com/beck-chan/guestbook/blob/main/src/app/guestbook/page.tsx){.blank} is the standalone board (same comments UI, no volume).
-- [`src/app/admin/page.tsx`](https://github.com/beck-chan/guestbook/blob/main/src/app/admin/page.tsx){.blank} is the gated dashboard for moderation and settings.
-- Compile-time switches live in [`src/lib/flags.ts`](https://github.com/beck-chan/guestbook/blob/main/src/lib/flags.ts){.blank}. When `FLAG_PUBLIC` is on, `/` is rewritten to `/guestbook` and the desk is skipped.
+- [`src/app/page.tsx`](https://github.com/beck-chan/guestbook/blob/main/src/app/page.tsx){.blank} loads poems, likes ({.heart}), the hit counter, and the first comments page, then renders [`PoetryDesk`](https://github.com/beck-chan/guestbook/blob/main/src/components/_desk/PoetryDesk.tsx){.blank}.
+- [`src/app/admin/page.tsx`](https://github.com/beck-chan/guestbook/blob/main/src/app/admin/page.tsx){.blank} is the gated admin dashboard for moderation and settings.
+- Compile-time switches live in [`src/lib/flags.ts`](https://github.com/beck-chan/guestbook/blob/main/src/lib/flags.ts){.blank}. 
 :::
 
-## Poetry Volume
+## Original Poetry
 
-Poems are Markdown files under [`poetry/`](https://github.com/beck-chan/guestbook/tree/main/poetry){.blank}. [`loadPoems()`](https://github.com/beck-chan/guestbook/blob/main/src/lib/loadPoems.ts){.blank} reads that folder at request time (or `../poetry` if the app is nested), splits on `##` headings, and turns `*emphasis*` / `**strong**` into HTML. Each file becomes a `Poem` (`id` from the filename, `sections` for every heading).
+Poems are Markdown files that live under [`poetry/`](https://github.com/beck-chan/guestbook/tree/main/poetry){.blank}:
 
-[`pickPoemIndex()`](https://github.com/beck-chan/guestbook/blob/main/src/lib/poems.ts){.blank} picks a random poem for the first paint, and a different one whenever the reader turns the page. `PoetryDesk` keeps that index in client state so desktop and mobile stay on the same poem.
-
-The right-hand leaf renders each section as `.poem-title` + `.poem-body` (`dangerouslySetInnerHTML` of the parsed HTML). The left-hand leaf and the inside of the cover are the same [`EasterEgg`](https://github.com/beck-chan/guestbook/blob/main/src/components/_desk/EasterEgg.tsx){.blank} copy — the “Macte virtute!” note with a portfolio link — not another poem.
-
-Below the poem, a heart button calls [`togglePoemHeart`](https://github.com/beck-chan/guestbook/blob/main/src/lib/actions/hearts.ts){.blank}. Likes are keyed by an httpOnly `poem_visitor_key` cookie and stored in `poem_hearts`. Counts come from the `poem_heart_counts` / `poem_heart_total` views and the `poem_heart_state` / `toggle_poem_heart` RPCs. `PoetryDesk` caches heart state per poem so turning pages does not refetch a poem that was already resolved.
+- [`loadPoems()`](https://github.com/beck-chan/guestbook/blob/main/src/lib/loadPoems.ts){.blank} reads that folder at request time, splits on `##` headings, and turns `*emphasis*` / `**strong**` into HTML. Each file becomes a `Poem` (`id` from the filename, `sections` for every heading).
+- [`pickPoemIndex()`](https://github.com/beck-chan/guestbook/blob/main/src/lib/poems.ts){.blank} picks a random poem for the first paint, and a different one whenever the reader turns the page, ensuring no repeats in a row. 
+- On each poem, a heart button calls [`togglePoemHeart`](https://github.com/beck-chan/guestbook/blob/main/src/lib/actions/hearts.ts){.blank}. Likes are keyed by an httpOnly `poem_visitor_key` cookie and stored in `poem_hearts`. Counts come from the `poem_heart_counts` / `poem_heart_total` views and the `poem_heart_state` / `toggle_poem_heart` RPCs. 
 
 ::: {.tabset}
 

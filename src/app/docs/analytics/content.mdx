@@ -204,7 +204,7 @@ Confirm the hit counter is displaying the expected number of unique visitors for
 
 3. Enter in a SQL query to count the unique visitors for your guestbook page(s):
 
-    ```bash
+    ```sql
     # Single URL
     SELECT uniq(distinct_id)
     FROM events
@@ -212,7 +212,7 @@ Confirm the hit counter is displaying the expected number of unique visitors for
     AND properties.$current_url LIKE '%/guestbook%' # Example slug
     ```
 
-    ```bash
+    ```sql
     # Multiple URLs
     SELECT uniq(distinct_id)
     FROM events

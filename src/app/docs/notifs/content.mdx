@@ -100,23 +100,34 @@ g. In the **Application type** drop-down, select `Web application`.
 
 h. Give your application a **Name**.
 
-i. Click **Create**.
+i. Under **Authorized redirect URIs**, add `https://developers.google.com/oauthplayground`.
 
-j. On the OAuth client created popup, copy the **Client ID** and **Client secret** to your clipboard. Hang on to these — we'll need to store these as Supabase secrets in the next section under `GMAIL_CLIENT_ID` and `GMAIL_CLIENT_SECRET`:
+j. Click **Create**.
+
+k. On the OAuth client created popup, copy the **Client ID** and **Client secret** to your clipboard. Hang on to these — we'll need to store these as Supabase secrets in the next section under `GMAIL_CLIENT_ID` and `GMAIL_CLIENT_SECRET`:
 
     ```bash
     GMAIL_CLIENT_ID=<your-client-id>.apps.googleusercontent.com
     GMAIL_CLIENT_SECRET=<your-client-secret>
     ```
 
-
     ::: {.callout}
     Click **Download JSON** to save your OAuth client credentials to a file as a backup.
     :::
 
+# Add Test User
+
+a. In the left sidebar, click **APIs & Services**, then select **OAuth consent screen**.
+
+b. In the left sidebar, click **Audience**.
+
+c. Under Test users, click **+ Add users** then add the address you'll use to send notification emails.
+
+d. Click **Save**.
+
 # 3. Create Refresh Token
 
-a. Open [OAuth 2.0 Playground](https://developers.google.com/oauthplayground/){.blank}.
+a. Open [OAuth 2.0 Playground](https://developers.google.com/oauthplayground/){.blank}, signed in with the test user you just added.
 
 b. Click the <DocsGear /> icon (OAuth 2.0 configuration). 
 
@@ -130,7 +141,7 @@ f. From the scope list left sidebar, open **Gmail API v1** and select `https://w
 
 h. Click **Authorize APIs**.
 
-i. Sign in as the user that is connected to the OAuth 2.0 client you just created to allow access.
+i. Sign in as the user that is connected to the OAuth 2.0 client you just created to allow access and follow the prompts to allow access.
 
 j. Click **Exchange authorization code for tokens**, then copy the **Refresh token**. 
 
@@ -143,7 +154,8 @@ j. Click **Exchange authorization code for tokens**, then copy the **Refresh tok
 ::: {.callout}
 # Treat your refresh token like a password. 
 
-If Google revokes the refresh token, you'll need to create a new token and update the Supabase secret if mail stops.
+- If Google revokes the refresh token, you'll need to create a new token and update the Supabase secret if mail stops.
+- By default, unless you publish your OAuth client for the guestbook notifications, the refresh token will expire in 7 days.
 
 :::
 
@@ -419,8 +431,21 @@ To set in your Supabase project for the guestbook:
 npx supabase secrets set --project-ref <your-database-url> FLAG_NOTIF=true
 ```
 
-
 :::
+
+### Review Webhooks
+
+In your Supabase project, you can review webhook responses by running the following query from the **SQL Editor** in the left sidebar:
+
+```sql
+select id, status_code, error_msg, timed_out, created, left(content, 200) as content
+from net._http_response
+order by created desc
+# Show only the last 50 webhooks
+limit 50;
+```
+
+## Publish Notif Google OAuth Client
 
 ## What's Next
 
