@@ -13,7 +13,6 @@ This guide assumes that:
 
 :::
 
-
 When notifications are enabled, emails are sent for:
 
 | Event | Recipients |
@@ -25,7 +24,9 @@ When notifications are enabled, emails are sent for:
 | Guestbook settings saved | Admin list |
 | Invited admin completes sign-in for the first time | The new user, and existing admin list |
 
-## Create Webhook Secret
+## Setting Up
+
+### Create Webhook Secret
 
 [Supabase Edge Functions](https://supabase.com/docs/guides/functions){.blank} check a shared secret instead of a user JSON Web Token (JWT). 
 
@@ -49,8 +50,7 @@ We'll first generate a shared secret that will be used with our [Supabase Databa
 Anyone who gets a hold of your `NOTIFY_WEBHOOK_SECRET` can send emails as you. If it's compromised, generate a new one and update the Supabase secret and your webhooks.
 :::
 
-
-## Create Gmail Google Cloud Project
+### Create Gmail Google Cloud Project
 
 ::: {.callout}
 # Notifications are send out from your personal Gmail, not a branded domain.
@@ -149,7 +149,7 @@ If Google revokes the refresh token, you'll need to create a new token and updat
 
 :::
 
-## Create Supabase Access Token
+### Create Supabase Access Token
 
 From within [Supabase](https://supabase.com/):
 
@@ -183,7 +183,9 @@ From within [Supabase](https://supabase.com/):
     SUPABASE_ACCESS_TOKEN=<sbp_your_access_token>
     ```
 
-## Deploy Edge Functions
+## Configuring Supabase
+
+### Deploy Edge Functions
 
 Let's deploy the edge functions in [`supabase/functions`](https://github.com/beck-chan/y2k-guestbook/blob/main/supabase/functions/){.blank} to Supabase that will handle your notifications.
 
@@ -253,7 +255,7 @@ a. From your guestbook project root, call:
 
     :::
 
-## Configure Database Webhooks
+### Configure Database Webhooks
 
 1. Within your Supabase project for the guestbook, select **Integrations** from the left sidebar.
 
@@ -312,6 +314,10 @@ a. From your guestbook project root, call:
 
     g. Click **Create webhook**.
 
+
+## Customize Notification Templates
+
+{/* ONLY EDIT HERE */}
 
 ## Enable Notifications
 
