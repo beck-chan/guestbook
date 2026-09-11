@@ -1,9 +1,9 @@
-Feature: Original Poetry volume 
+Feature: Original Poetry volume
 
     Rule: Original Poetry volume behaves as a book on desktop
 
         Scenario: Original Poetry book opens flat
-            Given a user is first on the main landing page of the poetry guestbook on desktop
+            Given a user is on the main landing page of the poetry guestbook on desktop
             When a user clicks the `Open Book` button
             Then the Original Poetry book opens flat
 
@@ -14,9 +14,14 @@ Feature: Original Poetry volume
 
     Rule: Original Poetry volume scrolls on mobile
 
-        Scenario: Original Poetry book opens on mobile
-            Given a user is first on the main landing page of the poetry guestbook on mobile
-            When a user scrolls down or clicks the `Open Book` button
+        Scenario: Original Poetry book opens on mobile by scrolling
+            Given a user is on the main landing page of the poetry guestbook on mobile
+            When a user scrolls down
+            Then the introduction page of the Original Poetry book reveals
+
+        Scenario: Original Poetry book opens on mobile with Open Book
+            Given a user is on the main landing page of the poetry guestbook on mobile
+            When a user clicks the `Open Book` button
             Then the introduction page of the Original Poetry book reveals
 
         Scenario: Original Poetry book closes on mobile
@@ -34,26 +39,26 @@ Feature: Original Poetry volume
         Background:
             Given the Original Poetry book is opened
 
-        Scenario: Original Poetry pages scroll
-            When a user scrolls on pages of the book
-            Then the content moves smoothly up and down the page
-
         Scenario: Portfolio link works
             Given a user is interacting with the introduction page
             When a user clicks the `Visit Beck's Portfolio` link
             Then a new tab or window opens to Beck's portfolio
 
-        Scenario: Original Poetry like (heart) function
-            When a user clicks the like (heart) button for a poem
+        Scenario: Original Poetry heart function
+            When a user clicks the `Heart this poem` button
             Then the heart fills with colour
             And the count of likes increases by 1
 
         Scenario: Poem page turn
             When a user clicks the `Turn Page` button on a poem page
-            Then they are presented with a new random poem
-            And the new poem is not be a repeat of the previous poem
+            Then the poem text on the page changes
 
-        Scenario: Users can change poem font size on mobile
+        Scenario: Users can increase poem font size on mobile
             Given a user is interacting with a poem page on mobile
-            When they click on the plus or minus above or below the `font` button
-            Then the poem page font increases or decreases in size within a limit
+            When they click the `Increase font size` button
+            Then the poem page font increases in size
+
+        Scenario: Users can decrease poem font size on mobile
+            Given a user is interacting with a poem page on mobile
+            When they click the `Decrease font size` button
+            Then the poem page font decreases in size

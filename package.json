@@ -10,8 +10,7 @@
     "start": "next start",
     "lint": "eslint",
     "allow-admin": "tsx scripts/allow-admin.ts",
-    "delete-admin": "tsx scripts/delete-admin.ts",
-    "save-admin-session": "tsx scripts/save-admin-session.ts"
+    "delete-admin": "tsx scripts/delete-admin.ts"
   },
   "dependencies": {
     "@gsap/react": "^2.1.2",

@@ -22,10 +22,6 @@ Feature: Original Poetry landing page navigation
         Background:
             Given a user is on the main landing page of the poetry guestbook on mobile
 
-        Scenario: Drop-down menu works on mobile
-            When a user clicks the drop-down `menu` button
-            Then the `menu` opens and shows the user navigation links
-
         Scenario: View Docs link works on mobile
             When a user clicks the drop-down `menu` button and selects the `view docs` link
             Then a new tab or window opens to the y2k Guestbook Docs

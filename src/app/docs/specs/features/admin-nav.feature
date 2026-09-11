@@ -14,17 +14,17 @@ Feature: Admin Dashboard page navigation
 
         Background:
             Given an authorized admin is signed in with Google SSO
-            And they are on the admin dashboard on mobile  (`/admin`)
+            And they are on the admin dashboard on mobile (`/admin`)
 
-        Scenario: Close button works on mobile
-            When an admin clicks the `Close` link
+        Scenario: Return to book works on mobile
+            When an admin clicks the `return to book` link
             Then they are taken to the Original Poetry landing page
 
     Rule: Comment sort, filter, and search are in a drop-down menu on mobile
 
         Background:
             Given an authorized admin is signed in with Google SSO
-            And they are on the admin dashboard on mobile  (`/admin`)
+            And they are on the admin dashboard on mobile (`/admin`)
 
         Scenario: Drop-down menu contains comment sort, filter, and search options
             When an admin clicks the drop-down `comments menu` button

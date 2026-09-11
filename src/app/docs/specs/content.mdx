@@ -48,7 +48,7 @@ At the project root lives `cucumber.yaml` which configures Cucumber:
 ```yaml
 default:
   paths:
-    - features/**/*.feature
+    - features/no-auth/**/*.feature
   requireModule:
     - tsx/cjs
   require:
@@ -57,6 +57,22 @@ default:
   format:
     - progress-bar
     - html:features/reports/results.html
+  formatOptions:
+    snippetInterface: async-await
+  worldParameters:
+    baseUrl: http://localhost:3000
+
+admin:
+  paths:
+    - features/admin/**/*.feature
+  requireModule:
+    - tsx/cjs
+  require:
+    - features/support/**/*.ts
+    - features/step_definitions/**/*.ts
+  format:
+    - progress-bar
+    - html:features/reports/admin.html
   formatOptions:
     snippetInterface: async-await
   worldParameters:
@@ -186,15 +202,16 @@ npx cucumber-js --format html:features/reports/guestbook.html
 
 # Custom Reports
 
-To write a different report *without* replacing the default `results.html`, add a named profile in `cucumber.yaml`. Profiles replace `default` entirely — copy the same `paths`, `requireModule`, `require`, and `worldParameters` keys, and change only the `html:` path. 
+To write a different report *without* replacing the default `results.html`, add a named profile in `cucumber.yaml`. Profiles replace `default` entirely — copy the same `requireModule`, `require`, and `worldParameters` keys, and change the `paths` and `html:` values.
 
-To run a profile, use the `-p` flag. For example, the `guestbook` profile already in `cucumber.yaml`:
+To run a profile, use the `-p` flag. For example, the `admin` profile already in `cucumber.yaml`:
 
 ```bash
-npx cucumber-js -p guestbook
+# Run with browser visible
+HEADED=1 npx cucumber-js -p admin
 ```
 
-That writes `features/reports/guestbook.html` and leaves `results.html` alone. 
+That writes `features/reports/admin.html` and leaves `results.html` alone. 
 
 :::
 
@@ -214,39 +231,51 @@ These tests do not require any admin authentication, so they can be run without 
 
 2. In a second terminal at the app root, call:
 
-::: {.tabset}
+  ::: {.tabset}
 
-# To Run All User Tests
+  # To Run All User Tests
 
-```bash
-npx cucumber-js features/no-auth
-```
+  ```bash
+  npx cucumber-js features/no-auth
+  ```
 
-# To Run One User Test
+  # To Run One User Test
 
-For example, the `guestbook-comments.feature` file:
+  For example, the `guestbook-comments.feature` file:
 
-```bash
-npx cucumber-js  features/no-auth/guestbook-nav.feature
-```
+  ```bash
+  npx cucumber-js  features/no-auth/guestbook-nav.feature
+  ```
 
-:::
+  :::
 
 # Run Admin Tests
 
-::: {.tabset}
-
-Cucumber cannot finish Google's login screen on its own, so you will need to run a special session to log your authorized admin user in in order to test the scenarios under [Admin Dashboard](#admin-dashboard).
-
-:::
+Playwright cannot finish Google's login screen by itself. Run these scenarios with the browser visible and sign in with your authorized admin user in order to test the scenarios under [Admin Dashboard](#admin-dashboard).
 
 1. Start the guestbook preview server: `npm run dev`
 
-2. Sign in with your admin user. 
+2. In a second terminal at the app root, call:
 
+  ::: {.tabset}
 
+  # To Run All Admin Tests
 
+  ```bash
+  HEADED=1 npx cucumber-js features/admin
+  ```
 
+  # To Run One Admin Test
+
+  For example, the `admin-nav.feature` file:
+
+  ```bash
+  HEADED=1 npx cucumber-js features/admin/admin-nav.feature
+  ```
+
+  :::
+
+3. When Google's login screen appears, sign in with your allow-listed admin user. For gated (unauthorized) scenarios, sign in with a Google account that is not an administrator.
 :::
 
 ### Optional Prefixes

@@ -4,7 +4,7 @@ Feature: Admin Dashboard page navigation
 
         Background:
             Given an authorized admin is signed in with Google SSO
-            And they are on the admin dashboard  (`/admin`)
+            And they are on the admin dashboard (`/admin`)
 
         Scenario: View Guestbook link works
             When an admin clicks the `view guestbook` link

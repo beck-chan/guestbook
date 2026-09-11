@@ -6,30 +6,39 @@ Feature: Admin Dashboard comment interactions
 
     Rule: Admins can interact with comments
 
-        Scenario: Admins can filter comments by read status or date range
-            When admins filter comments by read status or date range
+        Scenario: Admins can filter comments by read status
+            When admins filter comments by read status
             Then comments without the selected criteria are hidden
-            And results stack on top of other sorts, filters, or searches
+
+        Scenario: Admins can filter comments by date range
+            When admins filter comments by date range
+            Then comments without the selected criteria are hidden
 
         Scenario: Admins can filter comments by email presence
-            When admins filter comments by whether or not they were submitted with an email
+            When admins filter comments by whether they were submitted with an email
             Then comments without the selected criteria are hidden
-            And results stack on top of other sorts, filters, or searches
 
-        Scenario: Admins can sort comments
-            When admins sort comments by newest or oldest timestamps
+        Scenario: Admins can sort comments by newest
+            When admins sort comments by newest timestamps
             Then the comments sort according to the selected criteria
             And the sort display indicator updates accordingly
-            And results stack on top of other sorts, filters, or searches
+
+        Scenario: Admins can sort comments by oldest
+            When admins sort comments by oldest timestamps
+            Then the comments sort according to the selected criteria
+            And the sort display indicator updates accordingly
 
         Scenario: Admins can search comments
             When admins search comments by keywords
             Then comments not matching submitted keywords are hidden
-            And results stack on top of other sorts, filters, or searches
+
+        Scenario: Filter, sort, and search results stack
+            Given admins have applied a sort, a filter, and a search to comments
+            Then results stack on top of other sorts, filters, or searches
 
         Scenario: Admins can clear applied filters or sorting
             Given admins have applied search keywords, sorting, or filters to comments
-            When they click the `clear all` link or return a sort of filter to default state
+            When they click the `clear all` link
             Then search, filter, or sort results are cleared
 
         Scenario: Admins can change comment read status
@@ -55,6 +64,10 @@ Feature: Admin Dashboard comment interactions
 
     Rule: Guestbook comments are paginated
 
-        Scenario: Admin interacts with the guestbook pagination
-            When an admin clicks the `prev` or `next` links for comment pagination
-            Then a previous or next page of comments displays
+        Scenario: Admin views the next page of comments
+            When an admin clicks the `next` link for comment pagination
+            Then the next page of comments displays
+
+        Scenario: Admin views the previous page of comments
+            When an admin clicks the `prev` link for comment pagination
+            Then the previous page of comments displays

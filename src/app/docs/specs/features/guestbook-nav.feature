@@ -18,10 +18,6 @@ Feature: Standalone guestbook page navigation (`/guestbook`)
         Background:
             Given a user is on the standalone guestbook page on mobile
 
-        Scenario: Drop-down menu works on mobile
-            When a user clicks the drop-down `menu` button
-            Then the `menu` opens and show the user navigation links
-
         Scenario: Get Started link works on mobile
             When a user clicks the drop-down `menu` button and selects the `get started` link
             Then a new tab or window opens to the y2k Guestbook Docs Get Started guide

@@ -1,6 +1,6 @@
 default:
   paths:
-    - features/**/*.feature
+    - features/no-auth/**/*.feature
   requireModule:
     - tsx/cjs
   require:
@@ -15,9 +15,9 @@ default:
     baseUrl: http://localhost:3000
 
 # Named profiles replace `default` (they do not inherit)
-guestbook:
+admin:
   paths:
-    - features/**/*.feature
+    - features/admin/**/*.feature
   requireModule:
     - tsx/cjs
   require:
@@ -25,7 +25,7 @@ guestbook:
     - features/step_definitions/**/*.ts
   format:
     - progress-bar
-    - html:features/reports/guestbook.html
+    - html:features/reports/admin.html
   formatOptions:
     snippetInterface: async-await
   worldParameters:

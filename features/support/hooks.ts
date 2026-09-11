@@ -1,7 +1,5 @@
-import { existsSync } from "node:fs";
 import { After, AfterAll, Before, BeforeAll } from "@cucumber/cucumber";
 import { chromium, type Browser } from "playwright";
-import { adminAuthFile } from "./auth-file";
 import { PlaywrightWorld } from "./world";
 
 let browser: Browser;
@@ -16,7 +14,6 @@ Before(async function (this: PlaywrightWorld) {
   this.browser = browser;
   this.context = await browser.newContext({
     viewport: { width: 1280, height: 720 },
-    ...(existsSync(adminAuthFile) ? { storageState: adminAuthFile } : {}),
   });
   this.page = await this.context.newPage();
 });
