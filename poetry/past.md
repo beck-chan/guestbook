@@ -10,7 +10,7 @@ just shy of a decade <br>
 it feels like <br>
 &emsp;a lifetime <br><br>
 
-&emsp;&emsp;away.<br>
+&emsp;&emsp;away.<br><br>
 
 Certainly<br>
 the you & I <br>

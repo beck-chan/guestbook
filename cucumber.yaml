@@ -8,7 +8,24 @@ default:
     - features/step_definitions/**/*.ts
   format:
     - progress-bar
-    - html:reports/cucumber.html
+    - html:features/reports/results.html
+  formatOptions:
+    snippetInterface: async-await
+  worldParameters:
+    baseUrl: http://localhost:3000
+
+# Named profiles replace `default` (they do not inherit)
+guestbook:
+  paths:
+    - features/**/*.feature
+  requireModule:
+    - tsx/cjs
+  require:
+    - features/support/**/*.ts
+    - features/step_definitions/**/*.ts
+  format:
+    - progress-bar
+    - html:features/reports/guestbook.html
   formatOptions:
     snippetInterface: async-await
   worldParameters:

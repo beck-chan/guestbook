@@ -56,7 +56,7 @@ default:
     - features/step_definitions/**/*.ts
   format:
     - progress-bar
-    - html:reports/cucumber.html
+    - html:features/reports/results.html
   formatOptions:
     snippetInterface: async-await
   worldParameters:
@@ -169,8 +169,38 @@ Create a file in `features/step_definitions/`, paste the stub into it, and fill 
 
 ## Running Cucumber Tests
 
-- A passing test run writes `reports/cucumber.html`. Reruns will overwrite the file.
-- Note that commenting, rate limits, and admin edits are live — if you're hooked up to a production database or guestbook instance, these tests will affect real data.
+::: {.tabset}
+
+# Default Reports
+
+A passing test run writes `features/reports/results.html` by default:
+
+- Reruns will overwrite the file. 
+- You can change the output directory by modifying the `formatOptions` in `cucumber.yaml`.
+
+To write to a another file and the default at the same time, pass in `--format html:<filepath>`:
+
+```bash
+npx cucumber-js --format html:features/reports/guestbook.html
+```
+
+# Custom Reports
+
+To write a different report *without* replacing the default `results.html`, add a named profile in `cucumber.yaml`. Profiles replace `default` entirely — copy the same `paths`, `requireModule`, `require`, and `worldParameters` keys, and change only the `html:` path. 
+
+To run a profile, use the `-p` flag. For example, the `guestbook` profile already in `cucumber.yaml`:
+
+```bash
+npx cucumber-js -p guestbook
+```
+
+That writes `features/reports/guestbook.html` and leaves `results.html` alone. 
+
+:::
+
+::: {.callout}
+# Note that commenting, rate limits, and admin edits are live — if you're hooked up to a production database or guestbook instance, these tests will affect real data.
+:::
 
 ### Set Up Admin Testing
 
