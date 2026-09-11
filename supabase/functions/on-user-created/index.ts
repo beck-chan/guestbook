@@ -6,7 +6,7 @@ import {
   jsonResponse,
   verifyNotifySecret,
 } from "../_shared/env.ts";
-import { sendAll, type Mail } from "../_shared/resend.ts";
+import { sendAll, type Mail } from "../_shared/gmail.ts";
 
 Deno.serve(async (req) => {
   if (req.method !== "POST") {
@@ -74,7 +74,7 @@ Deno.serve(async (req) => {
 
   const sent = await sendAll(mails);
   if (!sent.ok) {
-    return jsonResponse(500, { error: sent.error ?? "Resend failed" });
+    return jsonResponse(500, { error: sent.error ?? "Gmail send failed" });
   }
   return jsonResponse(200, { ok: true, sent: mails.length });
 });

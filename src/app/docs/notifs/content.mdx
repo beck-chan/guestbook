@@ -22,65 +22,81 @@ When notifications are enabled, emails are sent for:
 
 {/* DON't EDIT ABOVE HERE */}
 
-## Resend Setup
+## Gmail Setup
 
 ::: {.callout}
-# Resend cannot send from a generic address, like Gmail.
+# Mail is sent as your Gmail, not a branded domain.
 
-You'll need a domain you control for the From address (for example: `Guestbook <admin@yourdomain.com>`):
+The Edge Functions call the **Gmail API** over HTTPS (the same pattern as any HTTP mailer). Recipients see the mailbox in `GMAIL_USER`.
 
-- You cannot add `gmail.com` (or Outlook, Yahoo, etc.) as those providers own the domain.
-- Until your domain is verified, Resend’s test sender can only mail the email you used to sign up for Resend — not the rest of the admin list.
-{/* - Leave `FLAG_NOTIF` off until the domain is verified. The API key **Domain** dropdown stays empty until then. */}
+- This is **not** a Gmail App Password or SMTP. App Passwords only work on SMTP; Edge Functions cannot reliably use Gmail’s SMTP ports.
+- Personal Gmail has a low daily send cap. That is enough for a small admin list.
+- Google can revoke the OAuth refresh token. Create a new token and update the Supabase secret if mail stops.
+- Do **not** add `gmail.send` to guestbook admin Google sign-in. This OAuth client is only for sending notifications.
+- `FLAG_NOTIF` must be `true` as a **Supabase secret** before anything sends.
 :::
 
-### Retrieve Resend Variables
+### Retrieve Gmail Variables
 
-After you sign up for [Resend](https://resend.com/){.blank}, from the dashboard:
+Use the [Google Cloud](https://console.cloud.google.com/){.blank} project you already use for Sign in with Google, or a new project. Keep the existing admin-login OAuth client unchanged.
 
 ::: {.tabset}
 
-# 1. Verify Sending Domain
+# 1. Enable Gmail API
 
-If you have a domain you control, verify a sending domain before you create the API key so you can lock the key to that domain:
+a. In Google Cloud, select your project.
 
-a. In the left sidebar, click **Domains**.
+b. In the left sidebar, click **APIs & Services**, then **Library**.
 
-b. Click **+ Add domain**.
+c. Search for **Gmail API**, open it, and click **Enable**.
 
-c. Enter in the **Name** of your domain you will send from.
-
-d. Click **+ Add domain** to save.
-
-e. Choose a From address on that domain. You will store it as the Supabase secret `RESEND_FROM`:
+d. You will store the sending address as the Supabase secret `GMAIL_USER` (the Gmail that should appear as From):
 
     ```bash
-    RESEND_FROM=Guestbook <admin@yourdomain.com>
+    GMAIL_USER=you@gmail.com
     ```
 
-# 2. Create an API Key
+# 2. Create an OAuth Client
 
-a. In the left sidebar, click **API keys**.
+a. In **APIs & Services**, click **OAuth consent screen**.
 
-b. Click **Create API key**.
+    - User type **External** is fine for a personal mailbox.
+    - Publishing status **Testing** is enough. Under **Test users**, add the same Gmail as `GMAIL_USER`.
 
-c. Enter a **Name**. For example: `Guestbook notifications`.
+b. In **APIs & Services**, click **Credentials**, then **+ Create credentials** → **OAuth client ID**.
 
-d. Under **Permission**, select **Sending access**.
+c. Application type **Desktop app** is fine. Name it for example `Guestbook notifications`.
 
-e. Under **Domain**, select the domain you just verified (not **All domains**).
-
-f. Click **Add**. Copy the key after it generates. You will store it as the Supabase secret `RESEND_API_KEY` in [Supabase Setup](#supabase-setup) (not in Next.js `package.json`):
+d. Copy the **Client ID** and **Client secret**. You will store them as Supabase secrets:
 
     ```bash
-    RESEND_API_KEY=re_<your-api-key>
+    GMAIL_CLIENT_ID=<your-client-id>.apps.googleusercontent.com
+    GMAIL_CLIENT_SECRET=<your-client-secret>
     ```
 
 ::: {.callout}
-# Resend shows the full API key once.
+# Do not reuse the Supabase Google provider client for `gmail.send`.
 
-If you lose it, create a new key and update the Supabase secret.
+Admin login stays on its current scopes. Notifications use this separate client.
 :::
+
+# 3. Create a Refresh Token
+
+a. Open [OAuth 2.0 Playground](https://developers.google.com/oauthplayground/){.blank}.
+
+b. Click the gear (OAuth 2.0 configuration). Check **Use your own OAuth credentials**. Paste `GMAIL_CLIENT_ID` and `GMAIL_CLIENT_SECRET`.
+
+c. In the scope list, find **Gmail API v1** and select `https://www.googleapis.com/auth/gmail.send`. Click **Authorize APIs**.
+
+d. Sign in as `GMAIL_USER` (the test user). Allow access.
+
+e. Click **Exchange authorization code for tokens**. Copy **Refresh token**. You will store it as:
+
+    ```bash
+    GMAIL_REFRESH_TOKEN=<your-refresh-token>
+    ```
+
+Treat the refresh token like a password. If Google revokes it, repeat this tab and update the secret.
 
 :::
 
@@ -111,8 +127,10 @@ a. Generate a long random string for the webhook secret.
 b. In a terminal, from your guestbook project:
 
     ```bash
-    npx supabase secrets set RESEND_API_KEY=re_<your-api-key>
-    npx supabase secrets set RESEND_FROM="Guestbook <admin@yourdomain.com>"
+    npx supabase secrets set GMAIL_USER=you@gmail.com
+    npx supabase secrets set GMAIL_CLIENT_ID=<your-client-id>.apps.googleusercontent.com
+    npx supabase secrets set GMAIL_CLIENT_SECRET=<your-client-secret>
+    npx supabase secrets set GMAIL_REFRESH_TOKEN=<your-refresh-token>
     npx supabase secrets set SITE_URL=https://<your-project-url>.vercel.app
     npx supabase secrets set NOTIFY_WEBHOOK_SECRET=<your-webhook-secret>
     npx supabase secrets set FLAG_NOTIF=false
@@ -210,14 +228,14 @@ In `.env.local` (for local development) or your Vercel environment variables (fo
 ::: {.callout}
 # `.env.local` / Vercel `FLAG_NOTIF=true` alone does not send mail.
 
-The Edge Function reads the **Supabase secret**. Set both so the Next flag and the mailer agree. Leave the secret `false` until Resend and the webhooks are ready.
+The Edge Function reads the **Supabase secret**. Set both so the Next flag and the mailer agree. Leave the secret `false` until the Gmail API refresh token and the webhooks are ready.
 :::
 
 For cloud deployment, add `FLAG_NOTIF` as a Vercel environment variable (`true` / `false`) the same way you set `FLAG_COUNTER`. Restart or redeploy after changing Next flags.
 
 ## Test Notifications
 
-With `FLAG_NOTIF=true` as a Supabase secret and Resend verified:
+With `FLAG_NOTIF=true` as a Supabase secret and the Gmail refresh token working:
 
 1. Run `npm run allow-admin -- someone@gmail.com` for an address that is not already listed. That inbox, and other allowlisted inboxes, should receive mail. Run the same command again for that address — no second mail.
 
@@ -230,6 +248,12 @@ With `FLAG_NOTIF=true` as a Supabase secret and Resend verified:
 5. Sign in with Google using a newly allowlisted account that has never had an Auth user. That address and other admins should receive mail. Sign out and in again — no mail.
 
 Inserting a comment row in the Supabase **SQL Editor** should still send mail. That confirms the webhook, not the Next action.
+
+::: {.callout}
+# Gmail does not dedupe retries.
+
+If a Database Webhook retries, the same event can send twice. Re-running `allow-admin` for an address that is already listed still must not mail (that is an UPDATE, and the function skips it).
+:::
 
 {/* DON'T EDIT BELOW HERE */}
 
