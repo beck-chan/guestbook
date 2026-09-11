@@ -12,5 +12,5 @@ Feature: Unauthorized admin login
 
     Scenario: Unauthorized visitor message can be dismissed
         Given the user is shown a message that they do not have admin authorization
-        When they click the `Boo hiss! Fine.` button
+        When they click the `Close` button
         Then the message closes
