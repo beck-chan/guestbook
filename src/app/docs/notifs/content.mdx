@@ -146,56 +146,41 @@ If Google revokes the refresh token, you'll need to create a new token and updat
 
 :::
 
-## Connect Supabase and Google
+## Deploy Edge Functions
 
-
-e. You will store the sending address as the Supabase secret `GMAIL_USER` (the Gmail that should appear as From):
-
-    ```bash
-    GMAIL_USER=you@gmail.com
-    ```
-
-Functions live in [`supabase/functions`](https://github.com/beck-chan/y2k-guestbook/blob/main/supabase/functions/README.md){.blank} on the guestbook repo you deploy. `notify-admins` handles table changes. `on-user-created` handles first Google signup.
-
-### Deploy Edge Functions
-
-From your guestbook project root, after `npx supabase link` to *your* project:
-
-```bash
-npx supabase functions deploy notify-admins on-user-created
-```
+Let's deploy the edge functions in [`supabase/functions`](https://github.com/beck-chan/y2k-guestbook/blob/main/supabase/functions/README.md){.blank} to Supabase that will handle your notifications.
 
 ::: {.callout}
-# These functions set `verify_jwt = false`.
+# You'll need your Supabase Project ID snagged from your `NEXT_PUBLIC_SUPABASE_URL`: `https://<your-database-url>.supabase.co`.
 
-Database Webhooks and Auth hooks do not send a user JWT. The functions check `NOTIFY_WEBHOOK_SECRET` instead.
 :::
 
-### Set Function Secrets
-
-Secrets are set on the **Supabase project**, not in Next `.env.local` (except `FLAG_NOTIF`, which you set in both places later).
-
-a. Generate a long random string for the webhook secret.
-
-b. In a terminal, from your guestbook project:
+1. From your guestbook project root, call:
 
     ```bash
-    npx supabase secrets set GMAIL_USER=you@gmail.com
-    npx supabase secrets set GMAIL_CLIENT_ID=<your-client-id>.apps.googleusercontent.com
-    npx supabase secrets set GMAIL_CLIENT_SECRET=<your-client-secret>
-    npx supabase secrets set GMAIL_REFRESH_TOKEN=<your-refresh-token>
-    npx supabase secrets set SITE_URL=https://<your-project-url>.vercel.app
-    npx supabase secrets set NOTIFY_WEBHOOK_SECRET=<your-webhook-secret>
-    npx supabase secrets set FLAG_NOTIF=false
+    # Make sure you're logged in
+    npx supabase login
+    npx supabase functions deploy notify-admins on-user-created --project-ref <your-database-url>
     ```
 
-c. For local previews, `SITE_URL` can be `http://localhost:3000`. Use your deployed origin in production.
+2. Set the following Supabase secrets:
 
-d. (Optional) If the admin dashboard is not at `/admin`, also set `GUESTBOOK_ADMIN_PATH` to that path (no trailing slash).
+    ```bash
+    npx supabase secrets set --project-ref <your-database-url> GMAIL_USER=you@gmail.com
+    npx supabase secrets set --project-ref <your-database-url> GMAIL_CLIENT_ID=<your-client-id>.apps.googleusercontent.com
+    npx supabase secrets set --project-ref <your-database-url> GMAIL_CLIENT_SECRET=<your-client-secret>
+    npx supabase secrets set --project-ref <your-database-url> GMAIL_REFRESH_TOKEN=<your-refresh-token>
+    # Use localhost:3000 for local previews, your deployed site URL in production
+    npx supabase secrets set --project-ref <your-database-url> SITE_URL=https://<your-project-url>.vercel.app
+    npx supabase secrets set --project-ref <your-database-url> NOTIFY_WEBHOOK_SECRET=<your-webhook-secret>
+    npx supabase secrets set --project-ref <your-database-url> FLAG_NOTIF=false
+    ```
 
-`SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` are provided to Edge Functions automatically.
+    If your admin dashboard is not at `/admin`, also set your `GUESTBOOK_ADMIN_PATH`.
 
-### Database Webhooks
+## Configuring Webhooks
+
+### Configure Database Webhooks
 
 Within Supabase, select **Database** from the left sidebar, then click **Webhooks**:
 
@@ -212,9 +197,9 @@ c. For **Table**, you will add one hook per table (or enable each table/event be
 d. Set **HTTP Request** to:
 
     - **Method:** `POST`
-    - **URL:** `https://<your-project-ref>.supabase.co/functions/v1/notify-admins`
+    - **URL:** `https://<your-database-url>.supabase.co/functions/v1/notify-admins`
 
-    Replace `<your-project-ref>` with the ref in your `NEXT_PUBLIC_SUPABASE_URL`.
+    Replace `<your-database-url>` with the ref in your `NEXT_PUBLIC_SUPABASE_URL`.
 
 e. Under **HTTP Headers**, add:
 
@@ -248,7 +233,7 @@ a. Within Supabase, select **Authentication** from the left sidebar, then click 
 b. Click **Add hook**, then select **After User Created**:
 
     - For **Hook type**, select `HTTPS`.
-    - For **URL**, enter `https://<your-project-ref>.supabase.co/functions/v1/on-user-created`.
+    - For **URL**, enter `https://<your-database-url>.supabase.co/functions/v1/on-user-created`.
 
 c. Set the hook secret / Authorization bearer token to the same `NOTIFY_WEBHOOK_SECRET` value.
 

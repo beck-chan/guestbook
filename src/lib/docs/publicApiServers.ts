@@ -1,7 +1,8 @@
 export const DEFAULT_PROJECT_REF = "your-database-url";
+export const PROJECT_REF_PLACEHOLDER = "<your-database-url>";
 
 export function parseProjectRef(raw: string): string {
-  const trimmed = raw.trim();
+  const trimmed = raw.trim().replaceAll(/[<>]/g, "");
   const hosted = trimmed.match(/https?:\/\/([a-z0-9-]+)\.supabase\.co/i);
   if (hosted) {
     return hosted[1].toLowerCase();
@@ -9,9 +10,13 @@ export function parseProjectRef(raw: string): string {
   return trimmed.toLowerCase().replace(/[^a-z0-9-]/g, "");
 }
 
-export function supabaseRestUrl(projectRef = DEFAULT_PROJECT_REF): string {
+export function displayProjectRef(projectRef = DEFAULT_PROJECT_REF): string {
   const ref = parseProjectRef(projectRef) || DEFAULT_PROJECT_REF;
-  return `https://${ref}.supabase.co/rest/v1`;
+  return ref === DEFAULT_PROJECT_REF ? PROJECT_REF_PLACEHOLDER : ref;
+}
+
+export function supabaseRestUrl(projectRef = DEFAULT_PROJECT_REF): string {
+  return `https://${displayProjectRef(projectRef)}.supabase.co/rest/v1`;
 }
 
 export function envSupabaseProjectRef() {

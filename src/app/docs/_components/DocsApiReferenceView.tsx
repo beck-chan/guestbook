@@ -5,6 +5,8 @@ import { flags } from "@/lib/flags";
 import { createScalarReferenceConfig } from "@/lib/docs/scalarConfig";
 import {
   DEFAULT_PROJECT_REF,
+  PROJECT_REF_PLACEHOLDER,
+  displayProjectRef,
   envSupabaseProjectRef,
   parseProjectRef,
   publicApiServers,
@@ -79,7 +81,7 @@ function hideScalarHeadingSearchResults(root: ParentNode = document) {
 
 export function DocsApiReferenceView({ spec }: { spec: OpenApiSpec }) {
   const hostRef = useRef<HTMLDivElement>(null);
-  const [draftRef, setDraftRef] = useState(DEFAULT_PROJECT_REF);
+  const [draftRef, setDraftRef] = useState(PROJECT_REF_PLACEHOLDER);
   const [appliedRef, setAppliedRef] = useState(DEFAULT_PROJECT_REF);
 
   useEffect(() => {
@@ -87,7 +89,7 @@ export function DocsApiReferenceView({ spec }: { spec: OpenApiSpec }) {
       return;
     }
     const stored = readStoredProjectRef();
-    setDraftRef(stored);
+    setDraftRef(displayProjectRef(stored));
     setAppliedRef(stored);
   }, []);
 
@@ -150,7 +152,7 @@ export function DocsApiReferenceView({ spec }: { spec: OpenApiSpec }) {
   function applyProjectRef(event: FormEvent) {
     event.preventDefault();
     const next = parseProjectRef(draftRef) || DEFAULT_PROJECT_REF;
-    setDraftRef(next);
+    setDraftRef(displayProjectRef(next));
     setAppliedRef(next);
     try {
       sessionStorage.setItem(PROJECT_REF_KEY, next);
@@ -164,13 +166,19 @@ export function DocsApiReferenceView({ spec }: { spec: OpenApiSpec }) {
       {flags.public ? (
         <form className="docs-api-server" onSubmit={applyProjectRef}>
           <label>
-            Enter Your Supabase Project ID
+            <span>
+              <b>Enter Your Supabase Project ID</b> — Your{" "}
+              <code>{"<your-database-url>"}</code> from your{" "}
+              <code>
+                NEXT_PUBLIC_SUPABASE_URL=https://{"<your-database-url>"}.supabase.co
+              </code>
+            </span>
             <input
               value={draftRef}
               onChange={(event) => setDraftRef(event.target.value)}
               autoComplete="off"
               spellCheck={false}
-              placeholder={DEFAULT_PROJECT_REF}
+              placeholder={PROJECT_REF_PLACEHOLDER}
             />
           </label>
           <button type="submit">Use this project</button>
