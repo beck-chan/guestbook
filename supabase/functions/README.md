@@ -74,4 +74,6 @@ Before User Created stays the existing Postgres `hook_before_user_created` funct
 
 ## Resend
 
-Verify a sending domain in [Resend](https://resend.com). `RESEND_FROM` must use that domain.
+1. Add and verify a sending domain in [Resend](https://resend.com) (**Domains**).
+2. Create an API key with **Sending access**, locked to that domain.
+3. Set `RESEND_FROM` to an address on that domain (for example `Guestbook <admin@yourdomain>`).

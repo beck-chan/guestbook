@@ -8,65 +8,30 @@ import Setup from "../_snippets/setup.mdx"
 
 <Setup />
 
-{/* DO NOT CHANGE ABOVE HERE */}
-
-Use [Resend](https://resend.com/){.blank} and Supabase Edge Functions to email allowlisted admins when guestbook events happen. Next.js does not send these messages; a row change (or first Google signup) triggers the function.
-
-When notifications are enabled, mail is sent for:
+When notifications are enabled, emails are sent for:
 
 | Event | Recipients |
 | --- | --- |
-| A Google account is added to the admin allowlist | The new address, and everyone else already on the allowlist |
-| A Google account is removed from the admin allowlist | The removed address, and everyone still on the allowlist |
-| A visitor submits a comment | Everyone on the allowlist |
-| An admin edits or deletes a comment | Everyone on the allowlist |
-| Guestbook settings are saved | Everyone on the allowlist |
-| An allowlisted admin completes Google sign-in for the first time | The new user, and everyone else on the allowlist |
-
-Marking comments read, and running `allow-admin` again for an address that is already listed, does not send mail.
-
-::: {.callout}
-This guide also assumes:
-
-- [x] You already have a [Resend](https://resend.com/){.blank} account.
-- [x] (For cloud deployment) You have a Vercel account and project.
-:::
+| New email added/invited to admin allow-list ("Admin list") | The new address, and existing admin list |
+| Email removed from the admin allow-list | The removed address, and existing admin list |
+| Comment submitted | Admin list |
+| Admin edits or deletes a comment | Admin list |
+| Guestbook settings saved | Admin list |
+| Invited admin completes sign-in for the first time | The new user, and existing admin list |
 
 ## Resend Setup
 
 ### Retrieve Resend Variables
 
-From the [Resend](https://resend.com/){.blank} dashboard:
+After you sign up for [Resend](https://resend.com/){.blank}, from the dashboard. Verify a sending domain **before** you create the API key so you can lock the key to that domain.
 
 ::: {.tabset}
 
-# 1. Create an API Key
-
-a. In the left sidebar, click **API Keys**.
-
-b. Click **Create API Key**.
-
-c. Give the key a **Name**. For example: `Guestbook notifications`.
-
-d. Click **Add**.
-
-e. Copy the key after it generates. You will store it as the Supabase secret `RESEND_API_KEY` in [Supabase Setup](#supabase-setup) (not in Next.js `package.json`):
-
-    ```bash
-    RESEND_API_KEY=re_<your-api-key>
-    ```
-
-::: {.callout}
-# Resend shows the full API key once.
-
-If you lose it, create a new key and update the Supabase secret.
-:::
-
-# 2. Verify a Sending Domain
+# 1. Verify Sending Domain
 
 a. In the left sidebar, click **Domains**.
 
-b. Click **Add Domain**.
+b. Click **+ Add domain**.
 
 c. Enter the domain you will send from. For example: `yourdomain.com`.
 
@@ -81,7 +46,31 @@ e. Choose a From address on that domain. You will store it as the Supabase secre
 ::: {.callout}
 # Resend will not reliably send from an unverified Gmail `from` address.
 
-Use a domain you control.
+Use a domain you control. You cannot pick that domain on the API key until it is verified.
+:::
+
+# 2. Create an API Key
+
+a. In the left sidebar, click **API keys**.
+
+b. Click **Create API key**.
+
+c. Enter a **Name**. For example: `Guestbook notifications`.
+
+d. Under **Permission**, select **Sending access**.
+
+e. Under **Domain**, select the domain you just verified (not **All domains**).
+
+f. Click **Add**. Copy the key after it generates. You will store it as the Supabase secret `RESEND_API_KEY` in [Supabase Setup](#supabase-setup) (not in Next.js `package.json`):
+
+    ```bash
+    RESEND_API_KEY=re_<your-api-key>
+    ```
+
+::: {.callout}
+# Resend shows the full API key once.
+
+If you lose it, create a new key and update the Supabase secret.
 :::
 
 :::
