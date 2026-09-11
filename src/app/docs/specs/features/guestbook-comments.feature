@@ -1,4 +1,4 @@
-Feature: Standalone guestbook page commenting 
+Feature: Standalone guestbook page 
 
     Background:
         Given a user is on the standalone guestbook page of the poetry guestbook
@@ -6,7 +6,8 @@ Feature: Standalone guestbook page commenting
     Rule: Guestbook allows users to submit comments
 
         Scenario: User submits a valid comment
-            When a user enters in a valid display name and comment body and clicks the `submit` button
+            When a user enters in a valid display name and comment body 
+            And they click the `submit` button
             Then their comment displays below the submission form as the topmost entry
 
         Scenario: User submits an empty comment

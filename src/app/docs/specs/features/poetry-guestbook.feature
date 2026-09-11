@@ -10,6 +10,12 @@ Feature: Original Poetry landing page guestbook
             And clicks the `submit` button
             Then their comment displays as the topmost guestbook entry
 
+        Scenario: User submits an empty comment
+            When a user enters a display name or comment body that is empty
+            And they click the `submit` button
+            Then the comment is rejected and not submitted
+            And the user is shown an error message
+
         Scenario: User submits a comment with an email
             When a user submits a valid comment with a valid email address
             Then their comment displays without their email
