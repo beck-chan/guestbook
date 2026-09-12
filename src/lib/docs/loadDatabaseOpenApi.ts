@@ -6,6 +6,7 @@ import {
   applyOperationSecurity,
   type OpenApiSpec,
 } from "./typesToOpenApi";
+import { swagger2ToOpenApi31 } from "./swaggerToOpenApi";
 import { envSupabaseProjectRef, publicApiServers } from "./publicApiServers";
 
 const BEARER_SCHEME = {
@@ -59,22 +60,26 @@ function applyServers(
   spec: OpenApiSpec,
   servers: { url: string; description?: string }[] | undefined,
 ) {
+  delete spec.host;
+  delete spec.basePath;
+  delete spec.schemes;
   if (!servers) {
     delete spec.servers;
-    delete spec.host;
-    delete spec.basePath;
-    delete spec.schemes;
     return;
   }
-
   spec.servers = servers;
-  try {
-    const parsed = new URL(servers[0].url);
-    spec.host = parsed.host;
-    spec.basePath = parsed.pathname.replace(/\/+$/, "") || "/";
-    spec.schemes = [parsed.protocol.replace(":", "")];
-  } catch {
-    /* keep fetched swagger host if the overlay URL is not absolute */
+}
+
+/** PostgREST advertises GET / as “OpenAPI description (this document)”. */
+function omitPostgrestMeta(spec: OpenApiSpec) {
+  if (spec.paths) {
+    delete spec.paths["/"];
+    delete spec.paths[""];
+  }
+  if (spec.tags?.length) {
+    spec.tags = spec.tags.filter(
+      (tag) => tag.name.toLowerCase() !== "introspection",
+    );
   }
 }
 
@@ -113,32 +118,28 @@ async function fetchOpenApi(isPublic: boolean): Promise<OpenApiSpec> {
     throw new Error("OpenAPI fetch returned no paths");
   }
 
-  overlayInfo(spec, isPublic);
-  spec.components = spec.components ?? {};
-  spec.components.securitySchemes = {
-    ...spec.components.securitySchemes,
+  const normalized = swagger2ToOpenApi31(
+    spec as Record<string, unknown>,
+  ) as OpenApiSpec;
+  omitPostgrestMeta(normalized);
+  overlayInfo(normalized, isPublic);
+  normalized.components = normalized.components ?? {};
+  normalized.components.securitySchemes = {
+    ...normalized.components.securitySchemes,
     bearerAuth: BEARER_SCHEME,
   };
-  spec.securityDefinitions = {
-    ...spec.securityDefinitions,
-    bearerAuth: {
-      type: "apiKey",
-      name: "Authorization",
-      in: "header",
-      description: BEARER_SCHEME.description,
-    },
-  };
-  applyOperationSecurity(spec.paths);
+  delete normalized.securityDefinitions;
+  applyOperationSecurity(normalized.paths);
 
   if (isPublic) {
-    applyServers(spec, publicApiServers());
+    applyServers(normalized, publicApiServers());
   } else if (flags.apiTest) {
-    applyServers(spec, publicApiServers(envSupabaseProjectRef()));
+    applyServers(normalized, publicApiServers(envSupabaseProjectRef()));
   } else {
-    applyServers(spec, undefined);
+    applyServers(normalized, undefined);
   }
 
-  return spec;
+  return normalized;
 }
 
 export const loadDatabaseOpenApi = cache(

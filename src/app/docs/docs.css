@@ -699,6 +699,14 @@ body:has(.docs-shell) {
   --scalar-header-height: 0px;
 }
 
+/* Empty response body ("No Body") — docs sidenav cream, not Scalar muted gray. */
+.docs-api-reference .empty-state,
+.docs-api-reference .text-c-3.flex.min-h-10,
+.docs-api-reference .text-c-3.flex.min-h-10 span,
+.docs-api-reference .text-c-3.flex.items-center.justify-center {
+  color: var(--paper, #faf6ea) !important;
+}
+
 .docs-api-server {
   display: flex;
   flex-wrap: wrap;

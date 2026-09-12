@@ -150,7 +150,7 @@ export function openApiNav(spec: OpenApiSpec): OpenApiNavSection[] {
   }
 
   for (const [path, methods] of Object.entries(spec.paths ?? {})) {
-    if (!methods) {
+    if (!methods || path === "/" || path === "") {
       continue;
     }
     for (const [method, operationItem] of Object.entries(methods)) {
@@ -158,6 +158,9 @@ export function openApiNav(spec: OpenApiSpec): OpenApiNavSection[] {
         continue;
       }
       const tag = tagForPath(path, operationItem);
+      if (tag.toLowerCase() === "introspection") {
+        continue;
+      }
       const list = byTag.get(tag) ?? [];
       const verb = method.toUpperCase();
       list.push({

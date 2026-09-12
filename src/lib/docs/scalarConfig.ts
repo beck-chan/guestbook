@@ -281,7 +281,7 @@ a[role="option"][data-docs-hide-heading="true"] {
   --scalar-background-3: var(--docs-ink, #8a6a52);
   --scalar-color-1: var(--paper, #faf6ea);
   --scalar-color-2: var(--paper, #faf6ea);
-  --scalar-color-3: color-mix(in srgb, var(--paper, #faf6ea) 48%, #6a6864);
+  --scalar-color-3: var(--paper, #faf6ea);
 }
 
 .scalar-app code.hljs,
@@ -301,6 +301,13 @@ a[role="option"][data-docs-hide-heading="true"] {
 .scalar-app .response-card > .scalar-card-content.grid,
 .scalar-app .response-card .scalar-code-block {
   background: var(--docs-ink, #8a6a52) !important;
+}
+
+/* Test Request empty body ("No Body") — Scalar .text-c-3, cream like the docs sidenav. */
+.scalar-app .text-c-3.flex.min-h-10,
+.scalar-app .text-c-3.flex.items-center.justify-center,
+.scalar-app .scalar-card.dark-mode .text-c-3 {
+  color: var(--paper, #faf6ea) !important;
 }
 
 .scalar-app .response-card .scalar-code-block pre,

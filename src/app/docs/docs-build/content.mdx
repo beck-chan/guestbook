@@ -98,23 +98,36 @@ The API Library (`/docs/api`) widens the sidebar and replaces the default links 
 
 The API Library is a hybrid page ([`src/app/docs/api/page.tsx`](https://github.com/beck-chan/guestbook/blob/main/src/app/docs/api/page.tsx){.blank}) — it first renders content from [`content.mdx`](https://github.com/beck-chan/guestbook/blob/main/src/app/docs/api/content.mdx){.blank}, then [`DocsApiReference`](https://github.com/beck-chan/guestbook/blob/main/src/app/docs/_components/DocsApiReference.tsx){.blank} embeds my customized [Scalar API](https://scalar.com/){.blank} explorer underneath.
 
+The API explorer catalogs operations from a live PostgREST OpenAPI document. [`loadDatabaseOpenApi.ts`](https://github.com/beck-chan/guestbook/blob/main/src/lib/docs/loadDatabaseOpenApi.ts){.blank} fetches `{project}/rest/v1/` with the `service_role` key so admin tables and RPCs still appear. `FLAG_PUBLIC` picks which project to introspect:
+
+- `FLAG_PUBLIC=false` — `NEXT_PUBLIC_SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` (my custom install)
+- `FLAG_PUBLIC=true` — `API_PUBLIC_URL`, `API_SERVICE_ROLE_KEY`, and `API_ANON_KEY` so that public project is fully specified (example database for the packaged guestbook)
+
 ::: {.callout}
-# The API explorer catalogs operations from a live PostgREST OpenAPI document.
-
-[`loadDatabaseOpenApi.ts`](https://github.com/beck-chan/guestbook/blob/main/src/lib/docs/loadDatabaseOpenApi.ts){.blank} fetches `{project}/rest/v1/` with the **service_role** key so admin tables and RPCs still appear. `FLAG_PUBLIC` picks which project to introspect — not the visitor's database:
-
-- `FLAG_PUBLIC=false` — `NEXT_PUBLIC_SUPABASE_URL` + `SUPABASE_SERVICE_ROLE_KEY` (this custom install)
-- `FLAG_PUBLIC=true` — `API_PUBLIC_URL` + `API_SERVICE_ROLE_KEY` (and `API_ANON_KEY` so that public project is fully specified)
-
-Test Request stays separate: on the public build, visitors enter their own Supabase project ID; on the private build, `FLAG_APITEST` points Send at `NEXT_PUBLIC_SUPABASE_URL`.
+The Test Request feature available on the public build allows visitors to enter their own Supabase project ID to test requests against — it does not call my example database.
 
 :::
 
 ### Live OpenAPI
 
-[`loadDatabaseOpenApi.ts`](https://github.com/beck-chan/guestbook/blob/main/src/lib/docs/loadDatabaseOpenApi.ts){.blank} caches the fetch (React `cache()` plus a 60-second revalidate) so the docs layout sidenav and the explorer share one request. After fetch it stamps our `info` title/description, `bearerAuth`, and `servers` overlay. [`typesToOpenApi.ts`](https://github.com/beck-chan/guestbook/blob/main/src/lib/docs/typesToOpenApi.ts){.blank} still builds sidebar links (`openApiNav`) and marks non-anon operations as requiring a JWT.
+::: {.tabset}
 
-[`layout.tsx`](https://github.com/beck-chan/guestbook/blob/main/src/app/docs/layout.tsx){.blank} builds those sidebar links from the fetched spec. On `/docs/api`, [`DocsSidenav`](https://github.com/beck-chan/guestbook/blob/main/src/app/docs/_nav/DocsSidenav.tsx){.blank} swaps the usual docs nav for [`DocsApiNav`](https://github.com/beck-chan/guestbook/blob/main/src/app/docs/_nav/DocsApiNav.tsx){.blank}, linking instead to the inline method and operation anchors within the Scalar API explorer.
+# loadDatabaseOpenApi.ts
+
+[`loadDatabaseOpenApi.ts`](https://github.com/beck-chan/guestbook/blob/main/src/lib/docs/loadDatabaseOpenApi.ts){.blank}:
+
+- Caches the fetch (React `cache()` plus a 60-second revalidate) so the documentation sidebar and the Scalar API explorer share one request. 
+- After fetch it stamps our `info` title/description, `bearerAuth`, and `servers` overlay. 
+- [`typesToOpenApi.ts`](https://github.com/beck-chan/guestbook/blob/main/src/lib/docs/typesToOpenApi.ts){.blank} still builds sidebar links from Scalar inline call anchors (`openApiNav`) and marks non-anon operations as requiring a JWT.
+
+# layout.tsx
+
+[`layout.tsx`](https://github.com/beck-chan/guestbook/blob/main/src/app/docs/layout.tsx){.blank}:
+
+- Builds those sidebar links from the fetched spec. 
+- On `/docs/api`, [`DocsSidenav`](https://github.com/beck-chan/guestbook/blob/main/src/app/docs/_nav/DocsSidenav.tsx){.blank} swaps the usual docs nav for [`DocsApiNav`](https://github.com/beck-chan/guestbook/blob/main/src/app/docs/_nav/DocsApiNav.tsx){.blank}, linking instead to the inline method and operation anchors within the Scalar API explorer.
+
+:::
 
 
 ### Scalar API Explorer

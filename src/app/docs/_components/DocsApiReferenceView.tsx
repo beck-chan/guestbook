@@ -67,6 +67,41 @@ function readStoredProjectRef() {
   }
 }
 
+function sidebarBackground() {
+  const nav = document.querySelector(".docs-sidenav");
+  return nav ? getComputedStyle(nav).backgroundColor : "rgb(250, 246, 234)";
+}
+
+function isNoBodyLabel(el: HTMLElement) {
+  if (el.textContent?.trim() !== "No Body") {
+    return false;
+  }
+  if (el.children.length === 0) {
+    return true;
+  }
+  return (
+    el.children.length === 1 &&
+    el.children[0].textContent?.trim() === "No Body"
+  );
+}
+
+function tintEmptyResponseCopy(root: ParentNode = document) {
+  const color = sidebarBackground();
+  for (const el of root.querySelectorAll<HTMLElement>("*")) {
+    if (el.shadowRoot) {
+      tintEmptyResponseCopy(el.shadowRoot);
+    }
+    if (!isNoBodyLabel(el)) {
+      continue;
+    }
+    el.style.setProperty("color", color, "important");
+    const child = el.children[0];
+    if (child instanceof HTMLElement) {
+      child.style.setProperty("color", color, "important");
+    }
+  }
+}
+
 /** Hide Scalar search rows typed as "heading" (info intro / section labels). */
 function hideScalarHeadingSearchResults(root: ParentNode = document) {
   for (const option of root.querySelectorAll<HTMLElement>(
@@ -95,16 +130,23 @@ export function DocsApiReferenceView({ spec }: { spec: OpenApiSpec }) {
 
   useEffect(() => {
     hideScalarHeadingSearchResults();
+    tintEmptyResponseCopy();
     const observer = new MutationObserver((mutations) => {
       for (const mutation of mutations) {
         for (const node of mutation.addedNodes) {
           if (node instanceof HTMLElement) {
             hideScalarHeadingSearchResults(node);
+            tintEmptyResponseCopy(node);
           }
         }
       }
+      tintEmptyResponseCopy();
     });
-    observer.observe(document.body, { childList: true, subtree: true });
+    observer.observe(document.body, {
+      childList: true,
+      subtree: true,
+      characterData: true,
+    });
     return () => observer.disconnect();
   }, []);
 
