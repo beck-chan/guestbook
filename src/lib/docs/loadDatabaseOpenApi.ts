@@ -230,3 +230,13 @@ async function fetchOpenApi(isPublic: boolean): Promise<OpenApiSpec> {
 export const loadDatabaseOpenApi = cache(
   async (isPublic = flags.public): Promise<OpenApiSpec> => fetchOpenApi(isPublic),
 );
+
+export async function loadDatabaseOpenApiOrNull() {
+  try {
+    return { spec: await loadDatabaseOpenApi() };
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "OpenAPI fetch failed";
+    console.error("[docs] OpenAPI catalog unavailable:", message);
+    return { spec: null, error: message };
+  }
+}

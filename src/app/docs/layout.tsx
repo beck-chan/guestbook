@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { loadDatabaseOpenApi } from "@/lib/docs/loadDatabaseOpenApi";
+import { loadDatabaseOpenApiOrNull } from "@/lib/docs/loadDatabaseOpenApi";
 import { openApiNav } from "@/lib/docs/typesToOpenApi";
 import { getDocsSearchIndex } from "@/lib/docs/searchIndex";
 import { DocsSearchProvider } from "./_components/DocsSearch";
@@ -19,7 +19,8 @@ export default async function DocsLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const apiNav = openApiNav(await loadDatabaseOpenApi());
+  const catalog = await loadDatabaseOpenApiOrNull();
+  const apiNav = catalog.spec ? openApiNav(catalog.spec) : [];
   const searchDocuments = getDocsSearchIndex();
 
   return (
