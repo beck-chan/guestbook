@@ -4,7 +4,6 @@ import { openApiNav } from "@/lib/docs/typesToOpenApi";
 import { getDocsSearchIndex } from "@/lib/docs/searchIndex";
 import { DocsSearchProvider } from "./_components/DocsSearch";
 import { DocsSidenav } from "./_nav/DocsSidenav";
-import "./docs.css";
 
 export const metadata: Metadata = {
   title: {

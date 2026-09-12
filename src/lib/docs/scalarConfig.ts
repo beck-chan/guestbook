@@ -227,13 +227,23 @@ a[role="option"][data-docs-hide-op-desc="true"] .text-c-2 {
 }
 
 .scalar-modal-search a[role="option"] {
+  display: flex !important;
+  flex-direction: row !important;
+  flex-wrap: nowrap !important;
+  align-items: center !important;
+  gap: 0.55rem !important;
+  padding: 0.55rem 0.65rem !important;
   border-radius: 1px !important;
   color: var(--docs-ink, #8a6a52) !important;
-  font-family: var(--body-font) !important;
+  font-family: var(--poem-font) !important;
+  font-size: 1.05rem !important;
+  font-weight: 400 !important;
+  line-height: 1.35 !important;
   text-decoration: none !important;
 }
 
 .scalar-modal-search a[role="option"]:hover,
+.scalar-modal-search a[role="option"]:focus-visible,
 .scalar-modal-search a[role="option"][aria-selected="true"] {
   background: rgb(47 46 44 / 0.06) !important;
   color: var(--cover-soft, #6f4e37) !important;
@@ -241,8 +251,14 @@ a[role="option"][data-docs-hide-op-desc="true"] .text-c-2 {
 }
 
 /* Result title ~ .docs-search-hit-heading */
+.scalar-modal-search a[role="option"] .flex-1,
 .scalar-modal-search a[role="option"] .flex-1.truncate.font-medium,
-.scalar-modal-search a[role="option"] .font-medium {
+.scalar-modal-search a[role="option"] .font-medium,
+.scalar-modal-search a[role="option"] [class*="truncate"]:not(.text-c-2) {
+  order: 1;
+  flex: 1 1 auto !important;
+  min-width: 0 !important;
+  color: inherit !important;
   font-family: var(--poem-font) !important;
   font-size: 1.05rem !important;
   font-weight: 400 !important;
@@ -254,7 +270,16 @@ a[role="option"][data-docs-hide-op-desc="true"] .text-c-2 {
   color: color-mix(in srgb, #6f4e37 48%, white) !important;
   font-family: var(--body-font) !important;
   font-size: 0.95rem !important;
+  font-weight: 400 !important;
   line-height: 1.25 !important;
+}
+
+/* Type icons on the right, like a trailing glyph. */
+.scalar-modal-search a[role="option"]:has(> .sr-only) > :nth-child(2),
+.scalar-modal-search a[role="option"]:not(:has(> .sr-only)) > :first-child {
+  order: 2;
+  flex: 0 0 auto !important;
+  margin-left: auto !important;
 }
 
 .scalar-app.scalar-api-reference,

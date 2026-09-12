@@ -7,6 +7,7 @@ import { flags } from "@/lib/flags";
 import { GuestbookSettingsProvider } from "@/lib/guestbookSettings";
 import { loadGuestbookSettings } from "@/lib/loadGuestbookSettings";
 import "./globals.css";
+import "./docs/docs.css";
 
 const jost = Jost({
   variable: "--font-jost",

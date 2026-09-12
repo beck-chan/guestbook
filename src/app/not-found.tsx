@@ -1,7 +1,6 @@
 import { DocsNotFound } from "./docs/_components/DocsNotFound";
 import { DocsSearchProvider } from "./docs/_components/DocsSearch";
 import { getDocsSearchIndex } from "@/lib/docs/searchIndex";
-import "./docs/docs.css";
 
 export const metadata = { title: "404!" };
 
