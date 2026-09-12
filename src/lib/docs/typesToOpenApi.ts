@@ -53,6 +53,7 @@ export type OpenApiNavItem = {
 
 export type OpenApiNavSection = {
   title: string;
+  href: string;
   items: OpenApiNavItem[];
 };
 
@@ -71,7 +72,7 @@ export type OpenApiSpec = {
       { default: string; description?: string; enum?: string[] }
     >;
   }[];
-  tags?: { name: string }[];
+  tags?: { name: string; description?: string }[];
   paths?: Record<string, Record<string, OpenApiOperation | undefined> | undefined>;
   definitions?: Record<string, JsonSchema>;
   securityDefinitions?: Record<string, unknown>;
@@ -184,7 +185,11 @@ export function openApiNav(spec: OpenApiSpec): OpenApiNavSection[] {
 
   return [...byTag.entries()]
     .filter(([, items]) => items.length > 0)
-    .map(([title, items]) => ({ title, items }));
+    .map(([title, items]) => ({
+      title,
+      href: `#api/tag/${scalarNavSlug(title)}`,
+      items,
+    }));
 }
 
 type Field = {

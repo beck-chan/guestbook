@@ -77,7 +77,7 @@ export function DocsSidenav({ apiNav }: { apiNav: OpenApiNavSection[] }) {
 
   const brandHref = "/docs";
   const brandLabel = "y2k Guestbook Docs home";
-  const searchLabel = isApi ? "Search API" : "Search Docs";
+  const searchLabel = isApi ? "Search API" : "Search";
   const searchClick = isApi ? openScalarSearch : undefined;
 
   return (

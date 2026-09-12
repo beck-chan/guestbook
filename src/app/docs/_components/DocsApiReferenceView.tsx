@@ -103,13 +103,169 @@ function tintEmptyResponseCopy(root: ParentNode = document) {
 }
 
 /** Hide Scalar search rows typed as "heading" (info intro / section labels). */
-function hideScalarHeadingSearchResults(root: ParentNode = document) {
-  for (const option of root.querySelectorAll<HTMLElement>(
-    'a[role="option"]:not([data-docs-hide-heading="true"])',
-  )) {
-    const label = option.querySelector(".sr-only")?.textContent?.trimStart();
-    if (label?.startsWith("Heading")) {
+function decorateScalarSearchResults(root: ParentNode = document) {
+  const options =
+    root instanceof Element && root.matches('a[role="option"]')
+      ? [root]
+      : [...root.querySelectorAll<HTMLElement>('a[role="option"]')];
+  for (const option of options) {
+    const label = option.querySelector(".sr-only")?.textContent?.trimStart() ?? "";
+    if (label.startsWith("Heading")) {
       option.setAttribute("data-docs-hide-heading", "true");
+      continue;
+    }
+    if (
+      option.getAttribute("data-docs-hide-op-desc") === "true" ||
+      option.getAttribute("data-docs-hide-heading") === "true"
+    ) {
+      continue;
+    }
+    if (/^operation\b/i.test(label)) {
+      option.setAttribute("data-docs-hide-op-desc", "true");
+      continue;
+    }
+    const title = option.querySelector(".font-medium")?.textContent?.trim() ?? "";
+    if (title.startsWith("/")) {
+      option.setAttribute("data-docs-hide-op-desc", "true");
+    }
+  }
+}
+
+function wrapInlineHttpMethods(root: ParentNode = document) {
+  const scopes: Element[] = [];
+  if (root instanceof Element && root.matches(".markdown")) {
+    scopes.push(root);
+  }
+  if ("querySelectorAll" in root) {
+    scopes.push(...root.querySelectorAll(".markdown"));
+  }
+  for (const scope of scopes) {
+    if (scope.closest(".scalar-modal-search, .scalar-card, code, pre")) {
+      continue;
+    }
+    const walker = document.createTreeWalker(scope, NodeFilter.SHOW_TEXT, {
+      acceptNode(node) {
+        const parent = node.parentElement;
+        if (!parent) {
+          return NodeFilter.FILTER_REJECT;
+        }
+        if (
+          parent.closest(
+            "code, pre, .docs-api-nav-method, .docs-api-verb, .docs-api-operation-title",
+          )
+        ) {
+          return NodeFilter.FILTER_REJECT;
+        }
+        if (!/\b(GET|PUT|POST|DELETE|PATCH|HEAD|OPTIONS)\b/.test(node.textContent ?? "")) {
+          return NodeFilter.FILTER_SKIP;
+        }
+        return NodeFilter.FILTER_ACCEPT;
+      },
+    });
+    const nodes: Text[] = [];
+    while (walker.nextNode()) {
+      nodes.push(walker.currentNode as Text);
+    }
+    for (const node of nodes) {
+      const parts = (node.textContent ?? "").split(
+        /\b(GET|PUT|POST|DELETE|PATCH|HEAD|OPTIONS)\b/,
+      );
+      if (parts.length < 2) {
+        continue;
+      }
+      const frag = document.createDocumentFragment();
+      for (const part of parts) {
+        if (OPERATION_VERBS.has(part)) {
+          const span = document.createElement("span");
+          span.className = "docs-api-nav-method docs-api-verb";
+          span.dataset.method = part;
+          span.textContent = part;
+          frag.append(span);
+        } else if (part) {
+          frag.append(part);
+        }
+      }
+      node.replaceWith(frag);
+    }
+  }
+}
+
+const OPERATION_VERBS = new Set([
+  "GET",
+  "PUT",
+  "POST",
+  "DELETE",
+  "PATCH",
+  "HEAD",
+  "OPTIONS",
+]);
+
+function methodFromSectionId(id: string) {
+  const match = id.match(
+    /\/(GET|PUT|POST|DELETE|PATCH|HEAD|OPTIONS)(\/.*)$/i,
+  );
+  return match ? match[1].toUpperCase() : null;
+}
+
+function applyOperationTitleBadge(
+  heading: HTMLElement,
+  method: string,
+  pathLabel: string,
+) {
+  if (heading.dataset.docsMethodBadge === method) {
+    return;
+  }
+  heading.dataset.docsMethodBadge = method;
+  heading.classList.add("docs-api-operation-title");
+  const methodEl = document.createElement("span");
+  methodEl.className = "docs-api-nav-method";
+  methodEl.dataset.method = method;
+  methodEl.textContent = method;
+  const pathEl = document.createElement("span");
+  pathEl.className = "docs-api-operation-path";
+  pathEl.textContent = pathLabel;
+  const anchor =
+    heading.childElementCount === 1 ? heading.querySelector("a") : null;
+  if (anchor) {
+    anchor.replaceChildren(methodEl, pathEl);
+  } else {
+    heading.replaceChildren(methodEl, pathEl);
+  }
+}
+
+/** Keep hashes intact; only restyle the visible Scalar operation title. */
+function badgeScalarOperationTitles(root: ParentNode = document) {
+  const sections = [
+    ...(root instanceof HTMLElement && root.id.startsWith("api/tag/")
+      ? [root]
+      : []),
+    ...root.querySelectorAll<HTMLElement>("[id^='api/tag/']"),
+  ];
+  for (const section of sections) {
+    const method = methodFromSectionId(section.id);
+    if (!method || !OPERATION_VERBS.has(method)) {
+      continue;
+    }
+    for (const heading of section.querySelectorAll<HTMLElement>(
+      "h1, h2, h3, h4, [class*='section-header']",
+    )) {
+      if (heading.closest(".scalar-card, .docs-article, .docs-sidenav")) {
+        continue;
+      }
+      const text = heading.textContent?.trim() ?? "";
+      const withMethod = text.match(
+        /^(GET|PUT|POST|DELETE|PATCH|HEAD|OPTIONS)\s+(\/.+)$/,
+      );
+      const pathOnly = text.startsWith("/");
+      if (!withMethod && !pathOnly) {
+        continue;
+      }
+      applyOperationTitleBadge(
+        heading,
+        method,
+        withMethod ? withMethod[2] : text,
+      );
+      break;
     }
   }
 }
@@ -129,18 +285,25 @@ export function DocsApiReferenceView({ spec }: { spec: OpenApiSpec }) {
   }, []);
 
   useEffect(() => {
-    hideScalarHeadingSearchResults();
+    decorateScalarSearchResults();
+    wrapInlineHttpMethods();
     tintEmptyResponseCopy();
+    badgeScalarOperationTitles();
     const observer = new MutationObserver((mutations) => {
       for (const mutation of mutations) {
         for (const node of mutation.addedNodes) {
           if (node instanceof HTMLElement) {
-            hideScalarHeadingSearchResults(node);
+            decorateScalarSearchResults(node);
+            wrapInlineHttpMethods(node);
             tintEmptyResponseCopy(node);
+            badgeScalarOperationTitles(node);
           }
         }
       }
+      wrapInlineHttpMethods();
+      decorateScalarSearchResults();
       tintEmptyResponseCopy();
+      badgeScalarOperationTitles();
     });
     observer.observe(document.body, {
       childList: true,

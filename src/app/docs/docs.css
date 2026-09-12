@@ -196,7 +196,24 @@ body:has(.docs-shell) {
 }
 
 .docs-index-head .docs-not-found-kicker {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--peony-font);
   font-size: clamp(7.8rem, 13.5vw, 10.8rem);
+}
+
+.docs-not-found-mark {
+  display: inline-flex;
+  align-items: center;
+}
+
+.docs-not-found-heart {
+  width: 0.62em;
+  height: 0.66em;
+  margin: 0 0.04em 0.08em;
+  color: var(--peony);
+  overflow: visible;
 }
 
 .docs-index-head .docs-brand-title {
@@ -572,6 +589,29 @@ body:has(.docs-shell) {
   line-height: 1.2;
 }
 
+.docs-shell a.docs-nav-heading,
+.docs-sidenav a.docs-nav-heading {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.32em;
+  width: fit-content;
+  color: color-mix(in srgb, #6f4e37 48%, white);
+  font-family: var(--peony-font);
+  font-size: 1.35rem;
+  font-weight: 400;
+  letter-spacing: 0.03em;
+  line-height: 1.2;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.docs-shell a.docs-nav-heading:hover,
+.docs-shell a.docs-nav-heading:focus-visible,
+.docs-sidenav a.docs-nav-heading:hover,
+.docs-sidenav a.docs-nav-heading:focus-visible {
+  color: color-mix(in srgb, #6f4e37 48%, white);
+}
+
 .docs-nav-list {
   display: flex;
   flex-direction: column;
@@ -713,7 +753,7 @@ body:has(.docs-shell) {
   align-items: end;
   gap: 0.65rem 0.85rem;
   margin: 0 0 1.35rem;
-  max-width: 58rem;
+  max-width: none;
 }
 
 .docs-api-server label {
@@ -767,8 +807,16 @@ body:has(.docs-shell) {
 
 .docs-main:has(> .docs-api-reference),
 .docs-main:has(.docs-api-explorer) {
+  --docs-api-content-width: var(--scalar-content-max-width, 1540px);
   max-width: none;
   padding: 1.35rem 1.5rem 3rem;
+}
+
+.docs-main:has(.docs-api-explorer) .docs-article,
+.docs-main:has(.docs-api-explorer) .docs-api-explorer {
+  max-width: min(var(--docs-api-content-width), 100%);
+  width: 100%;
+  margin-inline: 0;
 }
 
 .docs-api-nav-link {
@@ -799,6 +847,35 @@ body:has(.docs-shell) {
 
 .docs-api-nav-method[data-method="DELETE"] {
   color: var(--peony);
+}
+
+.docs-api-verb {
+  display: inline;
+  flex: none;
+  font-size: inherit;
+  font-weight: 700;
+  letter-spacing: inherit;
+  line-height: inherit;
+}
+
+.docs-api-operation-title,
+.docs-api-operation-title a {
+  display: flex;
+  align-items: baseline;
+}
+
+.docs-api-operation-title .docs-api-nav-method {
+  flex: 0 0 auto;
+  font-family: inherit;
+  font-size: 1em;
+  font-weight: inherit;
+  letter-spacing: inherit;
+  line-height: inherit;
+  margin-right: 0.55em;
+}
+
+.docs-api-operation-path {
+  min-width: 0;
 }
 
 .docs-api-nav-label {

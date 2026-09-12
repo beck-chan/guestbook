@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { docsUrl } from "@/lib/flags";
 import { DOCS_NAV_SECTIONS, type DocsNavItem } from "../_nav/docs-nav-data";
+import { DocsHeart } from "./DocsHeart";
 import { DocsSearch } from "./DocsSearch";
 
 function navItem(label: string): DocsNavItem | undefined {
@@ -19,7 +20,13 @@ export function DocsNotFound() {
   return (
     <div className="docs-index">
       <header className="docs-index-head">
-        <p className="docs-brand-kicker docs-not-found-kicker">404!</p>
+        <p className="docs-brand-kicker docs-not-found-kicker" aria-label="404!">
+          <span className="docs-not-found-mark" aria-hidden="true">
+            4
+            <DocsHeart filled className="docs-not-found-heart" />
+            4!
+          </span>
+        </p>
       </header>
       <p className="docs-index-subtitle">
         The page you&apos;re looking for cannot be found.

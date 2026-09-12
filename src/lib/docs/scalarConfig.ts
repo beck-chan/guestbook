@@ -18,6 +18,8 @@ export const SCALAR_CUSTOM_CSS = `
   --scalar-button-1: var(--peony, #ff6162);
   --scalar-button-1-hover: var(--peony-hot, #ff8586);
   --scalar-button-1-color: #fff;
+  --scalar-content-max-width: 1540px;
+  --refs-content-max-width: 100%;
 }
 
 .scalar-app,
@@ -146,6 +148,11 @@ a[role="option"][data-docs-hide-heading="true"] {
   display: none !important;
 }
 
+/* Operation rows keep the path; hide callout/markdown description snippets. */
+a[role="option"][data-docs-hide-op-desc="true"] .text-c-2 {
+  display: none !important;
+}
+
 /* Match docs-search-dialog: size, sharp box, fonts. Modal portals to body. */
 .scalar-modal.scalar-modal-search,
 .scalar-modal-search {
@@ -253,6 +260,15 @@ a[role="option"][data-docs-hide-heading="true"] {
 .scalar-app.scalar-api-reference,
 .scalar-app .references-layout {
   --scalar-header-height: 0px;
+}
+
+.scalar-app .section-container {
+  padding-inline: 0 !important;
+}
+
+.scalar-app .section {
+  margin-inline: 0 !important;
+  max-width: 100% !important;
 }
 
 /* Match sidebar method colors on Scalar operation labels. */

@@ -78,6 +78,76 @@ function applyServers(
   spec.servers = servers;
 }
 
+const TAG_DESCRIPTIONS: Record<string, string> = {
+  comments:
+    "The guestbook comment table. Visitors POST. Admins GET / PATCH / DELETE with a JWT.",
+  comments_public:
+    "Read-only view of comments table with emails removed. GET with the anon key is the public feed. Do not write this table.",
+  guestbook_settings:
+    "Single row of guestbook settings (`id = 1`). Anyone may GET. Admins PATCH with a JWT and `id=eq.1`.",
+  guestbook_rate_limits: "Internal IP rate-limit buckets.",
+  admin_allowlist: "Emails allowed to become admins.",
+  poem_hearts:
+    "One row per poem heart. This table is not written to directly, only via the heart RPCs.",
+  poem_heart_counts: "Per-poem like totals.",
+  poem_heart_total: "Sum total of like on all poems.",
+  toggle_poem_heart:
+    "Adds or removes a visitor’s like on a poem and returns the new counts.",
+  poem_heart_state:
+    "Whether that visitor has already liked a poem, plus counts.",
+  is_admin:
+    "Returns whether the current JWT has `app_metadata.role = admin`. Used by RLS — calling it is only a check.",
+  ensure_admin_role:
+    "After Google login if the email is allow-listed, stamps admin role on the user so the JWT/RLS checks succeed.",
+  hook_before_user_created: 'Supabase Auth "before user created" hook.',
+  rls_auto_enable:
+    "Supabase event-trigger helper — turns on RLS automatically when a new table is created.",
+};
+
+function tagDescriptionKey(name: string) {
+  return name.trim().toLowerCase().replace(/^\(rpc\)\s+/, "");
+}
+
+function collectTagNames(spec: OpenApiSpec) {
+  const names: string[] = [];
+  const seen = new Set<string>();
+  const add = (name: string | undefined) => {
+    if (!name || seen.has(name)) {
+      return;
+    }
+    seen.add(name);
+    names.push(name);
+  };
+  for (const tag of spec.tags ?? []) {
+    add(tag.name);
+  }
+  for (const methods of Object.values(spec.paths ?? {})) {
+    if (!methods) {
+      continue;
+    }
+    for (const operation of Object.values(methods)) {
+      if (!operation?.tags) {
+        continue;
+      }
+      for (const name of operation.tags) {
+        add(name);
+      }
+    }
+  }
+  return names;
+}
+
+function applyTagDescriptions(spec: OpenApiSpec) {
+  const previous = new Map(
+    (spec.tags ?? []).map((tag) => [tag.name, tag] as const),
+  );
+  spec.tags = collectTagNames(spec).map((name) => {
+    const current = previous.get(name) ?? { name };
+    const description = TAG_DESCRIPTIONS[tagDescriptionKey(name)];
+    return description ? { ...current, name, description } : { ...current, name };
+  });
+}
+
 /** PostgREST advertises GET / as “OpenAPI description (this document)”. */
 function omitPostgrestMeta(spec: OpenApiSpec) {
   if (spec.paths) {
@@ -208,7 +278,7 @@ function overlayInfo(spec: OpenApiSpec, isPublic: boolean) {
     title: isPublic ? "y2k Guestbook API" : "Beck's y2k Guestbook API",
     version: spec.info?.version ?? "1.0.0",
     description: isPublic
-      ? "### The API below reflects the calls you can make to your connected Supabase database when the guestbook is fully installed.<br></br>\n\n> To hook up the Test Request functionality to your instance of Supabase, you'll need to [enter your Project ID above](#enter-supabase-connection-details). Under **Authentication**, set **Auth Type** `apikey` to your anon key, and for admin calls also set `bearerAuth` to [your admin JWT](#your-supabase-tokens).\n\n<br>Project IDs and keys you enter on this page when testing requests stay in your browser — we do not collect them. Send goes from your browser direct to your Supabase project."
+      ? "### The API below reflects the calls you can make to your connected Supabase database when the guestbook is fully installed.<br></br>\n\n> To hook up the Test Request functionality to your instance of Supabase, you'll need to [enter your Project ID above](#enter-supabase-connection-details). Under **Authentication**, set **Auth Type** `apikey` to your `NEXT_PUBLIC_SUPABASE_ANON_KEY`, and for admin calls also set `bearerAuth` to [your admin JWT](#your-supabase-tokens).\n\n<br>Project IDs and keys you enter on this page when testing requests stay in your browser — we do not collect them. Send goes from your browser direct to your Supabase project."
       : flags.apiTest
         ? "### The API below reflects the functionality of Beck's custom guestbook install.<br></br>\n\n> Testing functionality is turned on, and uses this project's Supabase URL from the environment."
         : "### The API below reflects the functionality of Beck's custom guestbook install.\n\n<br>You cannot enter API keys or project IDs for testing.<br>\n\n> [View Public API Library](https://y2k-guestbook.vercel.app/docs/api)",
@@ -241,6 +311,7 @@ async function fetchOpenApi(isPublic: boolean): Promise<OpenApiSpec> {
     spec as Record<string, unknown>,
   ) as OpenApiSpec;
   omitPostgrestMeta(normalized);
+  applyTagDescriptions(normalized);
   overlayInfo(normalized, isPublic);
   if (isPublic) {
     applyPublicOperationCallouts(normalized);

@@ -14,7 +14,8 @@ function scrollToScalarHash(hash: string) {
 
   const target =
     document.getElementById(id) ??
-    document.querySelector(`[id="${CSS.escape(id)}"]`);
+    document.querySelector(`[id="${CSS.escape(id)}"]`) ??
+    document.querySelector(`[id^="${CSS.escape(id)}/"]`);
   target?.scrollIntoView({ block: "start" });
 }
 
@@ -39,39 +40,55 @@ export function DocsApiNav({
 
   return (
     <nav className="docs-nav docs-api-nav" aria-label="API operations">
-      {sections.map((section) => (
-        <div key={section.title} className="docs-nav-section">
-          <p className="docs-nav-heading">{section.title}</p>
-          {section.items.length ? (
-            <ul className="docs-nav-list">
-              {section.items.map((item) => {
-                const active = hash === item.href;
-                return (
-                  <li key={item.href}>
-                    <a
-                      className={`docs-nav-link docs-api-nav-link${active ? " is-active" : ""}`}
-                      href={item.href}
-                      onClick={(event) => {
-                        event.preventDefault();
-                        scrollToScalarHash(item.href);
-                        onNavigate?.();
-                      }}
-                    >
-                      <span className="docs-api-nav-method" data-method={item.method}>
-                        {item.method}
-                      </span>
-                      <span className="docs-api-nav-label">{item.label}</span>
-                      {active ? (
-                        <DocsHeart filled className="docs-nav-heart" />
-                      ) : null}
-                    </a>
-                  </li>
-                );
-              })}
-            </ul>
-          ) : null}
-        </div>
-      ))}
+      {sections.map((section) => {
+        const sectionActive = hash === section.href;
+        return (
+          <div key={section.title} className="docs-nav-section">
+            <a
+              className={`docs-nav-heading${sectionActive ? " is-active" : ""}`}
+              href={section.href}
+              onClick={(event) => {
+                event.preventDefault();
+                scrollToScalarHash(section.href);
+                onNavigate?.();
+              }}
+            >
+              {section.title}
+              {sectionActive ? (
+                <DocsHeart filled className="docs-nav-heart" />
+              ) : null}
+            </a>
+            {section.items.length ? (
+              <ul className="docs-nav-list">
+                {section.items.map((item) => {
+                  const active = hash === item.href;
+                  return (
+                    <li key={item.href}>
+                      <a
+                        className={`docs-nav-link docs-api-nav-link${active ? " is-active" : ""}`}
+                        href={item.href}
+                        onClick={(event) => {
+                          event.preventDefault();
+                          scrollToScalarHash(item.href);
+                          onNavigate?.();
+                        }}
+                      >
+                        <span className="docs-api-nav-method" data-method={item.method}>
+                          {item.method}
+                        </span>
+                        <span className="docs-api-nav-label">{item.label}</span>
+                        {active ? (
+                          <DocsHeart filled className="docs-nav-heart" />
+                        ) : null}
+                      </a>
+                    </li>
+                  );
+                })}
+              </ul>
+            ) : null}
+          </div>
+        );
+      })}
     </nav>
   );
 }
