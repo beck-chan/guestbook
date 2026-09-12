@@ -30,7 +30,6 @@
     "src/**/*.mts",
     // "src/**/*.mdx", // skip docs in tsserver; Next still compiles MDX. Uncomment when mdx.server.enable is true.
     "scripts/**/*.ts",
-    "features/**/*.ts",
     ".next/types/**/*.ts",
     ".next/dev/types/**/*.ts"
   ],

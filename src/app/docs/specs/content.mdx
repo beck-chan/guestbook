@@ -48,7 +48,7 @@ At the project root lives `cucumber.yaml` which configures Cucumber:
 ```yaml
 default:
   paths:
-    - features/features/no-auth/**/*.feature
+    - features/features/guestbook/**/*.feature
   requireModule:
     - tsx/cjs
   require:
@@ -61,6 +61,8 @@ default:
     snippetInterface: async-await
   worldParameters:
     baseUrl: http://localhost:3000
+    guestbookPath: /
+    adminPath: /admin
 
 admin:
   paths:
@@ -77,6 +79,8 @@ admin:
     snippetInterface: async-await
   worldParameters:
     baseUrl: http://localhost:3000
+    guestbookPath: /
+    adminPath: /admin
 ```
 
 # features/support/world.ts
@@ -84,6 +88,7 @@ admin:
 Cucumber needs a Playwright page on the World object so every step can click the same browser:
 
 ```typescript
+import { config } from "dotenv";
 import {
   IWorldOptions,
   setWorldConstructor,
@@ -91,11 +96,15 @@ import {
 } from "@cucumber/cucumber";
 import type { Browser, BrowserContext, Page } from "playwright";
 
+config({ path: ".env.local" });
+
 export class PlaywrightWorld extends World {
   browser!: Browser;
   context!: BrowserContext;
   page!: Page;
   baseUrl: string;
+  guestbookPath: string;
+  adminPath: string;
   postedName?: string;
 
   constructor(options: IWorldOptions) {
@@ -106,6 +115,25 @@ export class PlaywrightWorld extends World {
       /\/$/,
       "",
     );
+    this.guestbookPath = String(
+      process.env.GUESTBOOK_PATH || options.parameters.guestbookPath || "/",
+    );
+    this.adminPath = String(
+      process.env.GUESTBOOK_ADMIN_PATH ||
+        process.env.NEXT_PUBLIC_GUESTBOOK_ADMIN_PATH ||
+        options.parameters.adminPath ||
+        "/admin",
+    );
+  }
+
+  guestbookUrl() {
+    return this.guestbookPath === "/"
+      ? this.baseUrl
+      : `${this.baseUrl}${this.guestbookPath}`;
+  }
+
+  adminUrl() {
+    return `${this.baseUrl}${this.adminPath}`;
   }
 }
 
@@ -151,7 +179,7 @@ AfterAll(async function () {
 
 ### Step Definitions
 
-Step definitions under `features/step_definitions/` map each `Given` / `When` / `Then` to clicks in the browser. There should be step definitions for the functionality that ships with the guestbook repository, but you will need to [write step definitions](#write-additional-tests) for any additional functionality you opt into or any other features that you add.
+Shipped step definitions live in `features/step_definitions/` with the repository. They map each `Given` / `When` / `Then` to clicks in the browser. You will need to [write step definitions](#write-additional-tests) for any additional functionality you opt into or any other features that you add.
 
 ## Running Cucumber Tests
 
@@ -206,15 +234,15 @@ These tests do not require any admin authentication, so they can be run without 
   # To Run All User Tests
 
   ```bash
-  npx cucumber-js features/features/no-auth
+  npx cucumber-js features/features/guestbook
   ```
 
   # To Run One User Test
 
-  For example, the `guestbook-comments.feature` file:
+  For example, the `guestbook-nav.feature` file:
 
   ```bash
-  npx cucumber-js features/features/no-auth/guestbook-nav.feature
+  npx cucumber-js features/features/guestbook/guestbook-nav.feature
   ```
 
   :::
@@ -270,6 +298,23 @@ To hit a deployed URL instead of localhost:
 ```bash
 BASE_URL=https://<your-deployed-url>.vercel.app npx cucumber-js
 ```
+
+# Nested Board or Admin Path
+
+Keep the Gherkin wording as written (`/admin`). If the public board is not `/` or admin is not `/admin`, set matching env vars so step definitions navigate with `this.guestbookPath` / `this.adminPath`:
+
+```bash
+GUESTBOOK_PATH=/guestbook GUESTBOOK_ADMIN_PATH=/guestbook/admin npx cucumber-js
+```
+
+`GUESTBOOK_ADMIN_PATH` can be omitted when `.env.local` already has `NEXT_PUBLIC_GUESTBOOK_ADMIN_PATH` (see [Install](/docs/install)). Cucumber still matches the shipped step definitions.
+
+:::
+
+::: {.callout}
+# Nested installs (for example `homeHref="/guestbook"`)
+
+Set `GUESTBOOK_PATH=/guestbook` and `GUESTBOOK_ADMIN_PATH=/guestbook/admin` (or rely on `NEXT_PUBLIC_GUESTBOOK_ADMIN_PATH` from `.env.local`) so World URLs match the board. Leave the `.feature` lines unchanged.
 
 :::
 

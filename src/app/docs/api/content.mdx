@@ -71,3 +71,15 @@ Since it's tied to your admin login, it's kind of hacky to snag. For example, in
 ## Enter Supabase Connection Details
 
 :::
+
+
+{/* 
+
+::: {.callout}
+# This call will return an error even with your valid JWT.
+
+Your admin session token is the Postgres `authenticated` role, but permission for this call is granted only to `service_role` — Supabase does not allow you to paste in your `service_role` key into a browser and will only return the error `42501`.
+
+:::
+
+ */}
