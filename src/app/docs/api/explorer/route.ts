@@ -46,7 +46,7 @@ function explorerHtml(specJson: string, configJson: string) {
 }
 
 export async function GET() {
-  const spec = loadDatabaseOpenApi();
+  const spec = await loadDatabaseOpenApi();
   const specJson = JSON.stringify(spec)
     .replace(/</g, "\\u003c")
     .replace(/\u2028/g, "\\u2028")

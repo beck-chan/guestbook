@@ -12,26 +12,37 @@ export type JsonSchema = {
 export type OpenApiSecurityRequirement = Record<string, string[]>;
 
 export type OpenApiOperation = {
-  operationId: string;
-  tags: string[];
-  summary: string;
+  operationId?: string;
+  tags?: string[];
+  summary?: string;
   security?: OpenApiSecurityRequirement[];
   requestBody?: {
-    required: boolean;
-    content: {
-      "application/json": { schema: JsonSchema };
+    required?: boolean;
+    content?: {
+      "application/json"?: { schema?: JsonSchema };
     };
   };
-  responses: Record<
+  responses?: Record<
     string,
     {
-      description: string;
+      description?: string;
       content?: {
-        "application/json": { schema: JsonSchema };
+        "application/json"?: { schema?: JsonSchema };
       };
     }
   >;
 };
+
+const HTTP_METHODS = new Set([
+  "get",
+  "put",
+  "post",
+  "delete",
+  "options",
+  "head",
+  "patch",
+  "trace",
+]);
 
 export type OpenApiNavItem = {
   label: string;
@@ -45,8 +56,12 @@ export type OpenApiNavSection = {
 };
 
 export type OpenApiSpec = {
-  openapi: "3.1.0";
-  info: { title: string; version: string; description: string };
+  openapi?: string;
+  swagger?: string;
+  info?: { title?: string; version?: string; description?: string };
+  host?: string;
+  basePath?: string;
+  schemes?: string[];
   servers?: {
     url: string;
     description?: string;
@@ -55,16 +70,18 @@ export type OpenApiSpec = {
       { default: string; description?: string; enum?: string[] }
     >;
   }[];
-  tags: { name: string }[];
-  paths: Record<string, Record<string, OpenApiOperation>>;
-  components: {
-    schemas: Record<string, JsonSchema>;
-    securitySchemes?: {
-      bearerAuth: {
+  tags?: { name: string }[];
+  paths?: Record<string, Record<string, OpenApiOperation | undefined> | undefined>;
+  definitions?: Record<string, JsonSchema>;
+  securityDefinitions?: Record<string, unknown>;
+  components?: {
+    schemas?: Record<string, JsonSchema>;
+    securitySchemes?: Record<string, unknown> & {
+      bearerAuth?: {
         type: "http";
         scheme: "bearer";
-        bearerFormat: "JWT";
-        description: string;
+        bearerFormat?: string;
+        description?: string;
       };
     };
   };
@@ -82,15 +99,35 @@ const ANON_OPERATIONS = new Set([
 
 const BEARER_SECURITY: OpenApiSecurityRequirement[] = [{ bearerAuth: [] }];
 
-function applyOperationSecurity(paths: OpenApiSpec["paths"]) {
+export function applyOperationSecurity(paths: OpenApiSpec["paths"]) {
+  if (!paths) {
+    return;
+  }
+
   for (const [path, methods] of Object.entries(paths)) {
+    if (!methods) {
+      continue;
+    }
     for (const [method, operationItem] of Object.entries(methods)) {
+      if (!HTTP_METHODS.has(method.toLowerCase()) || !operationItem) {
+        continue;
+      }
       const key = `${method.toUpperCase()} ${path}`;
       if (!ANON_OPERATIONS.has(key)) {
         operationItem.security = BEARER_SECURITY;
       }
     }
   }
+}
+
+function tagForPath(path: string, operation: OpenApiOperation) {
+  if (operation.tags?.[0]) {
+    return operation.tags[0];
+  }
+  if (path.startsWith("/rpc/")) {
+    return "rpc";
+  }
+  return path.split("/").filter(Boolean)[0] ?? "other";
 }
 
 function scalarNavSlug(value: string) {
@@ -106,13 +143,21 @@ function scalarNavSlug(value: string) {
 export function openApiNav(spec: OpenApiSpec): OpenApiNavSection[] {
   const byTag = new Map<string, OpenApiNavItem[]>();
 
-  for (const tag of spec.tags) {
-    byTag.set(tag.name, []);
+  for (const tag of spec.tags ?? []) {
+    if (tag?.name) {
+      byTag.set(tag.name, []);
+    }
   }
 
-  for (const [path, methods] of Object.entries(spec.paths)) {
+  for (const [path, methods] of Object.entries(spec.paths ?? {})) {
+    if (!methods) {
+      continue;
+    }
     for (const [method, operationItem] of Object.entries(methods)) {
-      const tag = operationItem.tags[0] ?? "other";
+      if (!HTTP_METHODS.has(method.toLowerCase()) || !operationItem) {
+        continue;
+      }
+      const tag = tagForPath(path, operationItem);
       const list = byTag.get(tag) ?? [];
       const verb = method.toUpperCase();
       list.push({
@@ -514,7 +559,7 @@ export function typesToOpenApi(
   const functionsBody = extractNamedObject(publicSchema, "Functions") ?? "";
 
   const schemas: Record<string, JsonSchema> = {};
-  const paths: OpenApiSpec["paths"] = {};
+  const paths: NonNullable<OpenApiSpec["paths"]> = {};
   const tags = new Map<string, { name: string }>();
 
   function addTag(name: string) {

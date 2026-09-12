@@ -14,12 +14,12 @@ export const metadata: Metadata = {
   description: "Guestbook documentation.",
 };
 
-export default function DocsLayout({
+export default async function DocsLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const apiNav = openApiNav(loadDatabaseOpenApi());
+  const apiNav = openApiNav(await loadDatabaseOpenApi());
   const searchDocuments = getDocsSearchIndex();
 
   return (

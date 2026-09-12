@@ -96,26 +96,14 @@ A second Vercel project can deploy the same `main` branch with different `FLAG_*
 
 To add another flag, add a key on `flags` in [`src/lib/flags.ts`](src/lib/flags.ts), pass the env name through `env` in [`next.config.ts`](next.config.ts), and branch on it in the UI.
 
+Public docs (`FLAG_PUBLIC=true`) fetch the API catalog from `API_PUBLIC_URL` using `API_SERVICE_ROLE_KEY` (also set `API_ANON_KEY`). Private docs fetch from `NEXT_PUBLIC_SUPABASE_URL` using `SUPABASE_SERVICE_ROLE_KEY`. Visitors still enter their own project ID for Test Request on the public build.
+
 
 # NOTE TO SELF
 
 - how to change hardcoded display name and email limits
 - what RLS did we implement
 - DON'T FORGET TO REWRITE Y2K-GUESTBOOK HISTORY EXPOSED TOKENS IN .ENV
-
-## generating typescript schemas
-
-```bash
-npx supabase login
-npx supabase gen types typescript --project-id yahduqsmchkyapakpvdh --schema public > src/app/docs/api/database.types.ts
-```
-
-If you prefer a token instead of npx supabase login: Dashboard → Account → Access Tokens, then:
-
-```bash
-export SUPABASE_ACCESS_TOKEN=your_token
-npx supabase gen types typescript --project-id yahduqsmchkyapakpvdh --schema public > src/app/docs/api/database.types.ts
-```
 
 ## kill command why
 
@@ -153,14 +141,6 @@ kill all:
 ```bash
 taskkill //F //IM node.exe
 ```
-
-
-# Comment deletion
-
-Seed, then delete that seed (usual Cucumber pattern). The step should post a unique comment (stash this.postedName on World), then delete that row, not “whatever is on screen.” Same idea for edit.
-Seed first — post enough comments in a Given (or use a test DB that already has them), then click next.
-
-8cb6b605f383ceac8a78720684c9af3dcdb0ec99 is last good function commit
 
 try book flipping again, then remove check-book-scroll.mjs
 
