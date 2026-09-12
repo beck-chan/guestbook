@@ -83,6 +83,88 @@ function omitPostgrestMeta(spec: OpenApiSpec) {
   }
 }
 
+const SERVICE_ROLE_ONLY_PATHS = new Set([
+  "/admin_allowlist",
+  "/guestbook_rate_limits",
+  "/poem_hearts",
+  "/rpc/hook_before_user_created",
+  "/rpc/rls_auto_enable",
+]);
+
+const JWT_ERROR_HEADING =
+  "This call will return an error even with your valid JWT.<br><br>";
+
+/** Scalar has no MDX `::: {.callout}`; a blockquote + h3 matches docs callouts. */
+function markdownCallout(title: string, body: string) {
+  return `> ### ${title}\n>\n> ${body}`;
+}
+
+const SERVICE_ROLE_ONLY_CALLOUT = markdownCallout(
+  JWT_ERROR_HEADING,
+  "Your admin session token is the Postgres `authenticated` role, but permission for this call is granted only to `service_role` — Supabase does not allow you to paste in your `service_role` key into a browser and will only return the error `42501`.",
+);
+
+const COMMENTS_PUBLIC_WRITE_CALLOUT = markdownCallout(
+  JWT_ERROR_HEADING,
+  "`comments_public` is a read-only view of the guestbook (emails omitted). The catalog still lists write methods, but they are not granted, so Test Request returns `42501`. Use **GET** on this path with your anon key. To insert, update, or delete a comment, call `/comments` instead.",
+);
+
+const SETTINGS_CREATE_DELETE_CALLOUT = markdownCallout(
+  JWT_ERROR_HEADING,
+  "There is a single settings row. **GET** works with the anon key, and **PATCH** works with your admin JWT. Create and delete are not granted, so those Test Requests return `42501`.",
+);
+
+const OPERATION_METHODS = new Set([
+  "get",
+  "put",
+  "post",
+  "delete",
+  "patch",
+]);
+
+function prependCallout(
+  spec: OpenApiSpec,
+  path: string,
+  methods: string[],
+  callout: string,
+) {
+  const item = spec.paths?.[path];
+  if (!item) {
+    return;
+  }
+  for (const method of methods) {
+    const operation = item[method];
+    if (!operation || !OPERATION_METHODS.has(method)) {
+      continue;
+    }
+    const existing = operation.description?.trim();
+    operation.description = existing ? `${callout}\n\n${existing}` : callout;
+  }
+}
+
+function applyPublicOperationCallouts(spec: OpenApiSpec) {
+  for (const path of SERVICE_ROLE_ONLY_PATHS) {
+    prependCallout(
+      spec,
+      path,
+      [...OPERATION_METHODS],
+      SERVICE_ROLE_ONLY_CALLOUT,
+    );
+  }
+  prependCallout(
+    spec,
+    "/comments_public",
+    ["post", "patch", "delete"],
+    COMMENTS_PUBLIC_WRITE_CALLOUT,
+  );
+  prependCallout(
+    spec,
+    "/guestbook_settings",
+    ["post", "delete"],
+    SETTINGS_CREATE_DELETE_CALLOUT,
+  );
+}
+
 function overlayInfo(spec: OpenApiSpec, isPublic: boolean) {
   spec.info = {
     ...spec.info,
@@ -123,6 +205,9 @@ async function fetchOpenApi(isPublic: boolean): Promise<OpenApiSpec> {
   ) as OpenApiSpec;
   omitPostgrestMeta(normalized);
   overlayInfo(normalized, isPublic);
+  if (isPublic) {
+    applyPublicOperationCallouts(normalized);
+  }
   normalized.components = normalized.components ?? {};
   normalized.components.securitySchemes = {
     ...normalized.components.securitySchemes,

@@ -15,9 +15,32 @@ To use the **Test Request** feature:
 
 :::
 
-## Retrieve Admin Auth Token
+## Your Supabase Tokens
 
-To test the authenticated calls with this page, you'll need retrieve your admin authentication token. 
+::: {.tabset}
+
+# Unauthenticated Calls
+
+For calls that do not require auth, only enter in a Header. The key is `apikey` and the value is your `NEXT_PUBLIC_SUPABASE_ANON_KEY`:
+
+```bash
+apikey: <NEXT_PUBLIC_SUPABASE_ANON_KEY>
+```
+
+# Authenticated Calls 
+
+::: {.callout}
+# Auth Required {.lock} calls need the `apikey` header  plus `bearerAuth` set to your admin session token (`authenticated`). 
+
+The catalog lists every HTTP method PostgREST knows:
+
+- The guestbook only grants the verbs the app uses, so some sends return `42501` even with a valid JWT. 
+- Do not paste `service_role` into the browser — Supabase will reject it, not return a useful response, and advise you to regenerate your `service_role` key.
+- If a call has a note under its heading, that method is not testable through the explorer.
+
+:::
+
+To test the authenticated calls with this page, you'll need retrieve your admin JSON Web Token (JWT). 
 
 Since it's tied to your admin login, it's kind of hacky to snag. For example, in Chrome:
 
@@ -61,11 +84,6 @@ Since it's tied to your admin login, it's kind of hacky to snag. For example, in
 
 9. Click **Send**.
 
-::: {.callout}
-# For calls that do not require auth, only enter in a Header.
-
-`apikey: <NEXT_PUBLIC_SUPABASE_ANON_KEY>`
-
 :::
 
 ## Enter Supabase Connection Details
@@ -73,13 +91,3 @@ Since it's tied to your admin login, it's kind of hacky to snag. For example, in
 :::
 
 
-{/* 
-
-::: {.callout}
-# This call will return an error even with your valid JWT.
-
-Your admin session token is the Postgres `authenticated` role, but permission for this call is granted only to `service_role` — Supabase does not allow you to paste in your `service_role` key into a browser and will only return the error `42501`.
-
-:::
-
- */}

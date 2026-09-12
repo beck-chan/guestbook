@@ -908,13 +908,33 @@ body:has(.docs-shell) {
   overflow: visible;
 }
 
-.docs-article .docs-inline-gear {
+.docs-article .docs-inline-gear,
+.docs-article .docs-inline-lock {
   display: inline-block;
   width: 1em;
   height: 1em;
   margin: 0 0.12em;
   vertical-align: -0.15em;
   color: inherit;
+}
+
+.docs-title .docs-inline-lock,
+.docs-heading .docs-inline-lock,
+.docs-subheading .docs-inline-lock {
+  margin-left: 0.28em;
+}
+
+.docs-tabset-tab .docs-inline-lock,
+.docs-tabset-tab .docs-inline-gear,
+.docs-tabset-tab .docs-inline-heart,
+.docs-tabset-select-label .docs-inline-lock,
+.docs-tabset-select-label .docs-inline-gear,
+.docs-tabset-select-label .docs-inline-heart,
+.docs-tabset-select-option .docs-inline-lock,
+.docs-tabset-select-option .docs-inline-gear,
+.docs-tabset-select-option .docs-inline-heart {
+  margin: 0;
+  flex-shrink: 0;
 }
 
 .docs-article .docs-list-heart {
@@ -1423,6 +1443,9 @@ body:has(.docs-shell) {
 }
 
 .docs-tabset-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.28em;
   margin: 0 0 -1px;
   padding: 0.45rem 0.95rem 0.4rem;
   border: 0;
@@ -1494,6 +1517,9 @@ body:has(.docs-shell) {
 }
 
 .docs-tabset-select-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.28em;
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -1534,6 +1560,9 @@ body:has(.docs-shell) {
 }
 
 .docs-tabset-select-option {
+  display: flex;
+  align-items: center;
+  gap: 0.28em;
   width: 100%;
   margin: 0;
   padding: 0.48rem 0.85rem;

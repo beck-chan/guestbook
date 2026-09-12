@@ -1,9 +1,13 @@
 "use client";
 
 import { Children, isValidElement, useEffect, useId, useRef, useState } from "react";
+import { DocsGear } from "./DocsGear";
+import { DocsHeart } from "./DocsHeart";
+import { DocsLock } from "./DocsLock";
 
 export type DocsTab = {
   label: string;
+  icon?: "lock" | "gear" | "heart";
   content: React.ReactNode;
 };
 
@@ -11,20 +15,45 @@ export function DocsTab({
   children,
 }: {
   label: string;
+  icon?: DocsTab["icon"];
   children: React.ReactNode;
 }) {
   return <>{children}</>;
 }
 
+function TabLabel({ label, icon }: { label: string; icon?: DocsTab["icon"] }) {
+  const glyph =
+    icon === "lock" ? (
+      <DocsLock />
+    ) : icon === "gear" ? (
+      <DocsGear />
+    ) : icon === "heart" ? (
+      <DocsHeart filled className="docs-inline-heart" />
+    ) : null;
+
+  return (
+    <>
+      {label}
+      {glyph}
+    </>
+  );
+}
+
 function tabsFromChildren(children: React.ReactNode): DocsTab[] {
   return Children.toArray(children).flatMap((child) => {
-    if (!isValidElement<{ label?: string; children?: React.ReactNode }>(child)) {
+    if (!isValidElement<{ label?: string; icon?: DocsTab["icon"]; children?: React.ReactNode }>(child)) {
       return [];
     }
     if (typeof child.props.label !== "string") {
       return [];
     }
-    return [{ label: child.props.label, content: child.props.children }];
+    return [
+      {
+        label: child.props.label,
+        icon: child.props.icon,
+        content: child.props.children,
+      },
+    ];
   });
 }
 
@@ -133,7 +162,7 @@ export function DocsTabset({
                 }
               }}
             >
-              {tab.label}
+              <TabLabel label={tab.label} icon={tab.icon} />
             </button>
           );
         })}
@@ -147,7 +176,9 @@ export function DocsTabset({
           aria-haspopup="menu"
           onClick={() => setMenuOpen((open) => !open)}
         >
-          <span className="docs-tabset-select-label">{activeTab?.label}</span>
+          <span className="docs-tabset-select-label">
+            <TabLabel label={activeTab?.label ?? ""} icon={activeTab?.icon} />
+          </span>
           <svg
             className="docs-tabset-select-chevron"
             viewBox="0 0 12 8"
@@ -191,7 +222,7 @@ export function DocsTabset({
                   }
                 }}
               >
-                {tab.label}
+                <TabLabel label={tab.label} icon={tab.icon} />
               </button>
             );
           })}

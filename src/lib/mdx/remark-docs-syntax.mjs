@@ -7,7 +7,55 @@ import { visit } from "unist-util-visit";
 // Payload is percent-encoded alphanumeric so punctuation after `{.blank}`
 // (`.` `)` `,`) is not swallowed as part of the encoded attrs.
 const ATTR_FOLLOW = /^\s*docsattr\.((?:[A-Za-z0-9]|%[0-9A-Fa-f]{2})+)/;
-const HEART_MARK = /docsheart\./g;
+const ICON_MARKS = [
+  {
+    syntax: "{.heart}",
+    token: "docsheart.",
+    toNode: () => ({
+      type: "mdxJsxTextElement",
+      name: "DocsHeart",
+      attributes: [
+        { type: "mdxJsxAttribute", name: "filled" },
+        {
+          type: "mdxJsxAttribute",
+          name: "className",
+          value: "docs-inline-heart",
+        },
+      ],
+      children: [],
+    }),
+  },
+  {
+    syntax: "{.lock}",
+    token: "docslock.",
+    toNode: () => ({
+      type: "mdxJsxTextElement",
+      name: "DocsLock",
+      attributes: [],
+      children: [],
+    }),
+  },
+  {
+    syntax: "{.gear}",
+    token: "docsgear.",
+    toNode: () => ({
+      type: "mdxJsxTextElement",
+      name: "DocsGear",
+      attributes: [],
+      children: [],
+    }),
+  },
+];
+const ICON_TOKEN_RE = new RegExp(
+  ICON_MARKS.map((icon) => icon.token.replace(".", "\\.")).join("|"),
+  "g",
+);
+const ICON_BY_TOKEN = new Map(ICON_MARKS.map((icon) => [icon.token, icon]));
+const TAB_ICONS = {
+  DocsLock: "lock",
+  DocsGear: "gear",
+  DocsHeart: "heart",
+};
 const SMALLCAPS_MARK =
   /docssmallcaps\.((?:[A-Za-z0-9]|%[0-9A-Fa-f]{2})+)/g;
 const LINK_ATTRS = /\]\(([^)]*)\)\{([^}]+)\}/g;
@@ -141,14 +189,23 @@ function rewriteInlineMarkup(text) {
   );
 }
 
-function rewriteHeartMarks(text) {
-  // Strip every `{.heart}` before MDX parse — curly braces are JSX expressions.
-  // Code/inlineCode get `{.heart}` restored after parse; prose becomes DocsHeart.
-  return text.replace(/\{\.heart\}/g, "docsheart.");
+function rewriteIconMarks(text) {
+  // Strip `{.heart}` / `{.lock}` / `{.gear}` before MDX parse — curly braces
+  // are JSX expressions. Code/inlineCode get the shortcode restored after
+  // parse; prose becomes DocsHeart / DocsLock / DocsGear.
+  let next = text;
+  for (const icon of ICON_MARKS) {
+    next = next.replaceAll(icon.syntax, icon.token);
+  }
+  return next;
 }
 
-function restoreHeartSyntax(text) {
-  return text.replace(/docsheart\./g, "{.heart}");
+function restoreIconSyntax(text) {
+  let next = text;
+  for (const icon of ICON_MARKS) {
+    next = next.replaceAll(icon.token, icon.syntax);
+  }
+  return next;
 }
 
 function rewriteOutsideInlineCode(line) {
@@ -172,36 +229,25 @@ function rewriteOutsideInlineCode(line) {
   return chunks.join("");
 }
 
-function toInlineHeart() {
-  return {
-    type: "mdxJsxTextElement",
-    name: "DocsHeart",
-    attributes: [
-      { type: "mdxJsxAttribute", name: "filled" },
-      {
-        type: "mdxJsxAttribute",
-        name: "className",
-        value: "docs-inline-heart",
-      },
-    ],
-    children: [],
-  };
-}
-
-function splitTextWithHearts(value) {
-  if (!value.includes("docsheart.")) {
+function splitTextWithIcons(value) {
+  if (!ICON_MARKS.some((icon) => value.includes(icon.token))) {
     return null;
   }
 
   const parts = [];
   let last = 0;
-  HEART_MARK.lastIndex = 0;
+  ICON_TOKEN_RE.lastIndex = 0;
   let match;
-  while ((match = HEART_MARK.exec(value))) {
+  while ((match = ICON_TOKEN_RE.exec(value))) {
     if (match.index > last) {
-      parts.push({ type: "text", value: value.slice(last, match.index) });
+      const text = value.slice(last, match.index);
+      const atEnd = match.index + match[0].length === value.length;
+      parts.push({
+        type: "text",
+        value: atEnd ? text.replace(/\s+$/, "") : text,
+      });
     }
-    parts.push(toInlineHeart());
+    parts.push(ICON_BY_TOKEN.get(match[0]).toNode());
     last = match.index + match[0].length;
   }
   if (last < value.length) {
@@ -210,14 +256,14 @@ function splitTextWithHearts(value) {
   return parts;
 }
 
-function transformHeartMarks(tree) {
+function transformIconMarks(tree) {
   visit(tree, (node) => {
     if (
       (node.type === "inlineCode" || node.type === "code") &&
       typeof node.value === "string" &&
-      node.value.includes("docsheart.")
+      ICON_MARKS.some((icon) => node.value.includes(icon.token))
     ) {
-      node.value = restoreHeartSyntax(node.value);
+      node.value = restoreIconSyntax(node.value);
       return;
     }
 
@@ -235,7 +281,7 @@ function transformHeartMarks(tree) {
         continue;
       }
 
-      const parts = splitTextWithHearts(child.value);
+      const parts = splitTextWithIcons(child.value);
       if (!parts) {
         next.push(child);
         continue;
@@ -449,7 +495,7 @@ function rewriteDocsMarkdown(value) {
     push(rewritten, isFenceControlLine(rewritten));
   }
 
-  return rewriteHeartMarks(out.join("\n"));
+  return rewriteIconMarks(out.join("\n"));
 }
 
 function unquote(value) {
@@ -1181,6 +1227,19 @@ function isFence(node, pattern) {
   return pattern.test(toPlainText(node).trim());
 }
 
+function headingIcon(node) {
+  for (const child of node.children ?? []) {
+    const icon = TAB_ICONS[child?.name];
+    if (
+      icon &&
+      (child.type === "mdxJsxTextElement" || child.type === "mdxJsxFlowElement")
+    ) {
+      return icon;
+    }
+  }
+  return undefined;
+}
+
 function splitTabs(nodes) {
   const tabs = [];
   let current;
@@ -1190,7 +1249,11 @@ function splitTabs(nodes) {
       if (current) {
         tabs.push(current);
       }
-      current = { label: toPlainText(node).trim() || "Tab", children: [] };
+      current = {
+        label: toPlainText(node).trim() || "Tab",
+        icon: headingIcon(node),
+        children: [],
+      };
       continue;
     }
     if (current) {
@@ -1214,11 +1277,8 @@ function toTabset(tabs) {
       type: "mdxJsxFlowElement",
       name: "DocsTab",
       attributes: [
-        {
-          type: "mdxJsxAttribute",
-          name: "label",
-          value: tab.label,
-        },
+        mdxAttr("label", tab.label),
+        ...(tab.icon ? [mdxAttr("icon", tab.icon)] : []),
       ],
       children: tab.children,
     })),
@@ -1701,7 +1761,7 @@ function applyDocsTransforms(tree, context = {}) {
     embedCount: context.embedCount ?? 0,
   };
   transformLinkAttrs(tree);
-  transformHeartMarks(tree);
+  transformIconMarks(tree);
   transformSmallcapsMarks(tree);
   transformFences(tree, next);
   if (next.root === tree && next.embedImports.length > 0) {

@@ -11,6 +11,7 @@ import { DocsCodeBlock } from "@/app/docs/_components/DocsCodeBlock";
 import { DocsColumn, DocsColumns } from "@/app/docs/_components/DocsColumns";
 import { DocsGear } from "@/app/docs/_components/DocsGear";
 import { DocsHeart } from "@/app/docs/_components/DocsHeart";
+import { DocsLock } from "@/app/docs/_components/DocsLock";
 import { DocsTab, DocsTabset } from "@/app/docs/_components/DocsTabset";
 import { DocsTaskItem } from "@/app/docs/_components/DocsTaskItem";
 
@@ -120,6 +121,7 @@ const components: MDXComponents = {
   },
   DocsHeart,
   DocsGear,
+  DocsLock,
   DocsCallout,
   DocsColumns,
   DocsColumn,

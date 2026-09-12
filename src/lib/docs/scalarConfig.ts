@@ -118,6 +118,19 @@ export const SCALAR_CUSTOM_CSS = `
   line-height: 1.55 !important;
 }
 
+/* Callout # title: body font, same size as docs .docs-callout .docs-title. */
+.scalar-app .markdown blockquote h3,
+.scalar-app .markdown .markdown-alert h3,
+.scalar-app .markdown .admonition h3 {
+  margin: 0 0 0.35rem !important;
+  color: color-mix(in srgb, #6f4e37 48%, white) !important;
+  font-family: var(--futura-font) !important;
+  font-size: clamp(1.08rem, 1.55vw, 1.32rem) !important;
+  font-weight: 400 !important;
+  letter-spacing: 0.02em !important;
+  line-height: 1.2 !important;
+}
+
 /* Keep Scalar SearchButton mounted (cmd+K / docs search) but hide its chrome.
    Modern layout always mounts a sticky .t-doc__header below Tailwind lg
    (1000px), even with showSidebar: false. That bar sits in the page and

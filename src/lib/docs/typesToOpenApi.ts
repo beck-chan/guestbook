@@ -15,6 +15,7 @@ export type OpenApiOperation = {
   operationId?: string;
   tags?: string[];
   summary?: string;
+  description?: string;
   security?: OpenApiSecurityRequirement[];
   requestBody?: {
     required?: boolean;
