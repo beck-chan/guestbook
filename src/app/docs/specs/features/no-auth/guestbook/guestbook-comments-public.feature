@@ -59,7 +59,11 @@ Feature: Guestbook page
             Then their comment is rejected and not submitted
             And the user is shown an error message
 
+    # Default is 10 comments per page; pagination starts when there are 11+ comments
     Rule: Guestbook entries are paginated
+
+        Background:
+            Given there are enough comments to trigger pagination
 
         Scenario: User views the next page of comments
             When a user clicks the `next` button for comment pagination

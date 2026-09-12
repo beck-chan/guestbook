@@ -72,7 +72,11 @@ Feature: Admin Dashboard comment interactions
             And they click the `cancel` button
             Then the comment is not removed
 
+    # Admin always shows 10 comments per page; pagination starts when there are 11+ comments
     Rule: Guestbook comments are paginated
+
+        Background:
+            Given there are enough comments to trigger pagination
 
         Scenario: Admin views the next page of comments
             When an admin clicks the `next` link for comment pagination

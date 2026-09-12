@@ -74,10 +74,12 @@ Feature: Original Poetry landing page guestbook (`/`)
             When they click the `Close guestbook` button
             Then the guestbook closes and reveals the poetry book again
 
+    # Poetry guestbook always shows 4 comments per page
     Rule: Guestbook entries are paginated
 
         Background:
             Given a user is interacting with the guestbook on the poetry landing page
+            And there are enough comments to trigger pagination
 
         Scenario: User views the next page of comments
             When a user clicks the `next` button for comment pagination
