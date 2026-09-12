@@ -1,6 +1,6 @@
 default:
   paths:
-    - features/features/no-auth/**/*.feature
+    - features/features/guestbook/**/*.feature
   requireModule:
     - tsx/cjs
   require:
