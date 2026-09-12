@@ -10,12 +10,12 @@ import { swagger2ToOpenApi31 } from "./swaggerToOpenApi";
 import { envSupabaseProjectRef, publicApiServers } from "./publicApiServers";
 
 const BEARER_SCHEME = {
-  type: "http" as const,
+  type: "http",
   scheme: "bearer",
   bearerFormat: "JWT",
   description:
     "Supabase user JWT for authenticated admin calls. Anon-callable operations do not require this.",
-};
+} as const;
 
 function envOrThrow(name: string, value: string | undefined) {
   const trimmed = value?.trim();
