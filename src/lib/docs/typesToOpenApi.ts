@@ -78,6 +78,12 @@ export type OpenApiSpec = {
   components?: {
     schemas?: Record<string, JsonSchema>;
     securitySchemes?: Record<string, unknown> & {
+      apikey?: {
+        type: "apiKey";
+        in: "header";
+        name: string;
+        description?: string;
+      };
       bearerAuth?: {
         type: "http";
         scheme: "bearer";
@@ -98,7 +104,10 @@ const ANON_OPERATIONS = new Set([
   "POST /rpc/poem_heart_state",
 ]);
 
-const BEARER_SECURITY: OpenApiSecurityRequirement[] = [{ bearerAuth: [] }];
+const API_KEY_SECURITY: OpenApiSecurityRequirement[] = [{ apikey: [] }];
+const API_KEY_AND_BEARER: OpenApiSecurityRequirement[] = [
+  { apikey: [], bearerAuth: [] },
+];
 
 export function applyOperationSecurity(paths: OpenApiSpec["paths"]) {
   if (!paths) {
@@ -114,9 +123,9 @@ export function applyOperationSecurity(paths: OpenApiSpec["paths"]) {
         continue;
       }
       const key = `${method.toUpperCase()} ${path}`;
-      if (!ANON_OPERATIONS.has(key)) {
-        operationItem.security = BEARER_SECURITY;
-      }
+      operationItem.security = ANON_OPERATIONS.has(key)
+        ? API_KEY_SECURITY
+        : API_KEY_AND_BEARER;
     }
   }
 }
@@ -653,6 +662,13 @@ export function typesToOpenApi(
     components: {
       schemas,
       securitySchemes: {
+        apikey: {
+          type: "apiKey",
+          in: "header",
+          name: "apikey",
+          description:
+            "Supabase anon (publishable) key. Required on every Data API call.",
+        },
         bearerAuth: {
           type: "http",
           scheme: "bearer",

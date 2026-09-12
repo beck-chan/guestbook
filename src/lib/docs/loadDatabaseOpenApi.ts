@@ -9,6 +9,14 @@ import {
 import { swagger2ToOpenApi31 } from "./swaggerToOpenApi";
 import { envSupabaseProjectRef, publicApiServers } from "./publicApiServers";
 
+const API_KEY_SCHEME = {
+  type: "apiKey",
+  in: "header",
+  name: "apikey",
+  description:
+    "Supabase anon (publishable) key. Required on every Data API call.",
+} as const;
+
 const BEARER_SCHEME = {
   type: "http",
   scheme: "bearer",
@@ -114,6 +122,26 @@ const SETTINGS_CREATE_DELETE_CALLOUT = markdownCallout(
   "There is a single settings row. **GET** works with the anon key, and **PATCH** works with your admin JWT. Create and delete are not granted, so those Test Requests return `42501`.",
 );
 
+const SETTINGS_PATCH_CALLOUT = markdownCallout(
+  "This call needs a filter, even with a valid JWT.",
+  "PostgREST will not run an unfiltered `UPDATE` (`21000`). Settings is a single row with `id = 1`. In Test Request **Query**, set **Key** `id` and **Value** `eq.1` (not `1`). Keep `bearerAuth` plus the `apikey` header, and put the fields to change in the JSON body.",
+);
+
+const COMMENTS_POST_CALLOUT = markdownCallout(
+  "Delete the generated fields from Scalar’s example body.",
+  "Test Request pre-fills `id`, `created_at`, and `updated_at` with SQL like `gen_random_uuid()` and `now()`. Those are strings, not functions, so Postgres returns `22P02`. Remove those keys (and `is_read`). Send only `display_name`, `body`, and `email` if you capture email.",
+);
+
+const COMMENTS_DELETE_CALLOUT = markdownCallout(
+  "This call needs a filter, even with a valid JWT.",
+  "PostgREST will not run an unfiltered `DELETE` (`21000`). In Test Request **Query**, set **Key** `id` and **Value** `eq.<comment-uuid>` (not the uuid alone). Copy the id from **GET /comments**. Keep `bearerAuth` plus the `apikey` header.",
+);
+
+const COMMENTS_PATCH_CALLOUT = markdownCallout(
+  "This call needs a filter, even with a valid JWT.",
+  "PostgREST will not run an unfiltered `UPDATE` (`21000`). In Test Request **Query**, set **Key** `id` and **Value** `eq.<comment-uuid>` (not the uuid alone). Copy the id from **GET /comments**. Keep `bearerAuth` plus the `apikey` header, and put the fields to change in the JSON body.",
+);
+
 const OPERATION_METHODS = new Set([
   "get",
   "put",
@@ -163,6 +191,15 @@ function applyPublicOperationCallouts(spec: OpenApiSpec) {
     ["post", "delete"],
     SETTINGS_CREATE_DELETE_CALLOUT,
   );
+  prependCallout(
+    spec,
+    "/guestbook_settings",
+    ["patch"],
+    SETTINGS_PATCH_CALLOUT,
+  );
+  prependCallout(spec, "/comments", ["post"], COMMENTS_POST_CALLOUT);
+  prependCallout(spec, "/comments", ["delete"], COMMENTS_DELETE_CALLOUT);
+  prependCallout(spec, "/comments", ["patch"], COMMENTS_PATCH_CALLOUT);
 }
 
 function overlayInfo(spec: OpenApiSpec, isPublic: boolean) {
@@ -171,7 +208,7 @@ function overlayInfo(spec: OpenApiSpec, isPublic: boolean) {
     title: isPublic ? "y2k Guestbook API" : "Beck's y2k Guestbook API",
     version: spec.info?.version ?? "1.0.0",
     description: isPublic
-      ? "### The API below reflects the calls you can make to your connected Supabase database when the guestbook is fully installed.<br></br>\n\n> To hook up the Test Request functionality to your instance of Supabase, you'll need to [enter your Project ID above](#enter-supabase-connection-details) and [your admin auth token](#retrieve-admin-auth-token) as your JWT (**Auth Type**: `bearerAuth`, Bearer Token) under **Authentication**.\n\n<br>Project IDs and keys you enter on this page when testing requests stay in your browser — we do not collect them. Send goes from your browser direct to your Supabase project."
+      ? "### The API below reflects the calls you can make to your connected Supabase database when the guestbook is fully installed.<br></br>\n\n> To hook up the Test Request functionality to your instance of Supabase, you'll need to [enter your Project ID above](#enter-supabase-connection-details). Under **Authentication**, set **Auth Type** `apikey` to your anon key, and for admin calls also set `bearerAuth` to [your admin JWT](#your-supabase-tokens).\n\n<br>Project IDs and keys you enter on this page when testing requests stay in your browser — we do not collect them. Send goes from your browser direct to your Supabase project."
       : flags.apiTest
         ? "### The API below reflects the functionality of Beck's custom guestbook install.<br></br>\n\n> Testing functionality is turned on, and uses this project's Supabase URL from the environment."
         : "### The API below reflects the functionality of Beck's custom guestbook install.\n\n<br>You cannot enter API keys or project IDs for testing.<br>\n\n> [View Public API Library](https://y2k-guestbook.vercel.app/docs/api)",
@@ -211,6 +248,7 @@ async function fetchOpenApi(isPublic: boolean): Promise<OpenApiSpec> {
   normalized.components = normalized.components ?? {};
   normalized.components.securitySchemes = {
     ...normalized.components.securitySchemes,
+    apikey: API_KEY_SCHEME,
     bearerAuth: BEARER_SCHEME,
   };
   delete normalized.securityDefinitions;
