@@ -1,6 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Suspense } from "react";
-import { Jost, Kaisei_HarunoUmi, Libre_Baskerville } from "next/font/google";
+import { Jost, Libre_Baskerville } from "next/font/google";
 import { AdminAuthErrorOverlay } from "@/components/_shared/AdminAuthErrorOverlay";
 import { CustomTheme } from "@/components/_shared/CustomTheme";
 import { flags } from "@/lib/flags";
@@ -21,15 +21,6 @@ const baskerville = Libre_Baskerville({
   style: ["normal", "italic"],
 });
 
-const kaisei = Kaisei_HarunoUmi({
-  variable: "--font-kaisei",
-  subsets: ["latin"],
-  weight: "400",
-  display: "swap",
-  preload: false,
-  adjustFontFallback: false,
-});
-
 export const metadata: Metadata = {
   title: "Poetry by Beck",
   description: "A volume of original poetry.",
@@ -40,7 +31,7 @@ export const viewport: Viewport = {
 };
 
 export default async function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  const fontClassName = `${jost.variable} ${baskerville.variable} ${kaisei.variable} h-full antialiased`;
+  const fontClassName = `${jost.variable} ${baskerville.variable} h-full antialiased`;
 
   if (flags.docsOnly) {
     return (
