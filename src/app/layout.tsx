@@ -5,7 +5,6 @@ import { AdminAuthErrorOverlay } from "@/components/_shared/AdminAuthErrorOverla
 import { flags } from "@/lib/flags";
 import { GuestbookSettingsProvider } from "@/lib/guestbookSettings";
 import "./globals.css";
-import "./docs/docs.css";
 
 const jost = Jost({
   variable: "--font-jost",
@@ -29,6 +28,27 @@ export const viewport: Viewport = {
   colorScheme: "light",
 };
 
+function DisplayFontPreloads() {
+  return (
+    <>
+      <link
+        rel="preload"
+        href="/fonts/Peony-Regular.otf"
+        as="font"
+        type="font/otf"
+        crossOrigin="anonymous"
+      />
+      <link
+        rel="preload"
+        href="/fonts/HelloHoney.otf"
+        as="font"
+        type="font/otf"
+        crossOrigin="anonymous"
+      />
+    </>
+  );
+}
+
 export default async function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   const fontClassName = `${jost.variable} ${baskerville.variable} h-full antialiased`;
 
@@ -36,13 +56,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
     return (
       <html lang="en" className={fontClassName}>
         <head>
-          <link
-            rel="preload"
-            href="/fonts/Peony-Regular.otf"
-            as="font"
-            type="font/otf"
-            crossOrigin="anonymous"
-          />
+          <DisplayFontPreloads />
         </head>
         <body className="min-h-full">{children}</body>
       </html>
@@ -52,13 +66,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
   return (
     <html lang="en" className={fontClassName}>
       <head>
-        <link
-          rel="preload"
-          href="/fonts/Peony-Regular.otf"
-          as="font"
-          type="font/otf"
-          crossOrigin="anonymous"
-        />
+        <DisplayFontPreloads />
       </head>
       <body className="min-h-full">
         <GuestbookSettingsProvider>

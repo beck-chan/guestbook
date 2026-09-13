@@ -16,8 +16,11 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import type { DocsSearchDoc } from "@/lib/docs/searchTypes";
 
+type SearchStatus = "idle" | "loading" | "ready" | "error";
+
 type DocsSearchContextValue = {
   documents: DocsSearchDoc[];
+  status: SearchStatus;
   open: boolean;
   openSearch: () => void;
   closeSearch: () => void;
@@ -25,6 +28,7 @@ type DocsSearchContextValue = {
 
 const DocsSearchContext = createContext<DocsSearchContextValue>({
   documents: [],
+  status: "idle",
   open: false,
   openSearch: () => {},
   closeSearch: () => {},
@@ -132,10 +136,12 @@ type Hit = DocsSearchDoc & { score?: number };
 
 function DocsSearchOverlay({
   documents,
+  status,
   open,
   onClose,
 }: {
   documents: DocsSearchDoc[];
+  status: SearchStatus;
   open: boolean;
   onClose: () => void;
 }) {
@@ -269,7 +275,11 @@ function DocsSearchOverlay({
           />
           <kbd className="docs-search-esc">esc</kbd>
         </div>
-        {query.trim() ? (
+        {status === "loading" ? (
+          <p className="docs-search-hint">Indexing…</p>
+        ) : status === "error" ? (
+          <p className="docs-search-empty">Search index could not be loaded</p>
+        ) : query.trim() ? (
           <ul id={listId} className="docs-search-results" role="listbox">
             {hits.length === 0 ? (
               <li className="docs-search-empty">No Results Found</li>
@@ -304,17 +314,50 @@ function DocsSearchOverlay({
   );
 }
 
-export function DocsSearchProvider({
-  documents,
-  children,
-}: {
-  documents: DocsSearchDoc[];
-  children: ReactNode;
-}) {
+export function DocsSearchProvider({ children }: { children: ReactNode }) {
   const pathname = usePathname() ?? "";
   const [open, setOpen] = useState(false);
-  const openSearch = () => setOpen(true);
+  const [documents, setDocuments] = useState<DocsSearchDoc[]>([]);
+  const [status, setStatus] = useState<SearchStatus>("idle");
+  const statusRef = useRef<SearchStatus>("idle");
+  statusRef.current = status;
+
   const closeSearch = () => setOpen(false);
+
+  function ensureIndex() {
+    if (isApiPath(pathname) || isApiPath(window.location.pathname)) {
+      return;
+    }
+    if (statusRef.current === "loading" || statusRef.current === "ready") {
+      return;
+    }
+    statusRef.current = "loading";
+    setStatus("loading");
+    void fetch("/docs/search-index")
+      .then(async (response) => {
+        if (!response.ok) {
+          throw new Error(`Search index failed: ${response.status}`);
+        }
+        return (await response.json()) as DocsSearchDoc[];
+      })
+      .then((docs) => {
+        statusRef.current = "ready";
+        setDocuments(Array.isArray(docs) ? docs : []);
+        setStatus("ready");
+      })
+      .catch(() => {
+        statusRef.current = "error";
+        setStatus("error");
+      });
+  }
+
+  const openSearch = () => {
+    if (isApiPath(pathname) || isApiPath(window.location.pathname)) {
+      return;
+    }
+    ensureIndex();
+    setOpen(true);
+  };
 
   useEffect(() => {
     setOpen(false);
@@ -327,20 +370,22 @@ export function DocsSearchProvider({
       if (!isChord) return;
       if (isApiPath(window.location.pathname)) return;
       event.preventDefault();
+      ensureIndex();
       setOpen(true);
     }
 
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, []);
+  }, [pathname]);
 
   return (
     <DocsSearchContext.Provider
-      value={{ documents, open, openSearch, closeSearch }}
+      value={{ documents, status, open, openSearch, closeSearch }}
     >
       {children}
       <DocsSearchOverlay
         documents={documents}
+        status={status}
         open={open}
         onClose={closeSearch}
       />

@@ -5,8 +5,8 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { DocsSearch, openScalarSearch } from "../_components/DocsSearch";
 import { DocsApiNav } from "./DocsApiNav";
+import { DocsApiNavFallback, useDocsApiNav } from "./DocsApiNavContext";
 import { DocsNav } from "./DocsNav";
-import type { OpenApiNavSection } from "@/lib/docs/typesToOpenApi";
 
 const MOBILE_QUERY = "(max-width: 720px)";
 
@@ -26,9 +26,10 @@ function BrandTitle() {
   );
 }
 
-export function DocsSidenav({ apiNav }: { apiNav: OpenApiNavSection[] }) {
+export function DocsSidenav() {
   const pathname = usePathname();
   const isApi = isApiPath(pathname);
+  const { sections: apiNav, ready: apiNavReady } = useDocsApiNav();
   const panelId = useId();
   const [open, setOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
@@ -139,10 +140,14 @@ export function DocsSidenav({ apiNav }: { apiNav: OpenApiNavSection[] }) {
             onNavigate={() => setOpen(false)}
           />
           {isApi ? (
-            <DocsApiNav
-              sections={apiNav}
-              onNavigate={() => setOpen(false)}
-            />
+            apiNavReady ? (
+              <DocsApiNav
+                sections={apiNav}
+                onNavigate={() => setOpen(false)}
+              />
+            ) : (
+              <DocsApiNavFallback />
+            )
           ) : (
             <DocsNav onNavigate={() => setOpen(false)} />
           )}

@@ -116,7 +116,7 @@ The Test Request feature available on the public build allows visitors to enter 
 
 [`loadDatabaseOpenApi.ts`](https://github.com/beck-chan/guestbook/blob/main/src/lib/docs/loadDatabaseOpenApi.ts){.blank}:
 
-- Caches the fetch (React `cache()` plus a 60-second revalidate) so the documentation sidebar and the Scalar API explorer share one request. 
+- Caches the fetch (React `cache()` plus a 60-second revalidate) so the API Library sidebar and the Scalar API explorer share one request on `/docs/api`. Guides do not fetch OpenAPI. 
 - After fetch it stamps our `info` title/description, `apikey` / `bearerAuth` security, and `servers` overlay.
 - Overlays required PostgREST row filters on {.patch} / {.delete} (replacing the matching `$ref`) so **Test Request** does not list the same query parameter twice.
 - [`typesToOpenApi.ts`](https://github.com/beck-chan/guestbook/blob/main/src/lib/docs/typesToOpenApi.ts){.blank} still builds sidebar links from Scalar inline call anchors (`openApiNav`) and marks non-anon operations as requiring a JWT.
@@ -125,8 +125,8 @@ The Test Request feature available on the public build allows visitors to enter 
 
 [`layout.tsx`](https://github.com/beck-chan/guestbook/blob/main/src/app/docs/layout.tsx){.blank}:
 
-- Builds those sidebar links from the fetched spec. 
-- On `/docs/api`, [`DocsSidenav`](https://github.com/beck-chan/guestbook/blob/main/src/app/docs/_nav/DocsSidenav.tsx){.blank} swaps the usual docs nav for [`DocsApiNav`](https://github.com/beck-chan/guestbook/blob/main/src/app/docs/_nav/DocsApiNav.tsx){.blank}, linking instead to the inline method and operation anchors within the Scalar API explorer.
+- Shared docs chrome only (sidenav + search provider). It does not fetch OpenAPI.
+- On `/docs/api`, [`DocsApiReference`](https://github.com/beck-chan/guestbook/blob/main/src/app/docs/_components/DocsApiReference.tsx){.blank} hydrates [`DocsApiNav`](https://github.com/beck-chan/guestbook/blob/main/src/app/docs/_nav/DocsApiNav.tsx){.blank} from the live spec. Until that lands, the sidebar shows a same-height **Loading API catalog** placeholder. [`DocsSidenav`](https://github.com/beck-chan/guestbook/blob/main/src/app/docs/_nav/DocsSidenav.tsx){.blank} still swaps the usual docs nav for those API anchors.
 
 :::
 
@@ -140,7 +140,7 @@ The Test Request feature available on the public build allows visitors to enter 
 [`DocsApiReferenceView`](https://github.com/beck-chan/guestbook/blob/main/src/app/docs/_components/DocsApiReferenceView.tsx){.blank}:
 
 - Loads the [`@scalar/api-reference`](https://www.npmjs.com/package/@scalar/api-reference){.blank} browser bundle from [`/docs/api/scalar-standalone`](https://github.com/beck-chan/guestbook/blob/main/src/app/docs/api/scalar-standalone/route.ts){.blank} and renders it after the content in `src/app/docs/api/content.mdx`, which also displays differently depending on the build.
-- [`page.tsx`](https://github.com/beck-chan/guestbook/blob/main/src/app/docs/api/page.tsx){.blank} preloads that script so the download overlaps the article render. On the public build, the view waits until the stored project ref is read from `sessionStorage` before mounting Scalar.
+- [`page.tsx`](https://github.com/beck-chan/guestbook/blob/main/src/app/docs/api/page.tsx){.blank} preloads that script so the download overlaps the article render, and streams a **Loading API reference** skeleton behind `Suspense` until the spec is ready. On the public build, the view waits until the stored project ref is read from `sessionStorage` before mounting Scalar.
 - Enables the **Enter Your Supabase Project ID** field above the explorer, pointing test requests at the visitor's entered project on the public build.
 
 # `scalarConfig.ts`
@@ -164,7 +164,7 @@ The Test Request feature available on the public build allows visitors to enter 
 - Humans search that copy with the User Guide Search or API Library Search. 
 - Large language models (LLMs) find it through [`/llms.txt`](/llms.txt){.blank} and `/docs/<slug>.md`. 
 
-Nothing is hand-maintained for search or LLM catalogs. On each deploy (and when the docs layout loads the index), compose re-reads `.mdx` pages for that build’s flags.
+Nothing is hand-maintained for search or LLM catalogs. On each deploy, compose re-reads `.mdx` pages for that build’s flags when `/docs/search-index`, `/llms.txt`, or `/docs/<slug>.md` are built — not on every documentation page render.
 :::
 
 ::: {.tabset}
@@ -173,7 +173,7 @@ Nothing is hand-maintained for search or LLM catalogs. On each deploy (and when 
 
 For every documentation page except API Library (`/docs/api`), **Search Docs** opens the shared overlay powered by [`DocsSearch.tsx`](https://github.com/beck-chan/guestbook/blob/main/src/app/docs/_components/DocsSearch.tsx){.blank}:
 
-- [`src/app/docs/layout.tsx`](https://github.com/beck-chan/guestbook/blob/main/src/app/docs/layout.tsx){.blank} loads [`getDocsSearchIndex()`](https://github.com/beck-chan/guestbook/blob/main/src/lib/docs/compose.ts){.blank} once and passes the flat document list into `DocsSearchProvider`. 
+- [`DocsSearchProvider`](https://github.com/beck-chan/guestbook/blob/main/src/app/docs/_components/DocsSearch.tsx){.blank} loads [`/docs/search-index`](https://github.com/beck-chan/guestbook/blob/main/src/app/docs/search-index/route.ts){.blank} the first time Search Docs or the landing search bar opens (not on `/docs/api`, which uses Scalar search). Until the index arrives the overlay shows **Indexing…**. 
 - [`searchTerms.ts`](https://github.com/beck-chan/guestbook/blob/main/src/lib/docs/searchTerms.ts){.blank} expands light English inflections at index and query time (`managing` ↔ `manage`), with prefix match and a bit of fuzzy room on longer terms.
 
 **What Gets Indexed**

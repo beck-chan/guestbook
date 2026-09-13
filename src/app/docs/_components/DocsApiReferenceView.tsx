@@ -312,6 +312,7 @@ function badgeScalarOperationTitles(root: ParentNode = document) {
 
 export function DocsApiReferenceView({ spec }: { spec: OpenApiSpec }) {
   const hostRef = useRef<HTMLDivElement>(null);
+  const [mounted, setMounted] = useState(false);
   const [draftRef, setDraftRef] = useState(PROJECT_REF_PLACEHOLDER);
   const [appliedRef, setAppliedRef] = useState(DEFAULT_PROJECT_REF);
   const [serverReady, setServerReady] = useState(!flags.public);
@@ -375,6 +376,7 @@ export function DocsApiReferenceView({ spec }: { spec: OpenApiSpec }) {
 
     let cancelled = false;
     let instance: ScalarInstance | void;
+    setMounted(false);
 
     loadStandalone()
       .then(() => {
@@ -394,6 +396,9 @@ export function DocsApiReferenceView({ spec }: { spec: OpenApiSpec }) {
               ? { servers: publicApiServers(envSupabaseProjectRef()) }
               : {}),
         });
+        if (!cancelled) {
+          setMounted(true);
+        }
       })
       .catch((error: unknown) => {
         if (!cancelled) {
@@ -403,6 +408,7 @@ export function DocsApiReferenceView({ spec }: { spec: OpenApiSpec }) {
 
     return () => {
       cancelled = true;
+      setMounted(false);
       instance?.destroy?.();
       host.replaceChildren();
     };
@@ -446,7 +452,14 @@ export function DocsApiReferenceView({ spec }: { spec: OpenApiSpec }) {
           </p>
         </form>
       ) : null}
-      <div ref={hostRef} className="docs-api-reference" />
+      {!mounted ? (
+        <p className="docs-api-pending">Loading API reference…</p>
+      ) : null}
+      <div
+        ref={hostRef}
+        className={`docs-api-reference${mounted ? "" : " is-pending"}`}
+        aria-busy={mounted ? undefined : true}
+      />
     </div>
   );
 }

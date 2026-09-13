@@ -771,6 +771,18 @@ a[role="option"][data-docs-hide-heading="true"],
   font-family: var(--futura-font);
 }
 
+.docs-api-nav.is-pending {
+  min-height: min(32rem, 70vh);
+}
+
+.docs-api-nav-pending,
+.docs-api-pending {
+  margin: 0.75rem 0 0;
+  color: var(--ink-muted, #6a6864);
+  font-family: var(--body-font);
+  font-size: 0.95rem;
+}
+
 /* Scalar's sticky mobile search header; keep the trigger in the DOM via customCss. */
 .docs-api-reference .t-doc__header {
   display: none !important;

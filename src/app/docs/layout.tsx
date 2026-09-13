@@ -1,9 +1,8 @@
 import type { Metadata } from "next";
-import { loadDatabaseOpenApiOrNull } from "@/lib/docs/loadDatabaseOpenApi";
-import { openApiNav } from "@/lib/docs/typesToOpenApi";
-import { getDocsSearchIndex } from "@/lib/docs/searchIndex";
 import { DocsSearchProvider } from "./_components/DocsSearch";
+import { DocsApiNavProvider } from "./_nav/DocsApiNavContext";
 import { DocsSidenav } from "./_nav/DocsSidenav";
+import "./docs.css";
 
 export const metadata: Metadata = {
   title: {
@@ -13,21 +12,19 @@ export const metadata: Metadata = {
   description: "Guestbook documentation.",
 };
 
-export default async function DocsLayout({
+export default function DocsLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const catalog = await loadDatabaseOpenApiOrNull();
-  const apiNav = catalog.spec ? openApiNav(catalog.spec) : [];
-  const searchDocuments = getDocsSearchIndex();
-
   return (
-    <DocsSearchProvider documents={searchDocuments}>
-      <div className="docs-shell">
-        <DocsSidenav apiNav={apiNav} />
-        <main className="docs-main">{children}</main>
-      </div>
-    </DocsSearchProvider>
+    <DocsApiNavProvider>
+      <DocsSearchProvider>
+        <div className="docs-shell">
+          <DocsSidenav />
+          <main className="docs-main">{children}</main>
+        </div>
+      </DocsSearchProvider>
+    </DocsApiNavProvider>
   );
 }
