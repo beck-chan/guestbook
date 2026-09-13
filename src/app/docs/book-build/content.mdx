@@ -40,25 +40,18 @@ Poems are Markdown files that live under [`poetry/`](https://github.com/beck-cha
 
 - [`loadPoems()`](https://github.com/beck-chan/guestbook/blob/main/src/lib/loadPoems.ts){.blank} reads that folder at request time, splits on `##` headings, and turns `*emphasis*` / `**strong**` into HTML. Each file becomes a `Poem` (`id` from the filename, `sections` for every heading).
 - [`pickPoemIndex()`](https://github.com/beck-chan/guestbook/blob/main/src/lib/poems.ts){.blank} picks a random poem for the first paint, and a different one whenever the reader turns the page, ensuring no repeats in a row. 
-- On each poem, a heart button calls [`togglePoemHeart`](https://github.com/beck-chan/guestbook/blob/main/src/lib/actions/hearts.ts){.blank}. Likes are keyed by an httpOnly `poem_visitor_key` cookie and stored in `poem_hearts`. Counts come from the `poem_heart_counts` / `poem_heart_total` views and the `poem_heart_state` / `toggle_poem_heart` RPCs. 
+- On each poem, a heart button calls [`togglePoemHeart`](https://github.com/beck-chan/guestbook/blob/main/src/lib/actions/hearts.ts){.blank} allowing visitors to like poems.
 
 
 ## Guestbook Functionality
 
-
 ### Comments
 
-The public board is one client component, [`CommentBubbles`](https://github.com/beck-chan/guestbook/blob/main/src/components/_shared/CommentBubbles.tsx){.blank}, reused on the desk, `/guestbook`, and the mobile overlay. It is a compose form (display name, optional email, body) plus a paginated thread of bubbles. Email is shown only when `guestbook_settings.capture_email` is on; the public list never includes it.
+[`CommentBubbles`](https://github.com/beck-chan/guestbook/blob/main/src/components/_shared/CommentBubbles.tsx){.blank} powers both the desktop inline guestbook and the mobile commenting overlay. Email field is shown only when `guestbook_settings.capture_email` is on — the public list never includes it.
 
-Settings for title, fonts, placeholder, marquee, page size, comment length, rate limits, profanity allow-list, and custom CSS are loaded once in [`src/app/layout.tsx`](https://github.com/beck-chan/guestbook/blob/main/src/app/layout.tsx){.blank} (`loadGuestbookSettings` → `GuestbookSettingsProvider`). [`CustomTheme`](https://github.com/beck-chan/guestbook/blob/main/src/components/_shared/CustomTheme.tsx){.blank} injects font tokens and sanitized custom CSS onto `.admin-page` (the guestbook and admin shells).
+Publicly displayed comments returns the `comments_public` table (`id`, `display_name`, `body`, timestamps — no email) via [`getPublicCommentsPage`](https://github.com/beck-chan/guestbook/blob/main/src/app/actions/comments.ts){.blank} by newest first. 
 
-::: {.tabset}
-
-# Public comments
-
-Reads go through the `comments_public` view (`id`, `display_name`, `body`, timestamps — no email). [`getPublicCommentsPage`](https://github.com/beck-chan/guestbook/blob/main/src/app/actions/comments.ts){.blank} pages that view newest-first. The desk passes `limit={4}`; `/guestbook` uses `guestbook_settings.page_size` via [`GuestbookBoard`](https://github.com/beck-chan/guestbook/blob/main/src/components/_guestbook/GuestbookBoard.tsx){.blank}.
-
-Submit is the `submitComment` server action:
+When users click **Submit** is the `submitComment` server action:
 
 1. Trim name / body / email; require name and body.
 2. Enforce [`commentLengthError`](https://github.com/beck-chan/guestbook/blob/main/src/lib/commentLimits.ts){.blank}: name cap `128`, email cap `254`, and `comment_length` from settings for the body.
@@ -68,7 +61,8 @@ Submit is the `submitComment` server action:
 
 The compose form also checks length on the client so obvious over-limit posts never hit the action.
 
-# Admin dashboard
+
+### Admin Dashboard
 
 [`src/proxy.ts`](https://github.com/beck-chan/guestbook/blob/main/src/proxy.ts){.blank} (Next’s request proxy) refreshes the Supabase session on every matched path. Only `/admin` (or `NEXT_PUBLIC_GUESTBOOK_ADMIN_PATH`) is gated:
 
@@ -85,10 +79,6 @@ The dashboard page loads every row from `comments` (including email and `is_read
 - [`AdminFilters`](https://github.com/beck-chan/guestbook/blob/main/src/components/_admin/AdminFilters.tsx){.blank} — search, unread/read, has-email, date range, newest/oldest, unread/total counts, and total poem hearts.
 - [`AdminCommentThread`](https://github.com/beck-chan/guestbook/blob/main/src/components/_admin/AdminCommentThread.tsx){.blank} — mark read (one or all), edit name/email/body (`updateComment`), delete (`deleteComment`). Edit still enforces comment length.
 - [`AdminSettings`](https://github.com/beck-chan/guestbook/blob/main/src/components/_admin/AdminSettings.tsx){.blank} — writes `guestbook_settings` id `1` through [`saveGuestbookSettings`](https://github.com/beck-chan/guestbook/blob/main/src/app/actions/settings.ts){.blank} (admin JWT required). Saving revalidates the root layout so the public board picks up fonts, title, and theme.
-
-:::
-
-### Admin Dashboard
 
 ## Feature Flags
 

@@ -239,7 +239,11 @@ function poseClosedShadows(parts: {
   gsap.set(parts.shadowDepth, { opacity: 0, force3D: false, clearProps: "transform" });
 }
 
-function setSpineOpacity(scene: HTMLElement, rotationY: number) {
+function setSpineOpacity(scene: HTMLElement, rotationY: number, closing = false) {
+  if (closing) {
+    scene.style.setProperty("--spine", "0");
+    return;
+  }
   const angle = Math.min(180, Math.max(0, Math.abs(rotationY)));
   const fromEnd = Math.min(angle, 180 - angle);
   const t = Math.min(1, fromEnd / 12);
@@ -382,7 +386,7 @@ export function Book({
     }
     const { scene, book, spread, cover, pageLeft } = parts;
     const rotationY = Number(gsap.getProperty(cover, "rotationY"));
-    setSpineOpacity(scene, Number.isFinite(rotationY) ? rotationY : 0);
+    setSpineOpacity(scene, Number.isFinite(rotationY) ? rotationY : 0, closing);
     const pastMid = rotationY <= -90;
     pageLeft.classList.toggle("is-revealed", pastMid);
     const inside = cover.querySelector(".cover-inside");
@@ -896,21 +900,23 @@ export function Book({
       beginCoverClose();
     }, "+=0.12");
     tl.addLabel("coverClose");
-    tl.to(gutter, { opacity: 0, duration: 0.48, ease: "power1.in", force3D: false }, "coverClose");
+    const coverCloseDur = toAjar + 0.32;
+    const pagesHideAt = `coverClose+=${0.12 + coverCloseDur * 0.75}`;
+    tl.to(gutter, { opacity: 0, duration: 0.24, ease: "power1.in", force3D: false }, pagesHideAt);
     tl.to(
       shadowLeft,
-      { clipPath: STACK_CLIP_CLOSED, duration: 0.55, ease: "power2.in", force3D: false },
-      "coverClose",
+      { clipPath: STACK_CLIP_CLOSED, duration: 0.24, ease: "power2.in", force3D: false },
+      pagesHideAt,
     );
-    tl.to(shadowRight, { opacity: 0, duration: 0.5, ease: "power1.in", force3D: false }, "coverClose");
-    tl.to(shadowDepth, { opacity: 0, duration: 0.5, ease: "power1.in", force3D: false }, "coverClose");
+    tl.to(shadowRight, { opacity: 0, duration: 0.24, ease: "power1.in", force3D: false }, pagesHideAt);
+    tl.to(shadowDepth, { opacity: 0, duration: 0.24, ease: "power1.in", force3D: false }, pagesHideAt);
 
     tl.to(
       cover,
       {
         rotationY: 0,
         z: 3,
-        duration: toAjar + 0.32,
+        duration: coverCloseDur,
         ease: "power2.in",
       },
       "coverClose+=0.12",
