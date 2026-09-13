@@ -609,6 +609,8 @@ a[role="option"][data-docs-hide-op-desc="true"] .text-c-2 {
 }
 `;
 
+export const SCALAR_STANDALONE_SRC = "/docs/api/scalar-standalone";
+
 export function createScalarReferenceConfig() {
   return {
     layout: "modern" as const,
@@ -630,7 +632,7 @@ export function createScalarReferenceConfig() {
       applyRememberedApiKey(requestBuilder);
     },
     isEditable: false,
-    hideModels: false,
+    hideModels: true,
     documentDownloadType: "none" as const,
     hideTestRequestButton: !(flags.public || flags.apiTest),
     hideDarkModeToggle: true,

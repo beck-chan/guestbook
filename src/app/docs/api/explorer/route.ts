@@ -1,4 +1,7 @@
-import { createScalarReferenceConfig } from "@/lib/docs/scalarConfig";
+import {
+  SCALAR_STANDALONE_SRC,
+  createScalarReferenceConfig,
+} from "@/lib/docs/scalarConfig";
 import { loadDatabaseOpenApi } from "@/lib/docs/loadDatabaseOpenApi";
 
 function explorerHtml(specJson: string, configJson: string) {
@@ -36,7 +39,7 @@ function explorerHtml(specJson: string, configJson: string) {
   <div id="app"></div>
   <script>window.__OPENAPI__ = ${specJson};</script>
   <script>window.__SCALAR_CONFIG__ = ${configJson};</script>
-  <script src="/docs/api/scalar-standalone"></script>
+  <script src="${SCALAR_STANDALONE_SRC}"></script>
   <script>
     window.__SCALAR_CONFIG__.content = window.__OPENAPI__;
     window.Scalar.createApiReference("#app", window.__SCALAR_CONFIG__);

@@ -2,7 +2,10 @@
 
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { flags } from "@/lib/flags";
-import { createScalarReferenceConfig } from "@/lib/docs/scalarConfig";
+import {
+  SCALAR_STANDALONE_SRC,
+  createScalarReferenceConfig,
+} from "@/lib/docs/scalarConfig";
 import { rememberApiKeyFromAuthInput } from "@/lib/docs/scalarApiKey";
 import {
   DEFAULT_PROJECT_REF,
@@ -48,7 +51,7 @@ function loadStandalone() {
 
   return new Promise<void>((resolve, reject) => {
     const script = document.createElement("script");
-    script.src = "/docs/api/scalar-standalone";
+    script.src = SCALAR_STANDALONE_SRC;
     script.dataset.scalarStandalone = "true";
     script.onload = () => {
       script.dataset.loaded = "true";
