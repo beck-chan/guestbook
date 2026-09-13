@@ -15,16 +15,16 @@ The `.feature` files on this page are Gherkin specifications. Use [cucumber.js](
 
 ## Install Cucumber and Playwright
 
-To install Cucumber and [Playwright](https://playwright.dev){.blank} in your app, call the following commands in your terminal from your Next.js app root:
+To install Cucumber and Playwright in your app, call the following commands in your terminal from your Next.js app root:
 
 ```bash
 npm install --save-dev @cucumber/cucumber playwright tsx
 npx playwright install chromium
 ```
 
-- `@cucumber/cucumber` — Reads `.feature` files and reports pass/fail behaviour.
-- `playwright` — Drives Chromium against the running app.
-- `tsx` — Loads TypeScript step definitions without a separate compile step.
+- [`@cucumber/cucumber`](https://www.npmjs.com/package/@cucumber/cucumber){.blank} — Reads `.feature` files and reports pass/fail behaviour.
+- [`playwright`](https://www.npmjs.com/package/playwright){.blank} — Drives Chromium against the running app.
+- [`tsx`](https://www.npmjs.com/package/tsx){.blank} — Loads TypeScript step definitions without a separate compile step.
 
 ::: {.callout}
 # `npx playwright install chromium` downloads the browser binary once. 
@@ -43,7 +43,7 @@ The guestbook repository and includes the following Cucumber setup files covered
 
 # cucumber.yaml
 
-At the project root lives `cucumber.yaml` which configures Cucumber:
+At the project root lives [`cucumber.yaml`](https://github.com/beck-chan/y2k-guestbook/blob/main/cucumber.yaml){.blank} which configures Cucumber:
 
 ```yaml
 default:
@@ -85,7 +85,7 @@ admin:
 
 # features/support/world.ts
 
-Cucumber needs a Playwright page on the World object so every step can click the same browser:
+[`features/support/world.ts`](https://github.com/beck-chan/y2k-guestbook/blob/main/features/support/world.ts){.blank} sets up a Playwright page on the world object so that every step can click the same browser:
 
 ```typescript
 import { config } from "dotenv";
@@ -140,9 +140,19 @@ export class PlaywrightWorld extends World {
 setWorldConstructor(PlaywrightWorld);
 ```
 
+::: {.callout}
+# Changed Paths
+
+If your guestbook doesn't live at the root of your domain (`/`) or the admin dashboard is not at `/admin`:
+
+- Ensure your `NEXT_PUBLIC_GUESTBOOK_ADMIN_PATH` and `GUESTBOOK_PATH` `.env` variables match your custom paths so that step definitions navigate using the correct `this.guestbookPath` / `this.adminPath`.
+- Keep the Gherkin wording as written (`/admin`). 
+
+:::
+
 # features/support/hooks.ts
 
-Hooks start Chromium, allowing page clicks on each scenario's fresh page, then closes the page when the scenario completes:
+[`features/support/hooks.ts`](https://github.com/beck-chan/y2k-guestbook/blob/main/features/support/hooks.ts){.blank} starts Chromium, allowing page clicks on each scenario's fresh page, then closes the page when the scenario completes:
 
 ```typescript
 import { After, AfterAll, Before, BeforeAll } from "@cucumber/cucumber";
@@ -179,7 +189,9 @@ AfterAll(async function () {
 
 ### Step Definitions
 
-Shipped step definitions live in `features/step_definitions/` with the repository. They map each `Given` / `When` / `Then` to clicks in the browser. You will need to [write step definitions](#write-additional-tests) for any additional functionality you opt into or any other features that you add.
+Example [`features/step_definitions/`](https://github.com/beck-chan/y2k-guestbook/tree/main/features/step_definitions){.blank} map each `Given` / `When` / `Then` to clicks in the browser, covering the basic functionality of the guestbook, aligning with the [Gherkin `.feature` files](#gherkin-feature-files) below.
+
+You will need to [write step definitions](#write-additional-tests) for any additional functionality you opt into (notifications, analytics) or any other features that you add.
 
 ## Running Cucumber Tests
 
@@ -299,24 +311,9 @@ To hit a deployed URL instead of localhost:
 BASE_URL=https://<your-deployed-url>.vercel.app npx cucumber-js
 ```
 
-# Nested Board or Admin Path
-
-Keep the Gherkin wording as written (`/admin`). If the public board is not `/` or admin is not `/admin`, set matching env vars so step definitions navigate with `this.guestbookPath` / `this.adminPath`:
-
-```bash
-GUESTBOOK_PATH=/guestbook GUESTBOOK_ADMIN_PATH=/guestbook/admin npx cucumber-js
-```
-
-`GUESTBOOK_ADMIN_PATH` can be omitted when `.env.local` already has `NEXT_PUBLIC_GUESTBOOK_ADMIN_PATH` (see [Install](/docs/install)). Cucumber still matches the shipped step definitions.
-
 :::
 
-::: {.callout}
-# Nested installs (for example `homeHref="/guestbook"`)
 
-Set `GUESTBOOK_PATH=/guestbook` and `GUESTBOOK_ADMIN_PATH=/guestbook/admin` (or rely on `NEXT_PUBLIC_GUESTBOOK_ADMIN_PATH` from `.env.local`) so World URLs match the board. Leave the `.feature` lines unchanged.
-
-:::
 
 ## Gherkin `.feature` Files
 
