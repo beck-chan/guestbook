@@ -58,11 +58,22 @@ If you want to customize the error message that is displayed to users who are no
 
 ## Publish Admin Auth Client
 
+::: {.callout}
+
 If you intend to serve your guestbook application to the general public, you may want to publish your Google OAuth client to production.
 
 This will remove the generic `You're receiving this email because you used Sign in with Google to sign in to <your-project-url>.supabase.co on {timestamp}.` message when admin users authenticate into your guestbook dashboard, but may require a verification process depending on your Google Cloud project settings.
 
+:::
+
+Log in to your [Google Cloud](https://console.cloud.google.com/){.blank} console and select your project:
+
+::: {.tabset}
+
 <OAuth />
+
+
+:::
 
 ## What's Next
 

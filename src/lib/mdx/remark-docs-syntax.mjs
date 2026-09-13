@@ -1240,6 +1240,64 @@ function headingIcon(node) {
   return undefined;
 }
 
+function isSnippetsMdx(resolved) {
+  const rel = path.relative(docsRoot(), resolved).replace(/\\/g, "/");
+  if (!rel || rel.startsWith("..") || path.isAbsolute(rel)) {
+    return false;
+  }
+  return rel.split("/").includes("_snippets") && /\.mdx?$/i.test(rel);
+}
+
+function snippetBody(tree) {
+  return (tree.children ?? []).filter((child) => child.type !== "mdxjsEsm");
+}
+
+function expandTabsetSnippetImports(nodes, context) {
+  const { filename, parseFile, imports } = context;
+  if (!filename || !parseFile || !imports?.size) {
+    return nodes;
+  }
+
+  const expanding = context.expanding ?? new Set();
+  const next = [];
+
+  for (const node of nodes) {
+    if (
+      (node.type !== "mdxJsxFlowElement" &&
+        node.type !== "mdxJsxTextElement") ||
+      typeof node.name !== "string" ||
+      !imports.has(node.name)
+    ) {
+      next.push(node);
+      continue;
+    }
+
+    const resolved = path.resolve(
+      path.dirname(filename),
+      imports.get(node.name),
+    );
+    if (!isSnippetsMdx(resolved) || expanding.has(resolved)) {
+      next.push(node);
+      continue;
+    }
+
+    const nestedExpanding = new Set(expanding);
+    nestedExpanding.add(resolved);
+    const snippetTree = parseFile(resolved, context.seen);
+    next.push(
+      ...expandTabsetSnippetImports(snippetBody(snippetTree), {
+        ...context,
+        filename: resolved,
+        imports: collectMdxComponentImports(snippetTree),
+        expanding: nestedExpanding,
+        root: snippetTree,
+      }),
+    );
+  }
+
+  return next;
+}
+
 function splitTabs(nodes) {
   const tabs = [];
   let current;
@@ -1570,6 +1628,7 @@ function transformFences(parent, context = {}) {
     if (kind === "tabset") {
       const nested = { type: "root", children: inner };
       transformFences(nested, context);
+      nested.children = expandTabsetSnippetImports(nested.children, context);
       const tabs = splitTabs(nested.children);
       if (tabs.length === 0) {
         children.splice(index, close - index + 1);
@@ -1759,6 +1818,7 @@ function applyDocsTransforms(tree, context = {}) {
     root: context.root ?? tree,
     embedImports: context.embedImports ?? [],
     embedCount: context.embedCount ?? 0,
+    imports: context.imports ?? collectMdxComponentImports(tree),
   };
   transformLinkAttrs(tree);
   transformIconMarks(tree);

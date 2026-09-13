@@ -130,7 +130,10 @@ d. Click **Save**.
 
 a. Open [OAuth 2.0 Playground](https://developers.google.com/oauthplayground/){.blank}, signed in with the test user you just added.
 
-b. Click the <DocsGear /> icon (OAuth 2.0 configuration). 
+b. Click the <DocsGear /> icon (OAuth 2.0 configuration). Set:
+
+    - **Access type** to `Offline`.
+    - **Force prompt** to `Consent Screen`.
 
 c. Check the **Use your own OAuth credentials** checkbox. 
 
@@ -514,45 +517,37 @@ limit 50;
 
 ## Publish Notifications Client
 
-If you want your `GMAIL_REFRESH_TOKEN` to last more than seven days, you'll need to publish your Google OAuth client to production, and generate a fresh token when your application is verified.
+::: {.callout}
 
-{/* wip below */}
+If you want your `GMAIL_REFRESH_TOKEN` to last more than seven days, you'll need to publish your Google OAuth client to production, generate a fresh token when your application is verified, then update your `GMAIL_REFRESH_TOKEN` Supabase secret.
 
-Publishing and verification do not mint a token, and they do not extend a token created while the client was in Testing. After the notifications client is **In production** and verified (use the tabs below), generate a new `GMAIL_REFRESH_TOKEN` in [OAuth 2.0 Playground](https://developers.google.com/oauthplayground/){.blank} with the same Web application client. Google has no separate production token page.
+:::
 
-If you already authorized this client during testing, Google often will not return a new refresh token unless you force consent:
+Log in to your [Google Cloud](https://console.cloud.google.com/){.blank} console and select your project:
 
-1. Either revoke the existing grant at [Google Account third-party access](https://myaccount.google.com/permissions){.blank} for this notifications client, **or** in Playground set **Force prompt** to `consent`.
-2. Open [OAuth 2.0 Playground](https://developers.google.com/oauthplayground/){.blank}, signed in as `GMAIL_USER`.
-3. Click the <DocsGear /> icon (OAuth 2.0 configuration).
-4. Check **Use your own OAuth credentials**, then paste the same `GMAIL_CLIENT_ID` and `GMAIL_CLIENT_SECRET`. Without your own credentials, Playground revokes the refresh token after 24 hours.
-5. Set **Access type** to `offline` and **Force prompt** to `consent`, then click **Close**.
-6. From the scope list, open **Gmail API v1** and select `https://www.googleapis.com/auth/gmail.send`.
-7. Click **Authorize APIs**, sign in as `GMAIL_USER`, and allow access.
-8. Click **Exchange authorization code for tokens**, then copy the **Refresh token**.
+::: {.tabset}
 
-    Hang on to this — replace the Testing value stored as the Supabase secret `GMAIL_REFRESH_TOKEN`. You do not need new client credentials.
+<OAuth />
 
-    ```bash
-    GMAIL_REFRESH_TOKEN=<your-refresh-token>
-    ```
+# 3. Generate New Refresh Token
 
-9. Update the secret (Edge Functions → **Secrets**, or from the CLI):
+a. Regenerate your `GMAIL_REFRESH_TOKEN` with the instructions in [Create Gmail Google Cloud Project: 3. Create Refresh Token](#create-gmail-google-cloud-project).
+
+b. Update your `GMAIL_REFRESH_TOKEN` Supabase secret from the CLI:
 
     ```bash
     npx supabase secrets set --project-ref <your-database-url> GMAIL_REFRESH_TOKEN=<your-refresh-token>
     ```
 
-::: {.callout}
-# A Testing refresh token still expires seven days from consent.
+    Or from within Supabase:
 
-Mint this replacement only after the client is **In production**. You do not need to redeploy Edge Functions after rotating the secret.
+        i. From within your Supabase project, click **Edge Functions** in the left sidebar.
+
+        ii. Select **Secrets**.
+
+        iii. Under [add or replace secrets]{.smallcaps}, update the `GMAIL_REFRESH_TOKEN` secret with your new refresh token.
+
 :::
-
-{/* wip above */}
-
-
-<OAuth />
 
 ## What's Next
 
