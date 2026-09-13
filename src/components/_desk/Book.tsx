@@ -134,6 +134,76 @@ function wheelDeltaY(event: WheelEvent) {
   return event.deltaY;
 }
 
+type LeafScroll = { top: number; raf: number; ease: number; last: number };
+
+const leafScrolls = new Map<HTMLElement, LeafScroll>();
+
+function cancelLeafScrolls() {
+  for (const state of leafScrolls.values()) {
+    if (state.raf) {
+      cancelAnimationFrame(state.raf);
+    }
+  }
+  leafScrolls.clear();
+}
+
+function scrollLeafBy(copy: HTMLElement, delta: number, instant: boolean) {
+  const max = copy.scrollHeight - copy.clientHeight;
+  if (max <= 1) {
+    return false;
+  }
+  if (instant) {
+    const next = Math.max(0, Math.min(max, copy.scrollTop + delta));
+    if (next === copy.scrollTop) {
+      return false;
+    }
+    copy.scrollTop = next;
+    return true;
+  }
+
+  let state = leafScrolls.get(copy);
+  if (!state || !state.raf) {
+    state = { top: copy.scrollTop, raf: 0, ease: 0.48, last: copy.scrollTop };
+    leafScrolls.set(copy, state);
+  } else if (Math.abs(copy.scrollTop - state.last) > 1) {
+    state.top = copy.scrollTop;
+  }
+  state.top = Math.max(0, Math.min(max, state.top + delta));
+  state.ease = Math.abs(delta) > 32 ? 0.26 : 0.5;
+  if (state.top === copy.scrollTop && !state.raf) {
+    return false;
+  }
+
+  const step = () => {
+    const limit = Math.max(0, copy.scrollHeight - copy.clientHeight);
+    state.top = Math.max(0, Math.min(limit, state.top));
+    if (Math.abs(copy.scrollTop - state.last) > 1) {
+      state.top = copy.scrollTop;
+      state.last = copy.scrollTop;
+      state.raf = 0;
+      return;
+    }
+    const cur = copy.scrollTop;
+    const next = cur + (state.top - cur) * state.ease;
+    if (Math.abs(state.top - next) < 0.4) {
+      copy.scrollTop = state.top;
+      state.last = copy.scrollTop;
+      state.raf = 0;
+      return;
+    }
+    copy.scrollTop = next;
+    state.last = copy.scrollTop;
+    state.raf = requestAnimationFrame(step);
+  };
+
+  if (!state.raf) {
+    copy.scrollTop += (state.top - copy.scrollTop) * state.ease;
+    state.last = copy.scrollTop;
+    state.raf = requestAnimationFrame(step);
+  }
+  return true;
+}
+
 function leafCopyUnderPoint(root: HTMLElement, x: number, y: number) {
   const right = root.querySelector<HTMLElement>(".page-right .leaf-copy");
   const left = root.querySelector<HTMLElement>(".page-left .leaf-copy");
@@ -1070,21 +1140,16 @@ export function Book({
       if (!copy) {
         return;
       }
-      const max = copy.scrollHeight - copy.clientHeight;
-      if (max <= 1) {
+      if (!scrollLeafBy(copy, wheelDeltaY(event), prefersReducedMotion())) {
         return;
       }
-      const next = Math.max(0, Math.min(max, copy.scrollTop + wheelDeltaY(event)));
-      if (next === copy.scrollTop) {
-        return;
-      }
-      copy.scrollTop = next;
       event.preventDefault();
     }
 
     window.addEventListener("wheel", onWheel, { passive: false, capture: true });
     bookRef.current?.addEventListener("wheel", onWheel, { passive: false });
     return () => {
+      cancelLeafScrolls();
       window.removeEventListener("wheel", onWheel, { capture: true });
       bookRef.current?.removeEventListener("wheel", onWheel);
     };

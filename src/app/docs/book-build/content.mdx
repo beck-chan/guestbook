@@ -81,20 +81,61 @@ Flags are built on compile:
 
 ### Deployment Flags
 
-### Testing Flags
-
 ::: {.tabset}
 
-# FLAG_DOCS
+
+# Public Guestbook
+
+**`FLAG_PUBLIC`**
+
+`flags.public` — default `false`.
+
+Public guestbook home: rewrite `/` → `/guestbook` and redirect `/guestbook` → `/` so the board is the site root and the poetry desk is not served. Favicon fill switches from coral to dark green in [`src/app/icon.tsx`](https://github.com/beck-chan/guestbook/blob/main/src/app/icon.tsx){.blank}. GitHub links in [`flags.ts`](https://github.com/beck-chan/guestbook/blob/main/src/lib/flags.ts){.blank} (`releasesUrl`, `reportIssueUrl`) point at `y2k-guestbook` instead of `guestbook`. Docs landing subtitle, live OpenAPI catalog (`API_PUBLIC_URL`, `API_SERVICE_ROLE_KEY`, and `API_ANON_KEY`), Scalar **Test Request**, and `{.public}` / `{.private}` fences all follow this flag. Pages with `public: false` (this one included) 404 on a public deploy.
+
+
+# Hit Counter
+
+**`FLAG_COUNTER`**
+
+`flags.hitCounter` — default `true`.
+
+Shows the six-digit [`HitCounter`](https://github.com/beck-chan/guestbook/blob/main/src/components/_shared/HitCounter.tsx){.blank} on the desk (beside comments), the mobile cover, and `/guestbook`. Off: the component returns `null`.
+
+Counts come from [`getUniqueVisitors()`](https://github.com/beck-chan/guestbook/blob/main/src/lib/uniqueVisitors.ts){.blank} (PostHog `$pageview` uniqueness, cached 60s). Non-production always shows the fallback in [`hitCount.ts`](https://github.com/beck-chan/guestbook/blob/main/src/lib/hitCount.ts){.blank}. In production the counter polls `/api/hits` and adds a one-time first-visit bonus from `localStorage`.
+
+**`FLAG_COUNTER_URL`**
+
+`flags.hitCounterUrl` — default empty string.
+
+Comma-separated paths or URLs that scope the unique-visitor query. A path (for example `/` or `/guestbook`) matches `$pathname` exactly; a full URL substring-matches `$current_url`. Empty counts every `$pageview`. The value is part of the `unstable_cache` key, so changing it busts the cached count.
+
+**`FLAG_COUNTER_DATE`**
+
+`flags.hitCounterDate` — default empty string.
+
+UTC instant (`YYYY-MM-DDTHH:mm:ssZ`, for example `2025-09-12T00:00:00Z`) that starts the unique-visitor query. Empty counts all time. Values that are not that exact format are ignored. The value is part of the `unstable_cache` key, so changing it busts the cached count.
+
+# Documentation
+
+**`FLAG_DOCS`**
 
 `flags.docs` — default `true`.
 
 Desk bookmarks and the mobile menu: **view docs** plus a short **admin login** ribbon. Off: the labeled bookmark is **admin login** only (no docs link). On the public guestbook page (`publicMode`), the labeled bookmark is **get started** and the short ribbon is **view docs**; if docs is off, those bookmarks are omitted.
 
+
 `docsUrl` in the same file is the href (default `/docs`).
 
-# FLAG_DOCSONLY
 
+
+
+:::
+
+### Testing Flags
+
+::: {.tabset}
+
+# FLAG_DOCSONLY
 
 `FLAG_DOCSONLY` wins over `FLAG_PUBLIC`: docs-only redirects desk, guestbook, and admin into `/docs` and never loads settings or the guestbook theme.
 
@@ -105,37 +146,6 @@ Serve only documentation. [`next.config.ts`](https://github.com/beck-chan/guestb
 
 `npm run docs` sets `FLAG_DOCSONLY=true` on that process via [`scripts/docs-dev.mjs`](https://github.com/beck-chan/guestbook/blob/main/scripts/docs-dev.mjs){.blank} (overrides `.env.local`). Local preview only — do not set this on Vercel.
 
-# FLAG_COUNTER
-
-`flags.hitCounter` — default `true`.
-
-Shows the six-digit [`HitCounter`](https://github.com/beck-chan/guestbook/blob/main/src/components/_shared/HitCounter.tsx){.blank} on the desk (beside comments), the mobile cover, and `/guestbook`. Off: the component returns `null`.
-
-Counts come from [`getUniqueVisitors()`](https://github.com/beck-chan/guestbook/blob/main/src/lib/uniqueVisitors.ts){.blank} (PostHog `$pageview` uniqueness, cached 60s). Non-production always shows the fallback in [`hitCount.ts`](https://github.com/beck-chan/guestbook/blob/main/src/lib/hitCount.ts){.blank}. In production the counter polls `/api/hits` and adds a one-time first-visit bonus from `localStorage`.
-
-# FLAG_COUNTER_URL
-
-`flags.hitCounterUrl` — default empty string.
-
-Comma-separated paths or URLs that scope the unique-visitor query. A path (for example `/` or `/guestbook`) matches `$pathname` exactly; a full URL substring-matches `$current_url`. Empty counts every `$pageview`. The value is part of the `unstable_cache` key, so changing it busts the cached count.
-
-# FLAG_COUNTER_DATE
-
-`flags.hitCounterDate` — default empty string.
-
-UTC instant (`YYYY-MM-DDTHH:mm:ssZ`, for example `2025-09-12T00:00:00Z`) that starts the unique-visitor query. Empty counts all time. Values that are not that exact format are ignored. The value is part of the `unstable_cache` key, so changing it busts the cached count.
-
-{/* ### FLAG_NOTIF
-
-`flags.notif` — default `false`.
-
-Listed on `flags` and passed through `next.config.ts` like the others, but Next never reads `flags.notif` (no UI or docs copy branches on it). **Sending mail is gated only by the Supabase secret** of the same name. Edge functions [`notify-admins`](https://github.com/beck-chan/guestbook/blob/main/supabase/functions/notify-admins/index.ts){.blank} and [`on-user-created`](https://github.com/beck-chan/guestbook/blob/main/supabase/functions/on-user-created/index.ts){.blank} skip with `{ skipped: "FLAG_NOTIF" }` when that secret is off. Set `npx supabase secrets set FLAG_NOTIF=true` for delivery. See [Enable Notifications](/docs/notifs). */}
-
-# FLAG_PUBLIC
-
-`flags.public` — default `false`.
-
-Public guestbook home: rewrite `/` → `/guestbook` and redirect `/guestbook` → `/` so the board is the site root and the poetry desk is not served. Favicon fill switches from coral to dark green in [`src/app/icon.tsx`](https://github.com/beck-chan/guestbook/blob/main/src/app/icon.tsx){.blank}. GitHub links in [`flags.ts`](https://github.com/beck-chan/guestbook/blob/main/src/lib/flags.ts){.blank} (`releasesUrl`, `reportIssueUrl`) point at `y2k-guestbook` instead of `guestbook`. Docs landing subtitle, live OpenAPI catalog (`API_PUBLIC_URL`, `API_SERVICE_ROLE_KEY`, and `API_ANON_KEY`), Scalar **Test Request**, and `{.public}` / `{.private}` fences all follow this flag. Pages with `public: false` (this one included) 404 on a public deploy.
 
 # FLAG_APITEST
 

@@ -741,6 +741,7 @@ body {
   height: 100%;
   overflow: auto;
   overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
   padding: 4.75rem 4.6rem 4.5rem 5.6rem;
   color: color-mix(in srgb, #6f4e37 80%, white);
   font-family: var(--body-font);
