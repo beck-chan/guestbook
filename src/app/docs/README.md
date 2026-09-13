@@ -1,8 +1,10 @@
 # .MDX Extension
 
+> https://marketplace.cursorapi.com/items/?itemName=unifiedjs.vscode-mdx
+
 These configs only affect Cursor/VS Code IntelliSense. Next still compiles docs (`npm run docs` / `npm run build`) either way.
 
-## What is the MDX extension and what does it do?
+<!-- ## What is the MDX extension and what does it do? -->
 
 Cursor does not understand `.mdx` by itself. The **MDX** extension (`unifiedjs.vscode-mdx`) adds that.
 
@@ -17,6 +19,8 @@ Syntax highlighting can still come from the extension’s grammar even when the 
 
 ## Disabled 
 
+Currently uninstalled as it was slowing down Cursor.
+
 - [`tsconfig.json`](../../../../tsconfig.json) comments out `"src/**/*.mdx"` in `include` so `tsserver` does not load docs MDX.
 - [`.vscode/settings.json`](../../../../.vscode/settings.json) (guestbook window) and the parent `beck-chan/.vscode/settings.json` (this multi-repo window) set `"mdx.server.enable": false` and `"typescript.disableAutomaticTypeAcquisition": true`.
 
@@ -25,6 +29,8 @@ Syntax highlighting can still come from the extension’s grammar even when the 
 To unload that plugin: Extensions → **MDX** (`unifiedjs.vscode-mdx`) → gear → **Disable (Workspace)** → **Developer: Reload Window**.
 
 ## Reenable
+
+To reinstall: https://marketplace.cursorapi.com/items/?itemName=unifiedjs.vscode-mdx
 
 1. Enable the MDX extension for this workspace.
 2. Set `"mdx.server.enable": true` in the `.vscode/settings.json` for the folder you opened as the window.
