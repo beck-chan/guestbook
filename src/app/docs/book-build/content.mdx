@@ -66,7 +66,61 @@ The schema applied by running [`scripts/schema.sql`](https://github.com/beck-cha
 
 # ERD
 
-{/* mermaid chart here */}
+```mermaid
+erDiagram
+    comments {
+        uuid id PK
+        text display_name
+        text email
+        text body
+        boolean is_read
+        timestamptz created_at
+        timestamptz updated_at
+    }
+
+    comments_public {
+        uuid id PK
+        text display_name
+        text body
+        timestamptz created_at
+        timestamptz updated_at
+    }
+
+    guestbook_settings {
+        int id PK
+        text title
+        boolean marquee
+        boolean capture_email
+        int comment_length
+    }
+
+    admin_allowlist {
+        text email PK
+        timestamptz created_at
+    }
+
+    auth_users {
+        uuid id PK
+        text email
+        jsonb app_metadata
+    }
+
+    poem_hearts {
+        uuid id PK
+        text poem_id
+        text visitor_key
+        timestamptz created_at
+    }
+
+    poem_heart_counts {
+        text poem_id
+        bigint heart_count
+    }
+
+    comments ||--|| comments_public : "public view"
+    poem_hearts }o--o| poem_heart_counts : aggregates
+    admin_allowlist |o..o| auth_users : "email match"
+```
 
 :::
 

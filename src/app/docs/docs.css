@@ -1446,6 +1446,21 @@ a[role="option"][data-docs-hide-heading="true"],
   margin: 1.1rem 0;
 }
 
+.docs-mermaid {
+  margin: 1.1rem 0;
+  overflow-x: auto;
+  color: #000;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+.docs-mermaid svg {
+  display: block;
+  max-width: none;
+  height: auto;
+}
+
 .docs-code {
   margin: 0;
   padding: 1rem 2.75rem 1rem 1.15rem;
@@ -1790,6 +1805,31 @@ a[role="option"][data-docs-hide-heading="true"],
   font-family: var(--peony-font);
   font-weight: 400;
   letter-spacing: 0.02em;
+}
+
+.docs-article .docs-mermaid table {
+  width: auto;
+  border-collapse: unset;
+  font-size: inherit;
+  line-height: inherit;
+}
+
+.docs-article .docs-mermaid th,
+.docs-article .docs-mermaid td,
+.docs-article .docs-mermaid p,
+.docs-article .docs-mermaid div,
+.docs-article .docs-mermaid span {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  color: inherit;
+  font-family: inherit;
+  font-size: inherit;
+  font-weight: inherit;
+  letter-spacing: normal;
+  line-height: inherit;
+  text-align: inherit;
+  vertical-align: inherit;
 }
 
 .docs-article tbody tr:last-child td {
