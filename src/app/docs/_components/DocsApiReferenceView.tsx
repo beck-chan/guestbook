@@ -440,7 +440,7 @@ export function DocsApiReferenceView({ spec }: { spec: OpenApiSpec }) {
               placeholder={PROJECT_REF_PLACEHOLDER}
             />
           </label>
-          <button type="submit">Use this project</button>
+          <button type="submit">Use This Project</button>
           <p className="docs-api-server-url">
             Test calls use {supabaseRestUrl(appliedRef)}
           </p>

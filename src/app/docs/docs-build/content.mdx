@@ -117,7 +117,8 @@ The Test Request feature available on the public build allows visitors to enter 
 [`loadDatabaseOpenApi.ts`](https://github.com/beck-chan/guestbook/blob/main/src/lib/docs/loadDatabaseOpenApi.ts){.blank}:
 
 - Caches the fetch (React `cache()` plus a 60-second revalidate) so the documentation sidebar and the Scalar API explorer share one request. 
-- After fetch it stamps our `info` title/description, `bearerAuth`, and `servers` overlay. 
+- After fetch it stamps our `info` title/description, `apikey` / `bearerAuth` security, and `servers` overlay.
+- Overlays required PostgREST row filters on `PATCH`/`DELETE` (replacing the matching `$ref`) so **Test Request** does not list the same query parameter twice.
 - [`typesToOpenApi.ts`](https://github.com/beck-chan/guestbook/blob/main/src/lib/docs/typesToOpenApi.ts){.blank} still builds sidebar links from Scalar inline call anchors (`openApiNav`) and marks non-anon operations as requiring a JWT.
 
 # layout.tsx
@@ -139,6 +140,7 @@ The Test Request feature available on the public build allows visitors to enter 
 [`DocsApiReferenceView`](https://github.com/beck-chan/guestbook/blob/main/src/app/docs/_components/DocsApiReferenceView.tsx){.blank}:
 
 - Loads the [`@scalar/api-reference`](https://www.npmjs.com/package/@scalar/api-reference){.blank} browser bundle from [`/docs/api/scalar-standalone`](https://github.com/beck-chan/guestbook/blob/main/src/app/docs/api/scalar-standalone/route.ts){.blank} and renders it after the content in `src/app/docs/api/content.mdx`, which also displays differently depending on the build.
+- [`page.tsx`](https://github.com/beck-chan/guestbook/blob/main/src/app/docs/api/page.tsx){.blank} preloads that script so the download overlaps the article render. On the public build, the view waits until the stored project ref is read from `sessionStorage` before mounting Scalar.
 - Enables the **Enter Your Supabase Project ID** field above the explorer, pointing test requests at the visitor's entered project on the public build.
 
 # `scalarConfig.ts`
@@ -147,7 +149,9 @@ The Test Request feature available on the public build allows visitors to enter 
 
 - Turns Scalar's own theme off and injects my `customCss` that remaps Scalar onto guestbook tokens instead. 
 - Hides Scalar's native sidebar and sticky search bar, instead, the sidebar search opens Scalar's search.
+- Hides the Models section (`hideModels`).
 - Hides the **Test Request** functionality unless `FLAG_PUBLIC` (public build) or `FLAG_APITEST` (custom build, for my internal testing) flags are on.
+- With [`scalarApiKey.ts`](https://github.com/beck-chan/guestbook/blob/main/src/lib/docs/scalarApiKey.ts){.blank}, injects the saved anon `apikey` and admin JWT on Send so focusing one Authentication tab does not drop the other.
 
 
 :::
