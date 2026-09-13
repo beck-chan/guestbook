@@ -116,7 +116,10 @@ export class PlaywrightWorld extends World {
       "",
     );
     this.guestbookPath = String(
-      process.env.GUESTBOOK_PATH || options.parameters.guestbookPath || "/",
+      process.env.GUESTBOOK_PATH ||
+        process.env.NEXT_PUBLIC_GUESTBOOK_PATH ||
+        options.parameters.guestbookPath ||
+        "/",
     );
     this.adminPath = String(
       process.env.GUESTBOOK_ADMIN_PATH ||
@@ -145,7 +148,7 @@ setWorldConstructor(PlaywrightWorld);
 
 If your guestbook doesn't live at the root of your domain (`/`) or the admin dashboard is not at `/admin`:
 
-- Ensure your `NEXT_PUBLIC_GUESTBOOK_ADMIN_PATH` and `GUESTBOOK_PATH` `.env` variables match your custom paths so that step definitions navigate using the correct `this.guestbookPath` / `this.adminPath`.
+- Ensure your `NEXT_PUBLIC_GUESTBOOK_ADMIN_PATH` and `GUESTBOOK_PATH` `.env.local` variables match your custom paths so that step definitions navigate using the correct `this.guestbookPath` / `this.adminPath`.
 - Keep the Gherkin wording as written (`/admin`). 
 
 :::

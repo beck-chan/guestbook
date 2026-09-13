@@ -100,7 +100,7 @@ The dashboard page loads every row from `comments` (including email and `is_read
 
 Flags are **compile-time**. [`src/lib/flags.ts`](https://github.com/beck-chan/guestbook/blob/main/src/lib/flags.ts){.blank} reads `process.env.FLAG_*` with `envFlag` (`true` / `1` vs `false` / `0`; unset uses the default) and `envString` for `FLAG_COUNTER_URL`. [`next.config.ts`](https://github.com/beck-chan/guestbook/blob/main/next.config.ts){.blank} lists those names under `env` so Next can inline them into client components. Change a flag, then restart `npm run dev` or rebuild.
 
-A second Vercel project can ship the same `main` branch with different `FLAG_*` values. Local `.env` is gitignored and does not affect Vercel. To add a flag: put a key on `flags`, pass the env name through `next.config.ts`, and branch on it in the UI.
+A second Vercel project can ship the same `main` branch with different `FLAG_*` values. Local `.env.local` is gitignored and does not affect Vercel. To add a flag: put a key on `flags`, pass the env name through `next.config.ts`, and branch on it in the UI.
 
 `FLAG_DOCSONLY` wins over `FLAG_PUBLIC`: docs-only redirects desk, guestbook, and admin into `/docs` and never loads settings or the guestbook theme.
 

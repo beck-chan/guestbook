@@ -21,7 +21,7 @@ Our custom `npm run docs` script starts Next with `FLAG_DOCSONLY=true` so the ro
 Defined as a [`package.json`](https://github.com/beck-chan/guestbook/blob/main/package.json){.blank} script, `npm run docs` calls [`scripts/docs-dev.mjs`](https://github.com/beck-chan/guestbook/blob/main/scripts/docs-dev.mjs){.blank}, which starts the same `next dev` as `npm run dev`, then sets `FLAG_DOCSONLY=true` on that process:
 
 - [`src/lib/flags.ts`](https://github.com/beck-chan/guestbook/blob/main/src/lib/flags.ts){.blank} reads that environment variable as `flags.docsOnly`. 
-- [`next.config.ts`](https://github.com/beck-chan/guestbook/blob/main/next.config.ts){.blank} also lists `FLAG_DOCSONLY` under `.env` so Next can send it to the browser.
+- [`next.config.ts`](https://github.com/beck-chan/guestbook/blob/main/next.config.ts){.blank} also lists `FLAG_DOCSONLY` under `.env.local` so Next can send it to the browser.
 
 ## Basics & Custom Theme
 
