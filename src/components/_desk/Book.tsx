@@ -11,7 +11,7 @@ import { StickyNote } from "@/components/_desk/StickyNote";
 gsap.registerPlugin(useGSAP);
 
 const AJAR = -20;
-const STACK_CLIP_CLOSED = "inset(-12px 0px -12px 0px)";
+const STACK_CLIP_CLOSED = "inset(0px 0px 0px 0px)";
 const STACK_CLIP_OPEN = "inset(-12px 0px -12px -28px)";
 
 type BookProps = {
