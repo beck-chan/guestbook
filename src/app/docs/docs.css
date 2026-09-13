@@ -1848,13 +1848,11 @@ a[role="option"][data-docs-hide-heading="true"],
 @media (max-width: 1100px) {
   .docs-main:has(.docs-toc-stack) {
     grid-template-columns: minmax(0, 1fr);
-    grid-template-areas:
-      "toc"
-      "article";
+    grid-template-areas: "article";
   }
 
   .docs-toc-stack {
-    margin: 0 0 1.75rem 0.4rem;
+    display: none;
   }
 }
 
@@ -2014,15 +2012,6 @@ a[role="option"][data-docs-hide-heading="true"],
 
   .docs-main {
     padding: 1.85rem 1.25rem 3.25rem;
-  }
-
-  .docs-main:has(.docs-toc-stack) {
-    grid-template-columns: minmax(0, 1fr);
-    grid-template-areas: "article";
-  }
-
-  .docs-toc-stack {
-    display: none;
   }
 
   .docs-tabset-list {

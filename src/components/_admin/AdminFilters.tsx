@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { DocsHeart } from "@/app/docs/_components/DocsHeart";
 import { adminHref, type AdminFilters } from "@/lib/comments";
+import { flags } from "@/lib/flags";
 import { guestbookAdminPath } from "@/lib/guestbookPaths";
 
 function SearchCommentCounts({
@@ -232,9 +233,13 @@ export function AdminFilters({
         <h1 className="admin-title">
           comments
           <span className="admin-heart-total">
-            <DocsHeart filled className="admin-heart-total-icon" />
-            <span className="admin-heart-total-count">{totalHearts}</span>
-            <span className="sr-only"> total hearts</span>
+            <DocsHeart filled={!flags.public} className="admin-heart-total-icon" />
+            {flags.public ? null : (
+              <>
+                <span className="admin-heart-total-count">{totalHearts}</span>
+                <span className="sr-only"> total hearts</span>
+              </>
+            )}
           </span>
         </h1>
       </div>
