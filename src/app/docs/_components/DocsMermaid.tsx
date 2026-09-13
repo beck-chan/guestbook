@@ -43,7 +43,7 @@ function mermaidConfigFor(host: HTMLElement) {
     theme: "base" as const,
     startOnLoad: false,
     fontFamily,
-    fontSize: "18px",
+    fontSize: 18,
     themeVariables: {
       darkMode: false,
       background: "#ffffff",
