@@ -199,20 +199,25 @@ export const SCALAR_CUSTOM_CSS = `
 .scalar-app .markdown .markdown-alert > :first-child,
 .scalar-app .markdown .admonition > :first-child {
   margin-top: 0 !important;
-  margin-bottom: 0 !important;
 }
 
 .scalar-app .markdown blockquote p,
 .scalar-app .markdown .markdown-alert p {
+  margin: 0 !important;
   font-size: clamp(1rem, 1.5vw, 1.28rem) !important;
   line-height: 1.55 !important;
+}
+
+.scalar-app .markdown blockquote p + p,
+.scalar-app .markdown .markdown-alert p + p {
+  margin-top: 0.5rem !important;
 }
 
 /* Callout # title: body font, same size as docs .docs-callout .docs-title. */
 .scalar-app .markdown blockquote h3,
 .scalar-app .markdown .markdown-alert h3,
 .scalar-app .markdown .admonition h3 {
-  margin: 0 0 0.35rem !important;
+  margin: 0 0 0.85rem !important;
   color: color-mix(in srgb, #6f4e37 48%, white) !important;
   font-family: var(--futura-font) !important;
   font-size: clamp(1.08rem, 1.55vw, 1.32rem) !important;

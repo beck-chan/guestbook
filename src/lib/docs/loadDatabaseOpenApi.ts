@@ -170,47 +170,167 @@ const SERVICE_ROLE_ONLY_PATHS = new Set([
 ]);
 
 const JWT_ERROR_HEADING =
-  "This call will return an error even with your valid JWT.<br><br>";
+  "This call will return an error even with your valid JWT.";
+const FILTER_CALLOUT_TITLE = "This call needs a filter, even with a valid JWT.";
+const FILTER_AND_AUTH_HEADING =
+  "This call requires a filter, and will still return an error even with your valid JWT.";
 
 /** Scalar has no MDX `::: {.callout}`; a blockquote + h3 matches docs callouts. */
-function markdownCallout(title: string, body: string) {
-  return `> ### ${title}\n>\n> ${body}`;
+function markdownCallout(title: string, ...paragraphs: string[]) {
+  const lines = [`> ### ${title}`, ">"];
+  for (const [index, paragraph] of paragraphs.entries()) {
+    if (index > 0) {
+      lines.push(">");
+    }
+    for (const line of paragraph.split("\n")) {
+      lines.push(line ? `> ${line}` : ">");
+    }
+  }
+  return lines.join("\n");
 }
+
+const SERVICE_ROLE_AUTH_BODY =
+  "Your admin session token is the Postgres `authenticated` role, but permission for this call is granted only to `service_role` — Supabase does not allow you to paste in your `service_role` key into a browser and will only return the error `42501`.";
+
+const SETTINGS_GRANT_BODY =
+  "There is a single settings row. **GET** works with the anon key, and **PATCH** works with your admin JWT. Create and delete are not granted, so those Test Requests return `42501`.";
 
 const SERVICE_ROLE_ONLY_CALLOUT = markdownCallout(
   JWT_ERROR_HEADING,
-  "Your admin session token is the Postgres `authenticated` role, but permission for this call is granted only to `service_role` — Supabase does not allow you to paste in your `service_role` key into a browser and will only return the error `42501`.",
+  SERVICE_ROLE_AUTH_BODY,
 );
+
+const COMMENTS_PUBLIC_WRITE_BODY =
+  "`comments_public` is a read-only view of the guestbook (emails omitted). The catalog still lists write methods, but they are not granted, so Test Request returns `42501`. Use **GET** on this path with your anon key. To insert, update, or delete a comment, call `/comments` instead.";
 
 const COMMENTS_PUBLIC_WRITE_CALLOUT = markdownCallout(
   JWT_ERROR_HEADING,
-  "`comments_public` is a read-only view of the guestbook (emails omitted). The catalog still lists write methods, but they are not granted, so Test Request returns `42501`. Use **GET** on this path with your anon key. To insert, update, or delete a comment, call `/comments` instead.",
+  COMMENTS_PUBLIC_WRITE_BODY,
 );
 
 const SETTINGS_CREATE_DELETE_CALLOUT = markdownCallout(
   JWT_ERROR_HEADING,
-  "There is a single settings row. **GET** works with the anon key, and **PATCH** works with your admin JWT. Create and delete are not granted, so those Test Requests return `42501`.",
+  SETTINGS_GRANT_BODY,
 );
 
-const SETTINGS_PATCH_CALLOUT = markdownCallout(
-  "This call needs a filter, even with a valid JWT.",
-  "PostgREST will not run an unfiltered `UPDATE` (`21000`). Settings is a single row with `id = 1`. In Test Request **Query**, set **Key** `id` and **Value** `eq.1` (not `1`). Keep `bearerAuth` plus the `apikey` header, and put the fields to change in the JSON body.",
+type MutationFilterOpts = {
+  key: string;
+  value: string;
+  notAlone: string;
+  retrieveFrom?: string;
+  intro?: string;
+  keepAuth?: boolean;
+};
+
+function mutationFilterBody(
+  kind: "DELETE" | "UPDATE",
+  opts: MutationFilterOpts,
+) {
+  const verb = kind === "DELETE" ? "`DELETE`" : "`UPDATE`";
+  const intro = opts.intro ? `${opts.intro} ` : "";
+  const retrieve = opts.retrieveFrom
+    ? ` Retrieve the ${opts.retrieveFrom}.`
+    : "";
+  const authHint = opts.keepAuth
+    ? " Keep `bearerAuth` plus the `apikey` header."
+    : "";
+  const updateHint = kind === "UPDATE"
+    ? opts.keepAuth
+      ? ", and put the fields to change in the JSON body."
+      : " Put the fields to change in the JSON body."
+    : "";
+  return `PostgREST will not run an unfiltered ${verb} (\`21000\`). ${intro}Under **Query Parameters**, set **key**: \`${opts.key}\` and **value**: \`${opts.value}\` (${opts.notAlone}).${retrieve}${authHint}${updateHint}`;
+}
+
+function mutationFilterCallout(
+  kind: "DELETE" | "UPDATE",
+  opts: MutationFilterOpts,
+) {
+  return markdownCallout(FILTER_CALLOUT_TITLE, mutationFilterBody(kind, opts));
+}
+
+function mutationFilterAndAuthCallout(
+  kind: "DELETE" | "UPDATE",
+  opts: MutationFilterOpts,
+  authBody: string,
+) {
+  return markdownCallout(
+    FILTER_AND_AUTH_HEADING,
+    mutationFilterBody(kind, opts),
+    authBody,
+  );
+}
+
+const SETTINGS_FILTER = {
+  key: "id",
+  value: "eq.1",
+  notAlone: "not `1`",
+  intro: "Settings is a single row with `id = 1`.",
+} as const;
+
+const SETTINGS_PATCH_CALLOUT = mutationFilterCallout("UPDATE", {
+  ...SETTINGS_FILTER,
+  keepAuth: true,
+});
+const SETTINGS_DELETE_CALLOUT = mutationFilterAndAuthCallout(
+  "DELETE",
+  SETTINGS_FILTER,
+  SETTINGS_GRANT_BODY,
 );
+
+const ADMIN_ALLOWLIST_FILTER = {
+  key: "email",
+  value: "eq.you@example.com",
+  notAlone: "not the email alone",
+  retrieveFrom: "email from **GET** `/admin_allowlist`",
+} as const;
+
+const RATE_LIMITS_FILTER = {
+  key: "key",
+  value: "eq.<rate-limit-key>",
+  notAlone: "not the key alone",
+  retrieveFrom: "key from **GET** `/guestbook_rate_limits`",
+} as const;
+
+const POEM_HEARTS_FILTER = {
+  key: "id",
+  value: "eq.<heart-uuid>",
+  notAlone: "not the uuid alone",
+  retrieveFrom: "id from **GET** `/poem_hearts`",
+} as const;
+
+const COMMENTS_FILTER = {
+  key: "id",
+  value: "eq.<comment-uuid>",
+  notAlone: "not the uuid alone",
+  retrieveFrom: "id from **GET** `/comments`",
+  keepAuth: true,
+} as const;
+
+const COMMENTS_PUBLIC_FILTER = {
+  key: "id",
+  value: "eq.<comment-uuid>",
+  notAlone: "not the uuid alone",
+  retrieveFrom: "id from **GET** `/comments_public`",
+} as const;
 
 const COMMENTS_POST_CALLOUT = markdownCallout(
-  "Delete the generated fields from Scalar’s example body.",
-  "Test Request pre-fills `id`, `created_at`, and `updated_at` with SQL like `gen_random_uuid()` and `now()`. Those are strings, not functions, so Postgres returns `22P02`. Remove those keys (and `is_read`). Send only `display_name`, `body`, and `email` if you capture email.",
+  "This call needs the generated fields removed from Scalar’s example body.",
+  "Postgres will not accept SQL defaults as JSON (`22P02`). Under **Request Body**, remove `id`, `created_at`, `updated_at`, and `is_read`. Scalar pre-fills those with strings like `gen_random_uuid()` and `now()`, not functions. Send only `display_name`, `body`, and `email` if you capture email.",
+  "```json\n{\n  \"display_name\": \"beck\",\n  \"body\": \"hello from the API\",\n  \"email\": \"beck@example.com\"\n}\n```",
 );
 
-const COMMENTS_DELETE_CALLOUT = markdownCallout(
-  "This call needs a filter, even with a valid JWT.",
-  "PostgREST will not run an unfiltered `DELETE` (`21000`). In Test Request **Query**, set **Key** `id` and **Value** `eq.<comment-uuid>` (not the uuid alone). Copy the id from **GET /comments**. Keep `bearerAuth` plus the `apikey` header.",
+const COMMENTS_DELETE_CALLOUT = mutationFilterCallout(
+  "DELETE",
+  COMMENTS_FILTER,
 );
+const COMMENTS_PATCH_CALLOUT = mutationFilterCallout("UPDATE", COMMENTS_FILTER);
 
-const COMMENTS_PATCH_CALLOUT = markdownCallout(
-  "This call needs a filter, even with a valid JWT.",
-  "PostgREST will not run an unfiltered `UPDATE` (`21000`). In Test Request **Query**, set **Key** `id` and **Value** `eq.<comment-uuid>` (not the uuid alone). Copy the id from **GET /comments**. Keep `bearerAuth` plus the `apikey` header, and put the fields to change in the JSON body.",
-);
+const FILTER_AND_AUTH_PATHS = new Set([
+  "/admin_allowlist",
+  "/guestbook_rate_limits",
+  "/poem_hearts",
+]);
 
 const OPERATION_METHODS = new Set([
   "get",
@@ -245,20 +365,42 @@ function applyOperationCallouts(spec: OpenApiSpec) {
     prependCallout(
       spec,
       path,
-      [...OPERATION_METHODS],
+      FILTER_AND_AUTH_PATHS.has(path)
+        ? ["get", "put", "post"]
+        : [...OPERATION_METHODS],
       SERVICE_ROLE_ONLY_CALLOUT,
     );
   }
   prependCallout(
     spec,
     "/comments_public",
-    ["post", "patch", "delete"],
+    ["post"],
     COMMENTS_PUBLIC_WRITE_CALLOUT,
   );
   prependCallout(
     spec,
+    "/comments_public",
+    ["delete"],
+    mutationFilterAndAuthCallout(
+      "DELETE",
+      COMMENTS_PUBLIC_FILTER,
+      COMMENTS_PUBLIC_WRITE_BODY,
+    ),
+  );
+  prependCallout(
+    spec,
+    "/comments_public",
+    ["patch"],
+    mutationFilterAndAuthCallout(
+      "UPDATE",
+      COMMENTS_PUBLIC_FILTER,
+      COMMENTS_PUBLIC_WRITE_BODY,
+    ),
+  );
+  prependCallout(
+    spec,
     "/guestbook_settings",
-    ["post", "delete"],
+    ["post"],
     SETTINGS_CREATE_DELETE_CALLOUT,
   );
   prependCallout(
@@ -266,6 +408,72 @@ function applyOperationCallouts(spec: OpenApiSpec) {
     "/guestbook_settings",
     ["patch"],
     SETTINGS_PATCH_CALLOUT,
+  );
+  prependCallout(
+    spec,
+    "/guestbook_settings",
+    ["delete"],
+    SETTINGS_DELETE_CALLOUT,
+  );
+  prependCallout(
+    spec,
+    "/admin_allowlist",
+    ["delete"],
+    mutationFilterAndAuthCallout(
+      "DELETE",
+      ADMIN_ALLOWLIST_FILTER,
+      SERVICE_ROLE_AUTH_BODY,
+    ),
+  );
+  prependCallout(
+    spec,
+    "/admin_allowlist",
+    ["patch"],
+    mutationFilterAndAuthCallout(
+      "UPDATE",
+      ADMIN_ALLOWLIST_FILTER,
+      SERVICE_ROLE_AUTH_BODY,
+    ),
+  );
+  prependCallout(
+    spec,
+    "/guestbook_rate_limits",
+    ["delete"],
+    mutationFilterAndAuthCallout(
+      "DELETE",
+      RATE_LIMITS_FILTER,
+      SERVICE_ROLE_AUTH_BODY,
+    ),
+  );
+  prependCallout(
+    spec,
+    "/guestbook_rate_limits",
+    ["patch"],
+    mutationFilterAndAuthCallout(
+      "UPDATE",
+      RATE_LIMITS_FILTER,
+      SERVICE_ROLE_AUTH_BODY,
+    ),
+  );
+  prependCallout(
+    spec,
+    "/poem_hearts",
+    ["delete"],
+    mutationFilterAndAuthCallout(
+      "DELETE",
+      POEM_HEARTS_FILTER,
+      SERVICE_ROLE_AUTH_BODY,
+    ),
+  );
+  prependCallout(
+    spec,
+    "/poem_hearts",
+    ["patch"],
+    mutationFilterAndAuthCallout(
+      "UPDATE",
+      POEM_HEARTS_FILTER,
+      SERVICE_ROLE_AUTH_BODY,
+    ),
   );
   prependCallout(spec, "/comments", ["post"], COMMENTS_POST_CALLOUT);
   prependCallout(spec, "/comments", ["delete"], COMMENTS_DELETE_CALLOUT);
