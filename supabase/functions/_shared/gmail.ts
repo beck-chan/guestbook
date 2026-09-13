@@ -25,7 +25,7 @@ function toBase64Url(value: string): string {
     .replace(/=+$/, "");
 }
 
-const FROM_NAME = "y2k Guestbook";
+const FROM_NAME = "Poetry Guestbook";
 
 function fromHeader(email: string): string {
   const name = FROM_NAME.replace(/\\/g, "\\\\").replace(/"/g, '\\"');
