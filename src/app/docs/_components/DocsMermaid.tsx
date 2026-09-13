@@ -70,7 +70,7 @@ function mermaidConfigFor(host: HTMLElement) {
     },
     er: {
       useMaxWidth: true,
-      layoutDirection: "TB",
+      layoutDirection: "TB" as const,
     },
   };
 }
@@ -324,7 +324,9 @@ export function DocsMermaid({ chart }: { chart: string }) {
           requestAnimationFrame(run);
         })
       : null;
-    observer?.observe(panel, { attributes: true, attributeFilter: ["hidden"] });
+    if (panel) {
+      observer?.observe(panel, { attributes: true, attributeFilter: ["hidden"] });
+    }
 
     return () => {
       cancelled = true;

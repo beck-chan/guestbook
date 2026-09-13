@@ -137,7 +137,29 @@ erDiagram
 
 # Admin Notifications
 
-{/* here */}
+Database webhooks `POST` into two [Supabase Edge Functions](https://github.com/beck-chan/guestbook/tree/main/supabase/functions){.blank} (`verify_jwt = false` in [`supabase/config.toml`](https://github.com/beck-chan/guestbook/blob/main/supabase/config.toml){.blank}):
+
+-  Both check `NOTIFY_WEBHOOK_SECRET` (`x-notify-webhook-secret` or Bearer), then no-op unless the Edge secret `FLAG_NOTIF` is `true` / `1`. 
+- Recipients come from `admin_allowlist` via the service role ([`loadAllowlist()`](https://github.com/beck-chan/guestbook/blob/main/supabase/functions/_shared/allowlist.ts){.blank}).
+
+| Function | Trigger |
+| --- | --- |
+| [`notify-admins`](https://github.com/beck-chan/guestbook/blob/main/supabase/functions/notify-admins/index.ts){.blank} | Table webhooks on `admin_allowlist`, `comments`, `guestbook_settings`, and `poem_hearts` |
+| [`on-user-created`](https://github.com/beck-chan/guestbook/blob/main/supabase/functions/on-user-created/index.ts){.blank} | `auth.users` {.insert} — the new address plus the existing admin list |
+
+[`notify-admins`](https://github.com/beck-chan/guestbook/blob/main/supabase/functions/notify-admins/index.ts){.blank} maps webhook `table` and `type` onto Markdown templates in [`_shared/templates/`](https://github.com/beck-chan/guestbook/tree/main/supabase/functions/_shared/templates){.blank}:
+
+| Table | Events | Recipients |
+| --- | --- | --- |
+| `admin_allowlist` | {.insert}, {.delete} | The added/removed address, and the admin list |
+| `comments` | {.insert}, {.update}, {.delete} | Admin list |
+| `guestbook_settings` | {.update} | Admin list |
+| `poem_hearts` | {.insert}, {.delete} | Admin list ({.heart} / unheart) |
+
+- Comment {.update} only mails when `display_name`, `email`, or `body` changed. 
+- Settings {.update} skips `id` and `updated_at`.
+
+Mail goes out through [`gmail.ts`](https://github.com/beck-chan/guestbook/blob/main/supabase/functions/_shared/gmail.ts){.blank} — Gmail API with a refresh token, From `Poetry Guestbook <GMAIL_USER>`.
 
 :::
 
@@ -170,7 +192,18 @@ When users click **Submit**, the `submitComment` server action:
 
 # Hit Counter
 
-{/* here */}
+[`src/app/page.tsx`](https://github.com/beck-chan/guestbook/blob/main/src/app/page.tsx){.blank} and [`src/app/guestbook/page.tsx`](https://github.com/beck-chan/guestbook/blob/main/src/app/guestbook/page.tsx){.blank} both call [`getUniqueVisitors()`](https://github.com/beck-chan/guestbook/blob/main/src/lib/uniqueVisitors.ts){.blank} (PostHog `$pageview` uniqueness, cached 60s) and pass the number into [`HitCounter`](https://github.com/beck-chan/guestbook/blob/main/src/components/_shared/HitCounter.tsx){.blank}:
+
+- [`HitCounter`](https://github.com/beck-chan/guestbook/blob/main/src/components/_shared/HitCounter.tsx){.blank} is a client component. 
+- When `FLAG_COUNTER` is off it returns `null`. 
+
+Development always shows the static [`FALLBACK_HIT_COUNT`](https://github.com/beck-chan/guestbook/blob/main/src/lib/hitCount.ts){.blank} (`481`). In production it:
+
+1. Renders the server count.
+2. Adds a one-time first-visit bonus from `localStorage` (`guestbook.hit-counted`).
+3. Polls [`/api/hits`](https://github.com/beck-chan/guestbook/blob/main/src/app/api/hits/route.ts){.blank} every `45` seconds and never lets the displayed value drop.
+
+HogQL scoping (`FLAG_COUNTER_URL`, `FLAG_COUNTER_DATE`) is documented under **Hit Counter** in [Feature Flags](#feature-flags).
 
 :::
 
