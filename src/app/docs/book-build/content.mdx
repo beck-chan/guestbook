@@ -24,29 +24,13 @@ public: false
 
 # Desktop
 
-Above `768px`, [`.desk-desktop`](https://github.com/beck-chan/guestbook/blob/main/src/app/globals.css){.blank} shows the animated 3D volume. [`Book`](https://github.com/beck-chan/guestbook/blob/main/src/components/_desk/Book.tsx){.blank} drives open/close with [GSAP](https://gsap.com/){.blank} (`gsap` + `@gsap/react`).
+Above `768px`, [`.desk-desktop`](https://github.com/beck-chan/guestbook/blob/main/src/app/globals.css){.blank} shows an interactive animated 3D book volume. 
 
-**Closed.** The cover faces out (`rotationY: 0`), the book sits at a slight desk tilt (`rotationX` / `rotationY`), and [`StickyNote`](https://github.com/beck-chan/guestbook/blob/main/src/components/_desk/StickyNote.tsx){.blank} is a tab on the right edge labeled **Open Book**.
-
-**Opening.** Clicking the note sets `isOpen`. The cover rotates around its left edge to `rotationY: -180`. While it crosses the midpoint, the scene width grows from one leaf (`--page-side`) to a two-page spread, the left page is revealed, and gutter / stack shadows fade in. The sticky note lifts, an eraser mask wipes **Open Book**, then the note flies to the left of the open spread and **Close Book** letters stagger in.
-
-**Open.** The poem sits on the right leaf. Wheel events over `.leaf-copy` scroll that column instead of the page (capture-phase listener). **Turn Page** is the dog-ear; it calls `pickPoemIndex` excluding the current poem. A **guestbook** chevron under the stage scrolls to `#guestbook` (hidden once you leave the top of the page).
-
-**Closing.** A clone of the note flies off-screen; a second clone arrives from the right, settles back into the tab, then the cover eases through an ajar pose (`-20°`) and shuts. Shadows clip closed with it.
-
-Widths are measured from CSS tokens (`--page-side`, `--book-width`, sticky-note size) so a `ResizeObserver` on `.stage` can re-pose the idle book without restarting a flip. If `prefers-reduced-motion: reduce` is set, the timelines are skipped and the book jumps to the open or closed rest pose.
-
-Comments sit beside the book in [`CommentBubbles`](https://github.com/beck-chan/guestbook/blob/main/src/components/_shared/CommentBubbles.tsx){.blank}, seeded with four comments per page (`DESK_COMMENT_PAGE_SIZE`).
+[`Book`](https://github.com/beck-chan/guestbook/blob/main/src/components/_desk/Book.tsx){.blank} drives open/close with [GSAP](https://gsap.com/){.blank} (`gsap` + `@gsap/react`).
 
 # Mobile
 
-At `max-width: 768px`, `.desk-desktop` is hidden and [`MobileReading`](https://github.com/beck-chan/guestbook/blob/main/src/components/_desk/MobileReading.tsx){.blank} takes the viewport. It is a vertical snap scroller (`.mobile-reading`) with three full-height panels:
-
-1. **Cover** — same **ORIGINAL POETRY / by Beck Chan** face as the hardcover, plus the hit counter and an **Open Book** hint.
-2. **Inside cover** — the Easter egg leaf.
-3. **Poem** — the current poem, heart, font zoom, and **Turn Page** (random next poem, same index as desktop).
-
-Poem type is fitted to the leaf with a canvas `measureText` pass (`fitPoemFont`, 11–17px), then the reader can boost it up to four steps (`+` / `−`). A comments FAB opens the same `CommentBubbles` board in a full-screen overlay (`idPrefix="mobile-"` so form ids do not clash with the hidden desktop form). [`MobileMenu`](https://github.com/beck-chan/guestbook/blob/main/src/components/_shared/MobileMenu.tsx){.blank} is the hamburger for docs / admin / report issue.
+At `max-width: 768px`, `.desk-desktop` is hidden and [`MobileReading`](https://github.com/beck-chan/guestbook/blob/main/src/components/_desk/MobileReading.tsx){.blank} a vertical snap scroller (`.mobile-reading`) takes the viewport. 
 
 :::
 
@@ -56,8 +40,7 @@ Poems are Markdown files that live under [`poetry/`](https://github.com/beck-cha
 
 - [`loadPoems()`](https://github.com/beck-chan/guestbook/blob/main/src/lib/loadPoems.ts){.blank} reads that folder at request time, splits on `##` headings, and turns `*emphasis*` / `**strong**` into HTML. Each file becomes a `Poem` (`id` from the filename, `sections` for every heading).
 - [`pickPoemIndex()`](https://github.com/beck-chan/guestbook/blob/main/src/lib/poems.ts){.blank} picks a random poem for the first paint, and a different one whenever the reader turns the page, ensuring no repeats in a row. 
-- On each poem, a heart button calls [`togglePoemHeart`](https://github.com/beck-chan/guestbook/blob/main/src/lib/actions/hearts.ts){.blank}. Likes are keyed by an httpOnly `poem_visitor_key` cookie and stored in `poem_hearts`. Counts come from the `poem_heart_counts` / `poem_heart_total` views and the `poem_heart_state` / `toggle_poem_heart` RPCs. When the Supabase secret `FLAG_NOTIF` is on, insert/delete on `poem_hearts` emails the admin list (`poem-hearted` / `poem-unhearted`). 
-
+- On each poem, a heart button calls [`togglePoemHeart`](https://github.com/beck-chan/guestbook/blob/main/src/lib/actions/hearts.ts){.blank}. Likes are keyed by an httpOnly `poem_visitor_key` cookie and stored in `poem_hearts`. Counts come from the `poem_heart_counts` / `poem_heart_total` views and the `poem_heart_state` / `toggle_poem_heart` RPCs. 
 
 
 ## Guestbook Functionality

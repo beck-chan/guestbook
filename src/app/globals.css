@@ -447,6 +447,7 @@ body {
 .book-shadow-left::after {
   content: "";
   position: absolute;
+  z-index: 2;
   top: 0;
   left: -24px;
   width: 24px;
@@ -1036,7 +1037,8 @@ body {
 .sticky-note {
   position: absolute;
   left: calc(100% - var(--sticky-size) * 0.55);
-  top: calc(100% - var(--sticky-size) - 0.7rem - 1in);
+  --sticky-closed-top: calc(100% - var(--sticky-size) - 0.7rem - 2in);
+  top: var(--sticky-closed-top);
   z-index: 2;
   display: flex;
   align-items: center;
@@ -1084,7 +1086,7 @@ body {
 
 .book.is-open:not(.is-animating) .sticky-note {
   left: calc(var(--sticky-size) * -2 / 3);
-  top: calc(100% - var(--sticky-size) - 0.7rem - 1in);
+  top: var(--sticky-closed-top);
   z-index: 8;
   transform: rotate(-6deg) translateZ(40px);
   box-shadow:

@@ -241,7 +241,9 @@ function poseClosedShadows(parts: {
 
 function setSpineOpacity(scene: HTMLElement, rotationY: number) {
   const angle = Math.min(180, Math.max(0, Math.abs(rotationY)));
-  scene.style.setProperty("--spine", String(Math.sin((angle * Math.PI) / 180)));
+  const fromEnd = Math.min(angle, 180 - angle);
+  const t = Math.min(1, fromEnd / 12);
+  scene.style.setProperty("--spine", String(t * t * (3 - 2 * t)));
 }
 
 function clearSpineOpacity(scene: HTMLElement) {
@@ -364,9 +366,9 @@ export function Book({
     gsap.set(parts.spread, { clearProps: "width" });
     gsap.set(parts.book, { clearProps: "transform,rotationX,rotationY" });
     gsap.set(parts.cover, { clearProps: "transform,z,backfaceVisibility" });
-    gsap.set(parts.note, {
-      clearProps: "transform,x,y,z,zIndex,left,boxShadow,opacity,visibility,pointerEvents",
-    });
+      gsap.set(parts.note, {
+        clearProps: "transform,x,y,z,zIndex,left,top,boxShadow,opacity,visibility,pointerEvents",
+      });
     parts.spread.style.width = "";
     clearSpineOpacity(parts.scene);
   }
@@ -816,6 +818,7 @@ export function Book({
         zIndex: 2,
         autoAlpha: 0,
         left: "calc(100% - var(--sticky-size) * 0.55)",
+        top: "var(--sticky-closed-top)",
       });
       const tab = note.getBoundingClientRect();
       const enterX = Math.max(window.innerWidth - tab.left + 48, 280);
@@ -884,6 +887,7 @@ export function Book({
         autoAlpha: 1,
         pointerEvents: "auto",
         left: "calc(100% - var(--sticky-size) * 0.55)",
+        top: "var(--sticky-closed-top)",
         boxShadow: restShadow,
       });
     });
