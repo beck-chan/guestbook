@@ -66,8 +66,26 @@ The schema applied by running [`scripts/schema.sql`](https://github.com/beck-cha
 
 # Entity Relationship Diagram
 
+<DocsErdGrid>
+
 ```mermaid
 erDiagram
+    direction TB
+    admin_allowlist {
+        text email PK
+        timestamptz created_at
+    }
+    auth_users {
+        uuid id PK
+        text email
+        jsonb app_metadata
+    }
+    admin_allowlist |o..o| auth_users : "email match"
+```
+
+```mermaid
+erDiagram
+    direction TB
     comments {
         uuid id PK
         text display_name
@@ -77,7 +95,6 @@ erDiagram
         timestamptz created_at
         timestamptz updated_at
     }
-
     comments_public {
         uuid id PK
         text display_name
@@ -85,7 +102,12 @@ erDiagram
         timestamptz created_at
         timestamptz updated_at
     }
+    comments ||--|| comments_public : "public view"
+```
 
+```mermaid
+erDiagram
+    direction TB
     guestbook_settings {
         int id PK
         text title
@@ -93,34 +115,29 @@ erDiagram
         boolean capture_email
         int comment_length
     }
+```
 
-    admin_allowlist {
-        text email PK
-        timestamptz created_at
-    }
-
-    auth_users {
-        uuid id PK
-        text email
-        jsonb app_metadata
-    }
-
+```mermaid
+erDiagram
+    direction TB
     poem_hearts {
         uuid id PK
         text poem_id
         text visitor_key
         timestamptz created_at
     }
-
     poem_heart_counts {
         text poem_id
         bigint heart_count
     }
-
-    comments ||--|| comments_public : "public view"
     poem_hearts }o--o| poem_heart_counts : aggregates
-    admin_allowlist |o..o| auth_users : "email match"
 ```
+
+</DocsErdGrid>
+
+# Admin Notifications
+
+{/* here */}
 
 :::
 
@@ -150,6 +167,10 @@ When users click **Submit**, the `submitComment` server action:
 - Existing admin login session — redirects into the dashboard.
 
 [`/admin/login`](https://github.com/beck-chan/guestbook/blob/main/src/app/admin/login/route.ts){.blank} starts Google OAuth. [`/auth/callback`](https://github.com/beck-chan/guestbook/blob/main/src/app/auth/callback/route.ts){.blank} exchanges the code, then [`resolveAdminSession`](https://github.com/beck-chan/guestbook/blob/main/src/lib/adminAuth.ts){.blank} calls `ensure_admin_role` (allow-list stamp) and refreshes the JWT so `role=admin` is on the cookie.
+
+# Hit Counter
+
+{/* here */}
 
 :::
 

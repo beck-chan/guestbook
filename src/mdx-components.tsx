@@ -9,6 +9,7 @@ import {
 import { DocsCallout } from "@/app/docs/_components/DocsCallout";
 import { DocsCodeBlock } from "@/app/docs/_components/DocsCodeBlock";
 import { DocsColumn, DocsColumns } from "@/app/docs/_components/DocsColumns";
+import { DocsErdGrid } from "@/app/docs/_components/DocsErdGrid";
 import { DocsGear } from "@/app/docs/_components/DocsGear";
 import { DocsHeart } from "@/app/docs/_components/DocsHeart";
 import { DocsLock } from "@/app/docs/_components/DocsLock";
@@ -127,6 +128,7 @@ const components: MDXComponents = {
   DocsCallout,
   DocsColumns,
   DocsColumn,
+  DocsErdGrid,
   DocsTabset,
   DocsTab,
 };

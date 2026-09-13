@@ -1454,7 +1454,8 @@ a[role="option"][data-docs-hide-heading="true"],
   --docs-mermaid-heading: var(--paper);
   --docs-mermaid-row: color-mix(in srgb, var(--paper) 72%, white);
   margin: 1.1rem 0;
-  overflow-x: auto;
+  max-width: 100%;
+  overflow: visible;
   color: var(--docs-mermaid-ink);
   font-family: var(--body-font);
   font-size: 16px;
@@ -1463,8 +1464,171 @@ a[role="option"][data-docs-hide-heading="true"],
 
 .docs-mermaid svg {
   display: block;
-  max-width: none;
+  overflow: visible;
+  max-width: 100%;
   height: auto;
+}
+
+.docs-erd-grid {
+  --docs-mermaid-title: color-mix(in srgb, #6f4e37 48%, white);
+  --docs-mermaid-ink: var(--docs-ink);
+  --docs-mermaid-brown: #6f4e37;
+  --docs-mermaid-border: color-mix(in srgb, #6f4e37 28%, white);
+  --docs-mermaid-heading: var(--paper);
+  --docs-mermaid-row: color-mix(in srgb, var(--paper) 72%, white);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  grid-template-rows: auto 1fr auto;
+  grid-template-areas:
+    "admin comments"
+    "settings comments"
+    "legend poems";
+  column-gap: 1.5rem;
+  row-gap: 1.35rem;
+  align-items: stretch;
+  justify-items: center;
+  margin: 1.1rem 0;
+  max-width: 100%;
+}
+
+.docs-erd-admin,
+.docs-erd-comments,
+.docs-erd-settings,
+.docs-erd-poems {
+  width: 100%;
+  min-width: 0;
+}
+
+.docs-erd-admin {
+  grid-area: admin;
+}
+
+.docs-erd-comments {
+  grid-area: comments;
+}
+
+.docs-erd-settings {
+  grid-area: settings;
+  align-self: center;
+}
+
+.docs-erd-poems {
+  grid-area: poems;
+}
+
+.docs-erd-grid .docs-mermaid {
+  margin: 0;
+  width: 100%;
+  min-width: 0;
+  overflow: visible;
+}
+
+.docs-erd-grid .docs-mermaid svg {
+  margin-inline: auto;
+}
+
+.docs-erd-legend {
+  grid-area: legend;
+  align-self: center;
+  justify-self: center;
+  box-sizing: border-box;
+  width: min(100%, 15.75rem);
+  margin: 0;
+  padding: 0.55rem 0.85rem 0.7rem;
+  border: 1px solid var(--docs-mermaid-border);
+  background: #fff;
+  color: var(--docs-mermaid-brown);
+}
+
+.docs-erd-legend-title {
+  margin: 0 0 0.4rem;
+  color: var(--docs-mermaid-brown);
+  font-family: var(--peony-font);
+  font-size: 1.15rem;
+  font-weight: 400;
+  line-height: 1.2;
+  text-align: center;
+}
+
+.docs-erd-legend-list {
+  display: grid;
+  gap: 0.28rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.docs-erd-legend-item {
+  display: grid;
+  grid-template-columns: 3.1rem minmax(0, 1fr);
+  align-items: center;
+  column-gap: 0.55rem;
+  min-height: 1.15rem;
+  font-family: var(--body-font);
+  font-size: 0.92rem;
+  line-height: 1.2;
+}
+
+.docs-erd-legend-mark {
+  display: block;
+  width: 3.1rem;
+  height: 1.05rem;
+  overflow: visible;
+  stroke: var(--docs-mermaid-border);
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  fill: none;
+}
+
+.docs-erd-legend-mark circle {
+  fill: #fff;
+}
+
+.docs-erd-legend-pk {
+  color: var(--docs-mermaid-brown);
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-align: center;
+}
+
+.docs-article .docs-erd-legend p,
+.docs-article .docs-erd-legend ul,
+.docs-article .docs-erd-legend li {
+  margin: 0;
+  padding: 0;
+  font-size: inherit;
+  line-height: inherit;
+}
+
+.docs-article .docs-erd-legend-title {
+  margin-bottom: 0.4rem;
+}
+
+.docs-article .docs-erd-legend-item {
+  display: grid;
+  padding-left: 0;
+}
+
+.docs-article .docs-erd-legend,
+.docs-article .docs-erd-legend-title,
+.docs-article .docs-erd-legend-item,
+.docs-article .docs-erd-legend-pk {
+  color: var(--docs-mermaid-brown);
+}
+
+@media (max-width: 720px) {
+  .docs-erd-grid {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: none;
+    grid-template-areas:
+      "admin"
+      "settings"
+      "legend"
+      "comments"
+      "poems";
+  }
 }
 
 .docs-mermaid .outer-path path {
@@ -1522,13 +1686,11 @@ a[role="option"][data-docs-hide-heading="true"],
   font-weight: 700 !important;
   overflow: visible !important;
   white-space: nowrap !important;
-  width: 100% !important;
-  max-width: none !important;
-  text-align: center !important;
 }
 
-.docs-mermaid .name foreignObject {
-  overflow: visible;
+.docs-mermaid .name text {
+  text-anchor: middle;
+  dominant-baseline: alphabetic;
 }
 
 .docs-mermaid .attribute-type,
@@ -1569,12 +1731,24 @@ a[role="option"][data-docs-hide-heading="true"],
   background-color: transparent !important;
   overflow: visible !important;
   white-space: nowrap !important;
-  width: max-content !important;
-  max-width: none !important;
 }
 
-.docs-mermaid .edgeLabel foreignObject {
-  overflow: visible;
+.docs-mermaid .edgeLabel text {
+  text-anchor: middle;
+  dominant-baseline: middle;
+}
+
+.docs-mermaid .cluster rect {
+  fill: none !important;
+  stroke: none !important;
+}
+
+.docs-mermaid .cluster text,
+.docs-mermaid .cluster-label,
+.docs-mermaid .cluster-label div,
+.docs-mermaid .cluster-label span,
+.docs-mermaid .cluster-label foreignObject {
+  display: none !important;
 }
 
 .docs-mermaid .edgeLabel .label rect,
@@ -1763,6 +1937,7 @@ a[role="option"][data-docs-hide-heading="true"],
 
 .docs-tabset-panel {
   padding: 0 1.1rem 1.05rem;
+  overflow-x: auto;
 }
 
 .docs-tabset-panel > :first-child {
@@ -1958,20 +2133,23 @@ a[role="option"][data-docs-hide-heading="true"],
 .docs-article .docs-mermaid .name,
 .docs-article .docs-mermaid .name p,
 .docs-article .docs-mermaid .name div,
-.docs-article .docs-mermaid .name span {
+.docs-article .docs-mermaid .name span,
+.docs-article .docs-mermaid .name text {
   color: var(--docs-mermaid-title);
+  fill: var(--docs-mermaid-title);
   font-family: var(--body-font);
   font-size: 1.05rem;
   font-weight: 700;
   white-space: nowrap;
-  text-align: center;
 }
 
 .docs-article .docs-mermaid .edgeLabel,
 .docs-article .docs-mermaid .edgeLabel p,
 .docs-article .docs-mermaid .edgeLabel div,
-.docs-article .docs-mermaid .edgeLabel span {
+.docs-article .docs-mermaid .edgeLabel span,
+.docs-article .docs-mermaid .edgeLabel text {
   color: var(--docs-mermaid-brown);
+  fill: var(--docs-mermaid-brown);
   font-family: var(--peony-font);
   font-size: 1.15rem;
   white-space: nowrap;

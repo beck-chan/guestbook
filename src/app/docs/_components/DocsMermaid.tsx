@@ -3,10 +3,23 @@
 import { useEffect, useId, useLayoutEffect, useRef, useState } from "react";
 
 let mermaidLoader: Promise<typeof import("mermaid").default> | undefined;
+let mermaidQueue: Promise<unknown> = Promise.resolve();
 
 function loadMermaid() {
   mermaidLoader ??= import("mermaid").then((mod) => mod.default);
   return mermaidLoader;
+}
+
+function renderChart(id: string, chart: string, host: HTMLElement) {
+  const job = mermaidQueue.catch(() => undefined).then(async () => {
+    const mermaid = await loadMermaid();
+    const config = mermaidConfigFor(host);
+    mermaid.initialize(config);
+    const result = await mermaid.render(id, chart);
+    return { result, border: config.themeVariables.lineColor };
+  });
+  mermaidQueue = job;
+  return job;
 }
 
 function cssColor(host: HTMLElement, value: string) {
@@ -56,7 +69,8 @@ function mermaidConfigFor(host: HTMLElement) {
       clusterBorder: border,
     },
     er: {
-      useMaxWidth: false,
+      useMaxWidth: true,
+      layoutDirection: "TB",
     },
   };
 }
@@ -120,82 +134,124 @@ function tintConnectors(svg: SVGSVGElement, border: string) {
   });
 }
 
+const SVG_NS = "http://www.w3.org/2000/svg";
+
+function labelText(node: Element) {
+  return (node.textContent ?? "").replace(/\s+/g, " ").trim();
+}
+
+function svgCenteredText(content: string, x: number, y: number) {
+  const text = document.createElementNS(SVG_NS, "text");
+  text.setAttribute("x", String(x));
+  text.setAttribute("y", String(y));
+  text.setAttribute("text-anchor", "middle");
+  text.setAttribute("dominant-baseline", "alphabetic");
+  text.textContent = content;
+  return text;
+}
+
+function placeCenteredText(group: Element, content: string, x: number, y: number) {
+  const text = svgCenteredText(content, x, y);
+  group.replaceChildren(text);
+  try {
+    const box = text.getBBox();
+    if (Number.isFinite(box.height) && box.height > 1) {
+      const visualMid = box.y + box.height / 2;
+      text.setAttribute("y", String(y + (y - visualMid) + 3));
+    }
+  } catch {
+    // SVG is hidden; the visible-tab observer will measure again.
+  }
+}
+
+function headerBand(node: Element) {
+  const outer = node.querySelector(".outer-path");
+  if (!outer) {
+    return null;
+  }
+  let box: DOMRect;
+  try {
+    box = (outer as SVGGraphicsElement).getBBox();
+  } catch {
+    return null;
+  }
+  if (!Number.isFinite(box.width) || box.width < 1) {
+    return null;
+  }
+  let underlineY = box.y + Math.min(40, Math.max(28, box.height * 0.28));
+  for (const divider of node.querySelectorAll(".divider")) {
+    let band: DOMRect;
+    try {
+      band = (divider as SVGGraphicsElement).getBBox();
+    } catch {
+      continue;
+    }
+    const horizontal = band.height < 1.5 && band.width > box.width * 0.6;
+    if (horizontal && band.y > box.y + 6 && band.y < box.y + box.height * 0.45) {
+      underlineY = Math.min(underlineY, band.y);
+    }
+  }
+  return { box, headerH: Math.max(underlineY - box.y, 24) };
+}
+
 function centerEntityHeadings(host: HTMLElement) {
   host.querySelectorAll("g.node").forEach((node) => {
     const name = node.querySelector(".name");
-    const outer = node.querySelector(".outer-path");
-    if (!name || !outer) {
+    const band = headerBand(node);
+    if (!name || !band) {
       return;
     }
-
-    const box = (outer as SVGGraphicsElement).getBBox();
-    const transform = name.getAttribute("transform") ?? "";
-    const translate = /translate\(([^,]+),\s*([^)]+)\)/.exec(transform);
-    const y = translate?.[2] ?? "0";
-    name.setAttribute("transform", `translate(${box.x}, ${y})`);
-
-    const fo = name.querySelector("foreignObject");
-    if (fo) {
-      fo.setAttribute("x", "0");
-      fo.setAttribute("width", String(box.width));
-      fo.style.width = `${box.width}px`;
-      fo.style.overflow = "visible";
-      const inner = fo.querySelector("div, p, span") as HTMLElement | null;
-      if (inner) {
-        inner.style.width = "100%";
-        inner.style.maxWidth = "none";
-        inner.style.textAlign = "center";
-        inner.style.whiteSpace = "nowrap";
-        inner.style.overflow = "visible";
-      }
+    const content = labelText(name);
+    if (!content) {
+      return;
     }
-
-    name.querySelectorAll("text").forEach((text) => {
-      text.setAttribute("text-anchor", "middle");
-      text.setAttribute("x", String(box.width / 2));
-    });
+    name.removeAttribute("transform");
+    placeCenteredText(
+      name,
+      content,
+      band.box.x + band.box.width / 2,
+      band.box.y + band.headerH / 2,
+    );
   });
 }
 
-function fitLabelBoxes(host: HTMLElement, selector: string) {
-  host.querySelectorAll(selector).forEach((label) => {
-    const fo = label.querySelector("foreignObject");
-    if (!fo) {
+function centerEdgeLabels(host: HTMLElement) {
+  host.querySelectorAll(".edgeLabel").forEach((label) => {
+    const content = labelText(label);
+    if (!content) {
       return;
     }
-    const inner = fo.querySelector("div, p, span") as HTMLElement | null;
-    if (!inner) {
-      return;
-    }
-    inner.style.whiteSpace = "nowrap";
-    inner.style.width = "max-content";
-    inner.style.maxWidth = "none";
-    inner.style.overflow = "visible";
-    const width = Math.ceil(
-      Math.max(inner.scrollWidth, inner.offsetWidth, inner.getBoundingClientRect().width) + 16,
-    );
-    const height = Math.ceil(
-      Math.max(inner.scrollHeight, inner.offsetHeight, inner.getBoundingClientRect().height) + 10,
-    );
-    if (width < 8 || height < 8) {
-      return;
-    }
-    const prevW = parseFloat(fo.getAttribute("width") || "0");
-    const prevH = parseFloat(fo.getAttribute("height") || "0");
-    const prevX = parseFloat(fo.getAttribute("x") || "0");
-    const prevY = parseFloat(fo.getAttribute("y") || "0");
-    fo.setAttribute("width", String(width));
-    fo.setAttribute("height", String(height));
-    fo.style.width = `${width}px`;
-    fo.style.height = `${height}px`;
-    fo.style.overflow = "visible";
-    if (prevW > 0) {
-      fo.setAttribute("x", String(prevX - (width - prevW) / 2));
-    }
-    if (prevH > 0) {
-      fo.setAttribute("y", String(prevY - (height - prevH) / 2));
-    }
+    placeCenteredText(label, content, 0, 0);
   });
+}
+
+function fitSvgCanvas(host: HTMLElement) {
+  const svg = host.querySelector("svg");
+  if (!svg) {
+    return;
+  }
+  svg.style.overflow = "visible";
+  let box: DOMRect;
+  try {
+    box = svg.getBBox();
+  } catch {
+    return;
+  }
+  if (!Number.isFinite(box.width) || box.width < 1 || !Number.isFinite(box.height) || box.height < 1) {
+    return;
+  }
+  const padX = 10;
+  const padY = 16;
+  const x = box.x - padX;
+  const y = box.y - padY;
+  const width = box.width + padX * 2;
+  const height = box.height + padY * 2;
+  svg.setAttribute("viewBox", `${x} ${y} ${width} ${height}`);
+  svg.setAttribute("width", String(width));
+  svg.removeAttribute("height");
+  svg.style.width = `${width}px`;
+  svg.style.maxWidth = "100%";
+  svg.style.height = "auto";
 }
 
 function prepareSvg(svg: string, border: string) {
@@ -226,14 +282,8 @@ export function DocsMermaid({ chart }: { chart: string }) {
     setSvg(null);
     setFailed(false);
 
-    void loadMermaid()
-      .then((mermaid) => {
-        const config = mermaidConfigFor(host);
-        mermaid.initialize(config);
-        return mermaid
-          .render(`mermaid-${reactId}`, chart)
-          .then((result) => ({ result, border: config.themeVariables.lineColor }));
-      })
+    void document.fonts.ready
+      .then(() => renderChart(`mermaid-${reactId}`, chart, host))
       .then(({ result, border }) => {
         if (!cancelled) {
           setSvg(prepareSvg(result.svg, border));
@@ -258,15 +308,27 @@ export function DocsMermaid({ chart }: { chart: string }) {
 
     let cancelled = false;
     const run = () => {
-      if (!cancelled) {
-        fitLabelBoxes(host, ".edgeLabel");
-        centerEntityHeadings(host);
+      if (cancelled || host.closest("[hidden]")) {
+        return;
       }
+      centerEntityHeadings(host);
+      centerEdgeLabels(host);
+      fitSvgCanvas(host);
     };
     run();
     void document.fonts.ready.then(run);
+
+    const panel = host.closest(".docs-tabset-panel");
+    const observer = panel
+      ? new MutationObserver(() => {
+          requestAnimationFrame(run);
+        })
+      : null;
+    observer?.observe(panel, { attributes: true, attributeFilter: ["hidden"] });
+
     return () => {
       cancelled = true;
+      observer?.disconnect();
     };
   }, [svg]);
 
