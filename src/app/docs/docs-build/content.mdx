@@ -150,7 +150,7 @@ The Test Request feature available on the public build allows visitors to enter 
 - Turns Scalar's own theme off and injects my `customCss` that remaps Scalar onto guestbook tokens instead. 
 - Hides Scalar's native sidebar and sticky search bar, instead, the sidebar search opens Scalar's search.
 - Hides the Models section (`hideModels`).
-- Starts with every tag collapsed (`defaultOpenAllTags` / `defaultOpenFirstTag` off). Click a sidebar operation to open it.
+- Starts with every tag collapsed (`defaultOpenAllTags` / `defaultOpenFirstTag` off). The API sidenav matches: section headings show a caret and stay collapsed until you open that heading or the matching explorer tag. Click a sidebar operation to jump to that call.
 - Hides the **Test Request** functionality unless `FLAG_PUBLIC` (public build) or `FLAG_APITEST` (custom build, for my internal testing) flags are on.
 - With [`scalarApiKey.ts`](https://github.com/beck-chan/guestbook/blob/main/src/lib/docs/scalarApiKey.ts){.blank}, injects the saved anon `apikey` and admin JWT on Send so focusing one Authentication tab does not drop the other.
 

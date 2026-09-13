@@ -650,6 +650,23 @@ a[role="option"][data-docs-hide-heading="true"],
   color: color-mix(in srgb, #6f4e37 48%, white);
 }
 
+.docs-api-nav .docs-nav-heading {
+  gap: 0.28em;
+}
+
+.docs-api-nav-caret {
+  display: block;
+  width: 0.62rem;
+  height: 0.4rem;
+  flex: 0 0 auto;
+  color: inherit;
+  transition: transform 0.18s ease;
+}
+
+.docs-api-nav .docs-nav-heading.is-expanded .docs-api-nav-caret {
+  transform: rotate(180deg);
+}
+
 .docs-nav-list {
   display: flex;
   flex-direction: column;
