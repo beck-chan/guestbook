@@ -968,7 +968,9 @@ a[role="option"][data-docs-hide-heading="true"],
 
 .docs-article ol > li::marker {
   color: color-mix(in srgb, #6f4e37 55%, white);
-  font-family: var(--body-font);
+  font-family: var(--peony-font);
+  font-size: 1.35em;
+  font-weight: 400;
   font-variant-numeric: lining-nums;
 }
 

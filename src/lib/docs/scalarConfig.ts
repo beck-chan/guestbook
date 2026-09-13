@@ -86,6 +86,89 @@ export const SCALAR_CUSTOM_CSS = `
   line-height: 1.2 !important;
 }
 
+.scalar-app .introduction-section .markdown > h3:first-child,
+.scalar-app .introduction .markdown > h3:first-child,
+.scalar-app [id="description"] .markdown > h3:first-child {
+  margin-bottom: 1.35rem !important;
+}
+
+/* Match docs-article numbered lists in Scalar markdown. */
+.scalar-app .markdown ol,
+.scalar-app .introduction-section ol,
+.scalar-app .introduction ol {
+  margin: 1.1rem 0 0 !important;
+  padding: 0 0 0 2.35rem !important;
+  list-style: decimal !important;
+  list-style-position: outside !important;
+  color: inherit !important;
+  font-family: var(--body-font) !important;
+  font-size: clamp(1rem, 1.5vw, 1.28rem) !important;
+  font-weight: 400 !important;
+  font-variant-numeric: lining-nums !important;
+  line-height: 1.55 !important;
+}
+
+.scalar-app .markdown ol ol,
+.scalar-app .introduction-section ol ol {
+  list-style-type: lower-alpha !important;
+}
+
+.scalar-app .markdown ol ol ol,
+.scalar-app .introduction-section ol ol ol {
+  list-style-type: lower-roman !important;
+}
+
+.scalar-app .markdown ol > li,
+.scalar-app .introduction-section ol > li,
+.scalar-app .introduction ol > li {
+  padding-left: 0.2em !important;
+  color: inherit !important;
+  font-family: var(--body-font) !important;
+  font-size: clamp(1rem, 1.5vw, 1.28rem) !important;
+  font-weight: 400 !important;
+  font-variant-numeric: lining-nums !important;
+  line-height: 1.55 !important;
+}
+
+.scalar-app .markdown ol > li + li,
+.scalar-app .introduction-section ol > li + li {
+  margin-top: 0.28rem !important;
+}
+
+.scalar-app .markdown ol > li::marker,
+.scalar-app .introduction-section ol > li::marker,
+.scalar-app .introduction ol > li::marker,
+.scalar-app .markdown ol > li::before,
+.scalar-app .introduction-section ol > li::before {
+  color: color-mix(in srgb, #6f4e37 55%, white) !important;
+  font-family: var(--peony-font) !important;
+  font-size: 1.35em !important;
+  font-weight: 400 !important;
+  font-variant-numeric: lining-nums !important;
+  letter-spacing: 0.02em !important;
+  line-height: 1.55 !important;
+}
+
+.scalar-app .markdown ol > li > p {
+  margin: 0 !important;
+  font-size: inherit !important;
+  line-height: inherit !important;
+}
+
+.scalar-app .introduction-section .markdown ol p,
+.scalar-app .introduction .markdown ol p {
+  font-size: clamp(1rem, 1.5vw, 1.28rem) !important;
+  line-height: 1.55 !important;
+}
+
+.scalar-app .markdown li > ol,
+.scalar-app .markdown li > ul {
+  margin-top: 0.65rem !important;
+  margin-bottom: 0.25rem !important;
+  margin-left: 0 !important;
+  padding-left: 0.65rem !important;
+}
+
 /* Match docs .docs-callout for markdown blockquotes and GitHub alerts. */
 .scalar-app .markdown blockquote,
 .scalar-app .markdown .markdown-alert,
