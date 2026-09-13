@@ -65,7 +65,7 @@ Create an account and organization with [Supabase](https://supabase.com/), then 
 
 a. Enter in your **Organization**, **Project name**, and **Database password**.
 
-    Hang on to your **Database password** — we'll need to enter this into your `.env.local` file under your `DATABASE_URL`.
+    Hang on to your **Database password** — we'll need to enter this into your `.env.local` file under your `DATABASE_URL` to replace `[YOUR-PASSWORD]`.
 
 b. Select a **Region**.
 
@@ -107,7 +107,7 @@ c. Click **Legacy anon, service_role, API keys**, then copy the `service_role` `
 
 a. In the Settings left sidebar, select **Data API**.
 
-b. Under Overview, copy the **API URL** to your clipboard. 
+b. Under Overview, copy the **API URL** to your clipboard. You'll need to clip the `rest/v1/` portion from the end of the URL.
 
     Hang on to this — we'll need to enter this into your `.env.local` file and to hook up Supabase and Google OAuth 2.0:
 
@@ -121,7 +121,7 @@ d.  Under Connection Method, select **Transaction pooler**. Leave the **Type** a
 
 e. Under Connection string, copy the **Shared pooler** to your clipboard. 
 
-    Hang on to this — we'll need to enter this into your `.env.local` file under your `DATABASE_URL`:
+    Hang on to this — we'll need to enter this into your `.env.local` file under your `DATABASE_URL` (replace with `[YOUR-PASSWORD]`):
 
     ```bash
     DATABASE_URL=postgresql://postgres.<your-database-url>:[YOUR-PASSWORD]@<your-database-region>.pooler.supabase.com:<port>/postgres
