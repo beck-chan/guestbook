@@ -239,6 +239,15 @@ function poseClosedShadows(parts: {
   gsap.set(parts.shadowDepth, { opacity: 0, force3D: false, clearProps: "transform" });
 }
 
+function setSpineOpacity(scene: HTMLElement, rotationY: number) {
+  const angle = Math.min(180, Math.max(0, Math.abs(rotationY)));
+  scene.style.setProperty("--spine", String(Math.sin((angle * Math.PI) / 180)));
+}
+
+function clearSpineOpacity(scene: HTMLElement) {
+  scene.style.removeProperty("--spine");
+}
+
 function restClosedShadows(parts: {
   gutter: HTMLElement;
   shadowLeft: HTMLElement;
@@ -359,6 +368,7 @@ export function Book({
       clearProps: "transform,x,y,z,zIndex,left,boxShadow,opacity,visibility,pointerEvents",
     });
     parts.spread.style.width = "";
+    clearSpineOpacity(parts.scene);
   }
 
   function applyFlipLayout(closing: boolean) {
@@ -370,6 +380,7 @@ export function Book({
     }
     const { scene, book, spread, cover, pageLeft } = parts;
     const rotationY = Number(gsap.getProperty(cover, "rotationY"));
+    setSpineOpacity(scene, Number.isFinite(rotationY) ? rotationY : 0);
     const pastMid = rotationY <= -90;
     pageLeft.classList.toggle("is-revealed", pastMid);
     const inside = cover.querySelector(".cover-inside");
@@ -444,6 +455,7 @@ export function Book({
       gsap.set(noteOpenLetters(parts.note), { clearProps: "opacity,y,transform" });
       gsap.set(noteCloseLetters(parts.note), { clearProps: "opacity,y,transform" });
       parts.note.classList.add("is-label-open");
+      clearSpineOpacity(parts.scene);
       parts.book.classList.remove("is-animating", "is-closing-clip");
     }
     setAnimating(false);
@@ -929,12 +941,14 @@ export function Book({
       gsap.set(parts.scene, { width: poses.openW, x: 0 });
       gsap.set(parts.note, { clearProps: "transform,x,y,z,zIndex" });
       parts.spread.style.width = "100%";
+      clearSpineOpacity(parts.scene);
     } else {
       parts.pageLeft.classList.remove("is-revealed");
       restClosedShadows(parts);
       gsap.set(parts.note, { clearProps: "transform,x,y,z,zIndex" });
       gsap.set(parts.scene, { clearProps: "width,x" });
       parts.spread.style.width = "";
+      clearSpineOpacity(parts.scene);
     }
   }
 

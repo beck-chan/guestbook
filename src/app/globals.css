@@ -420,6 +420,19 @@ body {
   clip-path: inset(-12px 0px -12px -28px);
 }
 
+.book-shadow-left::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -24px;
+  width: 24px;
+  height: calc(100% + 12px);
+  pointer-events: none;
+  background: var(--cover);
+  opacity: var(--spine, 0);
+  clip-path: polygon(100% 0, 0 12px, 0 100%, 100% calc(100% - 12px));
+}
+
 .book-shadow-right {
   opacity: 0;
   box-shadow: var(--book-stack-right);
