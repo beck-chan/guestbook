@@ -23,92 +23,40 @@ function scrollToScalarHash(hash: string) {
   target?.scrollIntoView({ block: "start" });
 }
 
-function findTagToggle(href: string) {
-  const root = document.getElementById(tagId(href));
-  if (!root) {
-    return null;
+function hrefFromScalarTagId(id: string, sections: OpenApiNavSection[]) {
+  const normalized = id.replace(/^#/, "");
+  const href = `#${normalized}`;
+  const exact = sections.find((section) => section.href === href);
+  if (exact) {
+    return exact.href;
   }
-  const heading = root.querySelector<HTMLElement>(
-    "h1, h2, h3, h4, [class*='section-header']",
+  return (
+    sections.find((section) => {
+      const sectionId = tagId(section.href);
+      return (
+        normalized === sectionId ||
+        normalized.endsWith(`/${sectionId}`) ||
+        sectionId.endsWith(`/${normalized}`)
+      );
+    })?.href ?? null
   );
-  const fromHeading = heading?.querySelector<HTMLElement>(
-    "button[aria-expanded], summary",
-  );
-  if (fromHeading) {
-    return fromHeading;
-  }
-  if (heading?.hasAttribute("aria-expanded")) {
-    return heading;
-  }
-  return root.querySelector<HTMLElement>(":scope > button[aria-expanded]");
 }
 
-function tagShowsOperations(href: string) {
-  const id = tagId(href);
-  const root = document.getElementById(id);
-  if (!root) {
-    return false;
-  }
-  for (const el of root.querySelectorAll<HTMLElement>(
-    `[id^="${CSS.escape(`${id}/`)}"]`,
-  )) {
-    if (el.getClientRects().length > 0) {
-      return true;
+function sectionHrefFromNode(node: Element, sections: OpenApiNavSection[]) {
+  const button = node.closest("button.show-more");
+  if (button?.id) {
+    const fromButton = hrefFromScalarTagId(button.id, sections);
+    if (fromButton) {
+      return fromButton;
     }
   }
-  return false;
-}
-
-function readTagExpanded(href: string) {
-  if (tagShowsOperations(href)) {
-    return true;
-  }
-  const root = document.getElementById(tagId(href));
-  if (!root) {
-    return null;
-  }
-  if (root instanceof HTMLDetailsElement) {
-    return root.open;
-  }
-  const toggle = findTagToggle(href);
-  if (toggle instanceof HTMLDetailsElement) {
-    return toggle.open;
-  }
-  if (toggle?.hasAttribute("aria-expanded")) {
-    return toggle.getAttribute("aria-expanded") === "true";
-  }
-  return null;
-}
-
-function showMoreAction(text: string) {
-  const normalized = text.replace(/\s+/g, " ").trim().toLowerCase();
-  if (normalized === "show more" || normalized === "show all") {
-    return "open" as const;
-  }
-  if (normalized === "show less") {
-    return "close" as const;
-  }
-  return null;
-}
-
-function sectionHrefFromNode(
-  node: Element,
-  sections: OpenApiNavSection[],
-) {
   let current: Element | null = node;
   while (current) {
     const id = current.id;
     if (id) {
-      const href = `#${id}`;
-      const tag = sections.find((section) => section.href === href);
-      if (tag) {
-        return tag.href;
-      }
-      const parent = sections.find((section) =>
-        id.startsWith(`${tagId(section.href)}/`),
-      );
-      if (parent) {
-        return parent.href;
+      const href = hrefFromScalarTagId(id, sections);
+      if (href) {
+        return href;
       }
     }
     current = current.parentElement;
@@ -116,68 +64,28 @@ function sectionHrefFromNode(
   return null;
 }
 
-function isTagSectionId(id: string) {
-  return /^api\/tag\/[^/]+$/.test(id);
-}
-
-function findShowMoreControl(href: string, action: "open" | "close") {
-  const root = document.getElementById(tagId(href));
+function findShowMoreButton(href: string) {
+  const id = tagId(href);
+  const byId = document.querySelector<HTMLElement>(
+    `button.show-more[id="${CSS.escape(id)}"]`,
+  );
+  if (byId) {
+    return byId;
+  }
+  const root = document.getElementById(id);
   if (!root) {
     return null;
   }
-  const scope: Element[] = [root];
-  let sibling = root.nextElementSibling;
-  while (sibling && !isTagSectionId(sibling.id)) {
-    scope.push(sibling);
-    sibling = sibling.nextElementSibling;
+  if (root.matches("button.show-more")) {
+    return root;
   }
-  for (const node of scope) {
-    const candidates = [
-      ...(node instanceof HTMLElement &&
-      node.matches("button, a, [role='button']")
-        ? [node]
-        : []),
-      ...node.querySelectorAll<HTMLElement>("button, a, [role='button']"),
-    ];
-    for (const el of candidates) {
-      if (showMoreAction(el.textContent ?? "") === action) {
-        return el;
-      }
-    }
-  }
-  return null;
+  const container =
+    root.closest(".tag-section-container") ?? root.parentElement ?? root;
+  return container.querySelector<HTMLElement>("button.show-more");
 }
 
-function setTagExpanded(href: string, open: boolean) {
-  const shown = tagShowsOperations(href);
-  if (shown === open) {
-    return;
-  }
-  const control = findShowMoreControl(href, open ? "open" : "close");
-  if (control) {
-    control.click();
-    return;
-  }
-  const root = document.getElementById(tagId(href));
-  if (!root) {
-    return;
-  }
-  if (root instanceof HTMLDetailsElement) {
-    root.open = open;
-    return;
-  }
-  const toggle = findTagToggle(href);
-  if (!toggle) {
-    return;
-  }
-  if (toggle instanceof HTMLDetailsElement) {
-    toggle.open = open;
-    return;
-  }
-  const expanded = toggle.getAttribute("aria-expanded") === "true";
-  if (expanded !== open) {
-    toggle.click();
-  }
+function expandTagInExplorer(href: string) {
+  findShowMoreButton(href)?.click();
 }
 
 function SectionCaret() {
@@ -208,6 +116,31 @@ export function DocsApiNav({
 }) {
   const [hash, setHash] = useState("");
   const [openHrefs, setOpenHrefs] = useState<Set<string>>(() => new Set());
+  const [openedForHash, setOpenedForHash] = useState({
+    hash: "",
+    href: null as string | null,
+  });
+
+  const hashSectionHref =
+    sections.find(
+      (section) =>
+        hash === section.href ||
+        section.items.some((item) => item.href === hash),
+    )?.href ?? null;
+
+  if (hash !== openedForHash.hash || hashSectionHref !== openedForHash.href) {
+    setOpenedForHash({ hash, href: hashSectionHref });
+    if (hashSectionHref) {
+      setOpenHrefs((current) => {
+        if (current.has(hashSectionHref)) {
+          return current;
+        }
+        const next = new Set(current);
+        next.add(hashSectionHref);
+        return next;
+      });
+    }
+  }
 
   useEffect(() => {
     function sync() {
@@ -220,52 +153,29 @@ export function DocsApiNav({
   }, []);
 
   useEffect(() => {
-    const match = sections.find(
-      (section) =>
-        hash === section.href ||
-        section.items.some((item) => item.href === hash),
-    );
-    if (!match) {
-      return;
-    }
-    setOpenHrefs((current) => {
-      if (current.has(match.href)) {
-        return current;
+    function openFromTagId(id: string) {
+      const href = hrefFromScalarTagId(id, sections);
+      if (!href) {
+        return;
       }
-      const next = new Set(current);
-      next.add(match.href);
-      return next;
-    });
-  }, [hash, sections]);
-
-  useEffect(() => {
-    const host = document.querySelector(".docs-api-reference");
-    if (!host || sections.length === 0) {
-      return;
+      setOpenHrefs((current) => {
+        if (current.has(href)) {
+          return current;
+        }
+        const next = new Set(current);
+        next.add(href);
+        return next;
+      });
     }
 
-    function syncFromExplorer() {
-      setOpenHrefs((current) => {
-        let changed = false;
-        const next = new Set(current);
-        for (const section of sections) {
-          const expanded = readTagExpanded(section.href);
-          if (expanded === true && !next.has(section.href)) {
-            next.add(section.href);
-            changed = true;
-          } else if (expanded === false && next.has(section.href)) {
-            const hashNow = window.location.hash;
-            const pinned =
-              hashNow === section.href ||
-              section.items.some((item) => item.href === hashNow);
-            if (!pinned) {
-              next.delete(section.href);
-              changed = true;
-            }
-          }
-        }
-        return changed ? next : current;
-      });
+    function onShowMore(event: Event) {
+      const tagIdValue =
+        event instanceof CustomEvent
+          ? String(event.detail?.tagId ?? "")
+          : "";
+      if (tagIdValue) {
+        openFromTagId(tagIdValue);
+      }
     }
 
     function onExplorerClick(event: Event) {
@@ -273,49 +183,21 @@ export function DocsApiNav({
       if (!(target instanceof Element)) {
         return;
       }
-      const control = target.closest("button, a, [role='button']");
+      const control = target.closest("button.show-more");
       if (!(control instanceof HTMLElement)) {
         return;
       }
-      const action = showMoreAction(control.textContent ?? "");
-      if (!action) {
-        return;
-      }
       const href = sectionHrefFromNode(control, sections);
-      if (!href) {
-        return;
+      if (href) {
+        openFromTagId(tagId(href));
       }
-      requestAnimationFrame(() => {
-        setOpenHrefs((current) => {
-          const next = new Set(current);
-          if (action === "open") {
-            if (next.has(href)) {
-              return current;
-            }
-            next.add(href);
-          } else if (!next.has(href)) {
-            return current;
-          } else {
-            next.delete(href);
-          }
-          return next;
-        });
-        syncFromExplorer();
-      });
     }
 
-    syncFromExplorer();
-    const observer = new MutationObserver(syncFromExplorer);
-    observer.observe(host, {
-      subtree: true,
-      childList: true,
-      attributes: true,
-      attributeFilter: ["aria-expanded", "open", "hidden"],
-    });
-    host.addEventListener("click", onExplorerClick);
+    window.addEventListener("docs-api:show-more", onShowMore);
+    document.addEventListener("click", onExplorerClick);
     return () => {
-      observer.disconnect();
-      host.removeEventListener("click", onExplorerClick);
+      window.removeEventListener("docs-api:show-more", onShowMore);
+      document.removeEventListener("click", onExplorerClick);
     };
   }, [sections]);
 
@@ -330,9 +212,11 @@ export function DocsApiNav({
       }
       return next;
     });
-    setTagExpanded(section.href, nextOpen);
     if (nextOpen) {
-      scrollToScalarHash(section.href);
+      expandTagInExplorer(section.href);
+      requestAnimationFrame(() => {
+        scrollToScalarHash(section.href);
+      });
     }
   }
 
@@ -386,7 +270,10 @@ export function DocsApiNav({
                             next.add(section.href);
                             return next;
                           });
-                          scrollToScalarHash(item.href);
+                          expandTagInExplorer(section.href);
+                          requestAnimationFrame(() => {
+                            scrollToScalarHash(item.href);
+                          });
                           onNavigate?.();
                         }}
                       >

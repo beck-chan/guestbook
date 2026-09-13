@@ -396,6 +396,11 @@ export function DocsApiReferenceView({ spec }: { spec: OpenApiSpec }) {
         }
         instance = Scalar.createApiReference(hostRef.current, {
           ...createScalarReferenceConfig(),
+          onShowMore(tagId: string) {
+            window.dispatchEvent(
+              new CustomEvent("docs-api:show-more", { detail: { tagId } }),
+            );
+          },
           content: spec,
           ...(flags.public
             ? { servers: publicApiServers(appliedRef) }
