@@ -143,11 +143,6 @@ export const SCALAR_CUSTOM_CSS = `
   display: none !important;
 }
 
-/* Hide OpenAPI info/section "Heading" entries in Scalar search results. */
-a[role="option"][data-docs-hide-heading="true"] {
-  display: none !important;
-}
-
 /* Operation rows keep the path; hide callout/markdown description snippets. */
 a[role="option"][data-docs-hide-op-desc="true"] .text-c-2 {
   display: none !important;
@@ -280,6 +275,10 @@ a[role="option"][data-docs-hide-op-desc="true"] .text-c-2 {
   order: 2;
   flex: 0 0 auto !important;
   margin-left: auto !important;
+}
+
+.scalar-modal-search a[role="option"][data-docs-hide-heading="true"] {
+  display: none !important;
 }
 
 .scalar-app.scalar-api-reference,

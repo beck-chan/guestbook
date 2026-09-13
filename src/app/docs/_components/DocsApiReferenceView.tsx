@@ -102,16 +102,47 @@ function tintEmptyResponseCopy(root: ParentNode = document) {
   }
 }
 
-/** Hide Scalar search rows typed as "heading" (info intro / section labels). */
+/** Hide Scalar search rows typed as "heading" (info intro only; keep tag headings). */
+function isScalarIntroHeading(option: HTMLElement) {
+  const label = option.querySelector(".sr-only")?.textContent?.trim() ?? "";
+  if (/^heading\b/i.test(label)) {
+    return true;
+  }
+  const meta = option.querySelector(".text-c-2")?.textContent?.trim() ?? "";
+  if (/^heading$/i.test(meta)) {
+    return true;
+  }
+  const text = option.textContent?.replace(/\s+/g, " ").trim() ?? "";
+  if (/^the api below reflects/i.test(text)) {
+    return true;
+  }
+  return /\bheading\b/i.test(text) && /the api below reflects/i.test(text);
+}
+
 function decorateScalarSearchResults(root: ParentNode = document) {
-  const options =
-    root instanceof Element && root.matches('a[role="option"]')
-      ? [root]
-      : [...root.querySelectorAll<HTMLElement>('a[role="option"]')];
+  const options: HTMLElement[] = [];
+  const visit = (node: ParentNode) => {
+    if (node instanceof Element && node.matches('[role="option"]')) {
+      options.push(node as HTMLElement);
+    }
+    if ("querySelectorAll" in node) {
+      options.push(...node.querySelectorAll<HTMLElement>('[role="option"]'));
+    }
+    const hosts =
+      node instanceof Element
+        ? [node, ...node.querySelectorAll("*")]
+        : [...node.querySelectorAll("*")];
+    for (const host of hosts) {
+      if (host.shadowRoot) {
+        visit(host.shadowRoot);
+      }
+    }
+  };
+  visit(root);
   for (const option of options) {
-    const label = option.querySelector(".sr-only")?.textContent?.trimStart() ?? "";
-    if (label.startsWith("Heading")) {
+    if (isScalarIntroHeading(option)) {
       option.setAttribute("data-docs-hide-heading", "true");
+      option.style.setProperty("display", "none", "important");
       continue;
     }
     if (
@@ -120,6 +151,7 @@ function decorateScalarSearchResults(root: ParentNode = document) {
     ) {
       continue;
     }
+    const label = option.querySelector(".sr-only")?.textContent?.trimStart() ?? "";
     if (/^operation\b/i.test(label)) {
       option.setAttribute("data-docs-hide-op-desc", "true");
       continue;

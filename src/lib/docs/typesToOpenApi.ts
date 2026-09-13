@@ -11,12 +11,22 @@ export type JsonSchema = {
 
 export type OpenApiSecurityRequirement = Record<string, string[]>;
 
+export type OpenApiParameter = {
+  name?: string;
+  in?: string;
+  required?: boolean;
+  description?: string;
+  schema?: JsonSchema;
+  $ref?: string;
+};
+
 export type OpenApiOperation = {
   operationId?: string;
   tags?: string[];
   summary?: string;
   description?: string;
   security?: OpenApiSecurityRequirement[];
+  parameters?: OpenApiParameter[];
   requestBody?: {
     required?: boolean;
     content?: {
@@ -105,10 +115,27 @@ const ANON_OPERATIONS = new Set([
   "POST /rpc/poem_heart_state",
 ]);
 
-const API_KEY_SECURITY: OpenApiSecurityRequirement[] = [{ apikey: [] }];
-const API_KEY_AND_BEARER: OpenApiSecurityRequirement[] = [
-  { apikey: [], bearerAuth: [] },
-];
+const API_KEY_HEADER: OpenApiParameter = {
+  name: "apikey",
+  in: "header",
+  required: true,
+  description:
+    "Supabase anon (publishable) key. Required on every Data API call.",
+  schema: { type: "string" },
+};
+
+const BEARER_SECURITY: OpenApiSecurityRequirement[] = [{ bearerAuth: [] }];
+
+function isApiKeyHeader(parameter: OpenApiParameter) {
+  return parameter.name === "apikey" && parameter.in === "header";
+}
+
+function withApiKeyHeader(operation: OpenApiOperation) {
+  const existing = (operation.parameters ?? []).filter(
+    (parameter) => !isApiKeyHeader(parameter),
+  );
+  operation.parameters = [API_KEY_HEADER, ...existing];
+}
 
 export function applyOperationSecurity(paths: OpenApiSpec["paths"]) {
   if (!paths) {
@@ -123,10 +150,9 @@ export function applyOperationSecurity(paths: OpenApiSpec["paths"]) {
       if (!HTTP_METHODS.has(method.toLowerCase()) || !operationItem) {
         continue;
       }
+      withApiKeyHeader(operationItem);
       const key = `${method.toUpperCase()} ${path}`;
-      operationItem.security = ANON_OPERATIONS.has(key)
-        ? API_KEY_SECURITY
-        : API_KEY_AND_BEARER;
+      operationItem.security = ANON_OPERATIONS.has(key) ? [] : BEARER_SECURITY;
     }
   }
 }

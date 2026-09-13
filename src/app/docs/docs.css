@@ -593,6 +593,11 @@ body:has(.docs-shell) {
   line-height: 1.25 !important;
 }
 
+a[role="option"][data-docs-hide-heading="true"],
+.scalar-modal-search a[role="option"][data-docs-hide-heading="true"] {
+  display: none !important;
+}
+
 .scalar-modal-search a[role="option"]:has(> .sr-only) > :nth-child(2),
 .scalar-modal-search a[role="option"]:not(:has(> .sr-only)) > :first-child {
   order: 2;

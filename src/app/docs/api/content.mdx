@@ -21,12 +21,12 @@ To use the **Test Request** feature:
 
 # Unauthenticated Calls
 
-For calls that do not require a JWT, set **Authentication** to `apikey` and paste your `NEXT_PUBLIC_SUPABASE_ANON_KEY`. Test Request sends it as the `apikey` header.
+For calls that do not require a JWT, set the **Headers** `apikey` field to your `NEXT_PUBLIC_SUPABASE_ANON_KEY`. Test Request sends it on every call.
 
 # Authenticated Calls 
 
 ::: {.callout}
-# Auth Required {.lock} calls need Authentication `apikey` plus `bearerAuth` set to your admin session token (`authenticated`). 
+# Auth Required {.lock} calls need the `apikey` header plus **Authentication** `bearerAuth` set to your admin session token (`authenticated`). 
 
 The catalog lists every HTTP method PostgREST knows:
 
@@ -71,10 +71,10 @@ Since it's tied to your admin login, it's kind of hacky to snag. For example, in
 
 6. Right click and select **Copy string contents** to copy the output to your clipboard.
 
-7. When you're in the **Test Request** form, or after you set your Supabase Project ID in the section below, open **Authentication**:
+7. When you're in the **Test Request** form, or after you set your Supabase Project ID in the section below:
 
-    a. Select `apikey` and enter your `NEXT_PUBLIC_SUPABASE_ANON_KEY`.
-    b. Select `bearerAuth` and enter your `Bearer Token: <your-admin-auth-token>`.
+    a. Open **Headers** and set `apikey` to your `NEXT_PUBLIC_SUPABASE_ANON_KEY`.
+    b. Open **Authentication**, select `bearerAuth`, and enter your `Bearer Token: <your-admin-auth-token>`.
 
 8. Click **Send**.
 
