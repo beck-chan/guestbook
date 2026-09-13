@@ -15,25 +15,39 @@ function urlFilterClause(urlFilter: string) {
   return `properties.$pathname = '${escaped}'`;
 }
 
-function uniqueVisitorsQuery(urlFilter: string) {
+const UTC_INSTANT = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/;
+
+function dateFilterClause(dateStamp: string) {
+  if (!UTC_INSTANT.test(dateStamp) || !Number.isFinite(Date.parse(dateStamp))) {
+    return null;
+  }
+  const hogqlDateTime = `${dateStamp.slice(0, 10)} ${dateStamp.slice(11, 19)}`;
+  return `timestamp >= toDateTime('${escapeHogqlString(hogqlDateTime)}', 'UTC')`;
+}
+
+function uniqueVisitorsQuery(urlFilter: string, dateFilter: string) {
   let query =
     "SELECT uniq(distinct_id) FROM events WHERE event = '$pageview'";
   const filters = urlFilter
     .split(",")
     .map((part) => part.trim())
     .filter(Boolean);
-  if (filters.length === 0) {
-    return query;
-  }
   if (filters.length === 1) {
     query += ` AND ${urlFilterClause(filters[0])}`;
-  } else {
+  } else if (filters.length > 1) {
     query += ` AND (${filters.map(urlFilterClause).join(" OR ")})`;
+  }
+  const dateClause = dateFilterClause(dateFilter);
+  if (dateClause) {
+    query += ` AND ${dateClause}`;
   }
   return query;
 }
 
-async function fetchUniqueVisitors(urlFilter: string): Promise<number> {
+async function fetchUniqueVisitors(
+  urlFilter: string,
+  dateFilter: string,
+): Promise<number> {
   if (process.env.NODE_ENV !== "production") {
     return FALLBACK_HIT_COUNT;
   }
@@ -60,7 +74,7 @@ async function fetchUniqueVisitors(urlFilter: string): Promise<number> {
         body: JSON.stringify({
           query: {
             kind: "HogQLQuery",
-            query: uniqueVisitorsQuery(urlFilter),
+            query: uniqueVisitorsQuery(urlFilter, dateFilter),
           },
           name: "guestbook_unique_visitors",
         }),
@@ -87,9 +101,10 @@ async function fetchUniqueVisitors(urlFilter: string): Promise<number> {
 
 export async function getUniqueVisitors() {
   const urlFilter = flags.hitCounterUrl;
+  const dateFilter = flags.hitCounterDate;
   return unstable_cache(
-    () => fetchUniqueVisitors(urlFilter),
-    ["posthog-unique-visitors", urlFilter || "all"],
+    () => fetchUniqueVisitors(urlFilter, dateFilter),
+    ["posthog-unique-visitors", urlFilter || "all", dateFilter || "all"],
     { revalidate: 60 },
   )();
 }

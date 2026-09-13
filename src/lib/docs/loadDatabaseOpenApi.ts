@@ -4,6 +4,8 @@ import { cache } from "react";
 import { flags } from "@/lib/flags";
 import {
   applyOperationSecurity,
+  type OpenApiOperation,
+  type OpenApiParameter,
   type OpenApiSpec,
 } from "./typesToOpenApi";
 import { swagger2ToOpenApi31 } from "./swaggerToOpenApi";
@@ -396,6 +398,82 @@ const OPERATION_METHODS = new Set([
   "patch",
 ]);
 
+function upsertQueryFilter(
+  operation: OpenApiOperation,
+  opts: { key: string; value: string },
+) {
+  const concrete = !opts.value.includes("<");
+  const parameter: OpenApiParameter = {
+    name: opts.key,
+    in: "query",
+    required: true,
+    description: `Row filter. Use PostgREST \`eq\` syntax, for example \`${opts.value}\`.`,
+    example: opts.value,
+    schema: {
+      type: "string",
+      example: opts.value,
+      ...(concrete ? { default: opts.value } : {}),
+    },
+  };
+  const parameters = [...(operation.parameters ?? [])];
+  const index = parameters.findIndex(
+    (item) => item.name === opts.key && item.in !== "header" && item.in !== "path",
+  );
+  if (index >= 0) {
+    const current = parameters[index];
+    parameters[index] = current.$ref
+      ? parameter
+      : { ...current, ...parameter, $ref: undefined };
+  } else {
+    parameters.unshift(parameter);
+  }
+  operation.parameters = parameters;
+}
+
+function overlayMutationQueryFilters(spec: OpenApiSpec) {
+  const filters: {
+    path: string;
+    methods: string[];
+    filter: { key: string; value: string };
+  }[] = [
+    { path: "/comments", methods: ["patch", "delete"], filter: COMMENTS_FILTER },
+    {
+      path: "/comments_public",
+      methods: ["patch", "delete"],
+      filter: COMMENTS_PUBLIC_FILTER,
+    },
+    {
+      path: "/guestbook_settings",
+      methods: ["patch", "delete"],
+      filter: SETTINGS_FILTER,
+    },
+    {
+      path: "/admin_allowlist",
+      methods: ["patch", "delete"],
+      filter: ADMIN_ALLOWLIST_FILTER,
+    },
+    {
+      path: "/guestbook_rate_limits",
+      methods: ["patch", "delete"],
+      filter: RATE_LIMITS_FILTER,
+    },
+    { path: "/poem_hearts", methods: ["patch", "delete"], filter: POEM_HEARTS_FILTER },
+  ];
+  for (const { path, methods, filter } of filters) {
+    const item = spec.paths?.[path];
+    if (!item) {
+      continue;
+    }
+    for (const method of methods) {
+      const operation = item[method];
+      if (!operation || !OPERATION_METHODS.has(method)) {
+        continue;
+      }
+      upsertQueryFilter(operation, filter);
+    }
+  }
+}
+
 function prependCallout(
   spec: OpenApiSpec,
   path: string,
@@ -591,6 +669,7 @@ async function fetchOpenApi(isPublic: boolean): Promise<OpenApiSpec> {
   overlayInfo(normalized, isPublic);
   applyOperationCallouts(normalized);
   overlayCommentsPostBody(normalized);
+  overlayMutationQueryFilters(normalized);
   normalized.components = normalized.components ?? {};
   normalized.components.securitySchemes = {
     ...normalized.components.securitySchemes,

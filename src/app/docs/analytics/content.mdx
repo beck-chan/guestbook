@@ -131,7 +131,7 @@ In `env.local` (for local development) or your Vercel environment variables (for
 
     Leaving this variable empty counts all `$pageview` events on the site.
 
-{/* 3. populate this instruction for the timestamp config */}
+3. Optionally set **`FLAG_COUNTER_DATE=`** to a UTC instant (`YYYY-MM-DDTHH:mm:ssZ`, e.g. `2025-09-12T00:00:00Z`) so unique `$pageview` visitors are counted only at or after that time. Leave it empty to count all time.
 
 ::: {.callout}
 # `npm run dev` keeps the decorative fallback (`000481`) and does not call PostHog. 
@@ -211,6 +211,7 @@ Confirm the hit counter is displaying the expected number of unique visitors for
     FROM events
     WHERE event = '$pageview'
     AND properties.$current_url LIKE '%/guestbook%' # Example slug
+    AND timestamp >= toDateTime('2025-09-12 00:00:00', 'UTC') # Optional: match FLAG_COUNTER_DATE
     ```
 
     ```sql
@@ -222,6 +223,7 @@ Confirm the hit counter is displaying the expected number of unique visitors for
         properties.$current_url LIKE '<your-url-one>'
         OR properties.$current_url LIKE '<your-url-two>'
     )
+    AND timestamp >= toDateTime('2025-09-12 00:00:00', 'UTC') # Optional: match FLAG_COUNTER_DATE
     ```
 
 4. Click **Run**.

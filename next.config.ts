@@ -16,6 +16,7 @@ const nextConfig: NextConfig = {
     FLAG_DOCSONLY: process.env.FLAG_DOCSONLY,
     FLAG_COUNTER: process.env.FLAG_COUNTER,
     FLAG_COUNTER_URL: process.env.FLAG_COUNTER_URL,
+    FLAG_COUNTER_DATE: process.env.FLAG_COUNTER_DATE,
     FLAG_NOTIF: process.env.FLAG_NOTIF,
     FLAG_PUBLIC: process.env.FLAG_PUBLIC,
     FLAG_APITEST: process.env.FLAG_APITEST,

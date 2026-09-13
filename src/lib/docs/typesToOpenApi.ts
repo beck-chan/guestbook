@@ -6,6 +6,8 @@ export type JsonSchema = {
   additionalProperties?: boolean;
   items?: JsonSchema;
   nullable?: boolean;
+  example?: unknown;
+  default?: unknown;
   $ref?: string;
 };
 
@@ -16,6 +18,7 @@ export type OpenApiParameter = {
   in?: string;
   required?: boolean;
   description?: string;
+  example?: unknown;
   schema?: JsonSchema;
   $ref?: string;
 };
