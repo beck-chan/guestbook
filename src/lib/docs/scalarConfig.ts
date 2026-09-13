@@ -308,10 +308,86 @@ a[role="option"][data-docs-hide-op-desc="true"] .text-c-2 {
   color: color-mix(in srgb, #6f4e37 48%, white) !important;
 }
 
+.scalar-modal-search input::-webkit-search-cancel-button,
+.scalar-modal-search input::-webkit-search-decoration {
+  -webkit-appearance: none !important;
+  appearance: none !important;
+  display: none !important;
+}
+
+.scalar-modal-search [role="search"] .scalar-icon-button {
+  box-sizing: border-box !important;
+  width: 1.5rem !important;
+  height: 1.5rem !important;
+  margin: 0 !important;
+  padding: 0.2rem !important;
+  border: 0 !important;
+  border-radius: 1px !important;
+  background: transparent !important;
+  color: var(--peony, #ff6162) !important;
+  cursor: pointer !important;
+}
+
+.scalar-modal-search [role="search"] .scalar-icon-button svg {
+  display: block !important;
+  width: 100% !important;
+  height: 100% !important;
+  color: var(--peony, #ff6162) !important;
+  fill: var(--peony, #ff6162) !important;
+}
+
+.scalar-modal-search [role="search"] .scalar-icon-button:hover,
+.scalar-modal-search [role="search"] .scalar-icon-button:focus-visible,
+.scalar-modal-search [role="search"] .scalar-icon-button:hover svg,
+.scalar-modal-search [role="search"] .scalar-icon-button:focus-visible svg {
+  color: var(--peony-hot, #ff8586) !important;
+  fill: var(--peony-hot, #ff8586) !important;
+}
+
 .scalar-modal-search [role="listbox"] {
   min-height: 0 !important;
   overflow: auto !important;
   font-family: var(--body-font) !important;
+}
+
+/* Paper-shadow scrollbars — same as poetry-book .leaf-copy.
+   Chrome only; do not hideSearch or unmount SearchButton. */
+.scalar-app,
+.scalar-app *,
+.scalar-modal-search,
+.scalar-modal-search * {
+  scrollbar-width: thin !important;
+  scrollbar-color: var(--paper-shadow, #e8dcc4) transparent !important;
+}
+
+.scalar-app::-webkit-scrollbar,
+.scalar-app *::-webkit-scrollbar,
+.scalar-modal-search::-webkit-scrollbar,
+.scalar-modal-search *::-webkit-scrollbar {
+  width: 5px !important;
+  height: 5px !important;
+}
+
+.scalar-app::-webkit-scrollbar-track,
+.scalar-app *::-webkit-scrollbar-track,
+.scalar-modal-search::-webkit-scrollbar-track,
+.scalar-modal-search *::-webkit-scrollbar-track {
+  background: transparent !important;
+}
+
+.scalar-app::-webkit-scrollbar-thumb,
+.scalar-app *::-webkit-scrollbar-thumb,
+.scalar-modal-search::-webkit-scrollbar-thumb,
+.scalar-modal-search *::-webkit-scrollbar-thumb {
+  background: var(--paper-shadow, #e8dcc4) !important;
+  border-radius: 999px !important;
+}
+
+.scalar-app::-webkit-scrollbar-thumb:hover,
+.scalar-app *::-webkit-scrollbar-thumb:hover,
+.scalar-modal-search::-webkit-scrollbar-thumb:hover,
+.scalar-modal-search *::-webkit-scrollbar-thumb:hover {
+  background: #ddd0b8 !important;
 }
 
 .scalar-modal-search a[role="option"] {

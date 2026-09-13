@@ -98,6 +98,45 @@ body {
   background: var(--desk);
 }
 
+/* Desk / guestbook / admin chrome: peony-hot thumb, track matches --desk.
+   Poetry leaves (.leaf-copy) keep paper-shadow; mobile reading is the book. */
+html:has(.desk-split, .admin-page),
+html:has(.desk-split, .admin-page) *:not(.leaf-copy, .mobile-reading) {
+  scrollbar-width: thin;
+  scrollbar-color: var(--peony-hot) var(--desk);
+}
+
+html:has(.desk-split, .admin-page)::-webkit-scrollbar,
+html:has(.desk-split, .admin-page) *:not(.leaf-copy, .mobile-reading)::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+
+html:has(.desk-split, .admin-page)::-webkit-scrollbar-track,
+html:has(.desk-split, .admin-page) *:not(.leaf-copy, .mobile-reading)::-webkit-scrollbar-track {
+  background: var(--desk);
+}
+
+html:has(.desk-split, .admin-page)::-webkit-scrollbar-thumb,
+html:has(.desk-split, .admin-page) *:not(.leaf-copy, .mobile-reading)::-webkit-scrollbar-thumb {
+  background: var(--peony-hot);
+  border-radius: 999px;
+}
+
+html:has(.desk-split, .admin-page)::-webkit-scrollbar-thumb:hover,
+html:has(.desk-split, .admin-page) *:not(.leaf-copy, .mobile-reading)::-webkit-scrollbar-thumb:hover {
+  background: var(--peony-soft);
+}
+
+html:has(.desk-split, .admin-page)::-webkit-scrollbar-corner,
+html:has(.desk-split, .admin-page) *:not(.leaf-copy, .mobile-reading)::-webkit-scrollbar-corner {
+  background: var(--desk);
+}
+
+html:has(.desk-split) .mobile-reading {
+  scrollbar-color: auto;
+}
+
 .desk-split {
   display: grid;
   grid-template-columns: 70% 30%;
