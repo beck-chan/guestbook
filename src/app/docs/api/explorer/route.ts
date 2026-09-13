@@ -58,6 +58,7 @@ export async function GET() {
     ...createScalarReferenceConfig(),
     plugins: undefined,
     onBeforeRequest: undefined,
+    onRequestBuilt: undefined,
   })
     .replace(/</g, "\\u003c")
     .replace(/\u2028/g, "\\u2028")

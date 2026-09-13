@@ -1,7 +1,7 @@
 import { flags } from "@/lib/flags";
 import { envSupabaseProjectRef, publicApiServers } from "./publicApiServers";
 import {
-  applyRememberedApiKey,
+  applyRememberedAuth,
   createAlwaysSendApiKeyPlugin,
   type ScalarRequestBuilder,
 } from "./scalarApiKey";
@@ -629,7 +629,16 @@ export function createScalarReferenceConfig() {
     },
     plugins: [createAlwaysSendApiKeyPlugin()],
     onBeforeRequest: ({ requestBuilder }: { requestBuilder: ScalarRequestBuilder }) => {
-      applyRememberedApiKey(requestBuilder);
+      applyRememberedAuth(requestBuilder);
+    },
+    onRequestBuilt: ({
+      request,
+      requestBuilder,
+    }: {
+      request: Request;
+      requestBuilder: ScalarRequestBuilder;
+    }) => {
+      applyRememberedAuth(requestBuilder, undefined, request);
     },
     isEditable: false,
     hideModels: true,

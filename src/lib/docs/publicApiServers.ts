@@ -1,5 +1,6 @@
 export const DEFAULT_PROJECT_REF = "your-database-url";
 export const PROJECT_REF_PLACEHOLDER = "<your-database-url>";
+export const PROJECT_REF_KEY = "guestbook-docs-api-project-ref";
 
 export function parseProjectRef(raw: string): string {
   const trimmed = raw.trim().replaceAll(/[<>]/g, "");

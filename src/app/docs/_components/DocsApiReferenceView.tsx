@@ -9,6 +9,7 @@ import {
 import { rememberApiKeyFromAuthInput } from "@/lib/docs/scalarApiKey";
 import {
   DEFAULT_PROJECT_REF,
+  PROJECT_REF_KEY,
   PROJECT_REF_PLACEHOLDER,
   displayProjectRef,
   envSupabaseProjectRef,
@@ -17,8 +18,6 @@ import {
   supabaseRestUrl,
 } from "@/lib/docs/publicApiServers";
 import type { OpenApiSpec } from "@/lib/docs/typesToOpenApi";
-
-const PROJECT_REF_KEY = "guestbook-docs-api-project-ref";
 
 type ScalarInstance = {
   destroy?: () => void;

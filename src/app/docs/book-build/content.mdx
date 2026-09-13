@@ -22,7 +22,7 @@ Poems are Markdown files that live under [`poetry/`](https://github.com/beck-cha
 
 - [`loadPoems()`](https://github.com/beck-chan/guestbook/blob/main/src/lib/loadPoems.ts){.blank} reads that folder at request time, splits on `##` headings, and turns `*emphasis*` / `**strong**` into HTML. Each file becomes a `Poem` (`id` from the filename, `sections` for every heading).
 - [`pickPoemIndex()`](https://github.com/beck-chan/guestbook/blob/main/src/lib/poems.ts){.blank} picks a random poem for the first paint, and a different one whenever the reader turns the page, ensuring no repeats in a row. 
-- On each poem, a heart button calls [`togglePoemHeart`](https://github.com/beck-chan/guestbook/blob/main/src/lib/actions/hearts.ts){.blank}. Likes are keyed by an httpOnly `poem_visitor_key` cookie and stored in `poem_hearts`. Counts come from the `poem_heart_counts` / `poem_heart_total` views and the `poem_heart_state` / `toggle_poem_heart` RPCs. 
+- On each poem, a heart button calls [`togglePoemHeart`](https://github.com/beck-chan/guestbook/blob/main/src/lib/actions/hearts.ts){.blank}. Likes are keyed by an httpOnly `poem_visitor_key` cookie and stored in `poem_hearts`. Counts come from the `poem_heart_counts` / `poem_heart_total` views and the `poem_heart_state` / `toggle_poem_heart` RPCs. When the Supabase secret `FLAG_NOTIF` is on, insert/delete on `poem_hearts` emails the admin list (`poem-hearted` / `poem-unhearted`). 
 
 ::: {.tabset}
 
@@ -69,7 +69,7 @@ Reads go through the `comments_public` view (`id`, `display_name`, `body`, times
 Submit is the `submitComment` server action:
 
 1. Trim name / body / email; require name and body.
-2. Enforce [`commentLengthError`](https://github.com/beck-chan/guestbook/blob/main/src/lib/commentLimits.ts){.blank} against `comment_length`.
+2. Enforce [`commentLengthError`](https://github.com/beck-chan/guestbook/blob/main/src/lib/commentLimits.ts){.blank}: name cap `128`, email cap `254`, and `comment_length` from settings for the body.
 3. Run [`checkCommentProfanity`](https://github.com/beck-chan/guestbook/blob/main/src/lib/profanity.ts){.blank} ([`obscenity`](https://www.npmjs.com/package/obscenity){.blank} plus the admin allow-list).
 4. Consume [`consumeCommentRateLimit`](https://github.com/beck-chan/guestbook/blob/main/src/lib/rate-limit.ts){.blank} (`rate-limiter-flexible` over `DATABASE_URL`, keyed by a hash of [`clientIp()`](https://github.com/beck-chan/guestbook/blob/main/src/lib/clientIp.ts){.blank}). Burst and daily caps come from settings. A failed insert after consume is **not** refunded.
 5. Insert into `comments`. Then `revalidatePath` for `/`, `/guestbook`, and the admin path.
@@ -144,13 +144,13 @@ UTC instant (`YYYY-MM-DDTHH:mm:ssZ`, for example `2025-09-12T00:00:00Z`) that st
 
 `flags.notif` — default `false`.
 
-Next/docs copy only. This flag is compiled into the app the same way as the others, but **sending mail is not gated here**. Edge functions [`notify-admins`](https://github.com/beck-chan/guestbook/blob/main/supabase/functions/notify-admins/index.ts){.blank} and [`on-user-created`](https://github.com/beck-chan/guestbook/blob/main/supabase/functions/on-user-created/index.ts){.blank} read the **Supabase secret** `FLAG_NOTIF` and skip with `{ skipped: "FLAG_NOTIF" }` when it is off. Set both the Next env var (for copy) and `npx supabase secrets set FLAG_NOTIF=true` (for delivery). See [Enable Notifications](/docs/notifs).
+Listed on `flags` and passed through `next.config.ts` like the others, but Next never reads `flags.notif` (no UI or docs copy branches on it). **Sending mail is gated only by the Supabase secret** of the same name. Edge functions [`notify-admins`](https://github.com/beck-chan/guestbook/blob/main/supabase/functions/notify-admins/index.ts){.blank} and [`on-user-created`](https://github.com/beck-chan/guestbook/blob/main/supabase/functions/on-user-created/index.ts){.blank} skip with `{ skipped: "FLAG_NOTIF" }` when that secret is off. Set `npx supabase secrets set FLAG_NOTIF=true` for delivery. See [Enable Notifications](/docs/notifs).
 
 ### FLAG_PUBLIC
 
 `flags.public` — default `false`.
 
-Public guestbook home: rewrite `/` → `/guestbook` and redirect `/guestbook` → `/` so the board is the site root and the poetry desk is not served. Favicon fill switches from coral to dark green in [`src/app/icon.tsx`](https://github.com/beck-chan/guestbook/blob/main/src/app/icon.tsx){.blank}. GitHub links in [`flags.ts`](https://github.com/beck-chan/guestbook/blob/main/src/lib/flags.ts){.blank} (`releasesUrl`, `reportIssueUrl`) point at `y2k-guestbook` instead of `guestbook`. Docs landing subtitle, live OpenAPI catalog (`API_PUBLIC_URL` + `API_SERVICE_ROLE_KEY`), Scalar **Test Request**, and `{.public}` / `{.private}` fences all follow this flag. Pages with `public: false` (this one included) 404 on a public deploy.
+Public guestbook home: rewrite `/` → `/guestbook` and redirect `/guestbook` → `/` so the board is the site root and the poetry desk is not served. Favicon fill switches from coral to dark green in [`src/app/icon.tsx`](https://github.com/beck-chan/guestbook/blob/main/src/app/icon.tsx){.blank}. GitHub links in [`flags.ts`](https://github.com/beck-chan/guestbook/blob/main/src/lib/flags.ts){.blank} (`releasesUrl`, `reportIssueUrl`) point at `y2k-guestbook` instead of `guestbook`. Docs landing subtitle, live OpenAPI catalog (`API_PUBLIC_URL`, `API_SERVICE_ROLE_KEY`, and `API_ANON_KEY`), Scalar **Test Request**, and `{.public}` / `{.private}` fences all follow this flag. Pages with `public: false` (this one included) 404 on a public deploy.
 
 ### FLAG_APITEST
 

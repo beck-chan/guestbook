@@ -398,6 +398,17 @@ const OPERATION_METHODS = new Set([
   "patch",
 ]);
 
+function queryFilterParamKey(item: OpenApiParameter) {
+  if (item.name && item.in !== "header" && item.in !== "path") {
+    return item.name;
+  }
+  if (!item.$ref) {
+    return null;
+  }
+  const refName = item.$ref.split("/").pop() ?? "";
+  return refName.split(".").pop() || null;
+}
+
 function upsertQueryFilter(
   operation: OpenApiOperation,
   opts: { key: string; value: string },
@@ -415,18 +426,10 @@ function upsertQueryFilter(
       ...(concrete ? { default: opts.value } : {}),
     },
   };
-  const parameters = [...(operation.parameters ?? [])];
-  const index = parameters.findIndex(
-    (item) => item.name === opts.key && item.in !== "header" && item.in !== "path",
+  const parameters = (operation.parameters ?? []).filter(
+    (item) => queryFilterParamKey(item) !== opts.key,
   );
-  if (index >= 0) {
-    const current = parameters[index];
-    parameters[index] = current.$ref
-      ? parameter
-      : { ...current, ...parameter, $ref: undefined };
-  } else {
-    parameters.unshift(parameter);
-  }
+  parameters.unshift(parameter);
   operation.parameters = parameters;
 }
 
