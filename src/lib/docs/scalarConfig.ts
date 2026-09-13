@@ -1,5 +1,10 @@
 import { flags } from "@/lib/flags";
 import { envSupabaseProjectRef, publicApiServers } from "./publicApiServers";
+import {
+  applyRememberedApiKey,
+  createAlwaysSendApiKeyPlugin,
+  type ScalarRequestBuilder,
+} from "./scalarApiKey";
 
 export const SCALAR_CUSTOM_CSS = `
 .scalar-app,
@@ -612,6 +617,13 @@ export function createScalarReferenceConfig() {
     showDeveloperTools: "localhost" as const,
     operationTitleSource: "summary" as const,
     persistAuth: false,
+    authentication: {
+      preferredSecurityScheme: "apikey",
+    },
+    plugins: [createAlwaysSendApiKeyPlugin()],
+    onBeforeRequest: ({ requestBuilder }: { requestBuilder: ScalarRequestBuilder }) => {
+      applyRememberedApiKey(requestBuilder);
+    },
     isEditable: false,
     hideModels: false,
     documentDownloadType: "none" as const,

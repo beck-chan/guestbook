@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { flags } from "@/lib/flags";
 import { createScalarReferenceConfig } from "@/lib/docs/scalarConfig";
+import { rememberApiKeyFromAuthInput } from "@/lib/docs/scalarApiKey";
 import {
   DEFAULT_PROJECT_REF,
   PROJECT_REF_PLACEHOLDER,
@@ -314,6 +315,18 @@ export function DocsApiReferenceView({ spec }: { spec: OpenApiSpec }) {
     const stored = readStoredProjectRef();
     setDraftRef(displayProjectRef(stored));
     setAppliedRef(stored);
+  }, []);
+
+  useEffect(() => {
+    const capture = (event: Event) => {
+      rememberApiKeyFromAuthInput(event.target);
+    };
+    document.addEventListener("input", capture, true);
+    document.addEventListener("change", capture, true);
+    return () => {
+      document.removeEventListener("input", capture, true);
+      document.removeEventListener("change", capture, true);
+    };
   }, []);
 
   useEffect(() => {

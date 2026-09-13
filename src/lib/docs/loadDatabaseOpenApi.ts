@@ -240,7 +240,7 @@ function prependCallout(
   }
 }
 
-function applyPublicOperationCallouts(spec: OpenApiSpec) {
+function applyOperationCallouts(spec: OpenApiSpec) {
   for (const path of SERVICE_ROLE_ONLY_PATHS) {
     prependCallout(
       spec,
@@ -313,9 +313,7 @@ async function fetchOpenApi(isPublic: boolean): Promise<OpenApiSpec> {
   omitPostgrestMeta(normalized);
   applyTagDescriptions(normalized);
   overlayInfo(normalized, isPublic);
-  if (isPublic) {
-    applyPublicOperationCallouts(normalized);
-  }
+  applyOperationCallouts(normalized);
   normalized.components = normalized.components ?? {};
   normalized.components.securitySchemes = {
     ...normalized.components.securitySchemes,
@@ -323,6 +321,7 @@ async function fetchOpenApi(isPublic: boolean): Promise<OpenApiSpec> {
     bearerAuth: BEARER_SCHEME,
   };
   delete normalized.securityDefinitions;
+  normalized.security = [{ apikey: [] }];
   applyOperationSecurity(normalized.paths);
 
   if (isPublic) {

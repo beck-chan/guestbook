@@ -51,7 +51,10 @@ export async function GET() {
     .replace(/</g, "\\u003c")
     .replace(/\u2028/g, "\\u2028")
     .replace(/\u2029/g, "\\u2029");
-  const configJson = JSON.stringify(createScalarReferenceConfig())
+  const jsonConfig = { ...createScalarReferenceConfig() };
+  delete jsonConfig.plugins;
+  delete jsonConfig.onBeforeRequest;
+  const configJson = JSON.stringify(jsonConfig)
     .replace(/</g, "\\u003c")
     .replace(/\u2028/g, "\\u2028")
     .replace(/\u2029/g, "\\u2029");
