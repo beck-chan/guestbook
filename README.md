@@ -1,4 +1,9 @@
-# Original Poetry
+# Original Poetry by Beck Chan
+
+Nostalgic for the days of Geocities guestbooks and Adobe Flash animation websites, I built a Next.js application powered by a Supabase backend. 
+
+Install your own mobile-friendly, retro-inspired guestbook powered by Next.js, Supabase, and Vercel.
+*Add optional analytics with PostHog and notifications with Gmail.
 
 A Next.js guestbook: a closed book of original poems that opens into a two-page spread, with a sticky-note guestbook beside it.
 

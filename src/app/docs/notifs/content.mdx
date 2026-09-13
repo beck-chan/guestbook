@@ -264,7 +264,7 @@ a. From your guestbook project root, call:
 
     # Output
 
-    You should see the following output:
+    You should receive the following output:
 
     ```bash
     Deploying Function: notify-admins
@@ -375,7 +375,7 @@ a. From your guestbook project root, call:
 
     # Output
 
-    You should see the following output for each of the set secrets:
+    You should receive the following output for each of the set secrets:
 
     ```bash
     Finished supabase secrets set.
@@ -459,24 +459,30 @@ a. From your guestbook project root, call:
 
 ## Enable Notifications
 
-Notifications are gated behind a feature flag. You'll need to set this flag to `true` in two places:
+Notifications are gated behind the Supabase `FLAG_NOTIF` flag. To enable notifications, set this flag to `true` in your Supabase project:
 
 ::: {.tabset}
 
-# 1. Local Development or Deployment
+# From Within Supabase
 
-To set in `.env.local` (for local development) or your Vercel [**Environment Variables**](https://vercel.com/docs/environment-variables){.blank} (for cloud deployment):
+a. From within your Supabase project, click **Edge Functions** in the left sidebar.
 
-```bash
-FLAG_NOTIF=true
-```
+b. Select **Secrets**.
 
-# 2. Supabase Project
+c. Under [add or replace secrets]{.smallcaps}, update `FLAG_NOTIF` to `true`.
 
-To set in your Supabase project for the guestbook:
+## From the CLI
+
+Call the following command via your terminal:
 
 ```bash
 npx supabase secrets set --project-ref <your-database-url> FLAG_NOTIF=true
+```
+
+You should receive the following output:
+
+```bash
+Finished supabase secrets set.
 ```
 
 :::
