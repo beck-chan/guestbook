@@ -98,7 +98,7 @@ Changes are saved automatically.
 
 ## Edit & Delete
 
-You can only edit and delete one comment at a time, and you can only edit comment bodies. Under a comment, click:
+You can only edit and delete one comment at a time, and you can only edit comment bodies within the admin dashboard Settings. Under a comment, click:
 
 ::: {.tabset}
 
@@ -106,8 +106,38 @@ You can only edit and delete one comment at a time, and you can only edit commen
 
 To edit the comment body. Click away from the comment editor to save your changes.
 
+### Advanced Edits
+
+To edit display names or email addresses, you can use the [API](/docs/api):
+
+1. **GET** `/comments` and copy the comment `id` values.
+2. **PATCH** `/comments` with the same authentication:
+    - Under **Query Parameters**, set **key** `id` and **value** `eq.<comment-uuid>`. 
+    - Under **Request Body**, send only the fields to change (`display_name` and/or `email`) — do not include `id`.
+
 # Delete
 
 To delete the comment. After you confirm the deletion, the comment will be removed from the list.
 
+### Bulk Deletion
+
+To delete several comments at once, you can use the [API](/docs/api):
+
+1. **GET** `/comments` and copy the comment `id` values.
+2. **DELETE** `/comments`:
+    - Under **Query Parameters**, set **key** `id` and **value** `in.(<uuid-1>,<uuid-2>,<uuid-3>)` — no spaces after the commas, and not the uuids alone. 
+    - Leave the request body empty.
+
+::: {.callout}
+# An unfiltered delete is rejected (`21000`). 
+
+
+Set **Prefer** to `return=representation` to see the rows that were removed.
+
 :::
+
+
+:::
+
+
+

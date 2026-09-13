@@ -66,39 +66,53 @@ function credentials(isPublic: boolean) {
   };
 }
 
-function overlayCommentsPostBody(spec: OpenApiSpec) {
-  const operation = spec.paths?.["/comments"]?.post;
-  if (!operation) {
-    return;
-  }
+function overlayCommentsWriteBodies(spec: OpenApiSpec) {
   const example = {
     display_name: "Your Name",
     body: "Comment made via the API reference explorer.",
     email: "you@example.com",
   };
-  operation.requestBody = {
-    required: true,
-    content: {
-      "application/json": {
-        schema: {
-          type: "object",
-          required: ["display_name", "body"],
-          properties: {
-            display_name: { type: "string" },
-            body: { type: "string" },
-            email: { type: "string" },
-          },
-        },
-        example,
-        examples: {
-          comment: {
-            summary: "Sign the guestbook",
-            value: example,
-          },
-        },
+  const jsonContent = {
+    schema: {
+      type: "object" as const,
+      properties: {
+        display_name: { type: "string" as const },
+        body: { type: "string" as const },
+        email: { type: "string" as const },
+      },
+    },
+    example,
+    examples: {
+      comment: {
+        summary: "Sign the guestbook",
+        value: example,
       },
     },
   };
+  const post = spec.paths?.["/comments"]?.post;
+  if (post) {
+    post.requestBody = {
+      required: true,
+      content: {
+        "application/json": {
+          ...jsonContent,
+          schema: {
+            ...jsonContent.schema,
+            required: ["display_name", "body"],
+          },
+        },
+      },
+    };
+  }
+  const patch = spec.paths?.["/comments"]?.patch;
+  if (patch) {
+    patch.requestBody = {
+      required: false,
+      content: {
+        "application/json": { ...jsonContent },
+      },
+    };
+  }
 }
 
 function applyServers(
@@ -374,7 +388,7 @@ const COMMENTS_PATCH_CALLOUT = markdownCallout(
   FILTER_CALLOUT_TITLE,
   "PostgREST will not run an unfiltered `UPDATE` (`21000`). Under **Query Parameters**, set **key**: `id` and **value**: `eq.<comment-uuid>` (not the uuid alone). Retrieve the id from **GET** `/comments`. Keep `bearerAuth` plus the `apikey` header.",
   "Under **Request Body**, send only the columns to change — do not include `id`:",
-  "```json\n{ \"is_read\": true }\n```",
+  "```json\n{\n  \"display_name\": \"Your Name\",\n  \"body\": \"Comment made via the API reference explorer.\",\n  \"email\": \"you@example.com\"\n}\n```",
 );
 
 const POEM_HEART_RPC_CALLOUT = markdownCallout(
@@ -671,7 +685,7 @@ async function fetchOpenApi(isPublic: boolean): Promise<OpenApiSpec> {
   applyTagDescriptions(normalized);
   overlayInfo(normalized, isPublic);
   applyOperationCallouts(normalized);
-  overlayCommentsPostBody(normalized);
+  overlayCommentsWriteBodies(normalized);
   overlayMutationQueryFilters(normalized);
   normalized.components = normalized.components ?? {};
   normalized.components.securitySchemes = {
