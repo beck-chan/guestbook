@@ -7,6 +7,37 @@ import { visit } from "unist-util-visit";
 // Payload is percent-encoded alphanumeric so punctuation after `{.blank}`
 // (`.` `)` `,`) is not swallowed as part of the encoded attrs.
 const ATTR_FOLLOW = /^\s*docsattr\.((?:[A-Za-z0-9]|%[0-9A-Fa-f]{2})+)/;
+function methodVerbNode(method) {
+  return {
+    type: "mdxJsxTextElement",
+    name: "span",
+    attributes: [
+      {
+        type: "mdxJsxAttribute",
+        name: "className",
+        value: "docs-api-nav-method docs-api-verb",
+      },
+      {
+        type: "mdxJsxAttribute",
+        name: "data-method",
+        value: method,
+      },
+    ],
+    children: [{ type: "text", value: method }],
+  };
+}
+
+const METHOD_MARKS = [
+  { syntax: "{.select}", token: "docsselect.", toNode: () => methodVerbNode("SELECT") },
+  { syntax: "{.insert}", token: "docsinsert.", toNode: () => methodVerbNode("INSERT") },
+  { syntax: "{.update}", token: "docsupdate.", toNode: () => methodVerbNode("UPDATE") },
+  { syntax: "{.delete}", token: "docsdelete.", toNode: () => methodVerbNode("DELETE") },
+  { syntax: "{.get}", token: "docsget.", toNode: () => methodVerbNode("GET") },
+  { syntax: "{.post}", token: "docspost.", toNode: () => methodVerbNode("POST") },
+  { syntax: "{.put}", token: "docsput.", toNode: () => methodVerbNode("PUT") },
+  { syntax: "{.patch}", token: "docspatch.", toNode: () => methodVerbNode("PATCH") },
+];
+const METHOD_TOKENS = new Set(METHOD_MARKS.map((mark) => mark.token));
 const ICON_MARKS = [
   {
     syntax: "{.heart}",
@@ -46,11 +77,12 @@ const ICON_MARKS = [
     }),
   },
 ];
+const INLINE_MARKS = [...ICON_MARKS, ...METHOD_MARKS];
 const ICON_TOKEN_RE = new RegExp(
-  ICON_MARKS.map((icon) => icon.token.replace(".", "\\.")).join("|"),
+  INLINE_MARKS.map((icon) => icon.token.replace(".", "\\.")).join("|"),
   "g",
 );
-const ICON_BY_TOKEN = new Map(ICON_MARKS.map((icon) => [icon.token, icon]));
+const ICON_BY_TOKEN = new Map(INLINE_MARKS.map((icon) => [icon.token, icon]));
 const TAB_ICONS = {
   DocsLock: "lock",
   DocsGear: "gear",
@@ -190,11 +222,11 @@ function rewriteInlineMarkup(text) {
 }
 
 function rewriteIconMarks(text) {
-  // Strip `{.heart}` / `{.lock}` / `{.gear}` before MDX parse — curly braces
-  // are JSX expressions. Code/inlineCode get the shortcode restored after
-  // parse; prose becomes DocsHeart / DocsLock / DocsGear.
+  // Strip `{.heart}` / `{.lock}` / `{.gear}` / `{.select}` (and the other SQL
+  // verbs) before MDX parse — curly braces are JSX expressions. Code/inlineCode
+  // get the shortcode restored after parse; prose becomes the matching node.
   let next = text;
-  for (const icon of ICON_MARKS) {
+  for (const icon of INLINE_MARKS) {
     next = next.replaceAll(icon.syntax, icon.token);
   }
   return next;
@@ -202,7 +234,7 @@ function rewriteIconMarks(text) {
 
 function restoreIconSyntax(text) {
   let next = text;
-  for (const icon of ICON_MARKS) {
+  for (const icon of INLINE_MARKS) {
     next = next.replaceAll(icon.token, icon.syntax);
   }
   return next;
@@ -230,7 +262,7 @@ function rewriteOutsideInlineCode(line) {
 }
 
 function splitTextWithIcons(value) {
-  if (!ICON_MARKS.some((icon) => value.includes(icon.token))) {
+  if (!INLINE_MARKS.some((icon) => value.includes(icon.token))) {
     return null;
   }
 
@@ -242,9 +274,12 @@ function splitTextWithIcons(value) {
     if (match.index > last) {
       const text = value.slice(last, match.index);
       const atEnd = match.index + match[0].length === value.length;
+      // Icons flush against the end of a node; keep the space before `{.select},
+      // {.insert}` lists so commas stay readable.
+      const trimEnd = atEnd && !METHOD_TOKENS.has(match[0]);
       parts.push({
         type: "text",
-        value: atEnd ? text.replace(/\s+$/, "") : text,
+        value: trimEnd ? text.replace(/\s+$/, "") : text,
       });
     }
     parts.push(ICON_BY_TOKEN.get(match[0]).toNode());
@@ -261,7 +296,7 @@ function transformIconMarks(tree) {
     if (
       (node.type === "inlineCode" || node.type === "code") &&
       typeof node.value === "string" &&
-      ICON_MARKS.some((icon) => node.value.includes(icon.token))
+      INLINE_MARKS.some((icon) => node.value.includes(icon.token))
     ) {
       node.value = restoreIconSyntax(node.value);
       return;

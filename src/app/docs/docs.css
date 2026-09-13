@@ -871,15 +871,22 @@ a[role="option"][data-docs-hide-heading="true"],
   line-height: 1.4;
 }
 
-.docs-api-nav-method[data-method="GET"] {
+.docs-api-nav-method[data-method="GET"],
+.docs-api-nav-method[data-method="SELECT"] {
   color: color-mix(in srgb, #6f4e37 55%, white);
 }
 
-.docs-api-nav-method[data-method="POST"] {
+.docs-api-nav-method[data-method="POST"],
+.docs-api-nav-method[data-method="INSERT"] {
   color: color-mix(in srgb, var(--cover) 42%, white);
 }
 
-.docs-api-nav-method[data-method="PATCH"] {
+.docs-api-nav-method[data-method="PUT"] {
+  color: color-mix(in srgb, var(--peony-soft) 70%, #6f4e37);
+}
+
+.docs-api-nav-method[data-method="PATCH"],
+.docs-api-nav-method[data-method="UPDATE"] {
   color: var(--peony-soft);
 }
 

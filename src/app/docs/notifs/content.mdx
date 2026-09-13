@@ -407,9 +407,9 @@ a. From your guestbook project root, call:
 
     | Table | Events |
     | --- | --- |
-    | `public.admin_allowlist` | INSERT, DELETE |
-    | `public.comments` | INSERT, UPDATE, DELETE |
-    | `public.guestbook_settings` | UPDATE |
+    | `public.admin_allowlist` | {.insert}, {.delete} |
+    | `public.comments` | {.insert}, {.update}, {.delete} |
+    | `public.guestbook_settings` | {.update} |
 
     ::: {.callout}
     # Do *not* enable UPDATE on `admin_allowlist`. 
@@ -422,7 +422,7 @@ a. From your guestbook project root, call:
 
     | Table | Events |
     | --- | --- |
-    | `auth.users` | INSERT |
+    | `auth.users` | {.insert} |
 
     :::
 

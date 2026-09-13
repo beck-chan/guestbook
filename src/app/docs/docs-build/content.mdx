@@ -35,7 +35,7 @@ Documentation has its own custom theme, separate from the guestbook defined in  
 
 - Defining subtitle and flag visibility within a YAML frontmatter block
 - Using `:::` fences for formatting content 
-- Using shortcodes: `{.heart}` ({.heart}) / `{.lock}` ({.lock}) / `{.gear}` ({.gear}) / `{.button}` (button link) / `{.blank}` (`target="_blank"`) / `[text]{.smallcaps}` ([small caps]{.smallcaps}) 
+- Using shortcodes: `{.heart}` ({.heart}) / `{.lock}` ({.lock}) / `{.gear}` ({.gear}) / `{.select}` ({.select}) / `{.insert}` ({.insert}) / `{.update}` ({.update}) / `{.delete}` ({.delete}) / `{.get}` ({.get}) / `{.post}` ({.post}) / `{.put}` ({.put}) / `{.patch}` ({.patch}) / `{.button}` (button link) / `{.blank}` (`target="_blank"`) / `[text]{.smallcaps}` ([small caps]{.smallcaps}) 
 
 
 The Remark plugin also pulls page metadata out of the paired `content.mdx` so `page.tsx` can import it:
@@ -118,7 +118,7 @@ The Test Request feature available on the public build allows visitors to enter 
 
 - Caches the fetch (React `cache()` plus a 60-second revalidate) so the documentation sidebar and the Scalar API explorer share one request. 
 - After fetch it stamps our `info` title/description, `apikey` / `bearerAuth` security, and `servers` overlay.
-- Overlays required PostgREST row filters on `PATCH`/`DELETE` (replacing the matching `$ref`) so **Test Request** does not list the same query parameter twice.
+- Overlays required PostgREST row filters on {.patch} / {.delete} (replacing the matching `$ref`) so **Test Request** does not list the same query parameter twice.
 - [`typesToOpenApi.ts`](https://github.com/beck-chan/guestbook/blob/main/src/lib/docs/typesToOpenApi.ts){.blank} still builds sidebar links from Scalar inline call anchors (`openApiNav`) and marks non-anon operations as requiring a JWT.
 
 # layout.tsx

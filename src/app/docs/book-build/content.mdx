@@ -4,7 +4,6 @@ search: false
 public: false
 ---
 
-{/* do not change headings. use the rest of the docs as a style guide */}
 
 # Guestbook Build
 
@@ -45,6 +44,21 @@ Poems are Markdown files that live under [`poetry/`](https://github.com/beck-cha
 
 ## Guestbook Functionality
 
+The schema applied by running [`scripts/schema.sql`](https://github.com/beck-chan/guestbook/blob/main/scripts/schema.sql){.blank} enables row-level security on every public table — `is_admin()` is true only when the JWT has `app_metadata.role = 'admin'` (stamped from the allow-list at signup, not from editable `user_metadata`).
+
+| Table | `anon` | Admin (`authenticated` + `is_admin()`) |
+| --- | --- | --- |
+| `comments` | {.insert} | {.select}, {.insert}, {.update}, {.delete} |
+| `guestbook_settings` | {.select} | {.select}, {.update} |
+| `admin_allowlist` | none | none |
+| `poem_hearts` | none | none |
+
+- `comments` has no public {.select}, so emails stay on the private table. Visitors read the `comments_public` view instead (`id`, `display_name`, `body`, timestamps).
+- `guestbook_settings` is a singleton (`id = 1`) — no {.insert} or {.delete} policies. {.select} is granted to `anon` and `authenticated`.
+- `admin_allowlist` has RLS on with no policies, so `anon` / `authenticated` cannot read or write. `service_role` bypasses RLS (and still needs table grants). Auth’s `before-user-created hook` reads it as `supabase_auth_admin`.
+- `poem_hearts` has no table policies. Likes go through the security-definer RPCs `toggle_poem_heart` and `poem_heart_state`. Public counts come from `poem_heart_counts` and `poem_heart_total`.
+
+
 ::: {.tabset}
 
 # Comments
@@ -71,6 +85,7 @@ When users click **Submit**, the `submitComment` server action:
 [`/admin/login`](https://github.com/beck-chan/guestbook/blob/main/src/app/admin/login/route.ts){.blank} starts Google OAuth. [`/auth/callback`](https://github.com/beck-chan/guestbook/blob/main/src/app/auth/callback/route.ts){.blank} exchanges the code, then [`resolveAdminSession`](https://github.com/beck-chan/guestbook/blob/main/src/lib/adminAuth.ts){.blank} calls `ensure_admin_role` (allow-list stamp) and refreshes the JWT so `role=admin` is on the cookie.
 
 :::
+
 
 ## Feature Flags
 
