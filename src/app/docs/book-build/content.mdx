@@ -140,11 +140,11 @@ Comma-separated paths or URLs that scope the unique-visitor query. A path (for e
 
 UTC instant (`YYYY-MM-DDTHH:mm:ssZ`, for example `2025-09-12T00:00:00Z`) that starts the unique-visitor query. Empty counts all time. Values that are not that exact format are ignored. The value is part of the `unstable_cache` key, so changing it busts the cached count.
 
-### FLAG_NOTIF
+{/* ### FLAG_NOTIF
 
 `flags.notif` — default `false`.
 
-Listed on `flags` and passed through `next.config.ts` like the others, but Next never reads `flags.notif` (no UI or docs copy branches on it). **Sending mail is gated only by the Supabase secret** of the same name. Edge functions [`notify-admins`](https://github.com/beck-chan/guestbook/blob/main/supabase/functions/notify-admins/index.ts){.blank} and [`on-user-created`](https://github.com/beck-chan/guestbook/blob/main/supabase/functions/on-user-created/index.ts){.blank} skip with `{ skipped: "FLAG_NOTIF" }` when that secret is off. Set `npx supabase secrets set FLAG_NOTIF=true` for delivery. See [Enable Notifications](/docs/notifs).
+Listed on `flags` and passed through `next.config.ts` like the others, but Next never reads `flags.notif` (no UI or docs copy branches on it). **Sending mail is gated only by the Supabase secret** of the same name. Edge functions [`notify-admins`](https://github.com/beck-chan/guestbook/blob/main/supabase/functions/notify-admins/index.ts){.blank} and [`on-user-created`](https://github.com/beck-chan/guestbook/blob/main/supabase/functions/on-user-created/index.ts){.blank} skip with `{ skipped: "FLAG_NOTIF" }` when that secret is off. Set `npx supabase secrets set FLAG_NOTIF=true` for delivery. See [Enable Notifications](/docs/notifs). */}
 
 ### FLAG_PUBLIC
 

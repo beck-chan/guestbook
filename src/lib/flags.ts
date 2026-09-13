@@ -17,7 +17,6 @@ export const flags = {
   hitCounterUrl: envString(process.env.FLAG_COUNTER_URL, ""),
   /** UTC instant YYYY-MM-DDTHH:mm:ssZ for unique-visitor query (empty = all time). */
   hitCounterDate: envString(process.env.FLAG_COUNTER_DATE, ""),
-  notif: envFlag(process.env.FLAG_NOTIF, false), // Docs/copy only; mail is gated by the Supabase FLAG_NOTIF secret
   public: envFlag(process.env.FLAG_PUBLIC, false), // Show public guestbook home/public repo + dark green favicon
   apiTest: envFlag(process.env.FLAG_APITEST, false), // Show API Test Request on private docs
 };
