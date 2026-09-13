@@ -44,11 +44,19 @@ function paramRefName(parameter: unknown): string | null {
   return match?.[1] ?? null;
 }
 
+function omitParameterSchemaFields(parameter: JsonMap): JsonMap {
+  const rest = { ...parameter };
+  delete rest.type;
+  delete rest.format;
+  delete rest.enum;
+  delete rest.default;
+  delete rest.items;
+  return rest;
+}
+
 function toOasParameter(parameter: JsonMap): JsonMap {
   if (isMap(parameter.schema)) {
-    const { type: _type, format: _format, enum: _enum, default: _default, items: _items, ...rest } =
-      parameter;
-    return rest;
+    return omitParameterSchemaFields(parameter);
   }
 
   const { type, format, enum: enumValues, default: defaultValue, items, ...rest } = parameter;

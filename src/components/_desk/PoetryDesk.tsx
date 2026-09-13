@@ -62,45 +62,40 @@ export function PoetryDesk({
   commentPageSize,
 }: PoetryDeskProps) {
   const initialPoemId = poems[initialIndex]?.id;
-  const cacheRef = useRef<Record<string, PoemHeartState> | null>(null);
-  if (cacheRef.current === null) {
-    cacheRef.current = seedHeartCache(
-      poems.map((item) => item.id),
-      {},
-      0,
-    );
-  }
   const resolvedRef = useRef(new Set<string>());
   const ignoreFetchRef = useRef(new Set<string>());
 
   const [isOpen, setIsOpen] = useState(false);
   const [poemIndex, setPoemIndex] = useState(initialIndex);
   const [hintVisible, setHintVisible] = useState(true);
-  const [heart, setHeart] = useState<PoemHeartState>(EMPTY_HEART);
-  const [displayedPoemId, setDisplayedPoemId] = useState(initialPoemId);
+  const [heartCache, setHeartCache] = useState<Record<string, PoemHeartState>>(
+    () =>
+      seedHeartCache(
+        poems.map((item) => item.id),
+        {},
+        0,
+      ),
+  );
   const [heartPending, startHeartTransition] = useTransition();
   const [heartsReady, setHeartsReady] = useState(false);
   const hintClickedRef = useRef(false);
-  const poemIndexRef = useRef(poemIndex);
-  poemIndexRef.current = poemIndex;
 
   const poem = poems[poemIndex];
   const poemId = poem?.id;
-  if (displayedPoemId !== poemId) {
-    setDisplayedPoemId(poemId);
-    const cached = poemId ? cacheRef.current?.[poemId] : undefined;
-    setHeart((current) =>
-      cached
-        ? {
-            ...cached,
-            total_hearts: Math.max(cached.total_hearts, current.total_hearts),
-          }
-        : {
-            ...EMPTY_HEART,
-            total_hearts: current.total_hearts,
-          },
-    );
-  }
+  const cachedHeart = poemId ? heartCache[poemId] : undefined;
+  const maxTotalHearts = Object.values(heartCache).reduce(
+    (max, item) => Math.max(max, item.total_hearts),
+    cachedHeart?.total_hearts ?? 0,
+  );
+  const heart = cachedHeart
+    ? {
+        ...cachedHeart,
+        total_hearts: Math.max(cachedHeart.total_hearts, maxTotalHearts),
+      }
+    : {
+        ...EMPTY_HEART,
+        total_hearts: maxTotalHearts,
+      };
 
   useEffect(() => {
     function syncHint() {
@@ -126,32 +121,28 @@ export function PoetryDesk({
     let cancelled = false;
 
     void getDeskHeartSeed(initialPoemId ?? "").then((seed) => {
-      if (cancelled || !cacheRef.current) {
+      if (cancelled) {
         return;
       }
 
-      const nextCache = seedHeartCache(
-        poems.map((item) => item.id),
-        seed.heartCounts,
-        seed.initialHeart.total_hearts,
-        initialPoemId,
-        seed.initialHeart,
-      );
-      for (const id of resolvedRef.current) {
-        const kept = cacheRef.current[id];
-        if (kept) {
-          nextCache[id] = kept;
+      setHeartCache((current) => {
+        const nextCache = seedHeartCache(
+          poems.map((item) => item.id),
+          seed.heartCounts,
+          seed.initialHeart.total_hearts,
+          initialPoemId,
+          seed.initialHeart,
+        );
+        for (const id of resolvedRef.current) {
+          const kept = current[id];
+          if (kept) {
+            nextCache[id] = kept;
+          }
         }
-      }
-      cacheRef.current = nextCache;
+        return nextCache;
+      });
       if (initialPoemId) {
         resolvedRef.current.add(initialPoemId);
-      }
-
-      const currentId = poems[poemIndexRef.current]?.id;
-      const cached = currentId ? nextCache[currentId] : undefined;
-      if (cached && !ignoreFetchRef.current.has(currentId)) {
-        setHeart(cached);
       }
       setHeartsReady(true);
     });
@@ -175,11 +166,8 @@ export function PoetryDesk({
       if (cancelled || ignoreFetchRef.current.has(poemId)) {
         return;
       }
-      if (cacheRef.current) {
-        cacheRef.current[poemId] = next;
-      }
+      setHeartCache((current) => ({ ...current, [poemId]: next }));
       resolvedRef.current.add(poemId);
-      setHeart(next);
     });
     return () => {
       cancelled = true;
@@ -193,11 +181,8 @@ export function PoetryDesk({
     ignoreFetchRef.current.add(poem.id);
     startHeartTransition(async () => {
       const next = await togglePoemHeart(poem.id);
-      if (cacheRef.current) {
-        cacheRef.current[poem.id] = next;
-      }
+      setHeartCache((current) => ({ ...current, [poem.id]: next }));
       resolvedRef.current.add(poem.id);
-      setHeart(next);
     });
   }
 

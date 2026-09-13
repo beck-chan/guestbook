@@ -439,7 +439,14 @@ export function Book({
   const coverBlurId = `cover-motion-${useId().replace(/:/g, "")}`;
   const [heldOpen, setHeldOpen] = useState(false);
   const [animating, setAnimating] = useState(false);
-  isOpenRef.current = isOpen;
+  const [openCycle, setOpenCycle] = useState(isOpen);
+  if (openCycle !== isOpen) {
+    setOpenCycle(isOpen);
+    setHeldOpen(true);
+    if (isOpen) {
+      setAnimating(true);
+    }
+  }
 
   function nodes() {
     const scene = sceneRef.current;
@@ -1093,6 +1100,10 @@ export function Book({
     clearCoverMotionBlur(parts.cover, coverBlurRef.current, coverMotionRef);
   }
 
+  useLayoutEffect(() => {
+    isOpenRef.current = isOpen;
+  }, [isOpen]);
+
   useGSAP(
     () => {
       syncIdle();
@@ -1121,6 +1132,9 @@ export function Book({
     });
     observer.observe(stage);
     return () => observer.disconnect();
+    // syncIdle reads latest layout via refs; recreating the observer on each render
+    // would miss in-flight resizes and replay idle poses.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -1147,11 +1161,12 @@ export function Book({
     }
 
     window.addEventListener("wheel", onWheel, { passive: false, capture: true });
-    bookRef.current?.addEventListener("wheel", onWheel, { passive: false });
+    const book = bookRef.current;
+    book?.addEventListener("wheel", onWheel, { passive: false });
     return () => {
       cancelLeafScrolls();
       window.removeEventListener("wheel", onWheel, { capture: true });
-      bookRef.current?.removeEventListener("wheel", onWheel);
+      book?.removeEventListener("wheel", onWheel);
     };
   }, []);
 
@@ -1167,11 +1182,14 @@ export function Book({
 
     const parts = nodes();
     if (prefersReducedMotion() || !parts) {
-      if (isOpen) {
-        settleOpen();
-      } else {
-        settleClosed();
-      }
+      const open = isOpen;
+      queueMicrotask(() => {
+        if (open) {
+          settleOpen();
+        } else {
+          settleClosed();
+        }
+      });
       return;
     }
 
@@ -1180,12 +1198,10 @@ export function Book({
     const leaf = leafRef.current || measureLeaf(parts.scene);
     leafRef.current = leaf;
 
-    setHeldOpen(true);
     parts.book.classList.add("is-open");
     gsap.set(parts.cover, { transformOrigin: "left center", backfaceVisibility: "visible" });
 
     if (isOpen) {
-      setAnimating(true);
       parts.book.classList.add("is-animating");
       if (fromIdle) {
         gsap.set(parts.cover, { rotationY: 0, z: 3, transformOrigin: "left center", backfaceVisibility: "visible" });
@@ -1207,6 +1223,9 @@ export function Book({
       }
       playToClose();
     }
+    // Animation helpers close over refs and latest GSAP nodes; listing them would
+    // replay open/close timelines on every render.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen]);
 
   return (

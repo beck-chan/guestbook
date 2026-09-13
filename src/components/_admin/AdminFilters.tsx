@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, type ChangeEvent } from "react";
+import { useState, type ChangeEvent } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { DocsHeart } from "@/app/docs/_components/DocsHeart";
@@ -60,10 +60,11 @@ export function AdminFilters({
   const router = useRouter();
   const [toolsOpen, setToolsOpen] = useState(false);
   const [query, setQuery] = useState(filters.q);
-
-  useEffect(() => {
+  const [prevFilterQ, setPrevFilterQ] = useState(filters.q);
+  if (filters.q !== prevFilterQ) {
+    setPrevFilterQ(filters.q);
     setQuery(filters.q);
-  }, [filters.q]);
+  }
 
   function apply(form: HTMLFormElement, q = String(new FormData(form).get("q") ?? "").trim()) {
     const data = new FormData(form);

@@ -7,7 +7,10 @@ import { useGuestbookSettings } from "@/lib/guestbookSettings";
 export function EmailCaptureHydrator() {
   const [settings, , setSettings] = useGuestbookSettings();
   const settingsRef = useRef(settings);
-  settingsRef.current = settings;
+
+  useEffect(() => {
+    settingsRef.current = settings;
+  }, [settings]);
 
   useEffect(() => {
     let cancelled = false;

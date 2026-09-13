@@ -61,7 +61,8 @@ async function main() {
       (user) => user.email?.toLowerCase() === email,
     );
     if (match) {
-      const { role: _removed, ...rest } = match.app_metadata ?? {};
+      const rest = { ...(match.app_metadata ?? {}) };
+      delete rest.role;
       const { error: updateError } = await supabase.auth.admin.updateUserById(
         match.id,
         {

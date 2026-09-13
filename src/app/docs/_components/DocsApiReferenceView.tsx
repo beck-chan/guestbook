@@ -1,6 +1,12 @@
 "use client";
 
-import { useEffect, useRef, useState, type FormEvent } from "react";
+import {
+  useEffect,
+  useRef,
+  useState,
+  useSyncExternalStore,
+  type FormEvent,
+} from "react";
 import { flags } from "@/lib/flags";
 import {
   SCALAR_STANDALONE_SRC,
@@ -59,6 +65,10 @@ function loadStandalone() {
     script.onerror = () => reject(new Error("Scalar failed to load"));
     document.head.appendChild(script);
   });
+}
+
+function subscribeNever() {
+  return () => {};
 }
 
 function readStoredProjectRef() {
@@ -313,19 +323,17 @@ function badgeScalarOperationTitles(root: ParentNode = document) {
 export function DocsApiReferenceView({ spec }: { spec: OpenApiSpec }) {
   const hostRef = useRef<HTMLDivElement>(null);
   const [mounted, setMounted] = useState(false);
-  const [draftRef, setDraftRef] = useState(PROJECT_REF_PLACEHOLDER);
-  const [appliedRef, setAppliedRef] = useState(DEFAULT_PROJECT_REF);
-  const [serverReady, setServerReady] = useState(!flags.public);
-
-  useEffect(() => {
-    if (!flags.public) {
-      return;
-    }
-    const stored = readStoredProjectRef();
-    setDraftRef(displayProjectRef(stored));
-    setAppliedRef(stored);
-    setServerReady(true);
-  }, []);
+  const isClient = useSyncExternalStore(subscribeNever, () => true, () => false);
+  const storedRef = useSyncExternalStore(
+    subscribeNever,
+    readStoredProjectRef,
+    () => DEFAULT_PROJECT_REF,
+  );
+  const [draftOverride, setDraftOverride] = useState<string | null>(null);
+  const [appliedOverride, setAppliedOverride] = useState<string | null>(null);
+  const draftRef = draftOverride ?? (isClient ? displayProjectRef(storedRef) : PROJECT_REF_PLACEHOLDER);
+  const appliedRef = appliedOverride ?? storedRef;
+  const serverReady = !flags.public || isClient;
 
   useEffect(() => {
     const capture = (event: Event) => {
@@ -376,7 +384,6 @@ export function DocsApiReferenceView({ spec }: { spec: OpenApiSpec }) {
 
     let cancelled = false;
     let instance: ScalarInstance | void;
-    setMounted(false);
 
     loadStandalone()
       .then(() => {
@@ -417,8 +424,8 @@ export function DocsApiReferenceView({ spec }: { spec: OpenApiSpec }) {
   function applyProjectRef(event: FormEvent) {
     event.preventDefault();
     const next = parseProjectRef(draftRef) || DEFAULT_PROJECT_REF;
-    setDraftRef(displayProjectRef(next));
-    setAppliedRef(next);
+    setDraftOverride(displayProjectRef(next));
+    setAppliedOverride(next);
     try {
       sessionStorage.setItem(PROJECT_REF_KEY, next);
     } catch {
@@ -440,7 +447,7 @@ export function DocsApiReferenceView({ spec }: { spec: OpenApiSpec }) {
             </span>
             <input
               value={draftRef}
-              onChange={(event) => setDraftRef(event.target.value)}
+              onChange={(event) => setDraftOverride(event.target.value)}
               autoComplete="off"
               spellCheck={false}
               placeholder={PROJECT_REF_PLACEHOLDER}

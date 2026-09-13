@@ -647,7 +647,7 @@ export function createScalarReferenceConfig() {
     hideDarkModeToggle: true,
     withDefaultFonts: false,
     slug: "api",
-    defaultOpenAllTags: true,
+    defaultOpenAllTags: false,
     expandAllModelSections: false,
     expandAllSchemaProperties: false,
     orderSchemaPropertiesBy: "alpha" as const,

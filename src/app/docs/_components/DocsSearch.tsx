@@ -2,11 +2,14 @@
 
 import {
   createContext,
+  useCallback,
   useContext,
   useEffect,
   useId,
+  useMemo,
   useRef,
   useState,
+  useSyncExternalStore,
   type ReactNode,
 } from "react";
 import { createPortal } from "react-dom";
@@ -33,6 +36,10 @@ const DocsSearchContext = createContext<DocsSearchContextValue>({
   openSearch: () => {},
   closeSearch: () => {},
 });
+
+function subscribeNever() {
+  return () => {};
+}
 
 function useDocsSearch() {
   return useContext(DocsSearchContext);
@@ -150,27 +157,28 @@ function DocsSearchOverlay({
   const listId = useId();
   const inputRef = useRef<HTMLInputElement>(null);
   const dialogRef = useRef<HTMLDivElement>(null);
-  const miniRef = useRef<MiniSearch<DocsSearchDoc> | null>(null);
-  const docsRef = useRef<DocsSearchDoc[]>([]);
+  const mounted = useSyncExternalStore(subscribeNever, () => true, () => false);
   const [query, setQuery] = useState("");
   const [active, setActive] = useState(0);
-  const [hits, setHits] = useState<Hit[]>([]);
-  const [mounted, setMounted] = useState(false);
+  const miniSearch = useMemo(() => buildMiniSearch(documents), [documents]);
+  const hits = useMemo(() => {
+    const q = query.trim();
+    if (!open || !q) {
+      return [] as Hit[];
+    }
+    return miniSearch.search(q).slice(0, 10) as unknown as Hit[];
+  }, [miniSearch, query, open]);
+  const safeActive = hits.length === 0 ? 0 : Math.min(active, hits.length - 1);
 
-  if (docsRef.current !== documents) {
-    docsRef.current = documents;
-    miniRef.current = buildMiniSearch(documents);
+  if (!open && query !== "") {
+    setQuery("");
+  }
+  if (!open && active !== 0) {
+    setActive(0);
   }
 
   useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  useEffect(() => {
     if (!open) {
-      setQuery("");
-      setHits([]);
-      setActive(0);
       return;
     }
 
@@ -183,17 +191,6 @@ function DocsSearchOverlay({
       document.body.style.overflow = previousOverflow;
     };
   }, [open]);
-
-  useEffect(() => {
-    const q = query.trim();
-    if (!open || !q || !miniRef.current) {
-      setHits([]);
-      setActive(0);
-      return;
-    }
-    setHits(miniRef.current.search(q).slice(0, 10) as unknown as Hit[]);
-    setActive(0);
-  }, [query, documents, open]);
 
   useEffect(() => {
     if (!open) return;
@@ -229,7 +226,7 @@ function DocsSearchOverlay({
     }
     if (event.key === "Enter") {
       event.preventDefault();
-      const hit = hits[active] ?? hits[0];
+      const hit = hits[safeActive] ?? hits[0];
       if (hit) {
         closeAndGo(hit.href);
       }
@@ -268,9 +265,12 @@ function DocsSearchOverlay({
             aria-autocomplete="list"
             aria-controls={listId}
             aria-activedescendant={
-              hits[active] ? `${listId}-opt-${active}` : undefined
+              hits[safeActive] ? `${listId}-opt-${safeActive}` : undefined
             }
-            onChange={(event) => setQuery(event.target.value)}
+            onChange={(event) => {
+              setQuery(event.target.value);
+              setActive(0);
+            }}
             onKeyDown={onInputKeyDown}
           />
           <kbd className="docs-search-esc">esc</kbd>
@@ -285,10 +285,10 @@ function DocsSearchOverlay({
               <li className="docs-search-empty">No Results Found</li>
             ) : (
               hits.map((hit, index) => (
-                <li key={hit.id} role="option" aria-selected={index === active}>
+                <li key={hit.id} role="option" aria-selected={index === safeActive}>
                   <Link
                     id={`${listId}-opt-${index}`}
-                    className={`docs-search-hit${index === active ? " is-active" : ""}`}
+                    className={`docs-search-hit${index === safeActive ? " is-active" : ""}`}
                     href={hit.href}
                     onClick={() => onClose()}
                     onMouseEnter={() => setActive(index)}
@@ -316,15 +316,15 @@ function DocsSearchOverlay({
 
 export function DocsSearchProvider({ children }: { children: ReactNode }) {
   const pathname = usePathname() ?? "";
-  const [open, setOpen] = useState(false);
+  const [openPath, setOpenPath] = useState<string | null>(null);
   const [documents, setDocuments] = useState<DocsSearchDoc[]>([]);
   const [status, setStatus] = useState<SearchStatus>("idle");
   const statusRef = useRef<SearchStatus>("idle");
-  statusRef.current = status;
+  const open = openPath !== null && openPath === pathname;
 
-  const closeSearch = () => setOpen(false);
+  const closeSearch = () => setOpenPath(null);
 
-  function ensureIndex() {
+  const ensureIndex = useCallback(() => {
     if (isApiPath(pathname) || isApiPath(window.location.pathname)) {
       return;
     }
@@ -349,19 +349,15 @@ export function DocsSearchProvider({ children }: { children: ReactNode }) {
         statusRef.current = "error";
         setStatus("error");
       });
-  }
+  }, [pathname]);
 
   const openSearch = () => {
     if (isApiPath(pathname) || isApiPath(window.location.pathname)) {
       return;
     }
     ensureIndex();
-    setOpen(true);
+    setOpenPath(pathname);
   };
-
-  useEffect(() => {
-    setOpen(false);
-  }, [pathname]);
 
   useEffect(() => {
     function onKeyDown(event: KeyboardEvent) {
@@ -371,12 +367,12 @@ export function DocsSearchProvider({ children }: { children: ReactNode }) {
       if (isApiPath(window.location.pathname)) return;
       event.preventDefault();
       ensureIndex();
-      setOpen(true);
+      setOpenPath(pathname);
     }
 
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [pathname]);
+  }, [ensureIndex, pathname]);
 
   return (
     <DocsSearchContext.Provider
