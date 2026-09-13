@@ -3,8 +3,31 @@ import { rmSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
+function removeNextCache(dir) {
+  const cache = path.join(dir, ".next");
+  let lastErr;
+  for (let i = 0; i < 8; i++) {
+    try {
+      rmSync(cache, {
+        recursive: true,
+        force: true,
+        maxRetries: 8,
+        retryDelay: 150,
+      });
+      console.log(`removed ${cache}`);
+      return null;
+    } catch (err) {
+      lastErr = err;
+      if (!["ENOTEMPTY", "EBUSY", "EPERM", "EACCES"].includes(err.code)) {
+        throw err;
+      }
+      sleep(300);
+    }
+  }
+  return lastErr;
+}
+
 const root = path.resolve(path.join(path.dirname(fileURLToPath(import.meta.url)), ".."));
-const nextDir = path.join(root, ".next");
 const appRoots = [
   root,
   path.resolve(root, "..", "guestbook"),
@@ -257,25 +280,10 @@ if (killed === 0) {
 sleep(400);
 const stillListening = reportLeftoverSockets();
 
-let lastErr;
-for (let i = 0; i < 8; i++) {
-  try {
-    rmSync(nextDir, {
-      recursive: true,
-      force: true,
-      maxRetries: 8,
-      retryDelay: 150,
-    });
-    console.log(`removed ${nextDir}`);
-    lastErr = null;
-    break;
-  } catch (err) {
-    lastErr = err;
-    if (!["ENOTEMPTY", "EBUSY", "EPERM", "EACCES"].includes(err.code)) {
-      throw err;
-    }
-    sleep(300);
-  }
+let lastErr = null;
+for (const dir of appRoots) {
+  const err = removeNextCache(dir);
+  if (err) lastErr = err;
 }
 
 if (lastErr) {
