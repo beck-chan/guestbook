@@ -99,9 +99,6 @@ const TAG_DESCRIPTIONS: Record<string, string> = {
     "Returns whether the current JWT has `app_metadata.role = admin`. Used by RLS — calling it is only a check.",
   ensure_admin_role:
     "After Google login if the email is allow-listed, stamps admin role on the user so the JWT/RLS checks succeed.",
-  hook_before_user_created: 'Supabase Auth "before user created" hook.',
-  rls_auto_enable:
-    "Supabase event-trigger helper — turns on RLS automatically when a new table is created.",
 };
 
 function tagDescriptionKey(name: string) {
@@ -149,14 +146,28 @@ function applyTagDescriptions(spec: OpenApiSpec) {
 }
 
 /** PostgREST advertises GET / as “OpenAPI description (this document)”. */
+const HIDDEN_RPCS = new Set(["rls_auto_enable", "hook_before_user_created"]);
+const HIDDEN_PATHS = new Set(
+  [...HIDDEN_RPCS].map((name) => `/rpc/${name}`),
+);
+
+function isHiddenCatalogTag(name: string) {
+  return HIDDEN_RPCS.has(tagDescriptionKey(name));
+}
+
 function omitPostgrestMeta(spec: OpenApiSpec) {
   if (spec.paths) {
     delete spec.paths["/"];
     delete spec.paths[""];
+    for (const path of HIDDEN_PATHS) {
+      delete spec.paths[path];
+    }
   }
   if (spec.tags?.length) {
     spec.tags = spec.tags.filter(
-      (tag) => tag.name.toLowerCase() !== "introspection",
+      (tag) =>
+        tag.name.toLowerCase() !== "introspection" &&
+        !isHiddenCatalogTag(tag.name),
     );
   }
 }
@@ -165,8 +176,6 @@ const SERVICE_ROLE_ONLY_PATHS = new Set([
   "/admin_allowlist",
   "/guestbook_rate_limits",
   "/poem_hearts",
-  "/rpc/hook_before_user_created",
-  "/rpc/rls_auto_enable",
 ]);
 
 const JWT_ERROR_HEADING =
@@ -324,7 +333,19 @@ const COMMENTS_DELETE_CALLOUT = mutationFilterCallout(
   "DELETE",
   COMMENTS_FILTER,
 );
-const COMMENTS_PATCH_CALLOUT = mutationFilterCallout("UPDATE", COMMENTS_FILTER);
+const COMMENTS_PATCH_CALLOUT = markdownCallout(
+  FILTER_CALLOUT_TITLE,
+  "PostgREST will not run an unfiltered `UPDATE` (`21000`). Under **Query Parameters**, set **key**: `id` and **value**: `eq.<comment-uuid>` (not the uuid alone). Retrieve the id from **GET** `/comments`. Keep `bearerAuth` plus the `apikey` header.",
+  "Under **Request Body**, send only the columns to change — do not include `id`:",
+  "```json\n{ \"is_read\": true }\n```",
+);
+
+const POEM_HEART_RPC_CALLOUT = markdownCallout(
+  "This call needs `p_poem_id` in the request body.",
+  "The RPC raises `P0001` (`poem_id required`) if `p_poem_id` is missing or blank. Under **Request Body**, send the Postgres argument names (not `poem_id`):",
+  "```json\n{\n  \"p_poem_id\": \"<poem-id>\",\n  \"p_visitor_key\": \"<visitor-uuid>\"\n}\n```",
+  "`toggle_poem_heart` also requires `p_visitor_key`. `poem_heart_state` can omit it (liked will be false). Use any poem id from the desk and any uuid as the visitor key.",
+);
 
 const FILTER_AND_AUTH_PATHS = new Set([
   "/admin_allowlist",
@@ -478,6 +499,18 @@ function applyOperationCallouts(spec: OpenApiSpec) {
   prependCallout(spec, "/comments", ["post"], COMMENTS_POST_CALLOUT);
   prependCallout(spec, "/comments", ["delete"], COMMENTS_DELETE_CALLOUT);
   prependCallout(spec, "/comments", ["patch"], COMMENTS_PATCH_CALLOUT);
+  prependCallout(
+    spec,
+    "/rpc/poem_heart_state",
+    ["post"],
+    POEM_HEART_RPC_CALLOUT,
+  );
+  prependCallout(
+    spec,
+    "/rpc/toggle_poem_heart",
+    ["post"],
+    POEM_HEART_RPC_CALLOUT,
+  );
 }
 
 function overlayInfo(spec: OpenApiSpec, isPublic: boolean) {
@@ -486,10 +519,10 @@ function overlayInfo(spec: OpenApiSpec, isPublic: boolean) {
     title: isPublic ? "y2k Guestbook API" : "Beck's y2k Guestbook API",
     version: spec.info?.version ?? "1.0.0",
     description: isPublic
-      ? "### The API below reflects the calls you can make to your connected Supabase database when the guestbook is fully installed.\n\n1. To hook up the Test Request functionality to your instance of Supabase, you'll need to first [enter your Project ID above](#enter-supabase-connection-details).\n2. Then, under **Authentication**, set `apikey` to your `NEXT_PUBLIC_SUPABASE_ANON_KEY`. For admin calls also set `bearerAuth` to [your admin JWT](#your-supabase-tokens).\n\n> Project IDs and keys you enter on this page when testing requests stay in your browser — we do not collect them. Send goes from your browser direct to your Supabase project."
+      ? "### The reference below reflects the calls you can make to your connected Supabase database when the guestbook is fully installed.\n\n1. To hook up the Test Request functionality to your instance of Supabase, you'll need to first [enter your Project ID above](#enter-supabase-connection-details).\n2. Then, under **Authentication**, set `apikey` to your `NEXT_PUBLIC_SUPABASE_ANON_KEY`. For admin calls also set `bearerAuth` to [your admin JWT](#your-supabase-tokens).\n\n> Project IDs and keys you enter on this page when testing requests stay in your browser — we do not collect them. Send goes from your browser direct to your Supabase project."
       : flags.apiTest
-        ? "### The API below reflects the functionality of Beck's custom guestbook install.\n\n> Testing functionality is turned on, and uses this project's Supabase URL from the environment."
-        : "### The API below reflects the functionality of Beck's custom guestbook install.\n\nYou cannot enter API keys or project IDs for testing.<br>\n\n> [View Public API Library](https://y2k-guestbook.vercel.app/docs/api)",
+        ? "### The reference below reflects the functionality of Beck's custom guestbook install.\n\n> Testing functionality is turned on, and uses this project's Supabase URL from the environment."
+        : "### The reference below reflects the functionality of Beck's custom guestbook install.\n\nYou cannot enter API keys or project IDs for testing.<br>\n\n> [View Public API Library](https://y2k-guestbook.vercel.app/docs/api)",
   };
 }
 

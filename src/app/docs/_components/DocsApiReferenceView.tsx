@@ -120,6 +120,11 @@ function isScalarIntroHeading(option: HTMLElement) {
   return /\bheading\b/i.test(text) && /the api below reflects/i.test(text);
 }
 
+function isHiddenApiSearchRow(option: HTMLElement) {
+  const text = option.textContent?.replace(/\s+/g, " ").trim() ?? "";
+  return /rls_auto_enable|hook_before_user_created/i.test(text);
+}
+
 function decorateScalarSearchResults(root: ParentNode = document) {
   const options: HTMLElement[] = [];
   const visit = (node: ParentNode) => {
@@ -141,7 +146,7 @@ function decorateScalarSearchResults(root: ParentNode = document) {
   };
   visit(root);
   for (const option of options) {
-    if (isScalarIntroHeading(option)) {
+    if (isScalarIntroHeading(option) || isHiddenApiSearchRow(option)) {
       option.setAttribute("data-docs-hide-heading", "true");
       option.style.setProperty("display", "none", "important");
       continue;
