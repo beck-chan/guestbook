@@ -1812,8 +1812,7 @@ a[role="option"][data-docs-hide-heading="true"],
 }
 
 .docs-cta {
-  display: inline-flex;
-  align-items: center;
+  display: block;
   width: fit-content;
   padding: 0.5rem 1.1rem;
   border: 1px solid #c9c5bc;
@@ -1826,7 +1825,6 @@ a[role="option"][data-docs-hide-heading="true"],
   letter-spacing: 0.04em;
   text-align: center;
   text-decoration: none;
-  vertical-align: top;
 }
 
 .docs-main a.docs-cta {
@@ -1839,10 +1837,6 @@ a[role="option"][data-docs-hide-heading="true"],
   padding: 0.32rem 0.8rem;
   font-size: clamp(1.05rem, 1.5vw, 1.28rem);
   letter-spacing: 0.03em;
-}
-
-.docs-article p:has(> a.docs-cta:only-child) {
-  line-height: 1;
 }
 
 .docs-cta:hover,
