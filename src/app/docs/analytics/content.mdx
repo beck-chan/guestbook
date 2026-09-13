@@ -131,7 +131,9 @@ In `env.local` (for local development) or your Vercel environment variables (for
 
     Leaving this variable empty counts all `$pageview` events on the site.
 
-3. Optionally set **`FLAG_COUNTER_DATE=`** to a UTC instant (`YYYY-MM-DDTHH:mm:ssZ`, e.g. `2025-09-12T00:00:00Z`) so unique `$pageview` visitors are counted only at or after that time. Leave it empty to count all time.
+3. Optionally set **`FLAG_COUNTER_DATE=`** to a UTC instant (`YYYY-MM-DDTHH:mm:ssZ`, e.g. `2025-09-12T00:00:00Z`) so unique `$pageview` visitors are counted only at or after that time. 
+
+    Leave it empty to count all time.
 
 ::: {.callout}
 # `npm run dev` keeps the decorative fallback (`000481`) and does not call PostHog. 
