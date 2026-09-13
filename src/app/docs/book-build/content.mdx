@@ -84,7 +84,9 @@ Flags are built on compile:
 
 # Public Guestbook
 
-**`FLAG_PUBLIC`** allows diversion of the guestbook to a public page instead of the landing with the poetry volume. 
+### `FLAG_PUBLIC`
+
+Allows diversion of the guestbook to a public page instead of the landing with the poetry volume. 
 
 Used to deploy to the public version of the site at [https://y2k-guestbook.vercel.app/](https://y2k-guestbook.vercel.app/){.blank}:
 
@@ -97,25 +99,25 @@ Used to deploy to the public version of the site at [https://y2k-guestbook.verce
 
 # Hit Counter
 
-**`FLAG_COUNTER`**
+### `FLAG_COUNTER`
 
 When set to `true`, enables display of the [`HitCounter`](https://github.com/beck-chan/guestbook/blob/main/src/components/_shared/HitCounter.tsx){.blank}. Counts come from [`getUniqueVisitors()`](https://github.com/beck-chan/guestbook/blob/main/src/lib/uniqueVisitors.ts){.blank} (PostHog `$pageview` uniqueness, cached 60s). Development mode always shows the static fallback in [`hitCount.ts`](https://github.com/beck-chan/guestbook/blob/main/src/lib/hitCount.ts){.blank}. In production the counter polls `/api/hits` and adds a one-time first-visit bonus from `localStorage`.
 
-**`FLAG_COUNTER_URL`**
+### `FLAG_COUNTER_URL`
 
 Comma-separated paths or URLs that scope the unique-visitor query. A path (for example `/` or `/guestbook`) matches `$pathname` exactly — a full URL substring-matches `$current_url`. Empty counts every `$pageview`. 
 
-**`FLAG_COUNTER_DATE`**
+### `FLAG_COUNTER_DATE`
 
 UTC instant (`YYYY-MM-DDTHH:mm:ssZ`, for example `2025-09-12T00:00:00Z`) that starts the unique-visitor query. Empty counts all time. Values that are not that exact format are ignored. 
 
 # Documentation
 
-**`FLAG_DOCS`**
+### `FLAG_DOCS`
 
 When set to `false`, hides the **View Docs** link from view, and swaps in the **Admin Login** link instead. Only used for v1 of the public deployment when I was still completing the documentation so nobody stumbled upon the incomplete guides.
 
-**`FLAG_DOCSONLY`**
+### `FLAG_DOCSONLY`
 
 Serves only the documentation instead of the full guestbook application for a lighter weight preview when authoring docs. Can be called with `npm run docs` which sets `FLAG_DOCSONLY=true` on that process via [`scripts/docs-dev.mjs`](https://github.com/beck-chan/guestbook/blob/main/scripts/docs-dev.mjs){.blank} (overrides `.env.local`). 
 
