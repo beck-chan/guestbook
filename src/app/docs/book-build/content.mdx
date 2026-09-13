@@ -64,7 +64,7 @@ The schema applied by running [`scripts/schema.sql`](https://github.com/beck-cha
 - `admin_allowlist` has RLS on with no policies, so `anon` / `authenticated` cannot read or write. `service_role` bypasses RLS (and still needs table grants). Auth’s `before-user-created hook` reads it as `supabase_auth_admin`.
 - `poem_hearts` has no table policies. Likes go through the security-definer RPCs `toggle_poem_heart` and `poem_heart_state`. Public counts come from `poem_heart_counts` and `poem_heart_total`.
 
-# ERD
+# Entity Relationship Diagram
 
 ```mermaid
 erDiagram

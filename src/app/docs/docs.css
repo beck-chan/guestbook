@@ -1447,10 +1447,16 @@ a[role="option"][data-docs-hide-heading="true"],
 }
 
 .docs-mermaid {
+  --docs-mermaid-title: color-mix(in srgb, #6f4e37 48%, white);
+  --docs-mermaid-ink: var(--docs-ink);
+  --docs-mermaid-brown: #6f4e37;
+  --docs-mermaid-border: color-mix(in srgb, #6f4e37 28%, white);
+  --docs-mermaid-heading: var(--paper);
+  --docs-mermaid-row: color-mix(in srgb, var(--paper) 72%, white);
   margin: 1.1rem 0;
   overflow-x: auto;
-  color: #000;
-  font-family: Arial, Helvetica, sans-serif;
+  color: var(--docs-mermaid-ink);
+  font-family: var(--body-font);
   font-size: 16px;
   line-height: 1.5;
 }
@@ -1459,6 +1465,123 @@ a[role="option"][data-docs-hide-heading="true"],
   display: block;
   max-width: none;
   height: auto;
+}
+
+.docs-mermaid .outer-path path {
+  fill: var(--docs-mermaid-heading);
+  stroke: var(--docs-mermaid-border);
+  stroke-width: 2px;
+}
+
+.docs-mermaid .row-rect-odd path {
+  fill: #fff;
+  stroke: var(--docs-mermaid-border);
+}
+
+.docs-mermaid .row-rect-even path {
+  fill: var(--docs-mermaid-row);
+  stroke: var(--docs-mermaid-border);
+}
+
+.docs-mermaid .divider path {
+  fill: var(--docs-mermaid-border);
+  stroke: var(--docs-mermaid-border);
+}
+
+.docs-mermaid .relationshipLine,
+.docs-mermaid .edgePaths path,
+.docs-mermaid .edge-thickness-normal,
+.docs-mermaid .flowchart-link {
+  fill: none;
+  stroke: var(--docs-mermaid-border) !important;
+}
+
+.docs-mermaid marker path,
+.docs-mermaid marker line,
+.docs-mermaid .marker path,
+.docs-mermaid .arrowMarkerPath {
+  fill: none !important;
+  stroke: var(--docs-mermaid-border) !important;
+}
+
+.docs-mermaid marker circle,
+.docs-mermaid .marker circle {
+  fill: #fff !important;
+  stroke: var(--docs-mermaid-border) !important;
+}
+
+.docs-mermaid .name,
+.docs-mermaid .name text,
+.docs-mermaid .name div,
+.docs-mermaid .name span,
+.docs-mermaid .name p {
+  color: var(--docs-mermaid-title) !important;
+  fill: var(--docs-mermaid-title) !important;
+  font-family: var(--body-font) !important;
+  font-size: 1.05rem !important;
+  font-weight: 700 !important;
+  overflow: visible !important;
+  white-space: nowrap !important;
+  width: 100% !important;
+  max-width: none !important;
+  text-align: center !important;
+}
+
+.docs-mermaid .name foreignObject {
+  overflow: visible;
+}
+
+.docs-mermaid .attribute-type,
+.docs-mermaid .attribute-name,
+.docs-mermaid .attribute-keys,
+.docs-mermaid .attribute-comment,
+.docs-mermaid .attribute-type text,
+.docs-mermaid .attribute-name text,
+.docs-mermaid .attribute-keys text,
+.docs-mermaid .attribute-comment text,
+.docs-mermaid .attribute-type div,
+.docs-mermaid .attribute-name div,
+.docs-mermaid .attribute-keys div,
+.docs-mermaid .attribute-comment div,
+.docs-mermaid .attribute-type span,
+.docs-mermaid .attribute-name span,
+.docs-mermaid .attribute-keys span,
+.docs-mermaid .attribute-comment span {
+  color: var(--docs-mermaid-ink) !important;
+  fill: var(--docs-mermaid-ink) !important;
+  font-family: var(--body-font) !important;
+  font-size: 16px !important;
+  font-weight: 400 !important;
+}
+
+.docs-mermaid .edgeLabel,
+.docs-mermaid .edgeLabel .label,
+.docs-mermaid .edgeLabel text,
+.docs-mermaid .edgeLabel div,
+.docs-mermaid .edgeLabel span,
+.docs-mermaid .edgeLabel p,
+.docs-mermaid .relationshipLabelBox {
+  color: var(--docs-mermaid-brown) !important;
+  fill: var(--docs-mermaid-brown) !important;
+  font-family: var(--peony-font) !important;
+  font-size: 1.15rem !important;
+  font-weight: 400 !important;
+  background-color: transparent !important;
+  overflow: visible !important;
+  white-space: nowrap !important;
+  width: max-content !important;
+  max-width: none !important;
+}
+
+.docs-mermaid .edgeLabel foreignObject {
+  overflow: visible;
+}
+
+.docs-mermaid .edgeLabel .label rect,
+.docs-mermaid .relationshipLabelBox rect,
+.docs-mermaid .labelBkg {
+  fill: transparent !important;
+  background-color: transparent !important;
 }
 
 .docs-code {
@@ -1830,6 +1953,28 @@ a[role="option"][data-docs-hide-heading="true"],
   line-height: inherit;
   text-align: inherit;
   vertical-align: inherit;
+}
+
+.docs-article .docs-mermaid .name,
+.docs-article .docs-mermaid .name p,
+.docs-article .docs-mermaid .name div,
+.docs-article .docs-mermaid .name span {
+  color: var(--docs-mermaid-title);
+  font-family: var(--body-font);
+  font-size: 1.05rem;
+  font-weight: 700;
+  white-space: nowrap;
+  text-align: center;
+}
+
+.docs-article .docs-mermaid .edgeLabel,
+.docs-article .docs-mermaid .edgeLabel p,
+.docs-article .docs-mermaid .edgeLabel div,
+.docs-article .docs-mermaid .edgeLabel span {
+  color: var(--docs-mermaid-brown);
+  font-family: var(--peony-font);
+  font-size: 1.15rem;
+  white-space: nowrap;
 }
 
 .docs-article tbody tr:last-child td {
