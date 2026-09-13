@@ -64,6 +64,41 @@ function credentials(isPublic: boolean) {
   };
 }
 
+function overlayCommentsPostBody(spec: OpenApiSpec) {
+  const operation = spec.paths?.["/comments"]?.post;
+  if (!operation) {
+    return;
+  }
+  const example = {
+    display_name: "Your Name",
+    body: "Comment made via the API reference explorer.",
+    email: "you@example.com",
+  };
+  operation.requestBody = {
+    required: true,
+    content: {
+      "application/json": {
+        schema: {
+          type: "object",
+          required: ["display_name", "body"],
+          properties: {
+            display_name: { type: "string" },
+            body: { type: "string" },
+            email: { type: "string" },
+          },
+        },
+        example,
+        examples: {
+          comment: {
+            summary: "Sign the guestbook",
+            value: example,
+          },
+        },
+      },
+    },
+  };
+}
+
 function applyServers(
   spec: OpenApiSpec,
   servers: { url: string; description?: string }[] | undefined,
@@ -326,7 +361,7 @@ const COMMENTS_PUBLIC_FILTER = {
 const COMMENTS_POST_CALLOUT = markdownCallout(
   "This call needs the generated fields removed from Scalar’s example body.",
   "Postgres will not accept SQL defaults as JSON (`22P02`). Under **Request Body**, remove `id`, `created_at`, `updated_at`, and `is_read`. Scalar pre-fills those with strings like `gen_random_uuid()` and `now()`, not functions. Send only `display_name`, `body`, and `email` if you capture email.",
-  "```json\n{\n  \"display_name\": \"beck\",\n  \"body\": \"hello from the API\",\n  \"email\": \"beck@example.com\"\n}\n```",
+  "```json\n{\n  \"display_name\": \"Your Name\",\n  \"body\": \"Comment made via the API reference explorer.\",\n  \"email\": \"you@example.com\"\n}\n```",
 );
 
 const COMMENTS_DELETE_CALLOUT = mutationFilterCallout(
@@ -555,6 +590,7 @@ async function fetchOpenApi(isPublic: boolean): Promise<OpenApiSpec> {
   applyTagDescriptions(normalized);
   overlayInfo(normalized, isPublic);
   applyOperationCallouts(normalized);
+  overlayCommentsPostBody(normalized);
   normalized.components = normalized.components ?? {};
   normalized.components.securitySchemes = {
     ...normalized.components.securitySchemes,
@@ -566,7 +602,7 @@ async function fetchOpenApi(isPublic: boolean): Promise<OpenApiSpec> {
   applyOperationSecurity(normalized.paths);
 
   if (isPublic) {
-    applyServers(normalized, publicApiServers());
+    applyServers(normalized, undefined);
   } else if (flags.apiTest) {
     applyServers(normalized, publicApiServers(envSupabaseProjectRef()));
   } else {

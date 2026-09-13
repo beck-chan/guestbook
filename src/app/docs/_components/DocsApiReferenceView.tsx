@@ -312,6 +312,7 @@ export function DocsApiReferenceView({ spec }: { spec: OpenApiSpec }) {
   const hostRef = useRef<HTMLDivElement>(null);
   const [draftRef, setDraftRef] = useState(PROJECT_REF_PLACEHOLDER);
   const [appliedRef, setAppliedRef] = useState(DEFAULT_PROJECT_REF);
+  const [serverReady, setServerReady] = useState(!flags.public);
 
   useEffect(() => {
     if (!flags.public) {
@@ -320,6 +321,7 @@ export function DocsApiReferenceView({ spec }: { spec: OpenApiSpec }) {
     const stored = readStoredProjectRef();
     setDraftRef(displayProjectRef(stored));
     setAppliedRef(stored);
+    setServerReady(true);
   }, []);
 
   useEffect(() => {
@@ -365,7 +367,7 @@ export function DocsApiReferenceView({ spec }: { spec: OpenApiSpec }) {
 
   useEffect(() => {
     const host = hostRef.current;
-    if (!host) {
+    if (!host || !serverReady) {
       return;
     }
 
@@ -402,7 +404,7 @@ export function DocsApiReferenceView({ spec }: { spec: OpenApiSpec }) {
       instance?.destroy?.();
       host.replaceChildren();
     };
-  }, [spec, appliedRef]);
+  }, [spec, appliedRef, serverReady]);
 
   function applyProjectRef(event: FormEvent) {
     event.preventDefault();

@@ -30,7 +30,11 @@ export type OpenApiOperation = {
   requestBody?: {
     required?: boolean;
     content?: {
-      "application/json"?: { schema?: JsonSchema };
+      "application/json"?: {
+        schema?: JsonSchema;
+        example?: unknown;
+        examples?: Record<string, { summary?: string; value?: unknown }>;
+      };
     };
   };
   responses?: Record<

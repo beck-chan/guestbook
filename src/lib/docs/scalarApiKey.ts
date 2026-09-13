@@ -10,6 +10,7 @@ export type ScalarRequestBuilder = {
   headers: {
     get(name: string): string | null;
     set(name: string, value: string): void;
+    delete?(name: string): void;
   };
   security?: SecurityItem[];
 };
@@ -27,20 +28,50 @@ function trimSecret(value: unknown) {
   return typeof value === "string" ? value.trim() : "";
 }
 
+function jwtPayload(value: string) {
+  const parts = value.split(".");
+  if (parts.length !== 3) {
+    return null;
+  }
+  try {
+    let b64 = parts[1].replace(/-/g, "+").replace(/_/g, "/");
+    const pad = b64.length % 4;
+    if (pad) {
+      b64 += "=".repeat(4 - pad);
+    }
+    return JSON.parse(atob(b64)) as { role?: string };
+  } catch {
+    return null;
+  }
+}
+
+/** Anon / publishable keys only — never a user session JWT. */
+export function isDocsApiKey(value: string) {
+  const trimmed = value.trim();
+  if (!trimmed) {
+    return false;
+  }
+  if (/^sb_publishable_/i.test(trimmed)) {
+    return true;
+  }
+  const role = jwtPayload(trimmed)?.role;
+  return role === "anon" || role === "service_role";
+}
+
 function secretApiKey(secrets: PluginAuthSecrets | undefined) {
   if (!secrets) {
     return "";
   }
-  return (
+  const next =
     trimSecret(secrets.value) ||
     trimSecret(secrets.token) ||
-    trimSecret(secrets.apiKey)
-  );
+    trimSecret(secrets.apiKey);
+  return isDocsApiKey(next) ? next : "";
 }
 
 export function rememberDocsApiKey(value: string) {
   const trimmed = value.trim();
-  if (!trimmed) {
+  if (!isDocsApiKey(trimmed)) {
     return;
   }
   try {
@@ -52,7 +83,14 @@ export function rememberDocsApiKey(value: string) {
 
 export function readDocsApiKey() {
   try {
-    return sessionStorage.getItem(API_KEY_STORE)?.trim() ?? "";
+    const stored = sessionStorage.getItem(API_KEY_STORE)?.trim() ?? "";
+    if (isDocsApiKey(stored)) {
+      return stored;
+    }
+    if (stored) {
+      sessionStorage.removeItem(API_KEY_STORE);
+    }
+    return "";
   } catch {
     return "";
   }
@@ -95,16 +133,24 @@ export function applyRememberedApiKey(
     requestBuilder.security?.find(
       (item) => item.name === "apikey" && item.value?.trim(),
     )?.value?.trim() ?? "";
-  const next =
-    fromHeader ||
-    fromSecurity ||
-    apiKeyFromAuth(auth ?? latestAuth) ||
-    readDocsApiKey();
-  if (!next) {
+  const next = [
+    apiKeyFromAuth(auth ?? latestAuth),
+    fromSecurity,
+    fromHeader,
+    readDocsApiKey(),
+  ].find((value) => value && isDocsApiKey(value));
+  if (next) {
+    rememberDocsApiKey(next);
+    requestBuilder.headers.set("apikey", next);
     return;
   }
-  rememberDocsApiKey(next);
-  requestBuilder.headers.set("apikey", next);
+  if (fromHeader && !isDocsApiKey(fromHeader)) {
+    if (typeof requestBuilder.headers.delete === "function") {
+      requestBuilder.headers.delete("apikey");
+    } else {
+      requestBuilder.headers.set("apikey", "");
+    }
+  }
 }
 
 function nearestAuthScheme(el: Element) {
@@ -145,26 +191,11 @@ export function rememberApiKeyFromAuthInput(target: EventTarget | null) {
   }
 
   const scheme = nearestAuthScheme(target);
-  if (/\bbearerAuth\b/i.test(scheme) && !/\bapikey\b/i.test(scheme)) {
+  const selected = scheme.split(/[&|,]/)[0]?.trim() ?? "";
+  if (!/^apikey$/i.test(selected)) {
     return;
   }
-  if (/\bapikey\b/i.test(scheme)) {
-    rememberDocsApiKey(value);
-    return;
-  }
-
-  const hint = [
-    target.name,
-    target.id,
-    target.getAttribute("aria-label"),
-    target.placeholder,
-    target.closest("label")?.textContent,
-  ]
-    .filter(Boolean)
-    .join(" ");
-  if (/\bapikey\b/i.test(hint) && !/bearer/i.test(hint)) {
-    rememberDocsApiKey(value);
-  }
+  rememberDocsApiKey(value);
 }
 
 export function createAlwaysSendApiKeyPlugin() {
@@ -177,6 +208,9 @@ export function createAlwaysSendApiKeyPlugin() {
       },
       onConfigChange({ auth }: { auth: ScalarAuthState }) {
         latestAuth = auth;
+      },
+      onDestroy() {
+        latestAuth = undefined;
       },
     },
     apiClientPlugins: [
