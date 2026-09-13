@@ -43,7 +43,26 @@ function findTagToggle(href: string) {
   return root.querySelector<HTMLElement>(":scope > button[aria-expanded]");
 }
 
+function tagShowsOperations(href: string) {
+  const id = tagId(href);
+  const root = document.getElementById(id);
+  if (!root) {
+    return false;
+  }
+  for (const el of root.querySelectorAll<HTMLElement>(
+    `[id^="${CSS.escape(`${id}/`)}"]`,
+  )) {
+    if (el.getClientRects().length > 0) {
+      return true;
+    }
+  }
+  return false;
+}
+
 function readTagExpanded(href: string) {
+  if (tagShowsOperations(href)) {
+    return true;
+  }
   const root = document.getElementById(tagId(href));
   if (!root) {
     return null;
@@ -61,7 +80,84 @@ function readTagExpanded(href: string) {
   return null;
 }
 
+function showMoreAction(text: string) {
+  const normalized = text.replace(/\s+/g, " ").trim().toLowerCase();
+  if (normalized === "show more" || normalized === "show all") {
+    return "open" as const;
+  }
+  if (normalized === "show less") {
+    return "close" as const;
+  }
+  return null;
+}
+
+function sectionHrefFromNode(
+  node: Element,
+  sections: OpenApiNavSection[],
+) {
+  let current: Element | null = node;
+  while (current) {
+    const id = current.id;
+    if (id) {
+      const href = `#${id}`;
+      const tag = sections.find((section) => section.href === href);
+      if (tag) {
+        return tag.href;
+      }
+      const parent = sections.find((section) =>
+        id.startsWith(`${tagId(section.href)}/`),
+      );
+      if (parent) {
+        return parent.href;
+      }
+    }
+    current = current.parentElement;
+  }
+  return null;
+}
+
+function isTagSectionId(id: string) {
+  return /^api\/tag\/[^/]+$/.test(id);
+}
+
+function findShowMoreControl(href: string, action: "open" | "close") {
+  const root = document.getElementById(tagId(href));
+  if (!root) {
+    return null;
+  }
+  const scope: Element[] = [root];
+  let sibling = root.nextElementSibling;
+  while (sibling && !isTagSectionId(sibling.id)) {
+    scope.push(sibling);
+    sibling = sibling.nextElementSibling;
+  }
+  for (const node of scope) {
+    const candidates = [
+      ...(node instanceof HTMLElement &&
+      node.matches("button, a, [role='button']")
+        ? [node]
+        : []),
+      ...node.querySelectorAll<HTMLElement>("button, a, [role='button']"),
+    ];
+    for (const el of candidates) {
+      if (showMoreAction(el.textContent ?? "") === action) {
+        return el;
+      }
+    }
+  }
+  return null;
+}
+
 function setTagExpanded(href: string, open: boolean) {
+  const shown = tagShowsOperations(href);
+  if (shown === open) {
+    return;
+  }
+  const control = findShowMoreControl(href, open ? "open" : "close");
+  if (control) {
+    control.click();
+    return;
+  }
   const root = document.getElementById(tagId(href));
   if (!root) {
     return;
@@ -172,15 +268,55 @@ export function DocsApiNav({
       });
     }
 
+    function onExplorerClick(event: Event) {
+      const target = event.target;
+      if (!(target instanceof Element)) {
+        return;
+      }
+      const control = target.closest("button, a, [role='button']");
+      if (!(control instanceof HTMLElement)) {
+        return;
+      }
+      const action = showMoreAction(control.textContent ?? "");
+      if (!action) {
+        return;
+      }
+      const href = sectionHrefFromNode(control, sections);
+      if (!href) {
+        return;
+      }
+      requestAnimationFrame(() => {
+        setOpenHrefs((current) => {
+          const next = new Set(current);
+          if (action === "open") {
+            if (next.has(href)) {
+              return current;
+            }
+            next.add(href);
+          } else if (!next.has(href)) {
+            return current;
+          } else {
+            next.delete(href);
+          }
+          return next;
+        });
+        syncFromExplorer();
+      });
+    }
+
     syncFromExplorer();
     const observer = new MutationObserver(syncFromExplorer);
     observer.observe(host, {
       subtree: true,
       childList: true,
       attributes: true,
-      attributeFilter: ["aria-expanded", "open"],
+      attributeFilter: ["aria-expanded", "open", "hidden"],
     });
-    return () => observer.disconnect();
+    host.addEventListener("click", onExplorerClick);
+    return () => {
+      observer.disconnect();
+      host.removeEventListener("click", onExplorerClick);
+    };
   }, [sections]);
 
   function toggleSection(section: OpenApiNavSection) {

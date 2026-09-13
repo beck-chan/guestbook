@@ -44,6 +44,12 @@ Poems are Markdown files that live under [`poetry/`](https://github.com/beck-cha
 
 ## Guestbook Functionality
 
+### Supabase Backend
+
+::: {.tabset}
+
+# Row-Level Security
+
 The schema applied by running [`scripts/schema.sql`](https://github.com/beck-chan/guestbook/blob/main/scripts/schema.sql){.blank} enables row-level security on every public table — `is_admin()` is true only when the JWT has `app_metadata.role = 'admin'` (stamped from the allow-list at signup, not from editable `user_metadata`).
 
 | Table | `anon` | Admin (`authenticated` + `is_admin()`) |
@@ -58,6 +64,13 @@ The schema applied by running [`scripts/schema.sql`](https://github.com/beck-cha
 - `admin_allowlist` has RLS on with no policies, so `anon` / `authenticated` cannot read or write. `service_role` bypasses RLS (and still needs table grants). Auth’s `before-user-created hook` reads it as `supabase_auth_admin`.
 - `poem_hearts` has no table policies. Likes go through the security-definer RPCs `toggle_poem_heart` and `poem_heart_state`. Public counts come from `poem_heart_counts` and `poem_heart_total`.
 
+# ERD
+
+{/* mermaid chart here */}
+
+:::
+
+### Next.js Frontend
 
 ::: {.tabset}
 
