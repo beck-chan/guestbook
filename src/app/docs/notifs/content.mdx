@@ -360,13 +360,17 @@ a. From your guestbook project root, call:
     # Make sure you're logged in to your Supabase project
     npx supabase login
 
+    (
+    # Prevent the `//` in the URL path from being interpreted as a command, wrap "Name=Value" in quotes
+    export MSYS_NO_PATHCONV=1
+    npx supabase secrets set --project-ref <your-database-url> "GMAIL_REFRESH_TOKEN=<your-refresh-token>"
+    # Populates the root URL for the {{admin}} placeholder in the notification templates
+    npx supabase secrets set --project-ref <your-database-url> "SITE_URL=https://<your-project-url>.vercel.app"
+    )
+
     npx supabase secrets set --project-ref <your-database-url> GMAIL_USER=you@gmail.com
     npx supabase secrets set --project-ref <your-database-url> GMAIL_CLIENT_ID=<your-client-id>.apps.googleusercontent.com
     npx supabase secrets set --project-ref <your-database-url> GMAIL_CLIENT_SECRET=<your-client-secret>
-    npx supabase secrets set --project-ref <your-database-url> GMAIL_REFRESH_TOKEN=<your-refresh-token>
-    # Use localhost:3000 for local previews, your deployed site URL in production 
-    # Populates the root URL for the {{admin}} placeholder in the notification templates
-    npx supabase secrets set --project-ref <your-database-url> SITE_URL=https://<your-project-url>.vercel.app
     npx supabase secrets set --project-ref <your-database-url> NOTIFY_WEBHOOK_SECRET=<your-webhook-secret>
     npx supabase secrets set --project-ref <your-database-url> FLAG_NOTIF=false
     ```
