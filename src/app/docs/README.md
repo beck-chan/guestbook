@@ -1,10 +1,6 @@
 # .MDX Extension
 
-> https://marketplace.cursorapi.com/items/?itemName=unifiedjs.vscode-mdx
-
-These configs only affect Cursor/VS Code IntelliSense. Next still compiles docs (`npm run docs` / `npm run build`) either way.
-
-<!-- ## What is the MDX extension and what does it do? -->
+> These configs only affect Cursor/VS Code IntelliSense. Next still compiles docs (`npm run docs` / `npm run build`) either way.
 
 Cursor does not understand `.mdx` by itself. The **MDX** extension (`unifiedjs.vscode-mdx`) adds that.
 

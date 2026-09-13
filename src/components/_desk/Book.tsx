@@ -650,7 +650,7 @@ export function Book({
         rotationY: -180,
         z: 3,
         duration: coverDur,
-        ease: "sine.inOut",
+        ease: "power2.in",
       },
       coverStart,
     );
@@ -769,7 +769,7 @@ export function Book({
 
     applyFlipLayout(true);
 
-    const toAjar = 1.08 * Math.max(0.32, Math.abs(Math.min(rotationY, AJAR) - AJAR) / 160);
+    const toAjar = 0.72 * Math.max(0.32, Math.abs(Math.min(rotationY, AJAR) - AJAR) / 160);
     const tl = gsap.timeline({
       defaults: { ease: "power2.inOut" },
       onUpdate: () => applyFlipLayout(true),
@@ -892,26 +892,21 @@ export function Book({
     tl.to(
       cover,
       {
-        rotationY: AJAR,
-        duration: toAjar,
-        ease: "sine.inOut",
+        rotationY: 0,
+        z: 3,
+        duration: toAjar + 0.32,
+        ease: "power2.in",
       },
       "coverClose+=0.12",
     );
     tl.to(
       cover,
-      { z: 16, duration: Math.min(0.48, toAjar * 0.38), ease: "sine.out" },
+      { z: 16, duration: Math.min(0.36, toAjar * 0.42), ease: "sine.out" },
       "coverClose+=0.12",
     );
-    tl.to(cover, {
-      rotationY: 0,
-      z: 3,
-      duration: 0.65,
-      ease: "sine.in",
-    });
     tl.to(
       book,
-      { ...bookTilt(false), duration: 0.12 + toAjar + 0.65, ease: "sine.inOut" },
+      { ...bookTilt(false), duration: 0.12 + toAjar + 0.32, ease: "sine.inOut" },
       "coverClose",
     );
 
