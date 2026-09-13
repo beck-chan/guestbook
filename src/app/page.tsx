@@ -1,6 +1,7 @@
 import { getPublicCommentsPage } from "@/app/actions/comments";
 import { loadPoems } from "@/lib/loadPoems";
 import { pickPoemIndex } from "@/lib/poems";
+import { EmailCaptureHydrator } from "@/components/_desk/EmailCaptureHydrator";
 import { PoetryDesk } from "@/components/_desk/PoetryDesk";
 import { getDeskHeartSeed } from "@/lib/actions/hearts";
 import { getUniqueVisitors } from "@/lib/uniqueVisitors";
@@ -17,16 +18,19 @@ export default async function Home() {
   ]);
 
   return (
-    <PoetryDesk
-      poems={poems}
-      initialIndex={initialIndex}
-      hitCount={hitCount}
-      initialHeart={heartSeed.initialHeart}
-      heartCounts={heartSeed.heartCounts}
-      initialComments={commentsPage.comments}
-      initialPage={commentsPage.page}
-      initialTotalPages={commentsPage.totalPages}
-      commentPageSize={commentsPage.pageSize}
-    />
+    <>
+      <EmailCaptureHydrator />
+      <PoetryDesk
+        poems={poems}
+        initialIndex={initialIndex}
+        hitCount={hitCount}
+        initialHeart={heartSeed.initialHeart}
+        heartCounts={heartSeed.heartCounts}
+        initialComments={commentsPage.comments}
+        initialPage={commentsPage.page}
+        initialTotalPages={commentsPage.totalPages}
+        commentPageSize={commentsPage.pageSize}
+      />
+    </>
   );
 }

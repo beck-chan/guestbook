@@ -39,11 +39,10 @@ export async function getPublicCommentsPage(
   page = 1,
   pageSizeOverride?: number,
 ): Promise<PublicCommentsPage> {
-  const settings = await loadGuestbookSettings();
   const pageSize =
     typeof pageSizeOverride === "number" && pageSizeOverride > 0
       ? Math.floor(pageSizeOverride)
-      : guestbookPageSize(settings.pageSize);
+      : guestbookPageSize((await loadGuestbookSettings()).pageSize);
   const current = Math.max(1, page);
   const from = (current - 1) * pageSize;
   const to = from + pageSize - 1;

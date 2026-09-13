@@ -2,10 +2,8 @@ import type { Metadata, Viewport } from "next";
 import { Suspense } from "react";
 import { Jost, Libre_Baskerville } from "next/font/google";
 import { AdminAuthErrorOverlay } from "@/components/_shared/AdminAuthErrorOverlay";
-import { CustomTheme } from "@/components/_shared/CustomTheme";
 import { flags } from "@/lib/flags";
 import { GuestbookSettingsProvider } from "@/lib/guestbookSettings";
-import { loadGuestbookSettings } from "@/lib/loadGuestbookSettings";
 import "./globals.css";
 import "./docs/docs.css";
 
@@ -51,8 +49,6 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
     );
   }
 
-  const settings = await loadGuestbookSettings();
-
   return (
     <html lang="en" className={fontClassName}>
       <head>
@@ -65,12 +61,11 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
         />
       </head>
       <body className="min-h-full">
-        <GuestbookSettingsProvider initialSettings={settings}>
+        <GuestbookSettingsProvider>
           {children}
           <Suspense fallback={null}>
             <AdminAuthErrorOverlay />
           </Suspense>
-          <CustomTheme />
         </GuestbookSettingsProvider>
       </body>
     </html>

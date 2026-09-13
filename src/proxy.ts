@@ -14,7 +14,6 @@ function redirectWithCookies(url: URL, sessionResponse: NextResponse) {
 }
 
 export async function proxy(request: NextRequest) {
-  const { supabaseResponse, user, supabase } = await updateSession(request);
   const { pathname } = request.nextUrl;
   const adminPath = guestbookAdminPath();
   const loginPath = guestbookAdminLoginPath();
@@ -23,8 +22,10 @@ export async function proxy(request: NextRequest) {
   const isLogin = pathname === loginPath;
 
   if (!isAdminPath) {
-    return supabaseResponse;
+    return NextResponse.next();
   }
+
+  const { supabaseResponse, user, supabase } = await updateSession(request);
 
   const role =
     user && typeof user.app_metadata?.role === "string"
