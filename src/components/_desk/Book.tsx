@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useEffect, useId, useLayoutEffect, useRef, useState } from "react";
 import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
 import type { Poem } from "@/lib/poems";
@@ -254,6 +254,52 @@ function clearSpineOpacity(scene: HTMLElement) {
   scene.style.removeProperty("--spine");
 }
 
+function clearCoverMotionBlur(
+  cover: HTMLElement | null,
+  blur: SVGFEGaussianBlurElement | null,
+  motion: { current: { rot: number; t: number; px: number } | null },
+) {
+  motion.current = null;
+  blur?.setAttribute("stdDeviation", "0 0");
+  cover?.style.removeProperty("--cover-motion");
+}
+
+function updateCoverMotionBlur(
+  cover: HTMLElement,
+  rotationY: number,
+  blur: SVGFEGaussianBlurElement | null,
+  motion: { current: { rot: number; t: number; px: number } | null },
+  filterId: string,
+  closing: boolean,
+) {
+  if (!Number.isFinite(rotationY) || !blur) {
+    return;
+  }
+  const now = performance.now();
+  const prev = motion.current;
+  let target = 0;
+  if (prev) {
+    const dt = Math.min(48, Math.max(8, now - prev.t));
+    const omega = Math.abs(rotationY - prev.rot) / (dt / 1000);
+    const edgeOn = Math.abs(Math.sin((rotationY * Math.PI) / 180));
+    const maxPx = closing ? 16 : 20;
+    const omegaRef = closing ? 260 : 210;
+    const gain = closing ? 16 : 20;
+    target = Math.min(maxPx, (omega / omegaRef) * (0.28 + 0.72 * edgeOn) * gain);
+  }
+  const follow = closing ? 0.5 : 0.72;
+  const px = prev ? prev.px * (1 - follow) + target * follow : 0;
+  motion.current = { rot: rotationY, t: now, px };
+  if (px < 0.2) {
+    blur.setAttribute("stdDeviation", "0 0");
+    cover.style.setProperty("--cover-motion", "none");
+    return;
+  }
+  const y = Math.max(0.2, px * (closing ? 0.12 : 0.14));
+  blur.setAttribute("stdDeviation", `${px.toFixed(2)} ${y.toFixed(2)}`);
+  cover.style.setProperty("--cover-motion", `url(#${filterId})`);
+}
+
 function restClosedShadows(parts: {
   gutter: HTMLElement;
   shadowLeft: HTMLElement;
@@ -318,6 +364,9 @@ export function Book({
   const prevOpenRef = useRef<boolean | null>(null);
   const isOpenRef = useRef(isOpen);
   const settleLockRef = useRef(false);
+  const coverMotionRef = useRef<{ rot: number; t: number; px: number } | null>(null);
+  const coverBlurRef = useRef<SVGFEGaussianBlurElement>(null);
+  const coverBlurId = `cover-motion-${useId().replace(/:/g, "")}`;
   const [heldOpen, setHeldOpen] = useState(false);
   const [animating, setAnimating] = useState(false);
   isOpenRef.current = isOpen;
@@ -375,6 +424,7 @@ export function Book({
       });
     parts.spread.style.width = "";
     clearSpineOpacity(parts.scene);
+    clearCoverMotionBlur(parts.cover, coverBlurRef.current, coverMotionRef);
   }
 
   function applyFlipLayout(closing: boolean) {
@@ -387,6 +437,14 @@ export function Book({
     const { scene, book, spread, cover, pageLeft } = parts;
     const rotationY = Number(gsap.getProperty(cover, "rotationY"));
     setSpineOpacity(scene, Number.isFinite(rotationY) ? rotationY : 0, closing);
+    updateCoverMotionBlur(
+      cover,
+      Number.isFinite(rotationY) ? rotationY : 0,
+      coverBlurRef.current,
+      coverMotionRef,
+      coverBlurId,
+      closing,
+    );
     const pastMid = rotationY <= -90;
     pageLeft.classList.toggle("is-revealed", pastMid);
     const inside = cover.querySelector(".cover-inside");
@@ -462,6 +520,7 @@ export function Book({
       gsap.set(noteCloseLetters(parts.note), { clearProps: "opacity,y,transform" });
       parts.note.classList.add("is-label-open");
       clearSpineOpacity(parts.scene);
+      clearCoverMotionBlur(parts.cover, coverBlurRef.current, coverMotionRef);
       parts.book.classList.remove("is-animating", "is-closing-clip");
     }
     setAnimating(false);
@@ -522,6 +581,7 @@ export function Book({
     if (note) {
       gsap.set(note, { autoAlpha: 1, pointerEvents: "auto" });
     }
+    clearCoverMotionBlur(coverRef.current, coverBlurRef.current, coverMotionRef);
   }
 
   function beginCoverClose() {
@@ -568,7 +628,7 @@ export function Book({
     gsap.set(book, bookTilt(false));
     applyFlipLayout(false);
 
-    const coverDur = 1.42 * Math.max(0.28, Math.abs(rotationY + 180) / 180);
+    const coverDur = 0.8 * Math.max(0.28, Math.abs(rotationY + 180) / 180);
     const coverStart = onRight ? 0.16 : 0;
     const tl = gsap.timeline({
       defaults: { ease: "power2.inOut" },
@@ -960,6 +1020,7 @@ export function Book({
       parts.spread.style.width = "";
       clearSpineOpacity(parts.scene);
     }
+    clearCoverMotionBlur(parts.cover, coverBlurRef.current, coverMotionRef);
   }
 
   useGSAP(
@@ -1085,6 +1146,18 @@ export function Book({
 
   return (
     <div className="book-scene" data-open={isOpen} ref={sceneRef}>
+      <svg className="cover-motion-filter" aria-hidden="true" focusable="false">
+        <filter
+          id={coverBlurId}
+          x="-50%"
+          y="-20%"
+          width="200%"
+          height="140%"
+          colorInterpolationFilters="sRGB"
+        >
+          <feGaussianBlur ref={coverBlurRef} in="SourceGraphic" stdDeviation="0 0" />
+        </filter>
+      </svg>
       <div className="book-fx" aria-hidden="true">
         <div className="book-shadow-left" ref={shadowLeftRef} />
         <div className="book-shadow-right" ref={shadowRightRef} />

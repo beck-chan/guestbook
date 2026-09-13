@@ -526,6 +526,14 @@ body {
   transform: translateX(0);
 }
 
+.cover-motion-filter {
+  position: absolute;
+  width: 0;
+  height: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
 .cover {
   position: absolute;
   top: 0;
@@ -553,6 +561,11 @@ body {
   will-change: transform;
 }
 
+.book.is-animating .cover-front,
+.book.is-animating .cover-inside {
+  will-change: filter;
+}
+
 .book.is-animating .sticky-note {
   transition: none;
 }
@@ -563,6 +576,7 @@ body {
   inset: 0;
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
+  filter: var(--cover-motion, none);
 }
 
 .cover-front {
@@ -2663,6 +2677,11 @@ body {
   .stage,
   .sticky-note {
     transition: none;
+  }
+
+  .cover-front,
+  .cover-inside {
+    filter: none;
   }
 
   .easter-heading {

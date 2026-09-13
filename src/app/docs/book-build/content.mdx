@@ -45,48 +45,39 @@ Poems are Markdown files that live under [`poetry/`](https://github.com/beck-cha
 
 ## Guestbook Functionality
 
-### Comments
+::: {.tabset}
 
-[`CommentBubbles`](https://github.com/beck-chan/guestbook/blob/main/src/components/_shared/CommentBubbles.tsx){.blank} powers both the desktop inline guestbook and the mobile commenting overlay. Email field is shown only when `guestbook_settings.capture_email` is on — the public list never includes it.
+# Comments
 
-Publicly displayed comments returns the `comments_public` table (`id`, `display_name`, `body`, timestamps — no email) via [`getPublicCommentsPage`](https://github.com/beck-chan/guestbook/blob/main/src/app/actions/comments.ts){.blank} by newest first. 
+[`CommentBubbles`](https://github.com/beck-chan/guestbook/blob/main/src/components/_shared/CommentBubbles.tsx){.blank} powers both the desktop inline guestbook and the mobile commenting overlay. Publicly displayed comments returns the `comments_public` table (`id`, `display_name`, `body`, timestamps — no email) via [`getPublicCommentsPage`](https://github.com/beck-chan/guestbook/blob/main/src/app/actions/comments.ts){.blank} by newest first. 
 
-When users click **Submit** is the `submitComment` server action:
+When users click **Submit**, the `submitComment` server action:
 
-1. Trim name / body / email; require name and body.
-2. Enforce [`commentLengthError`](https://github.com/beck-chan/guestbook/blob/main/src/lib/commentLimits.ts){.blank}: name cap `128`, email cap `254`, and `comment_length` from settings for the body.
-3. Run [`checkCommentProfanity`](https://github.com/beck-chan/guestbook/blob/main/src/lib/profanity.ts){.blank} ([`obscenity`](https://www.npmjs.com/package/obscenity){.blank} plus the admin allow-list).
-4. Consume [`consumeCommentRateLimit`](https://github.com/beck-chan/guestbook/blob/main/src/lib/rate-limit.ts){.blank} (`rate-limiter-flexible` over `DATABASE_URL`, keyed by a hash of [`clientIp()`](https://github.com/beck-chan/guestbook/blob/main/src/lib/clientIp.ts){.blank}). Burst and daily caps come from settings. A failed insert after consume is **not** refunded.
-5. Insert into `comments`. Then `revalidatePath` for `/`, `/guestbook`, and the admin path.
-
-The compose form also checks length on the client so obvious over-limit posts never hit the action.
+1. Requires a display name and comment body.
+2. Enforces [`commentLengthError`](https://github.com/beck-chan/guestbook/blob/main/src/lib/commentLimits.ts){.blank} — name cap `128`, email cap `254`, and `comment_length` from settings for the body (default at `1000`).
+3. Runs [`checkCommentProfanity`](https://github.com/beck-chan/guestbook/blob/main/src/lib/profanity.ts){.blank} ([`obscenity`](https://www.npmjs.com/package/obscenity){.blank} plus the admin allow-list).
+4. Consumes [`consumeCommentRateLimit`](https://github.com/beck-chan/guestbook/blob/main/src/lib/rate-limit.ts){.blank} (`rate-limiter-flexible` over `DATABASE_URL`, keyed by a hash of [`clientIp()`](https://github.com/beck-chan/guestbook/blob/main/src/lib/clientIp.ts){.blank}). Burst and daily caps come from settings (default at `1` comment per `5` minutes, up to `2` per `24` hours). 
+5. Inserts the submitted comment in the private `comments` table. Then `revalidatePath` for `/`, `/guestbook`, and the admin path, refreshing the page to show the new comment.
 
 
-### Admin Dashboard
+# Admin Dashboard
 
 [`src/proxy.ts`](https://github.com/beck-chan/guestbook/blob/main/src/proxy.ts){.blank} (Next’s request proxy) refreshes the Supabase session on every matched path. Only `/admin` (or `NEXT_PUBLIC_GUESTBOOK_ADMIN_PATH`) is gated:
 
-- No user → redirect to `/admin/login`.
-- Signed in but `app_metadata.role` is not `admin` → sign out and send home with `?admin_error=1`.
-- Admin hitting login → redirect into the dashboard.
+- No existing admin login session — redirects to `/admin/login`.
+- Successful sign in but `app_metadata.role` is not `admin` — user is signed out and send home with `?admin_error=1`.
+- Existing admin login session — redirects into the dashboard.
 
 [`/admin/login`](https://github.com/beck-chan/guestbook/blob/main/src/app/admin/login/route.ts){.blank} starts Google OAuth. [`/auth/callback`](https://github.com/beck-chan/guestbook/blob/main/src/app/auth/callback/route.ts){.blank} exchanges the code, then [`resolveAdminSession`](https://github.com/beck-chan/guestbook/blob/main/src/lib/adminAuth.ts){.blank} calls `ensure_admin_role` (allow-list stamp) and refreshes the JWT so `role=admin` is on the cookie.
 
-The dashboard page loads every row from `comments` (including email and `is_read`), plus `poem_heart_total`. Filter / search / date / sort run in [`src/lib/comments.ts`](https://github.com/beck-chan/guestbook/blob/main/src/lib/comments.ts){.blank} on that list; pagination is 10 per page. Query string `q`, `status`, `email`, `from`, `to`, `sort`, and `page` are the source of truth so filters are shareable URLs.
-
-[`AdminGuestbook`](https://github.com/beck-chan/guestbook/blob/main/src/components/_admin/AdminGuestbook.tsx){.blank} splits the desk layout: comments on the left, settings on the right.
-
-- [`AdminFilters`](https://github.com/beck-chan/guestbook/blob/main/src/components/_admin/AdminFilters.tsx){.blank} — search, unread/read, has-email, date range, newest/oldest, unread/total counts, and total poem hearts.
-- [`AdminCommentThread`](https://github.com/beck-chan/guestbook/blob/main/src/components/_admin/AdminCommentThread.tsx){.blank} — mark read (one or all), edit name/email/body (`updateComment`), delete (`deleteComment`). Edit still enforces comment length.
-- [`AdminSettings`](https://github.com/beck-chan/guestbook/blob/main/src/components/_admin/AdminSettings.tsx){.blank} — writes `guestbook_settings` id `1` through [`saveGuestbookSettings`](https://github.com/beck-chan/guestbook/blob/main/src/app/actions/settings.ts){.blank} (admin JWT required). Saving revalidates the root layout so the public board picks up fonts, title, and theme.
+:::
 
 ## Feature Flags
 
-Flags are **compile-time**. [`src/lib/flags.ts`](https://github.com/beck-chan/guestbook/blob/main/src/lib/flags.ts){.blank} reads `process.env.FLAG_*` with `envFlag` (`true` / `1` vs `false` / `0`; unset uses the default) and `envString` for `FLAG_COUNTER_URL` and `FLAG_COUNTER_DATE`. [`next.config.ts`](https://github.com/beck-chan/guestbook/blob/main/next.config.ts){.blank} lists those names under `env` so Next can inline them into client components. Change a flag, then restart `npm run dev` or rebuild.
+Flags are built on compile:
 
-A second Vercel project can ship the same `main` branch with different `FLAG_*` values. Local `.env.local` is gitignored and does not affect Vercel. To add a flag: put a key on `flags`, pass the env name through `next.config.ts`, and branch on it in the UI.
-
-`FLAG_DOCSONLY` wins over `FLAG_PUBLIC`: docs-only redirects desk, guestbook, and admin into `/docs` and never loads settings or the guestbook theme.
+- [`src/lib/flags.ts`](https://github.com/beck-chan/guestbook/blob/main/src/lib/flags.ts){.blank} reads `process.env.FLAG_*` with `envFlag` (`true` / `1` vs `false` / `0` — unset uses the default) and `envString` for `FLAG_COUNTER_URL` and `FLAG_COUNTER_DATE`. 
+- [`next.config.ts`](https://github.com/beck-chan/guestbook/blob/main/next.config.ts){.blank} lists those names under `env` so Next can inline them into client components. 
 
 ### Deployment Flags
 
@@ -103,6 +94,10 @@ Desk bookmarks and the mobile menu: **view docs** plus a short **admin login** r
 `docsUrl` in the same file is the href (default `/docs`).
 
 # FLAG_DOCSONLY
+
+
+`FLAG_DOCSONLY` wins over `FLAG_PUBLIC`: docs-only redirects desk, guestbook, and admin into `/docs` and never loads settings or the guestbook theme.
+
 
 `flags.docsOnly` — default `false`.
 
