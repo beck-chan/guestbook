@@ -79,8 +79,6 @@ Flags are built on compile:
 - [`src/lib/flags.ts`](https://github.com/beck-chan/guestbook/blob/main/src/lib/flags.ts){.blank} reads `process.env.FLAG_*` with `envFlag` (`true` / `1` vs `false` / `0` — unset uses the default) and `envString` for `FLAG_COUNTER_URL` and `FLAG_COUNTER_DATE`. 
 - [`next.config.ts`](https://github.com/beck-chan/guestbook/blob/main/next.config.ts){.blank} lists those names under `env` so Next can inline them into client components. 
 
-### Deployment Flags
-
 ::: {.tabset}
 
 
@@ -126,15 +124,6 @@ Desk bookmarks and the mobile menu: **view docs** plus a short **admin login** r
 
 `docsUrl` in the same file is the href (default `/docs`).
 
-
-
-
-:::
-
-### Testing Flags
-
-::: {.tabset}
-
 # FLAG_DOCSONLY
 
 `FLAG_DOCSONLY` wins over `FLAG_PUBLIC`: docs-only redirects desk, guestbook, and admin into `/docs` and never loads settings or the guestbook theme.
@@ -147,10 +136,6 @@ Serve only documentation. [`next.config.ts`](https://github.com/beck-chan/guestb
 `npm run docs` sets `FLAG_DOCSONLY=true` on that process via [`scripts/docs-dev.mjs`](https://github.com/beck-chan/guestbook/blob/main/scripts/docs-dev.mjs){.blank} (overrides `.env.local`). Local preview only — do not set this on Vercel.
 
 
-# FLAG_APITEST
-
-`flags.apiTest` — default `false`.
-
-Show Scalar **Test Request** on the **private** API docs (`FLAG_PUBLIC=false`), using `NEXT_PUBLIC_SUPABASE_URL`. Public docs already show Test Request. [`scalarConfig.ts`](https://github.com/beck-chan/guestbook/blob/main/src/lib/docs/scalarConfig.ts){.blank} hides the button unless `public` or `apiTest` is on. [`loadDatabaseOpenApi.ts`](https://github.com/beck-chan/guestbook/blob/main/src/lib/docs/loadDatabaseOpenApi.ts){.blank} fetches this project's live OpenAPI catalog; when api-test is on it also points Test Request at `NEXT_PUBLIC_SUPABASE_URL`.
-
 :::
+
+
