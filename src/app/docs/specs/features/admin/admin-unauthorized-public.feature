@@ -1,8 +1,8 @@
 Feature: Unauthorized admin login
 
     Background:
-        Given a user is on the guestbook page
-        And the user does not have admin authorization
+        Given the user does not have admin authorization
+        And a user is on the guestbook page
 
     Scenario: Unauthorized user is denied the dashboard
         When a user clicks the `admin login` link

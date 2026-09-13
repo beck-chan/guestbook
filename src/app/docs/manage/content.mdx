@@ -125,8 +125,13 @@ To delete several comments at once, you can use the [API](/docs/api):
 
 1. **GET** `/comments` and copy the comment `id` values.
 2. **DELETE** `/comments`:
-    - Under **Query Parameters**, set **key** `id` and **value** `in.(<uuid-1>,<uuid-2>,<uuid-3>)` — no spaces after the commas, and not the uuids alone. 
-    - Leave the request body empty.
+    - Under **Query Parameters**, set **key** `id` and **value** exactly like this, including the parentheses after `in.`:
+
+```
+in.(<uuid-1>,<uuid-2>,<uuid-3>)
+```
+
+    `in.uuid-1,uuid-2` without `(` `)` returns `PGRST100`. No spaces after the commas. Leave the request body empty.
 
 ::: {.callout}
 # An unfiltered delete is rejected (`21000`). 

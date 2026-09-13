@@ -3,8 +3,8 @@ Feature: Unauthorized admin login
     Rule: Visitors without admin authorization are denied the dashboard on desktop
 
         Background:
-            Given a user is on the main landing page of the poetry guestbook on desktop
-            And the user does not have admin authorization
+            Given the user does not have admin authorization
+            And a user is on the guestbook page
 
         Scenario: Unauthorized user is denied the dashboard on desktop
             When a user clicks the `admin login` link
@@ -20,8 +20,8 @@ Feature: Unauthorized admin login
     Rule: Visitors without admin authorization are denied the dashboard on mobile
 
         Background:
-            Given a user is on the main landing page of the poetry guestbook on mobile
-            And the user does not have admin authorization
+            Given the user does not have admin authorization
+            And a user is on the guestbook page on mobile
 
         Scenario: Unauthorized user is denied the dashboard on mobile
             When a user clicks the drop-down `menu` button and selects the `admin login` link
