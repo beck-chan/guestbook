@@ -283,6 +283,87 @@ function applyOperationTitleBadge(
   }
 }
 
+function scalarButtonAccessibleName(button: HTMLButtonElement) {
+  if (button.getAttribute("aria-label")?.trim()) {
+    return true;
+  }
+  if (button.getAttribute("aria-labelledby")?.trim()) {
+    return true;
+  }
+  if (button.labels && button.labels.length > 0) {
+    return true;
+  }
+  const text = button.innerText.replace(/\s+/g, " ").trim();
+  return text.length > 0;
+}
+
+function scalarButtonClassName(button: HTMLButtonElement) {
+  return typeof button.className === "string" ? button.className : "";
+}
+
+function inferScalarIconButtonLabel(button: HTMLButtonElement) {
+  const className = scalarButtonClassName(button);
+  if (
+    className.includes("copy-button") ||
+    className.includes("code-copy") ||
+    className.includes("scalar-code-copy")
+  ) {
+    return "Copy";
+  }
+  const expanded = button.getAttribute("aria-expanded");
+  const isToggle =
+    button.classList.contains("show-more") ||
+    expanded === "true" ||
+    expanded === "false";
+  if (!isToggle) {
+    return null;
+  }
+  return expanded === "true" ? "Collapse" : "Expand";
+}
+
+/** Name icon-only Scalar controls without wrapping or remounting the explorer. */
+function labelScalarIconButtons(root: ParentNode = document) {
+  const visit = (node: ParentNode) => {
+    const buttons: HTMLButtonElement[] = [];
+    if (node instanceof HTMLButtonElement) {
+      buttons.push(node);
+    }
+    if ("querySelectorAll" in node) {
+      buttons.push(...node.querySelectorAll("button"));
+    }
+    for (const button of buttons) {
+      if (!button.closest(".scalar-app, .docs-api-reference")) {
+        continue;
+      }
+      const inferred = inferScalarIconButtonLabel(button);
+      if (inferred && button.dataset.docsA11yLabel === "toggle") {
+        button.setAttribute("aria-label", inferred);
+        continue;
+      }
+      if (scalarButtonAccessibleName(button)) {
+        continue;
+      }
+      if (!inferred) {
+        continue;
+      }
+      button.setAttribute("aria-label", inferred);
+      if (inferred === "Expand" || inferred === "Collapse") {
+        button.dataset.docsA11yLabel = "toggle";
+      }
+    }
+    const hosts =
+      node instanceof Element
+        ? [node, ...node.querySelectorAll("*")]
+        : [...node.querySelectorAll("*")];
+    for (const host of hosts) {
+      if (host.shadowRoot) {
+        visit(host.shadowRoot);
+      }
+    }
+  };
+  visit(root);
+}
+
 /** Keep hashes intact; only restyle the visible Scalar operation title. */
 function badgeScalarOperationTitles(root: ParentNode = document) {
   const sections = [
@@ -352,6 +433,7 @@ export function DocsApiReferenceView({ spec }: { spec: OpenApiSpec }) {
     wrapInlineHttpMethods();
     tintEmptyResponseCopy();
     badgeScalarOperationTitles();
+    labelScalarIconButtons();
     const observer = new MutationObserver((mutations) => {
       for (const mutation of mutations) {
         for (const node of mutation.addedNodes) {
@@ -360,6 +442,7 @@ export function DocsApiReferenceView({ spec }: { spec: OpenApiSpec }) {
             wrapInlineHttpMethods(node);
             tintEmptyResponseCopy(node);
             badgeScalarOperationTitles(node);
+            labelScalarIconButtons(node);
           }
         }
       }
@@ -367,6 +450,7 @@ export function DocsApiReferenceView({ spec }: { spec: OpenApiSpec }) {
       decorateScalarSearchResults();
       tintEmptyResponseCopy();
       badgeScalarOperationTitles();
+      labelScalarIconButtons();
     });
     observer.observe(document.body, {
       childList: true,

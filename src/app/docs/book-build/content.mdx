@@ -25,11 +25,11 @@ public: false
 
 Above `768px`, [`.desk-desktop`](https://github.com/beck-chan/guestbook/blob/main/src/app/globals.css){.blank} shows an interactive animated 3D book volume. 
 
-[`Book`](https://github.com/beck-chan/guestbook/blob/main/src/components/_desk/Book.tsx){.blank} drives open/close with [GSAP](https://gsap.com/){.blank} (`gsap` + `@gsap/react`).
+[`Book.tsx`](https://github.com/beck-chan/guestbook/blob/main/src/components/_desk/Book.tsx){.blank} drives open/close with [GSAP](https://gsap.com/){.blank} (`gsap` + `@gsap/react`).
 
 # Mobile
 
-At `max-width: 768px`, `.desk-desktop` is hidden and [`MobileReading`](https://github.com/beck-chan/guestbook/blob/main/src/components/_desk/MobileReading.tsx){.blank} a vertical snap scroller (`.mobile-reading`) takes the viewport. 
+At `max-width: 768px`, `.desk-desktop` is hidden and [`MobileReading.tsx`](https://github.com/beck-chan/guestbook/blob/main/src/components/_desk/MobileReading.tsx){.blank} a vertical snap scroller (`.mobile-reading`) takes the viewport. 
 
 :::
 
@@ -165,7 +165,7 @@ Mail goes out through [`gmail.ts`](https://github.com/beck-chan/guestbook/blob/m
 
 # Comments
 
-[`CommentBubbles`](https://github.com/beck-chan/guestbook/blob/main/src/components/_shared/CommentBubbles.tsx){.blank} powers both the desktop inline guestbook and the mobile commenting overlay. Publicly displayed comments returns the `comments_public` table (`id`, `display_name`, `body`, timestamps — no email) via [`getPublicCommentsPage`](https://github.com/beck-chan/guestbook/blob/main/src/app/actions/comments.ts){.blank} by newest first. 
+[`CommentBubbles.tsx`](https://github.com/beck-chan/guestbook/blob/main/src/components/_shared/CommentBubbles.tsx){.blank} powers both the desktop inline guestbook and the mobile commenting overlay. Publicly displayed comments returns the `comments_public` table (`id`, `display_name`, `body`, timestamps — no email) via [`getPublicCommentsPage`](https://github.com/beck-chan/guestbook/blob/main/src/app/actions/comments.ts){.blank} by newest first. 
 
 When users click **Submit**, the `submitComment` server action:
 
@@ -178,7 +178,7 @@ When users click **Submit**, the `submitComment` server action:
 
 # Admin Dashboard
 
-[`src/proxy.ts`](https://github.com/beck-chan/guestbook/blob/main/src/proxy.ts){.blank} (Next’s request proxy) refreshes the Supabase session on every matched path. Only `/admin` (or `NEXT_PUBLIC_GUESTBOOK_ADMIN_PATH`) is gated:
+[`proxy.ts`](https://github.com/beck-chan/guestbook/blob/main/src/proxy.ts){.blank} (Next’s request proxy) refreshes the Supabase session on every matched path. Only `/admin` (or `NEXT_PUBLIC_GUESTBOOK_ADMIN_PATH`) is gated:
 
 - No existing admin login session — redirects to `/admin/login`.
 - Successful sign in but `app_metadata.role` is not `admin` — user is signed out and send home with `?admin_error=1`.
@@ -257,5 +257,5 @@ Serves only the documentation instead of the full guestbook application for a li
 
 ## Accessibility
 
-Along with checking pages with [Chrome's Lighthouse accessibility audit](https://developer.chrome.com/docs/accessibility), as part of pull request checks, [a11y lint](https://github.com/beck-chan/guestbook/blob/main/.github/workflows/lint-a11y-check.yaml){.blank} runs a spot check on all guestbook application pages to ensure they are accessible and any errors discovered are patched before deployment.
+Along with checking pages with [Chrome's Lighthouse accessibility audit](https://developer.chrome.com/docs/accessibility), as part of pull request checks, [a11y lint](https://github.com/beck-chan/guestbook/blob/main/.github/workflows/lint-a11y-check.yaml){.blank} runs a spot check on all guestbook application pages to ensure they are somewhat accessible and any errors discovered are patched before deployment.
 
