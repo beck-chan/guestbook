@@ -1,5 +1,6 @@
 Feature: Standalone guestbook page navigation (`/guestbook`)
 
+    @desktop-nav
     Rule: Hanging bookmarks work as links
 
         Background:
@@ -13,6 +14,7 @@ Feature: Standalone guestbook page navigation (`/guestbook`)
             When a user clicks the `view docs` link
             Then a new tab or window opens to the y2k Guestbook Docs main page (`/docs`)
 
+    @mobile-nav
     Rule: Drop-down menu serves as navigation on mobile
 
         Background:
@@ -26,6 +28,7 @@ Feature: Standalone guestbook page navigation (`/guestbook`)
             When a user clicks the drop-down `menu` button and selects the `view docs` link
             Then a new tab or window opens to the y2k Guestbook Docs main page (`/docs`)
 
+    @report-issue
     Rule: Report Issue link takes users to the repo Issues page
 
         Scenario: Report Issue link works on desktop

@@ -1,5 +1,6 @@
 Feature: Original Poetry volume 
 
+    @desktop-book
     Rule: Original Poetry volume behaves as a book on desktop
 
         Scenario: Original Poetry book opens flat
@@ -12,6 +13,7 @@ Feature: Original Poetry volume
             When a user clicks the `Close Book` button
             Then the Original Poetry book closes to its original first load state
 
+    @mobile-book
     Rule: Original Poetry volume scrolls on mobile
 
         Scenario: Original Poetry book opens on mobile by scrolling
@@ -34,6 +36,7 @@ Feature: Original Poetry volume
             When a user clicks the `Turn Page` button
             Then they are taken to the poem page of the Original Poetry book
 
+    @interactive-book
     Rule: Book pages are interactive
 
         Background:
@@ -59,6 +62,7 @@ Feature: Original Poetry volume
             When a user clicks the `Turn Page` button on a poem page
             Then the poem text on the page changes
 
+    @mobile-font-size
     Rule: Poem font size can be changed on mobile
 
         Background:

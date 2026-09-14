@@ -3,6 +3,7 @@ Feature: Guestbook page
     Background:
         Given a user is on the guestbook page
 
+    @submit-comments
     Rule: Guestbook allows users to submit comments
 
         Scenario: User submits a valid comment
@@ -58,7 +59,8 @@ Feature: Guestbook page
             When a user submits more than 1 comment within 5 minutes
             Then their comment is rejected and not submitted
             And the user is shown an error message
-
+            
+    @pagination
     # Default is 10 comments per page; pagination starts when there are 11+ comments
     Rule: Guestbook entries are paginated
 

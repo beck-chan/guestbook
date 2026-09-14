@@ -1,5 +1,6 @@
 Feature: Original Poetry landing navigation (`/`)
 
+    @desktop-nav
     Rule: Hanging bookmarks serve as navigation on desktop
 
         Background:
@@ -17,6 +18,7 @@ Feature: Original Poetry landing navigation (`/`)
             When a user clicks the `admin login` link
             Then they are directed to the Google SSO page for the admin dashboard
 
+    @mobile-nav
     Rule: Drop-down menu serves as navigation on mobile
 
         Background:
@@ -30,6 +32,7 @@ Feature: Original Poetry landing navigation (`/`)
             When a user clicks the drop-down `menu` button and selects the `admin login` link
             Then they are directed to the Google SSO page for the admin dashboard
 
+    @report-issue
     Rule: Report Issue link takes users to the repo Issues page
 
         Scenario: Report Issue link works on desktop

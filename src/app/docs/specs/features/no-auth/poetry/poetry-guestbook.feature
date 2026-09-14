@@ -1,5 +1,6 @@
 Feature: Original Poetry landing page guestbook (`/`)
 
+    @submit-comments
     Rule: Guestbook allows users to submit comments
 
         Background:
@@ -59,6 +60,7 @@ Feature: Original Poetry landing page guestbook (`/`)
             Then their comment is rejected and not submitted
             And the user is shown an error message
 
+    @mobile-guestbook
     Rule: Guestbook is hidden on mobile by default
 
         Background:
@@ -75,6 +77,7 @@ Feature: Original Poetry landing page guestbook (`/`)
             Then the guestbook closes and reveals the poetry book again
 
     # Poetry guestbook always shows 4 comments per page
+    @pagination
     Rule: Guestbook entries are paginated
 
         Background:
