@@ -7,7 +7,6 @@ export type GuestbookComment = {
   body: string;
   time: string;
   createdAt?: string;
-  nested?: boolean;
   read?: boolean;
 };
 
