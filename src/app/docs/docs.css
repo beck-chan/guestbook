@@ -1237,10 +1237,6 @@ a[role="option"][data-docs-hide-heading="true"],
   color: color-mix(in srgb, #6f4e37 55%, white);
 }
 
-.docs-article ul > .task-list-item {
-  cursor: pointer;
-}
-
 .docs-article ul > .task-list-item > .docs-task-toggle {
   position: absolute;
   left: -0.18em;
@@ -1262,7 +1258,7 @@ a[role="option"][data-docs-hide-heading="true"],
 }
 
 .docs-article ul > .task-list-item.is-checked .docs-list-heart,
-.docs-article ul > .task-list-item:hover .docs-list-heart {
+.docs-article ul > .task-list-item .docs-task-toggle:hover .docs-list-heart {
   color: var(--peony);
 }
 

@@ -12,12 +12,8 @@ export function DocsTaskItem({
   defaultChecked?: boolean;
   className?: string;
   children: React.ReactNode;
-} & Omit<React.ComponentProps<"li">, "onClick" | "onKeyDown">) {
+} & React.ComponentProps<"li">) {
   const [checked, setChecked] = useState(defaultChecked);
-
-  function toggle() {
-    setChecked((value) => !value);
-  }
 
   return (
     <li
@@ -25,12 +21,6 @@ export function DocsTaskItem({
         .filter(Boolean)
         .join(" ")}
       {...props}
-      onClick={(event) => {
-        if ((event.target as HTMLElement).closest("a")) {
-          return;
-        }
-        toggle();
-      }}
     >
       <button
         type="button"
@@ -38,10 +28,7 @@ export function DocsTaskItem({
         role="checkbox"
         aria-checked={checked}
         aria-label={checked ? "Mark as not done" : "Mark as done"}
-        onClick={(event) => {
-          event.stopPropagation();
-          toggle();
-        }}
+        onClick={() => setChecked((value) => !value)}
       >
         <DocsHeart filled={checked} className="docs-list-heart docs-task-heart" />
       </button>
