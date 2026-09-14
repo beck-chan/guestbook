@@ -1,19 +1,18 @@
-import { Suspense } from "react";
 import { getPublicCommentsPage } from "@/app/actions/comments";
 import { loadPoems } from "@/lib/loadPoems";
 import { pickPoemIndex } from "@/lib/poems";
 import { EmailCaptureHydrator } from "@/components/_desk/EmailCaptureHydrator";
 import { PoetryDesk } from "@/components/_desk/PoetryDesk";
-import { RouteLoading } from "@/components/_shared/RouteLoading";
+import { PageReveal } from "@/components/_shared/PageReveal";
 import { getUniqueVisitors } from "@/lib/uniqueVisitors";
 
 const DESK_COMMENT_PAGE_SIZE = 4;
 
 export default function Home() {
   return (
-    <Suspense fallback={<RouteLoading />}>
+    <PageReveal>
       <HomeDesk />
-    </Suspense>
+    </PageReveal>
   );
 }
 

@@ -114,8 +114,60 @@ body {
   text-align: center;
 }
 
+@media (max-width: 768px) {
+  .route-loading {
+    font-size: clamp(1.05rem, 4.4vw, 1.45rem);
+  }
+}
+
+.route-loading-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--desk);
+  opacity: 1;
+  transition: opacity 700ms linear;
+}
+
+.route-loading-layer.is-out {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.route-loading-layer .route-loading {
+  min-height: 0;
+}
+
+body:has(.route-loading-layer) {
+  overflow: hidden;
+}
+
 .page-enter {
-  animation: page-enter 280ms ease both;
+  opacity: 0;
+}
+
+.page-enter.is-in {
+  animation: page-enter 2s linear both;
+}
+
+[hidden] .page-enter,
+[hidden] .page-enter.is-in {
+  animation: none;
+  opacity: 0;
+}
+
+@media (scripting: none) {
+  .page-enter {
+    opacity: 1;
+    animation: none;
+  }
+
+  .route-loading-layer {
+    display: none;
+  }
 }
 
 @keyframes page-enter {
@@ -2741,8 +2793,14 @@ html:has(.desk-split) .mobile-reading {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .page-enter {
+  .page-enter,
+  .page-enter.is-in {
     animation: none;
+    opacity: 1;
+  }
+
+  .route-loading-layer {
+    transition: none;
   }
 
   .book,

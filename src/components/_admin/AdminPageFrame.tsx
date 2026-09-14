@@ -1,5 +1,3 @@
-"use client";
-
 export function AdminPageFrame({
   className,
   children,
@@ -7,7 +5,5 @@ export function AdminPageFrame({
   className: string;
   children: React.ReactNode;
 }) {
-  return (
-    <main className={`${className} guestbook-themed page-enter`}>{children}</main>
-  );
+  return <main className={`${className} guestbook-themed`}>{children}</main>;
 }

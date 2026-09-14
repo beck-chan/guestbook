@@ -9,6 +9,7 @@ import {
   type AdminFilters,
 } from "@/lib/comments";
 import { GuestbookSettingsShell } from "@/components/_shared/GuestbookSettingsShell";
+import { PageReveal } from "@/components/_shared/PageReveal";
 import { getPoemHeartTotal } from "@/lib/actions/hearts";
 import { flags } from "@/lib/flags";
 import { loadGuestbookSettings } from "@/lib/loadGuestbookSettings";
@@ -43,7 +44,23 @@ function pageFrom(searchParams: Record<string, string | string[] | undefined>) {
   return Number.isFinite(parsed) && parsed > 0 ? parsed : 1;
 }
 
-export default async function AdminPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
+export default function AdminPage({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
+  return (
+    <PageReveal>
+      <AdminBody searchParams={searchParams} />
+    </PageReveal>
+  );
+}
+
+async function AdminBody({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
   const params = await searchParams;
   const filters = filtersFrom(params);
   const [settings, allComments, totalHearts] = await Promise.all([

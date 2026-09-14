@@ -187,7 +187,7 @@ export function PoetryDesk({
   }
 
   return (
-    <div className="page-enter">
+    <>
       <div className="desk-desktop">
         <DeskBookmarks />
         <ReportIssueLink />
@@ -261,6 +261,6 @@ export function PoetryDesk({
         initialTotalPages={initialTotalPages}
         commentPageSize={commentPageSize}
       />
-    </div>
+    </>
   );
 }
