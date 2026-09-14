@@ -230,7 +230,7 @@ const SERVICE_ROLE_ONLY_PATHS = new Set([
 ]);
 
 const JWT_ERROR_HEADING =
-  "This call will return an error even with your valid JWT.";
+  "This sample call will return an error even with your valid JWT.";
 const FILTER_CALLOUT_TITLE = "This call needs a filter, even with a valid JWT.";
 const FILTER_AND_AUTH_HEADING =
   "This call requires a filter, and will still return an error even with your valid JWT.";
