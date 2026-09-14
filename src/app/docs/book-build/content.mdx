@@ -68,8 +68,7 @@ The schema applied by running [`scripts/schema.sql`](https://github.com/beck-cha
 
 <DocsErdGrid>
 
-```mermaid
-erDiagram
+<DocsMermaid chart={`erDiagram
     direction TB
     admin_allowlist {
         text email PK
@@ -81,10 +80,9 @@ erDiagram
         jsonb app_metadata
     }
     admin_allowlist |o..o| auth_users : "email match"
-```
+`} />
 
-```mermaid
-erDiagram
+<DocsMermaid chart={`erDiagram
     direction TB
     comments {
         uuid id PK
@@ -103,10 +101,9 @@ erDiagram
         timestamptz updated_at
     }
     comments ||--|| comments_public : "public view"
-```
+`} />
 
-```mermaid
-erDiagram
+<DocsMermaid chart={`erDiagram
     direction TB
     guestbook_settings {
         int id PK
@@ -115,10 +112,9 @@ erDiagram
         boolean capture_email
         int comment_length
     }
-```
+`} />
 
-```mermaid
-erDiagram
+<DocsMermaid chart={`erDiagram
     direction TB
     poem_hearts {
         uuid id PK
@@ -131,7 +127,7 @@ erDiagram
         bigint heart_count
     }
     poem_hearts }o--o| poem_heart_counts : aggregates
-```
+`} />
 
 </DocsErdGrid>
 

@@ -67,7 +67,6 @@ const withMDX = createMDX({
     ],
     rehypePlugins: [
       "rehype-slug",
-      [path.join(root, "src/lib/mdx/rehype-docs-mermaid.mjs"), { rev: 7 }],
       [path.join(root, "src/lib/mdx/rehype-docs-highlight.mjs"), { rev: 5 }],
     ],
   },

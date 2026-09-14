@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useId, useLayoutEffect, useRef, useState } from "react";
+import "../docs-mermaid.css";
 
 let mermaidLoader: Promise<typeof import("mermaid").default> | undefined;
 let mermaidQueue: Promise<unknown> = Promise.resolve();
