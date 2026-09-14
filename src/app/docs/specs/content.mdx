@@ -49,8 +49,6 @@ The guestbook repository includes [`cucumber.yaml`](https://github.com/beck-chan
 
 ```yaml
 default:
-  paths:
-    - features/features/guestbook/**/*.feature
   requireModule:
     - tsx/cjs
   require:
@@ -67,8 +65,6 @@ default:
     adminPath: /admin
 
 admin:
-  paths:
-    - features/features/admin/**/*.feature
   requireModule:
     - tsx/cjs
   require:
@@ -302,6 +298,7 @@ These tests do not require any admin authentication, so they can be run without 
   # To Run All User Tests
 
   ```bash
+  # Writes to default profile (results.html)
   npx cucumber-js features/features/guestbook
   ```
 
@@ -310,6 +307,7 @@ These tests do not require any admin authentication, so they can be run without 
   For example, the `guestbook-nav.feature` file:
 
   ```bash
+  # Writes to default profile (results.html)
   npx cucumber-js features/features/guestbook/guestbook-nav.feature
   ```
 
@@ -328,7 +326,8 @@ Playwright cannot finish Google's login screen by itself. Run these scenarios wi
   # To Run All Admin Tests
 
   ```bash
-  HEADED=1 npx cucumber-js features/features/admin
+  # Writes to admin profile (admin.html)
+  HEADED=1 npx cucumber-js -p admin features/features/admin
   ```
 
   # To Run One Admin Test
@@ -336,7 +335,8 @@ Playwright cannot finish Google's login screen by itself. Run these scenarios wi
   For example, the `admin-nav.feature` file:
 
   ```bash
-  HEADED=1 npx cucumber-js features/features/admin/admin-nav.feature
+  # Writes to admin profile (admin.html)
+  HEADED=1 npx cucumber-js -p admin features/features/admin/admin-nav.feature
   ```
 
   :::
