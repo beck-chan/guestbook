@@ -39,17 +39,13 @@ Re-run it after upgrading Playwright.
 
 :::
 
-## Feature Directory Setup
+## Cucumber Setup
 
-The guestbook repository and includes the following Cucumber setup files covered in this section.
+The guestbook repository includes [`cucumber.yaml`](https://github.com/beck-chan/y2k-guestbook/blob/main/cucumber.yaml){.blank} at the project root and the TypeScript helpers in [`features/support/`](https://github.com/beck-chan/y2k-guestbook/tree/main/features/support){.blank}. 
 
-### Environment
+### cucumber.yaml
 
-::: {.tabset}
-
-# cucumber.yaml
-
-At the project root lives [`cucumber.yaml`](https://github.com/beck-chan/y2k-guestbook/blob/main/cucumber.yaml){.blank} which configures Cucumber:
+[`cucumber.yaml`](https://github.com/beck-chan/y2k-guestbook/blob/main/cucumber.yaml){.blank} tells Cucumber which `.feature` files to run, which TypeScript to load, and provides the default application URLs:
 
 ```yaml
 default:
@@ -89,56 +85,40 @@ admin:
     adminPath: /admin
 ```
 
-# features/support/world.ts
+### `.features/support`
+
+::: {.tabset}
+
+# `world.ts`
 
 [`features/support/world.ts`](https://github.com/beck-chan/y2k-guestbook/blob/main/features/support/world.ts){.blank} sets up a Playwright page on the world object so that every step can click the same browser:
 
 ```typescript
 import { config } from "dotenv";
-import {
-  IWorldOptions,
-  setWorldConstructor,
-  World,
-} from "@cucumber/cucumber";
+import { setWorldConstructor, World } from "@cucumber/cucumber";
 import type { Browser, BrowserContext, Page } from "playwright";
 
-config({ path: ".env.local" });
+config({ path: ".env.local" }); // BASE_URL, paths, and the Supabase keys seed.ts uses
 
 export class PlaywrightWorld extends World {
   browser!: Browser;
   context!: BrowserContext;
-  page!: Page;
+  page!: Page; // every Given / When / Then in this scenario uses this page
   baseUrl: string;
   guestbookPath: string;
   adminPath: string;
-  postedName?: string;
+  postedName?: string; // stash in one step, read in a later Then (the comment you just posted)
 
-  constructor(options: IWorldOptions) {
+  constructor(options) {
     super(options);
-    const fromEnv = process.env.BASE_URL;
-    const fromConfig = options.parameters.baseUrl;
-    this.baseUrl = String(fromEnv ?? fromConfig ?? "http://localhost:3000").replace(
-      /\/$/,
-      "",
-    );
-    this.guestbookPath = String(
-      process.env.GUESTBOOK_PATH ||
-        process.env.NEXT_PUBLIC_GUESTBOOK_PATH ||
-        options.parameters.guestbookPath ||
-        "/",
-    );
-    this.adminPath = String(
-      process.env.GUESTBOOK_ADMIN_PATH ||
-        process.env.NEXT_PUBLIC_GUESTBOOK_ADMIN_PATH ||
-        options.parameters.adminPath ||
-        "/admin",
-    );
+    // cucumber.yaml worldParameters, overridable with BASE_URL / GUESTBOOK_PATH / GUESTBOOK_ADMIN_PATH
+    this.baseUrl = String(process.env.BASE_URL ?? options.parameters.baseUrl ?? "http://localhost:3000");
+    this.guestbookPath = String(process.env.GUESTBOOK_PATH || process.env.NEXT_PUBLIC_GUESTBOOK_PATH || options.parameters.guestbookPath || "/");
+    this.adminPath = String(process.env.GUESTBOOK_ADMIN_PATH || process.env.NEXT_PUBLIC_GUESTBOOK_ADMIN_PATH || options.parameters.adminPath || "/admin");
   }
 
   guestbookUrl() {
-    return this.guestbookPath === "/"
-      ? this.baseUrl
-      : `${this.baseUrl}${this.guestbookPath}`;
+    return this.guestbookPath === "/" ? this.baseUrl : `${this.baseUrl}${this.guestbookPath}`;
   }
 
   adminUrl() {
@@ -159,32 +139,35 @@ If your guestbook doesn't live at the root of your domain (`/`) or the admin das
 
 :::
 
-# features/support/hooks.ts
+# `hooks.ts`
 
-[`features/support/hooks.ts`](https://github.com/beck-chan/y2k-guestbook/blob/main/features/support/hooks.ts){.blank} starts Chromium, allowing page clicks on each scenario's fresh page, then closes the page when the scenario completes:
+[`features/support/hooks.ts`](https://github.com/beck-chan/y2k-guestbook/blob/main/features/support/hooks.ts){.blank} starts Chromium, gives each scenario a fresh page, and resets data so one run does not leak into the next:
 
 ```typescript
 import { After, AfterAll, Before, BeforeAll } from "@cucumber/cucumber";
 import { chromium, type Browser } from "playwright";
 import { PlaywrightWorld } from "./world";
+import { resetGuestRateLimits, restoreDefaultSettings } from "./seed";
 
 let browser: Browser;
 
 BeforeAll(async function () {
-  browser = await chromium.launch({
-    headless: process.env.HEADED !== "1",
-  });
+  // HEADED=1 shows the window so you can finish Google's login screen
+  browser = await chromium.launch({ headless: process.env.HEADED !== "1" });
 });
 
-Before(async function (this: PlaywrightWorld) {
+Before(async function (this: PlaywrightWorld, { pickle }) {
   this.browser = browser;
-  this.context = await browser.newContext({
-    viewport: { width: 1280, height: 720 },
-  });
+  this.context = await browser.newContext({ viewport: { width: 1280, height: 720 } });
   this.page = await this.context.newPage();
+  // After one headed admin sign-in, later admin runs reuse features/support/.auth/admin.json
+  // Guest / unauthorized features use a second Chromium so they cannot reuse that admin cookie
+  if (pickle.uri.includes("guestbook")) await resetGuestRateLimits();
 });
 
-After(async function (this: PlaywrightWorld) {
+After(async function (this: PlaywrightWorld, { pickle }) {
+  // admin-settings.feature writes title / fonts / page size — put the defaults back
+  if (pickle.uri.includes("admin-settings")) await restoreDefaultSettings();
   await this.context.close();
 });
 
@@ -193,8 +176,72 @@ AfterAll(async function () {
 });
 ```
 
+# `ui.ts`
+
+[`features/support/ui.ts`](https://github.com/beck-chan/y2k-guestbook/blob/main/features/support/ui.ts){.blank} holds the shared locators so step definitions click visible names (`submit`, `display name`) instead of copying CSS class names:
+
+```typescript
+import type { Page } from "playwright";
+import type { PlaywrightWorld } from "./world";
+
+export async function openGuestbook(world: PlaywrightWorld) {
+  await world.page.goto(world.guestbookUrl(), { waitUntil: "domcontentloaded" });
+  await world.page.getByRole("button", { name: "submit" }).waitFor();
+}
+
+export async function fillGuestComment(
+  page: Page,
+  input: { name: string; body: string },
+) {
+  await page.getByLabel("display name").fill(input.name);
+  await page.locator('textarea[name="comment"]').fill(input.body);
+}
+
+export async function clickSubmit(page: Page) {
+  await page.getByRole("button", { name: "submit" }).click();
+}
+```
+
+# `seed.ts`
+
+[`features/support/seed.ts`](https://github.com/beck-chan/y2k-guestbook/blob/main/features/support/seed.ts){.blank} writes to the database when a scenario needs rows already on the board, or when hooks need to undo a previous run:
+
+```typescript
+import { createClient } from "@supabase/supabase-js";
+import { Pool } from "pg";
+
+// Service role — Cucumber can insert comments without going through the form
+export function serviceClient() {
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!,
+  );
+}
+
+export async function seedComment(body: string) {
+  // Gherkin that needs existing comments (pagination, admin filters)
+  return serviceClient()
+    .from("comments")
+    .insert({ display_name: "cucumber", body })
+    .select()
+    .single();
+}
+
+export async function resetGuestRateLimits() {
+  // hooks.ts runs this before guestbook features (needs DATABASE_URL)
+  const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+  await pool.query("delete from guestbook_rate_limits");
+  await pool.end();
+}
+
+export async function restoreDefaultSettings() {
+  // hooks.ts runs this after admin-settings.feature
+  await serviceClient().from("guestbook_settings").update({ /* defaults */ }).eq("id", 1);
+}
+```
 
 :::
+
 
 ### Step Definitions
 

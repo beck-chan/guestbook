@@ -11,7 +11,7 @@ public: false
 
 - Each documentation guide is a [`page.tsx`](https://github.com/beck-chan/guestbook/blob/main/src/app/docs/example/page.tsx){.blank} that imports [`./content.mdx`](https://github.com/beck-chan/guestbook/blob/main/src/app/docs/example/content.mdx){.blank} (the actual markdown content), wrapped in [`DocsPage`](https://github.com/beck-chan/guestbook/blob/main/src/app/docs/_components/DocsPage.tsx){.blank} which also renders the sticky-note table of contents automatically from page headings.
 - [`src/app/docs/layout.tsx`](https://github.com/beck-chan/guestbook/blob/main/src/app/docs/layout.tsx){.blank} defines the custom layout, side navigation, and docs-only theme. 
-- [`DocsNav`](https://github.com/beck-chan/guestbook/blob/main/src/app/docs/_components/DocsNav.tsx){.blank} builds the sidebar navigation from [`docs-nav-data.ts`](https://github.com/beck-chan/guestbook/blob/main/src/app/docs/_nav/docs-nav-data.ts){.blank}.
+- [`DocsNav`](https://github.com/beck-chan/guestbook/blob/main/src/app/docs/_nav/DocsNav.tsx){.blank} builds the sidebar navigation from [`docs-nav-data.ts`](https://github.com/beck-chan/guestbook/blob/main/src/app/docs/_nav/docs-nav-data.ts){.blank}.
 :::
 
 ## Docs-Only Build
