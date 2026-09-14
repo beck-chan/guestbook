@@ -2,7 +2,7 @@
 subject: Comment Deleted
 ---
 
-A comment by {{name}} was deleted from the y2k Guestbook:
+A comment by {{name}} was deleted from the Poetry Guestbook:
 
 {{body}}
 

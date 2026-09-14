@@ -2,4 +2,4 @@
 subject: {{email}} Added to Admin
 ---
 
-{{email}} was added to the y2k Guestbook as an admin user.
+{{email}} was added to the Poetry Guestbookas an admin user.

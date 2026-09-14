@@ -2,7 +2,7 @@
 subject: Admin Sign In
 ---
 
-You've successfully authenticated to the y2k Guestbook with your admin user.
+You've successfully authenticated to the Poetry Guestbookwith your admin user.
 
 Sign in to the admin dashboard at: {{admin}}
 

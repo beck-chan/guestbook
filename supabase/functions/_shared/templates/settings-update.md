@@ -2,7 +2,7 @@
 subject: Settings Updated
 ---
 
-y2k Guestbook settings were updated:
+Poetry Guestbooksettings were updated:
 
 {{summary}}
 

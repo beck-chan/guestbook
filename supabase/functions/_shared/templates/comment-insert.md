@@ -2,7 +2,7 @@
 subject: Comment Received
 ---
 
-{{name}} signed the y2k Guestbook:
+{{name}} signed the Poetry Guestbook:
 
 {{body}}
 
