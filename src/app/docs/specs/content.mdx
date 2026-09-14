@@ -295,26 +295,41 @@ These tests do not require any admin authentication, so they can be run without 
 
   ::: {.tabset}
 
-  # To Run All User Tests
+
+  # To Run One Test 
+
+  To run a specific test in a feature file, append the `--name` flag naming a Scenario. For example:
+
 
   ```bash
   # Writes to default profile (results.html)
-  npx cucumber-js features/features/guestbook
+  npx cucumber-js features/features/guestbook/guestbook-comments.feature --name "User submits a valid comment"
   ```
 
-  # To Run One User Test
+  # Run a Set Tests
 
-  For example, the `guestbook-nav.feature` file:
+  For a specific set of tests under one Rule, append the  `--tags @example-rule-name` flag:
+
+  ```bash
+  # Writes to default profile (results.html)
+  npx cucumber-js features/features/guestbook/guestbook-nav.feature --tags @desktop-nav
+  ```
+
+  # Run Suite of Tests
+
+  For example, the full `guestbook-nav.feature` file:
 
   ```bash
   # Writes to default profile (results.html)
   npx cucumber-js features/features/guestbook/guestbook-nav.feature
   ```
 
-  Or, for a specific set of tests under one Rule, append the `@<rule-name>` `--tags` flag:
+
+  # To Run All Tests
 
   ```bash
-  npx cucumber-js features/features/guestbook/guestbook-nav.feature --tags  @desktop-nav
+  # Writes to default profile (results.html)
+  npx cucumber-js features/features/guestbook
   ```
 
   :::
@@ -329,25 +344,36 @@ Playwright cannot finish Google's login screen by itself. Run these scenarios wi
 
   ::: {.tabset}
 
-  # To Run All Admin Tests
+  # Run One Test
+
+  To run a specific test in a feature file, append the `--name` flag naming a Scenario. For example:
 
   ```bash
-  # Writes to admin profile (admin.html)
-  HEADED=1 npx cucumber-js -p admin features/features/admin
+  HEADED=1 npx cucumber-js -p admin features/features/admin/admin-settings.feature --name "Admin can update the guestbook title"
   ```
 
-  # To Run One Admin Test
+  # Run a Set Tests
 
-  For example, the `admin-nav.feature` file:
+  For a specific set of tests under one Rule, append the `--tags @example-rule-name` flag:
+
+  ```bash
+  HEADED=1 npx cucumber-js -p admin features/features/admin/admin-nav.feature --tags @mobile-menu
+  ```
+
+  # Run Suite of Tests
+
+  For example, the full `admin-nav.feature` file:
 
   ```bash
   # Writes to admin profile (admin.html)
   HEADED=1 npx cucumber-js -p admin features/features/admin/admin-nav.feature
   ```
-  Or, for a specific set of tests under one Rule, append the `@<rule-name>` `--tags` flag:
+
+  # Run All Tests
 
   ```bash
-  HEADED=1 npx cucumber-js -p admin features/features/admin/admin-nav.feature --tags @mobile-menu
+  # Writes to admin profile (admin.html)
+  HEADED=1 npx cucumber-js -p admin features/features/admin
   ```
 
   :::
