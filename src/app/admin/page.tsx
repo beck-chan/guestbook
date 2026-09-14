@@ -8,8 +8,10 @@ import {
   sortComments,
   type AdminFilters,
 } from "@/lib/comments";
+import { GuestbookSettingsShell } from "@/components/_shared/GuestbookSettingsShell";
 import { getPoemHeartTotal } from "@/lib/actions/hearts";
 import { flags } from "@/lib/flags";
+import { loadGuestbookSettings } from "@/lib/loadGuestbookSettings";
 
 export const metadata: Metadata = {
   title: "Admin Dashboard",
@@ -44,7 +46,8 @@ function pageFrom(searchParams: Record<string, string | string[] | undefined>) {
 export default async function AdminPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   const params = await searchParams;
   const filters = filtersFrom(params);
-  const [allComments, totalHearts] = await Promise.all([
+  const [settings, allComments, totalHearts] = await Promise.all([
+    loadGuestbookSettings(),
     loadAdminComments(),
     flags.public ? Promise.resolve(0) : getPoemHeartTotal(),
   ]);
@@ -55,14 +58,16 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
   const { totalComments, unreadComments } = countAdminComments(allComments);
 
   return (
-    <AdminGuestbook
-      comments={comments}
-      page={page}
-      totalPages={totalPages}
-      filters={filters}
-      totalHearts={totalHearts}
-      totalComments={totalComments}
-      unreadComments={unreadComments}
-    />
+    <GuestbookSettingsShell settings={settings}>
+      <AdminGuestbook
+        comments={comments}
+        page={page}
+        totalPages={totalPages}
+        filters={filters}
+        totalHearts={totalHearts}
+        totalComments={totalComments}
+        unreadComments={unreadComments}
+      />
+    </GuestbookSettingsShell>
   );
 }

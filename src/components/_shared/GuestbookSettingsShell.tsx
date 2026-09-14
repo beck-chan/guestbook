@@ -1,14 +1,16 @@
 import { CustomTheme } from "@/components/_shared/CustomTheme";
-import { GuestbookSettingsProvider } from "@/lib/guestbookSettings";
-import { loadGuestbookSettings } from "@/lib/loadGuestbookSettings";
+import {
+  GuestbookSettingsProvider,
+  type GuestbookSettings,
+} from "@/lib/guestbookSettings";
 
-export async function GuestbookSettingsShell({
+export function GuestbookSettingsShell({
+  settings,
   children,
 }: {
+  settings: GuestbookSettings;
   children: React.ReactNode;
 }) {
-  const settings = await loadGuestbookSettings();
-
   return (
     <GuestbookSettingsProvider initialSettings={settings}>
       {children}

@@ -8,6 +8,6 @@ export function AdminPageFrame({
   children: React.ReactNode;
 }) {
   return (
-    <main className={`${className} guestbook-themed`}>{children}</main>
+    <main className={`${className} guestbook-themed page-enter`}>{children}</main>
   );
 }
