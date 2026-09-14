@@ -1,10 +1,9 @@
 ### Allow Your Admin User
 
-Run the following command in your terminal to allow-list a Google account as your admin user:
+From your Next.js app root, allow-list a Google account as your admin user (the command reads `.env.local` in the current directory):
 
 ```bash
-npm install
-npm run allow-admin -- you@gmail.com
+npx y2k-guestbook allow-admin you@gmail.com
 ```
 
 You'll need to authorize Google to connect on your first sign in.

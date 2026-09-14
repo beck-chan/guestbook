@@ -107,10 +107,10 @@ export class PlaywrightWorld extends World {
 
   constructor(options) {
     super(options);
-    // cucumber.yaml worldParameters, overridable with BASE_URL / GUESTBOOK_PATH / GUESTBOOK_ADMIN_PATH
+    // cucumber.yaml worldParameters, overridable with BASE_URL / NEXT_PUBLIC_GUESTBOOK_PATH / NEXT_PUBLIC_GUESTBOOK_ADMIN_PATH
     this.baseUrl = String(process.env.BASE_URL ?? options.parameters.baseUrl ?? "http://localhost:3000");
-    this.guestbookPath = String(process.env.GUESTBOOK_PATH || process.env.NEXT_PUBLIC_GUESTBOOK_PATH || options.parameters.guestbookPath || "/");
-    this.adminPath = String(process.env.GUESTBOOK_ADMIN_PATH || process.env.NEXT_PUBLIC_GUESTBOOK_ADMIN_PATH || options.parameters.adminPath || "/admin");
+    this.guestbookPath = String(process.env.NEXT_PUBLIC_GUESTBOOK_PATH || options.parameters.guestbookPath || "/");
+    this.adminPath = String(process.env.NEXT_PUBLIC_GUESTBOOK_ADMIN_PATH || options.parameters.adminPath || "/admin");
   }
 
   guestbookUrl() {
@@ -130,7 +130,7 @@ setWorldConstructor(PlaywrightWorld);
 
 If your guestbook doesn't live at the root of your domain (`/`) or the admin dashboard is not at `/admin`:
 
-- Ensure your `NEXT_PUBLIC_GUESTBOOK_ADMIN_PATH` and `GUESTBOOK_PATH` `.env.local` variables match your custom paths so that step definitions navigate using the correct `this.guestbookPath` / `this.adminPath`.
+- Ensure your `NEXT_PUBLIC_GUESTBOOK_PATH` and `NEXT_PUBLIC_GUESTBOOK_ADMIN_PATH` `.env.local` variables match your custom paths so that step definitions navigate using the correct `this.guestbookPath` / `this.adminPath`.
 - Keep the Gherkin wording as written (`/admin`). 
 
 :::

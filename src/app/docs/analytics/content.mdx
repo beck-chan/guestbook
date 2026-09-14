@@ -160,11 +160,29 @@ export { GET } from "y2k-guestbook/hits";
 
 ## Enable Web Tracking
 
-1. Copy [`instrumentation-client.ts.example`](https://github.com/beck-chan/y2k-guestbook/blob/main/instrumentation-client.ts.example){.blank} to `src/instrumentation-client.ts` (or the project root if there is no `src/`):
+1. Install [`posthog-js`](https://www.npmjs.com/package/posthog-js){.blank} to enable capture of client pageviews, clicks, and session replay:
+
+    ```bash
+    npm install posthog-js
+    ```
+
+2. Copy [`instrumentation-client.ts.example`](https://github.com/beck-chan/y2k-guestbook/blob/main/instrumentation-client.ts.example){.blank} to `src/instrumentation-client.ts` (or the project root if there is no `src/`):
+
+    ::: {.tabset}
+
+    # Quickstart
 
     ```bash
     cp instrumentation-client.ts.example src/instrumentation-client.ts
     ```
+
+    # Install with npm
+
+    ```bash
+    cp node_modules/y2k-guestbook/instrumentation-client.ts.example src/instrumentation-client.ts
+    ```
+
+    :::
 
     ::: {.callout}
     # Next.js only loads the exact filename `instrumentation-client.ts`. Do not paste the PostHog HTML snippet into your layout.
@@ -173,18 +191,13 @@ export { GET } from "y2k-guestbook/hits";
 
     :::
 
-2. From the PostHog dashboard's left sidebar, click **Settings**.
+3. From the PostHog dashboard's left sidebar, click **Settings**.
 
-3. Under Products, select **Session replay**. Toggle ON:
+4. Under Products, select **Session replay**. Toggle ON:
 
     - **Record user sessions**
     - **Log capture**
     - **Canvas capture**
-
-::: {.callout}
-# `npm run dev` does not send tracking events. 
-
-:::
 
 ## Test Hit Counter & Tracking 
 
