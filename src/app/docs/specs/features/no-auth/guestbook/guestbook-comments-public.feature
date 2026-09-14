@@ -61,7 +61,7 @@ Feature: Guestbook page
             And the user is shown an error message
             
     @pagination
-    # Default is 10 comments per page; pagination starts when there are 11+ comments
+    # Public page size comes from settings (default 10); seed only if count is below page size + 1
     Rule: Guestbook entries are paginated
 
         Background:
