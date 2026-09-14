@@ -1253,7 +1253,7 @@ export function Book({
       >
         <div className="spread" ref={spreadRef}>
           <div className="spread-gutter" aria-hidden="true" ref={gutterRef} />
-          <div className="page-left" aria-hidden="true" ref={pageLeftRef}>
+          <div className="page-left" aria-hidden={!isOpen} inert={!isOpen} ref={pageLeftRef}>
             <div className="leaf leaf-left">
               <EasterEgg />
             </div>
@@ -1318,7 +1318,7 @@ export function Book({
                 <p className="cover-author">by Beck Chan</p>
               </div>
             </div>
-            <div className="cover-inside" aria-hidden={!isOpen}>
+            <div className="cover-inside" aria-hidden={!isOpen} inert={!isOpen}>
               <div className="leaf leaf-left">
                 <EasterEgg />
               </div>
