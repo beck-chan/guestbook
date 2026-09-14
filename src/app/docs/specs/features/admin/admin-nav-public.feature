@@ -1,5 +1,6 @@
 Feature: Admin Dashboard page navigation
 
+    @navigation
     Rule: Navigation is a button
 
         Background:
@@ -10,6 +11,7 @@ Feature: Admin Dashboard page navigation
             When an admin clicks the `view guestbook` link
             Then they are taken to the guestbook page
 
+    @mobile-menu
     Rule: Comment sort, filter, and search are in a collapsible menu on mobile
 
         Background:

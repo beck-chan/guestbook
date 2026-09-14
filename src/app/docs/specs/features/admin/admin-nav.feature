@@ -1,5 +1,6 @@
 Feature: Admin Dashboard page navigation
 
+    @desktop-nav
     Rule: Hanging bookmark works as a link on desktop
 
         # Hanging bookmarks are visible only above 1280px
@@ -11,6 +12,7 @@ Feature: Admin Dashboard page navigation
             When an admin clicks the `view book` link
             Then they are taken to the Original Poetry landing page (`/`)
 
+    @mobile-nav
     Rule: Navigation is handled by a button on mobile
 
         Background:
@@ -21,6 +23,7 @@ Feature: Admin Dashboard page navigation
             When an admin clicks the `return` link
             Then they are taken to the Original Poetry landing page (`/`)
 
+    @mobile-menu
     Rule: Comment sort, filter, and search are in a drop-down menu on mobile
 
         Background:

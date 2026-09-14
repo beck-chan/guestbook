@@ -311,6 +311,12 @@ These tests do not require any admin authentication, so they can be run without 
   npx cucumber-js features/features/guestbook/guestbook-nav.feature
   ```
 
+  Or, for a specific set of tests under one Rule, append the `@<rule-name>` `--tags` flag:
+
+  ```bash
+  npx cucumber-js features/features/guestbook/guestbook-nav.feature --tags  @desktop-nav
+  ```
+
   :::
 
 # Run Admin Tests
@@ -337,6 +343,11 @@ Playwright cannot finish Google's login screen by itself. Run these scenarios wi
   ```bash
   # Writes to admin profile (admin.html)
   HEADED=1 npx cucumber-js -p admin features/features/admin/admin-nav.feature
+  ```
+  Or, for a specific set of tests under one Rule, append the `@<rule-name>` `--tags` flag:
+
+  ```bash
+  HEADED=1 npx cucumber-js -p admin features/features/admin/admin-nav.feature --tags @mobile-menu
   ```
 
   :::

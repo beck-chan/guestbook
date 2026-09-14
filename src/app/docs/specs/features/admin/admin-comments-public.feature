@@ -4,6 +4,7 @@ Feature: Admin Dashboard comment interactions
         Given an authorized admin is signed in with Google SSO
         And they are on the admin dashboard (`/admin`)
 
+    @manage-comments
     Rule: Admins can interact with comments
 
         Scenario: Admins can filter comments by read status
@@ -73,6 +74,7 @@ Feature: Admin Dashboard comment interactions
             Then the comment is not removed
 
     # Admin always shows 10 comments per page; pagination starts when there are 11+ comments
+    @pagination
     Rule: Guestbook comments are paginated
 
         Background:

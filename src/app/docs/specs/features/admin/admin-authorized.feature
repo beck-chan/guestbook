@@ -1,5 +1,6 @@
 Feature: Authorized admin login
 
+    @desktop-auth   
     Rule: Allow-listed admins can access the admin dashboard on desktop
 
         Background:
@@ -11,6 +12,7 @@ Feature: Authorized admin login
             And they sign in successfully with Google
             Then they are redirected to the `/admin` dashboard
 
+    
     Rule: Allow-listed admins can access the admin dashboard on mobile
 
         Background:

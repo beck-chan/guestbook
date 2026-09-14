@@ -1,5 +1,6 @@
 Feature: Unauthorized admin login
 
+    @no-auth-desktop
     Rule: Visitors without admin authorization are denied the dashboard on desktop
 
         Background:
@@ -17,6 +18,7 @@ Feature: Unauthorized admin login
             When they click the `Boo hiss! Fine.` button
             Then the message closes
 
+    @no-auth-mobile
     Rule: Visitors without admin authorization are denied the dashboard on mobile
 
         Background:
