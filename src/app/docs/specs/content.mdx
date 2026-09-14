@@ -336,11 +336,32 @@ These tests do not require any admin authentication, so they can be run without 
 
 # Run Admin Tests
 
-Playwright cannot finish Google's login screen by itself. Run these scenarios with the browser visible and sign in with your authorized admin user in order to test the scenarios under [Admin Dashboard](#admin-dashboard).
+::: {.callout}
+# Playwright cannot finish Google's login screen by itself. 
+
+- Run these scenarios with the browser visible and sign in with your authorized admin user in order to test the scenarios under [Admin Dashboard](#admin-dashboard). 
+- These runs are configured to use Chrome (not Chromium) otherwise your OAuth 2.0 client will block the request, so make sure you have Chrome installed.
+
+:::
 
 1. Start the guestbook preview server: `npm run dev`
 
 2. In a second terminal at the app root, call:
+
+3. You'll need to run Chrome in debugging mode. Close all Chrome windows you might have open first, then call (replace the `--user-data-dir` paths with your own):
+
+  ```bash
+  # On Windows
+  "/c/Program Files/Google/Chrome/Application/chrome.exe" --remote-debugging-port=9222 --remote-allow-origins=* --user-data-dir="C:/Users/username/Documents/GitHub/user-name/y2k-guestbook/features/support/.auth/chrome-debug"
+  ```
+
+  # On macOS
+
+  ```bash
+  open -a "Google Chrome" --args --remote-debugging-port=9222 --remote-allow-origins=* --user-data-dir="~/Documents/GitHub/user-name/y2k-guestbook/features/support/.auth/chrome-debug"
+  ```
+
+4. Leave the Chrome window that opens up and in a third terminal call:
 
   ::: {.tabset}
 
@@ -400,6 +421,7 @@ npm run dev:stop
 By default, Playwright hides the browser window. To watch a run:
 
 ```bash
+# Headed runs will run in Chrome by default
 HEADED=1 npx cucumber-js
 ```
 
