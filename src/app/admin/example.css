@@ -207,10 +207,6 @@ body {
   color: var(--peony-soft);
 }
 
-.comment-page.is-ellipsis {
-  color: var(--cover-soft);
-}
-
 .comment-page.is-disabled {
   color: color-mix(in srgb, var(--peony) 35%, transparent);
 }

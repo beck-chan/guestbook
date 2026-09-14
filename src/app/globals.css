@@ -66,7 +66,6 @@
   --ink: #2f2e2c;
   --ink-muted: #6a6864;
   --gold: #b08d3e;
-  --gold-dim: #9a7b24;
   --peony: #ff6162;
   --peony-hot: #ff8586;
   --peony-soft: #ffb3ba;
@@ -1631,11 +1630,6 @@ html:has(.desk-split) .mobile-reading {
 
 .comment-page-current {
   color: var(--peony-soft);
-}
-
-.comment-page.is-ellipsis {
-  color: var(--cover-soft);
-  pointer-events: none;
 }
 
 .comment-page.is-disabled {
