@@ -1,0 +1,99 @@
+name: Automated release from PR label
+
+on:
+  pull_request:
+    types: [closed]
+    branches:
+      - main
+
+permissions:
+  contents: write
+  pull-requests: read
+
+jobs:
+  release:
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create tagged GitHub release
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const pr = context.payload.pull_request;
+            const labels = (pr.labels || []).map((label) => label.name.toLowerCase());
+            const bump = labels.includes('major')
+              ? 'major'
+              : labels.includes('minor')
+                ? 'minor'
+                : labels.includes('patch')
+                  ? 'patch'
+                  : null;
+
+            if (!bump) {
+              core.info('No major/minor/patch label on the merged PR; skipping release generation.');
+              return;
+            }
+
+            if (!pr.merge_commit_sha) {
+              throw new Error('PR is merged but merge_commit_sha is missing.');
+            }
+
+            const parseSemver = (tag) => {
+              const match = String(tag).match(/^v?(\d+)\.(\d+)\.(\d+)$/);
+              return match
+                ? { major: Number(match[1]), minor: Number(match[2]), patch: Number(match[3]) }
+                : null;
+            };
+
+            const tags = await github.paginate(github.rest.repos.listTags, {
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              per_page: 100,
+            });
+
+            let latest = { major: 0, minor: 0, patch: 0 };
+            for (const tag of tags) {
+              const version = parseSemver(tag.name);
+              if (!version) continue;
+              const isNewer =
+                version.major > latest.major ||
+                (version.major === latest.major && version.minor > latest.minor) ||
+                (version.major === latest.major && version.minor === latest.minor && version.patch > latest.patch);
+              if (isNewer) latest = version;
+            }
+
+            if (bump === 'major') {
+              latest = { major: latest.major + 1, minor: 0, patch: 0 };
+            } else if (bump === 'minor') {
+              latest = { major: latest.major, minor: latest.minor + 1, patch: 0 };
+            } else {
+              latest = { major: latest.major, minor: latest.minor, patch: latest.patch + 1 };
+            }
+
+            const newTag = `v${latest.major}.${latest.minor}.${latest.patch}`;
+            if (tags.some((tag) => tag.name === newTag)) {
+              throw new Error(`Tag ${newTag} already exists.`);
+            }
+
+            const body = pr.body || '';
+            const notesMatch = body.match(
+              /##\s*Release Notes\s*\r?\n([\s\S]*?)(?=\r?\n##\s|$)/i
+            );
+            let notes = notesMatch ? notesMatch[1] : '';
+            notes = notes.replace(/<!--[\s\S]*?-->/g, '').trim();
+            if (!notes) {
+              notes = 'No public-facing release notes.';
+            }
+
+            await github.rest.repos.createRelease({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              tag_name: newTag,
+              name: `Release ${newTag}`,
+              body: notes,
+              target_commitish: pr.merge_commit_sha,
+              draft: false,
+              prerelease: false,
+            });
+
+            core.info(`Created release ${newTag} from ${bump} label.`);

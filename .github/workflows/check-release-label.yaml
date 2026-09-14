@@ -1,0 +1,33 @@
+name: Check PR has a release label
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, labeled, unlabeled]
+    branches:
+      - main
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  check-label:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Require a release label
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const pr = context.payload.pull_request;
+            const labels = (pr.labels || []).map((label) => label.name.toLowerCase());
+            const allowed = ['major', 'minor', 'patch', 'internal'];
+            const found = allowed.filter((name) => labels.includes(name));
+
+            if (found.length === 0) {
+              core.setFailed(
+                'PR needs a release label: major, minor, or patch to generate a release on merge, or internal to skip release generation.'
+              );
+              return;
+            }
+
+            core.info(`Release label present: ${found.join(', ')}`);
