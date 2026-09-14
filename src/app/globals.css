@@ -114,6 +114,10 @@ body {
   text-align: center;
 }
 
+.route-loading.is-public {
+  font-size: clamp(1.15rem, 3vw, 1.7rem);
+}
+
 @media (max-width: 768px) {
   .route-loading {
     font-size: clamp(1.05rem, 4.4vw, 1.45rem);

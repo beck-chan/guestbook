@@ -13,7 +13,6 @@ import { DocsErdGrid } from "@/app/docs/_components/DocsErdGrid";
 import { DocsGear } from "@/app/docs/_components/DocsGear";
 import { DocsHeart } from "@/app/docs/_components/DocsHeart";
 import { DocsLock } from "@/app/docs/_components/DocsLock";
-import { DocsMermaid } from "@/app/docs/_components/DocsMermaid";
 import { DocsTab, DocsTabset } from "@/app/docs/_components/DocsTabset";
 import { DocsTaskItem } from "@/app/docs/_components/DocsTaskItem";
 
@@ -124,7 +123,6 @@ const components: MDXComponents = {
   DocsHeart,
   DocsGear,
   DocsLock,
-  DocsMermaid,
   DocsCallout,
   DocsColumns,
   DocsColumn,

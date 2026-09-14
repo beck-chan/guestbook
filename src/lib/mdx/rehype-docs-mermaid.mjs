@@ -45,7 +45,15 @@ function chartAttr(chart) {
 }
 
 export default function rehypeDocsMermaid() {
-  return function rehypeDocsMermaidTransform(tree) {
+  return function rehypeDocsMermaidTransform(tree, file) {
+    const source = [file.path, file.dirname, ...(file.history ?? [])]
+      .filter(Boolean)
+      .join("/")
+      .replaceAll("\\", "/");
+    if (!source.includes("book-build")) {
+      return;
+    }
+
     const replacements = [];
 
     visit(tree, "element", (node, index, parent) => {
