@@ -340,7 +340,7 @@ These tests do not require any admin authentication, so they can be run without 
 # Playwright cannot finish Google's login screen by itself. 
 
 - Run these scenarios with the browser visible and sign in with your authorized admin user in order to test the scenarios under [Admin Dashboard](#admin-dashboard). 
-- These runs are configured to use Chrome (not Chromium) otherwise your OAuth 2.0 client will block the request, so make sure you have Chrome installed.
+- These runs are configured to use Chrome (not Chromium) otherwise your admin dashboard OAuth 2.0 client will block the request, so make sure you have Chrome installed.
 
 :::
 
@@ -355,11 +355,12 @@ These tests do not require any admin authentication, so they can be run without 
   "/c/Program Files/Google/Chrome/Application/chrome.exe" --remote-debugging-port=9222 --remote-allow-origins=* --user-data-dir="C:/Users/username/Documents/GitHub/user-name/y2k-guestbook/features/support/.auth/chrome-debug"
   ```
 
-  # On macOS
-
   ```bash
+  # On macOS
   open -a "Google Chrome" --args --remote-debugging-port=9222 --remote-allow-origins=* --user-data-dir="~/Documents/GitHub/user-name/y2k-guestbook/features/support/.auth/chrome-debug"
   ```
+
+  Confirm that debugging is enabled by using the open Chrome window to view: [http://127.0.0.1:9222/json/version](http://127.0.0.1:9222/json/version ){.blank}
 
 4. Leave the Chrome window that opens up and in a third terminal call:
 
@@ -370,6 +371,7 @@ These tests do not require any admin authentication, so they can be run without 
   To run a specific test in a feature file, append the `--name` flag naming a Scenario. For example:
 
   ```bash
+  # Writes to admin profile (admin.html)
   HEADED=1 npx cucumber-js -p admin features/features/admin/admin-settings.feature --name "Admin can update the guestbook title"
   ```
 
@@ -378,6 +380,7 @@ These tests do not require any admin authentication, so they can be run without 
   For a specific set of tests under one Rule, append the `--tags @example-rule-name` flag:
 
   ```bash
+  # Writes to admin profile (admin.html)
   HEADED=1 npx cucumber-js -p admin features/features/admin/admin-nav.feature --tags @mobile-menu
   ```
 
