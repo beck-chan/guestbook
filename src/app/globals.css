@@ -3433,7 +3433,17 @@ html:has(.desk-split) .mobile-reading {
   padding: 1.5rem;
   background: rgba(20, 16, 12, 0.45);
 }
+.admin-auth-error-backdrop {
+  position: absolute;
+  inset: 0;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  cursor: pointer;
+}
 .admin-auth-error-dialog {
+  position: relative;
+  z-index: 1;
   width: min(100%, 22rem);
   padding: 1.25rem 1.35rem 1.1rem;
   border: 1px solid rgba(0, 0, 0, 0.25);

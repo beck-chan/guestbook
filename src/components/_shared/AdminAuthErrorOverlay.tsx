@@ -20,18 +20,19 @@ export function AdminAuthErrorOverlay() {
   }
 
   return (
-    <div
-      className="admin-auth-error-overlay"
-      role="presentation"
-      onClick={dismiss}
-    >
+    <div className="admin-auth-error-overlay">
+      <button
+        type="button"
+        className="admin-auth-error-backdrop"
+        aria-label="Dismiss"
+        onClick={dismiss}
+      />
       <div
         className="admin-auth-error-dialog"
         role="alertdialog"
         aria-modal="true"
         aria-labelledby="admin-auth-error-title"
         aria-describedby="admin-auth-error-body"
-        onClick={(event) => event.stopPropagation()}
       >
         <h2 id="admin-auth-error-title" className="admin-auth-error-title">
           Oops.
