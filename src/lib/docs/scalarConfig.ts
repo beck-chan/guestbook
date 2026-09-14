@@ -1,3 +1,5 @@
+// Package exports omit package.json; read the installed file so ?v= busts cache.
+import { version as SCALAR_PACKAGE_VERSION } from "../../../node_modules/@scalar/api-reference/package.json";
 import { flags } from "@/lib/flags";
 import { envSupabaseProjectRef, publicApiServers } from "./publicApiServers";
 import {
@@ -685,7 +687,8 @@ a[role="option"][data-docs-hide-op-desc="true"] .text-c-2 {
 }
 `;
 
-export const SCALAR_STANDALONE_SRC = "/docs/api/scalar-standalone";
+export const SCALAR_STANDALONE_SRC =
+  `/docs/api/scalar-standalone?v=${SCALAR_PACKAGE_VERSION}`;
 
 export function createScalarReferenceConfig() {
   return {
