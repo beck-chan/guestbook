@@ -1403,7 +1403,7 @@ html:has(.desk-split) .mobile-reading {
   .desk-split:has(.book.is-open) .stage,
   .desk-split:has(.book.is-animating):not(:has(.book[data-closing-clip])) .stage {
     padding-left: calc(var(--sticky-size) * 2 / 3 + 1.25rem);
-    padding-right: 2.25rem;
+    padding-right: calc(var(--sticky-size) * 2 / 3 + 1.25rem);
   }
 
   .desk-desktop .report-issue {
@@ -1476,6 +1476,13 @@ html:has(.desk-split) .mobile-reading {
     letter-spacing: 0.04em;
     line-height: 1;
     white-space: nowrap;
+    text-shadow:
+      -0.04em 0 0 color-mix(in srgb, var(--desk) 25%, transparent),
+      0.04em 0 0 color-mix(in srgb, var(--desk) 25%, transparent),
+      0 -0.04em 0 color-mix(in srgb, var(--desk) 25%, transparent),
+      0 0.04em 0 color-mix(in srgb, var(--desk) 25%, transparent),
+      0 0 0.22em var(--desk),
+      0 0 0.5em var(--desk);
   }
 
   .desk-guestbook-hint-chevron {
@@ -1483,6 +1490,13 @@ html:has(.desk-split) .mobile-reading {
     width: 2.15rem;
     height: 2.15rem;
     animation: mobile-chevron-nudge 1.7s ease-in-out infinite;
+    filter:
+      drop-shadow(-0.06rem 0 0 color-mix(in srgb, var(--desk) 25%, transparent))
+      drop-shadow(0.06rem 0 0 color-mix(in srgb, var(--desk) 25%, transparent))
+      drop-shadow(0 -0.06rem 0 color-mix(in srgb, var(--desk) 25%, transparent))
+      drop-shadow(0 0.06rem 0 color-mix(in srgb, var(--desk) 25%, transparent))
+      drop-shadow(0 0 0.22rem var(--desk))
+      drop-shadow(0 0 0.45rem var(--desk));
   }
 
   .desk-guestbook-hint-chevron svg {

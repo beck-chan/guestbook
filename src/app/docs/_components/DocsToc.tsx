@@ -163,9 +163,15 @@ export function DocsToc({ items }: { items: DocsTocItem[] }) {
   const h2Items = items.filter((item) => itemDepth(item) === 2);
   const notes = chunkItems(h2Items);
   const childNotes = chunkItems(activeSectionChildren(items, activeHref));
+  const hasSubsections = items.some((item) => itemDepth(item) === 3);
 
   return (
-    <nav className="docs-toc-stack" aria-label="Table of contents">
+    <nav
+      className={["docs-toc-stack", hasSubsections ? "has-subsections" : ""]
+        .filter(Boolean)
+        .join(" ")}
+      aria-label="Table of contents"
+    >
       <div className="docs-toc-primary">
         {notes.map((group, index) => (
           <TocNote
