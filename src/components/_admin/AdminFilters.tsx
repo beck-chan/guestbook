@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type ChangeEvent } from "react";
+import { useState, type ChangeEvent, type KeyboardEvent } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { DocsHeart } from "@/app/docs/_components/DocsHeart";
@@ -66,7 +66,7 @@ export function AdminFilters({
     setQuery(filters.q);
   }
 
-  function apply(form: HTMLFormElement, q = String(new FormData(form).get("q") ?? "").trim()) {
+  function apply(form: HTMLFormElement, q = query.trim()) {
     const data = new FormData(form);
     const emailValue = String(data.get("email") ?? "all");
     const statusValue = String(data.get("status") ?? "all");
@@ -99,15 +99,31 @@ export function AdminFilters({
     }
   }
 
+  function onQueryKeyDown(event: KeyboardEvent<HTMLInputElement>) {
+    if (event.key !== "Enter") return;
+    event.preventDefault();
+    if (event.currentTarget.form) {
+      apply(event.currentTarget.form, event.currentTarget.value.trim());
+    }
+  }
+
   return (
     <form
       className="admin-filters"
       key={`${filters.q}|${filters.sort}|${filters.status}|${filters.email}|${filters.from}|${filters.to}`}
       onSubmit={(event) => {
         event.preventDefault();
-        apply(event.currentTarget);
+        const form = event.currentTarget;
+        const input = form.querySelector('input[name="q"]');
+        apply(
+          form,
+          input instanceof HTMLInputElement ? input.value.trim() : query.trim(),
+        );
       }}
     >
+      <button type="submit" hidden>
+        search
+      </button>
       <div className={`admin-tools${toolsOpen ? " is-open" : ""}`}>
         <button
           type="button"
@@ -223,6 +239,7 @@ export function AdminFilters({
                 name="q"
                 value={query}
                 onChange={onQueryChange}
+                onKeyDown={onQueryKeyDown}
                 placeholder="search"
                 aria-label="search comments"
               />
