@@ -94,7 +94,7 @@ import { config } from "dotenv";
 import { setWorldConstructor, World } from "@cucumber/cucumber";
 import type { Browser, BrowserContext, Page } from "playwright";
 
-config({ path: ".env.local" }); // BASE_URL, paths, and the Supabase keys seed.ts uses
+config({ path: ".env.local" }); // BASE_URL, paths, and DATABASE_URL seed.ts uses
 
 export class PlaywrightWorld extends World {
   browser!: Browser;
@@ -137,38 +137,85 @@ If your guestbook doesn't live at the root of your domain (`/`) or the admin das
 
 # `hooks.ts`
 
-[`features/support/hooks.ts`](https://github.com/beck-chan/y2k-guestbook/blob/main/features/support/hooks.ts){.blank} starts Chromium, gives each scenario a fresh page, and resets data so one run does not leak into the next:
+[`features/support/hooks.ts`](https://github.com/beck-chan/y2k-guestbook/blob/main/features/support/hooks.ts){.blank} launches Playwright Chromium (or headed Chrome), puts guestbook, admin, and unauthorized scenarios on the right browser, and resets data so one run does not leak into the next:
 
 ```typescript
+import { existsSync } from "node:fs";
+import path from "node:path";
 import { After, AfterAll, Before, BeforeAll } from "@cucumber/cucumber";
-import { chromium, type Browser } from "playwright";
+import { chromium, type Browser, type BrowserContext, type Page } from "playwright";
 import { PlaywrightWorld } from "./world";
 import { resetGuestRateLimits, restoreDefaultSettings } from "./seed";
 
+const AUTH_FILE = path.join("features", "support", ".auth", "admin.json");
+const DESKTOP = { width: 1400, height: 720 };
+
 let browser: Browser;
+let incognitoBrowser: Browser;
+let sharedAdminContext: BrowserContext;
+let sharedAdminPage: Page;
 
 BeforeAll(async function () {
-  // HEADED=1 shows the window so you can finish Google's login screen
-  browser = await chromium.launch({ headless: process.env.HEADED !== "1" });
+  // Headless uses Playwright Chromium. HEADED=1 uses installed Chrome so Google SSO can finish.
+  browser = await chromium.launch({
+    headless: process.env.HEADED !== "1",
+    channel: process.env.HEADED === "1" ? "chrome" : undefined,
+  });
 });
 
 Before(async function (this: PlaywrightWorld, { pickle }) {
-  this.browser = browser;
-  this.context = await browser.newContext({ viewport: { width: 1280, height: 720 } });
-  this.page = await this.context.newPage();
-  // After one headed admin sign-in, later admin runs reuse features/support/.auth/admin.json
-  // Guest / unauthorized features use a second Chromium so they cannot reuse that admin cookie
-  if (pickle.uri.includes("guestbook")) await resetGuestRateLimits();
+  const uri = pickle.uri;
+  const guestbook = uri.includes("guestbook");
+  const unauthorized = uri.includes("unauthorized");
+  const settings = uri.includes("admin-settings");
+
+  if (guestbook || unauthorized) {
+    // Second Chromium so guest / unauthorized runs cannot reuse the admin cookie
+    if (!incognitoBrowser) {
+      incognitoBrowser = await chromium.launch({ headless: process.env.HEADED !== "1" });
+    }
+    this.browser = incognitoBrowser;
+    this.context = await incognitoBrowser.newContext({ viewport: DESKTOP });
+    this.page = await this.context.newPage();
+  } else if (uri.includes("admin")) {
+    // Headless: later admin runs reuse features/support/.auth/admin.json
+    // Headed: attach to the Chrome window started with --remote-debugging-port (see Run Admin Tests)
+    if (sharedAdminPage && !sharedAdminPage.isClosed()) {
+      this.context = sharedAdminContext;
+      this.page = sharedAdminPage;
+    } else {
+      this.browser = browser;
+      this.context = await browser.newContext({
+        viewport: DESKTOP,
+        storageState: existsSync(AUTH_FILE) ? AUTH_FILE : undefined,
+      });
+      this.page = await this.context.newPage();
+      sharedAdminContext = this.context;
+      sharedAdminPage = this.page;
+    }
+  } else {
+    this.browser = browser;
+    this.context = await browser.newContext({ viewport: DESKTOP });
+    this.page = await this.context.newPage();
+  }
+
+  if (guestbook || settings) await resetGuestRateLimits();
+  if (settings) await restoreDefaultSettings();
 });
 
 After(async function (this: PlaywrightWorld, { pickle }) {
+  // Headless admin: persist the cookie so the next run can skip Google's login screen
+  if (pickle.uri.includes("admin") && !pickle.uri.includes("unauthorized") && process.env.HEADED !== "1") {
+    await sharedAdminContext.storageState({ path: AUTH_FILE });
+  }
   // admin-settings.feature writes title / fonts / page size — put the defaults back
   if (pickle.uri.includes("admin-settings")) await restoreDefaultSettings();
-  await this.context.close();
+  if (this.page !== sharedAdminPage) await this.context.close();
 });
 
 AfterAll(async function () {
   await browser.close();
+  if (incognitoBrowser) await incognitoBrowser.close();
 });
 ```
 
@@ -203,36 +250,37 @@ export async function clickSubmit(page: Page) {
 [`features/support/seed.ts`](https://github.com/beck-chan/y2k-guestbook/blob/main/features/support/seed.ts){.blank} writes to the database when a scenario needs rows already on the board, or when hooks need to undo a previous run:
 
 ```typescript
-import { createClient } from "@supabase/supabase-js";
 import { Pool } from "pg";
 
-// Service role — Cucumber can insert comments without going through the form
-export function serviceClient() {
-  return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
-  );
+function guestbookDb() {
+  return new Pool({ connectionString: process.env.DATABASE_URL }); // needs DATABASE_URL
 }
 
-export async function seedComment(body: string) {
+export async function seedComment(input: { body: string; display_name?: string }) {
   // Gherkin that needs existing comments (pagination, admin filters)
-  return serviceClient()
-    .from("comments")
-    .insert({ display_name: "cucumber", body })
-    .select()
-    .single();
+  const pool = guestbookDb();
+  const display_name = input.display_name ?? `cucumber-seed-${Date.now()}`;
+  const { rows } = await pool.query(
+    `insert into comments (display_name, body) values ($1, $2) returning id, display_name, body`,
+    [display_name, input.body],
+  );
+  await pool.end();
+  return { id: rows[0].id, name: rows[0].display_name, body: rows[0].body };
 }
 
 export async function resetGuestRateLimits() {
-  // hooks.ts runs this before guestbook features (needs DATABASE_URL)
-  const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+  // hooks.ts runs this before guestbook features and around admin-settings
+  const pool = guestbookDb();
   await pool.query("delete from guestbook_rate_limits");
   await pool.end();
 }
 
 export async function restoreDefaultSettings() {
-  // hooks.ts runs this after admin-settings.feature
-  await serviceClient().from("guestbook_settings").update({ /* defaults */ }).eq("id", 1);
+  // hooks.ts runs this before and after admin-settings.feature
+  // Writes the shared DEFAULT_GUESTBOOK_SETTINGS row (title, fonts, page size, …)
+  const pool = guestbookDb();
+  await pool.query(`update guestbook_settings set /* defaults */ where id = 1`);
+  await pool.end();
 }
 ```
 

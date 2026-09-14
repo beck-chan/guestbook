@@ -7,11 +7,13 @@ import {
   useState,
   type ReactNode,
 } from "react";
+import { usePathname } from "next/navigation";
 import { RouteLoading } from "@/components/_shared/RouteLoading";
 
 type Phase = "wait" | "out" | "in";
 
 const OUT_MS = 700;
+const revealedPathnames = new Set<string>();
 
 export function PageReveal({
   as: Tag = "div",
@@ -22,7 +24,9 @@ export function PageReveal({
   className?: string;
   children: ReactNode;
 }) {
-  const [phase, setPhase] = useState<Phase>("wait");
+  const pathname = usePathname();
+  const [skipReveal] = useState(() => revealedPathnames.has(pathname));
+  const [phase, setPhase] = useState<Phase>(skipReveal ? "in" : "wait");
 
   const onResolved = useCallback(() => {
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
@@ -41,6 +45,14 @@ export function PageReveal({
     const timer = window.setTimeout(onOutDone, OUT_MS);
     return () => window.clearTimeout(timer);
   }, [phase, onOutDone]);
+
+  useEffect(() => {
+    if (phase !== "in") return;
+    if (!revealedPathnames.has(pathname)) {
+      revealedPathnames.clear();
+    }
+    revealedPathnames.add(pathname);
+  }, [phase, pathname]);
 
   return (
     <>
@@ -62,6 +74,7 @@ export function PageReveal({
         <RevealContent
           as={Tag}
           className={className}
+          animate={!skipReveal}
           visible={phase === "in"}
           onResolved={onResolved}
         >
@@ -75,12 +88,14 @@ export function PageReveal({
 function RevealContent({
   as: Tag = "div",
   className,
+  animate,
   visible,
   onResolved,
   children,
 }: {
   as?: "div" | "main";
   className?: string;
+  animate: boolean;
   visible: boolean;
   onResolved: () => void;
   children: ReactNode;
@@ -92,7 +107,7 @@ function RevealContent({
 
   return (
     <Tag
-      className={["page-enter", visible && "is-in", className]
+      className={[animate && "page-enter", visible && "is-in", className]
         .filter(Boolean)
         .join(" ")}
       inert={visible ? undefined : true}

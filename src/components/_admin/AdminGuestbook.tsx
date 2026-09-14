@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { AdminCommentThread } from "@/components/_admin/AdminCommentThread";
 import { AdminFilters } from "@/components/_admin/AdminFilters";
 import { AdminPageFrame } from "@/components/_admin/AdminPageFrame";
@@ -72,12 +73,13 @@ export function AdminGuestbook({
             />
             <nav className="comment-pages" aria-label="Admin comment pages">
               {page > 1 ? (
-                <a
+                <Link
                   className="comment-page"
                   href={adminHref(page - 1, filters, basePath)}
+                  scroll={false}
                 >
                   prev
-                </a>
+                </Link>
               ) : (
                 <span className="comment-page is-disabled">prev</span>
               )}
@@ -87,12 +89,13 @@ export function AdminGuestbook({
                 {totalPages}
               </span>
               {page < totalPages ? (
-                <a
+                <Link
                   className="comment-page"
                   href={adminHref(page + 1, filters, basePath)}
+                  scroll={false}
                 >
                   next
-                </a>
+                </Link>
               ) : (
                 <span className="comment-page is-disabled">next</span>
               )}
