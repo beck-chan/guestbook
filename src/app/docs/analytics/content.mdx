@@ -152,7 +152,7 @@ Digits displayed are unique `$pageview` visitors from PostHog’s Query API. In 
 
 :::
 
-Import `app/api/hits/route.ts` which polls `/api/hits` in production:
+Create `app/api/hits/route.ts` which polls `/api/hits` in production:
 
 ```typescript
 export { GET } from "y2k-guestbook/hits";
@@ -166,23 +166,11 @@ export { GET } from "y2k-guestbook/hits";
     npm install posthog-js
     ```
 
-2. Copy [`instrumentation-client.ts.example`](https://github.com/beck-chan/y2k-guestbook/blob/main/instrumentation-client.ts.example){.blank} to `src/instrumentation-client.ts` (or the project root if there is no `src/`):
-
-    ::: {.tabset}
-
-    # Quickstart
+2. Copy [`instrumentation-client.ts.example`](https://github.com/beck-chan/y2k-guestbook/blob/main/instrumentation-client.ts.example){.blank} as `src/instrumentation-client.ts` (or the project root if there is no `src/`):
 
     ```bash
-    cp instrumentation-client.ts.example src/instrumentation-client.ts
+    npx y2k-guestbook init-instrumentation
     ```
-
-    # Install with npm
-
-    ```bash
-    cp node_modules/y2k-guestbook/instrumentation-client.ts.example src/instrumentation-client.ts
-    ```
-
-    :::
 
     ::: {.callout}
     # Next.js only loads the exact filename `instrumentation-client.ts`. Do not paste the PostHog HTML snippet into your layout.
