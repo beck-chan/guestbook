@@ -1,3 +1,17 @@
+## Build
+
+```bash
+npm run build
+npm run start
+```
+
+## Linter
+
+```bash
+npm run lint
+npm run lint:a11y
+npm run lint:a11y-docs
+```
 
 ## Versioning
 
@@ -7,8 +21,7 @@ npm version minor
 npm version major
 ```
 
-### Admin User
-
+## Admin User
 
 ```bash
 npm run allow-admin -- example@gmail.com

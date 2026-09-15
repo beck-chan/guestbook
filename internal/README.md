@@ -1,3 +1,5 @@
+# Next.js New Project Setup
+
 To setup a base Next.js project to test the instructions in "Install with npm" in Windows:
 
 1. Once you've installed `fnm`, plunk the directory in your Program Files, then open up `~/.bashrc`:
@@ -42,6 +44,8 @@ To setup a base Next.js project to test the instructions in "Install with npm" i
     next.config.ts
     package.json
     ```
+
+Once you're done, you can proceed with following the instructions in [Install with npm](https://y2k-guestbook.vercel.app/docs/install).
 
 
 
