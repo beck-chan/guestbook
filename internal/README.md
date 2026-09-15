@@ -1,54 +1,47 @@
-```bash
-cursor ~/.bashrc
+To setup a base Next.js project to test the instructions in "Install with npm" in Windows:
 
-```
+1. Once you've installed `fnm`, plunk the directory in your Program Files, then open up `~/.bashrc`:
 
-```bash
-export PATH="/c/Program Files/fnm-windows:$PATH"
-```
+    ```bash
+    code  ~/.bashrc
 
-```bash
-source ~/.bashrc
-```
+    ```
 
-```bash
-npx create-next-app@latest .
-```
+2. Tell bash where to look for `fnm`:
 
-? Would you like to use the recommended Next.js defaults? » - Use arrow-keys. Return to submit.
->   Yes, use recommended defaults - TypeScript, ESLint, No React Compiler, Tailwind CSS, No src/ directory, App Router, AGENTS.md
+    ```bash
+    export PATH="/c/Program Files/fnm-windows:$PATH"
+    ```
 
-```
-guestbook-install-test/
-  app/
-    layout.tsx
-    page.tsx
-    globals.css
-  next.config.ts
-  package.json
-```
+2. Refresh your bash terminal so the changes are picked up:
 
-## Commands
+    ```bash
+    source ~/.bashrc
+    ```
 
-### npm Versioning
+3. In the directory that is going to be your guestbook application:
 
-```bash
-npm version patch
-npm version minor
-npm version major
-```
+    ```bash
+    npx create-next-app@latest .
+    ```
 
-### Etc.
+4. When prompted with "? Would you like to use the recommended Next.js defaults? » - Use arrow-keys. Return to submit.", choose:
 
+    ```bash
+    >   Yes, use recommended defaults - TypeScript, ESLint, No React Compiler, Tailwind CSS, No src/ directory, App Router, AGENTS.md
+    ```
 
-```bash
-npm run allow-admin -- example@gmail.com
-npm run delete-admin -- example@gmail.com
-```
+5. Confirm that get:
 
-```bash
-npx cucumber-js 
-```
+    ```
+    guestbook-install-test/
+    app/
+        layout.tsx
+        page.tsx
+        globals.css
+    next.config.ts
+    package.json
+    ```
 
 
 
