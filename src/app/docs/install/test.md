@@ -28,6 +28,12 @@ guestbook-install-test/
   package.json
 ```
 
+<!-- ```
+npm version patch
+npm version minor
+npm version major
+``` -->
+
 
 
 

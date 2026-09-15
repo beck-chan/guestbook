@@ -245,13 +245,9 @@ Any time you edit these templates, you'll need to [redeploy the Edge Functions](
 ### Deploy Edge Functions
 
 Let's deploy the edge functions in [`supabase/functions`](https://github.com/beck-chan/y2k-guestbook/blob/main/supabase/functions/){.blank} to Supabase that will handle your notifications.
+a. First, make sure that your `.env.local` file contains the correct `NEXT_PUBLIC_SUPABASE_URL`: `https://<your-database-url>.supabase.co`.
 
-::: {.callout}
-# You'll need your Supabase Project ID snagged from your `NEXT_PUBLIC_SUPABASE_URL`: `https://<your-database-url>.supabase.co`.
-
-:::
-
-a. From your guestbook project root, call:
+b. From your project root, call:
 
     ::: {.tabset}
 
@@ -259,7 +255,7 @@ a. From your guestbook project root, call:
 
     ```bash
     export SUPABASE_ACCESS_TOKEN=<sbp_your_access_token>
-    npx supabase functions deploy notify-admins on-user-created --project-ref <your-database-url> --use-api
+    npx y2k-guestbook deploy-notifs
     ```
 
     # Output
