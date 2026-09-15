@@ -334,6 +334,12 @@ That writes `features/reports/admin.html` and leaves `results.html` alone.
 # Note that commenting, rate limits, and admin edits are live — if you're hooked up to a production database or guestbook instance, these tests will affect real data.
 :::
 
+::: {.callout}
+# `npx y2k-guestbook` is not on the npm registry.
+
+It must resolve from *this* app (Quickstart clone after `npm install`, or a host after `npm install y2k-guestbook@github:beck-chan/y2k-guestbook`). If npm looks up `registry.npmjs.org/y2k-guestbook` and 404s, you are in the wrong folder. In a clone you can also run `node scripts/cli.mjs test …` or `npm run test:cucumber -- …`.
+:::
+
 ### Run `.feature` Tests
 
 ::: {.tabset}
@@ -403,15 +409,20 @@ These tests do not require any admin authentication, so they can be run without 
 
 3. You'll need to run Chrome in debugging mode. Close all Chrome windows you might have open first, then call (replace the `--user-data-dir` paths with your own):
 
-  ```bash
+  ::: {.tabset} 
+
   # On Windows
+
+  ```bash
   "/c/Program Files/Google/Chrome/Application/chrome.exe" --remote-debugging-port=9222 --remote-allow-origins=* --user-data-dir="C:/Users/username/path/to/your-app/features/support/.auth/chrome-debug"
   ```
 
-  ```bash
   # On macOS
+  ```bash
   open -a "Google Chrome" --args --remote-debugging-port=9222 --remote-allow-origins=* --user-data-dir="~/path/to/your-app/features/support/.auth/chrome-debug"
   ```
+
+  :::
 
   Confirm that debugging is enabled by using the open Chrome window to view: [http://127.0.0.1:9222/json/version](http://127.0.0.1:9222/json/version ){.blank}
 

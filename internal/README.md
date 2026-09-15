@@ -25,6 +25,8 @@ To setup a base Next.js project to test the instructions in "Install with npm" i
 
     ```bash
     npx create-next-app@latest .
+    # Install dependencies
+    npm install
     ```
 
 4. When prompted with "? Would you like to use the recommended Next.js defaults? » - Use arrow-keys. Return to submit.", choose:
