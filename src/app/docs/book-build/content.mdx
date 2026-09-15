@@ -10,7 +10,7 @@ public: false
 ::: {.callout}
 # My custom install combines an interactive poetry volume with the guestbook commenting functionality:
 
-- [`src/app/page.tsx`](https://github.com/beck-chan/guestbook/blob/main/src/app/page.tsx){.blank} loads poems, likes ({.heart}), the hit counter, and the first comments page, then renders [`PoetryDesk`](https://github.com/beck-chan/guestbook/blob/main/src/components/_desk/PoetryDesk.tsx){.blank}.
+- [`src/app/page.tsx`](https://github.com/beck-chan/guestbook/blob/main/src/app/page.tsx){.blank} loads poems, the hit counter, and the first comments page, then renders [`PoetryDesk`](https://github.com/beck-chan/guestbook/blob/main/src/components/_desk/PoetryDesk.tsx){.blank}.
 - [`src/app/admin/page.tsx`](https://github.com/beck-chan/guestbook/blob/main/src/app/admin/page.tsx){.blank} is the gated admin dashboard for moderation and settings.
 - Compile-time switches live in [`src/lib/flags.ts`](https://github.com/beck-chan/guestbook/blob/main/src/lib/flags.ts){.blank}. 
 :::
@@ -173,12 +173,12 @@ When users click **Submit**, the `submitComment` server action:
 2. Enforces [`commentLengthError`](https://github.com/beck-chan/guestbook/blob/main/src/lib/commentLimits.ts){.blank} — name cap `128`, email cap `254`, and `comment_length` from settings for the body (default at `1000`).
 3. Runs [`checkCommentProfanity`](https://github.com/beck-chan/guestbook/blob/main/src/lib/profanity.ts){.blank} ([`obscenity`](https://www.npmjs.com/package/obscenity){.blank} plus the admin allow-list).
 4. Consumes [`consumeCommentRateLimit`](https://github.com/beck-chan/guestbook/blob/main/src/lib/rate-limit.ts){.blank} (`rate-limiter-flexible` over `DATABASE_URL`, keyed by a hash of [`clientIp()`](https://github.com/beck-chan/guestbook/blob/main/src/lib/clientIp.ts){.blank}). Burst and daily caps come from settings (default at `1` comment per `5` minutes, up to `2` per `24` hours). 
-5. Inserts the submitted comment in the private `comments` table. Then `revalidatePath` for `/`, `/guestbook`, and the admin path, refreshing the page to show the new comment.
+5. Inserts the submitted comment in the private `comments` table, then `revalidatePath` for `/`, `/guestbook`, and the admin path (so a later navigation or refresh is not served from a stale cache). [`CommentBubbles`](https://github.com/beck-chan/guestbook/blob/main/src/components/_shared/CommentBubbles.tsx){.blank} then calls [`getPublicCommentsPage`](https://github.com/beck-chan/guestbook/blob/main/src/app/actions/comments.ts){.blank} again and writes that result into local state — the list updates in place, with no page reload.
 
 
 # Admin Dashboard
 
-[`proxy.ts`](https://github.com/beck-chan/guestbook/blob/main/src/proxy.ts){.blank} (Next’s request proxy) refreshes the Supabase session on every matched path. Only `/admin` (or `NEXT_PUBLIC_GUESTBOOK_ADMIN_PATH`) is gated:
+[`proxy.ts`](https://github.com/beck-chan/guestbook/blob/main/src/proxy.ts){.blank} (Next’s request proxy) only gates `/admin` (or `NEXT_PUBLIC_GUESTBOOK_ADMIN_PATH`). On those paths it refreshes the Supabase session:
 
 - No existing admin login session — redirects to `/admin/login`.
 - Successful sign in but `app_metadata.role` is not `admin` — user is signed out and send home with `?admin_error=1`.

@@ -44,10 +44,10 @@ The Remark plugin also pulls page metadata out of the paired `content.mdx` so `p
 - `toc` — `##` / `###` headings, used for the sticky-note table of contents and anchor links
 - `frontmatter` — The YAML defined at the top of the page
 
-`next.config.ts` also registers my custom [Rehype](https://www.npmjs.com/package/rehype){.blank} (HTML parsing and serialization) plugin, which:
+`next.config.ts` also registers [Rehype](https://www.npmjs.com/package/rehype){.blank} (HTML parsing and serialization) plugins:
 
-- Adds `id` to each heading from its text so that anchor links are functional.
-- Runs [`rehype-highlight`](https://www.npmjs.com/package/rehype-highlight){.blank} (our themed syntax highlighting) with a small language set we use in the docs.
+- [`rehype-slug`](https://www.npmjs.com/package/rehype-slug){.blank} adds `id` to each heading from its text so that anchor links are functional.
+- My custom plugin runs [`rehype-highlight`](https://www.npmjs.com/package/rehype-highlight){.blank} (our themed syntax highlighting) with a small language set we use in the docs.
 
 # src/mdx-components.tsx
 
