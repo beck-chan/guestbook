@@ -41,7 +41,9 @@ Re-run it after upgrading Playwright.
 
 ## Cucumber Setup
 
-The guestbook repository includes [`cucumber.yaml`](https://github.com/beck-chan/y2k-guestbook/blob/main/cucumber.yaml){.blank} at the project root and the TypeScript helpers in [`features/support/`](https://github.com/beck-chan/y2k-guestbook/tree/main/features/support){.blank}. 
+The guestbook package ships [`cucumber.yaml`](https://github.com/beck-chan/y2k-guestbook/blob/main/cucumber.yaml){.blank}, [`features/support/`](https://github.com/beck-chan/y2k-guestbook/tree/main/features/support){.blank}, step definitions, and the `.feature` files. 
+
+`npx y2k-guestbook test` runs Cucumber against the packaged specifications from your app root (`.env.local`, reports, and Chrome debug profiles stay in *your* project). 
 
 ### cucumber.yaml
 
@@ -307,7 +309,7 @@ A passing test run writes `features/reports/results.html` by default:
 To write to a another file and the default at the same time, pass in `--format html:<filepath>`:
 
 ```bash
-npx cucumber-js --format html:features/reports/guestbook.html
+npx y2k-guestbook test --format html:features/reports/guestbook.html
 ```
 
 # Custom Reports
@@ -318,7 +320,7 @@ To run a profile, use the `-p` flag. For example, the `admin` profile already in
 
 ```bash
 # Run with browser visible
-HEADED=1 npx cucumber-js -p admin
+HEADED=1 npx y2k-guestbook test -p admin
 ```
 
 That writes `features/reports/admin.html` and leaves `results.html` alone. 
@@ -351,7 +353,7 @@ These tests do not require any admin authentication, so they can be run without 
 
   ```bash
   # Writes to default profile (results.html)
-  npx cucumber-js features/features/guestbook/guestbook-comments.feature --name "User submits a valid comment"
+  npx y2k-guestbook test features/features/guestbook/guestbook-comments.feature --name "User submits a valid comment"
   ```
 
   # Run a Set Tests
@@ -360,7 +362,7 @@ These tests do not require any admin authentication, so they can be run without 
 
   ```bash
   # Writes to default profile (results.html)
-  npx cucumber-js features/features/guestbook/guestbook-comments.feature --tags @submit-comments
+  npx y2k-guestbook test features/features/guestbook/guestbook-comments.feature --tags @submit-comments
   ```
 
   # Run Suite of Tests
@@ -369,7 +371,7 @@ These tests do not require any admin authentication, so they can be run without 
 
   ```bash
   # Writes to default profile (results.html)
-  npx cucumber-js features/features/guestbook/guestbook-nav.feature
+  npx y2k-guestbook test features/features/guestbook/guestbook-nav.feature
   ```
 
 
@@ -377,7 +379,7 @@ These tests do not require any admin authentication, so they can be run without 
 
   ```bash
   # Writes to default profile (results.html)
-  npx cucumber-js features/features/guestbook
+  npx y2k-guestbook test features/features/guestbook
   ```
 
   :::
@@ -400,12 +402,12 @@ These tests do not require any admin authentication, so they can be run without 
 
   ```bash
   # On Windows
-  "/c/Program Files/Google/Chrome/Application/chrome.exe" --remote-debugging-port=9222 --remote-allow-origins=* --user-data-dir="C:/Users/username/Documents/GitHub/user-name/y2k-guestbook/features/support/.auth/chrome-debug"
+  "/c/Program Files/Google/Chrome/Application/chrome.exe" --remote-debugging-port=9222 --remote-allow-origins=* --user-data-dir="C:/Users/username/path/to/your-app/features/support/.auth/chrome-debug"
   ```
 
   ```bash
   # On macOS
-  open -a "Google Chrome" --args --remote-debugging-port=9222 --remote-allow-origins=* --user-data-dir="~/Documents/GitHub/user-name/y2k-guestbook/features/support/.auth/chrome-debug"
+  open -a "Google Chrome" --args --remote-debugging-port=9222 --remote-allow-origins=* --user-data-dir="~/path/to/your-app/features/support/.auth/chrome-debug"
   ```
 
   Confirm that debugging is enabled by using the open Chrome window to view: [http://127.0.0.1:9222/json/version](http://127.0.0.1:9222/json/version ){.blank}
@@ -420,7 +422,7 @@ These tests do not require any admin authentication, so they can be run without 
 
   ```bash
   # Writes to admin profile (admin.html)
-  HEADED=1 npx cucumber-js -p admin features/features/admin/admin-settings.feature --name "Admin can update the guestbook title"
+  HEADED=1 npx y2k-guestbook test -p admin features/features/admin/admin-settings.feature --name "Admin can update the guestbook title"
   ```
 
   # Run a Set Tests
@@ -429,7 +431,7 @@ These tests do not require any admin authentication, so they can be run without 
 
   ```bash
   # Writes to admin profile (admin.html)
-  HEADED=1 npx cucumber-js -p admin features/features/admin/admin-nav.feature --tags @mobile-menu
+  HEADED=1 npx y2k-guestbook test -p admin features/features/admin/admin-nav.feature --tags @mobile-menu
   ```
 
   # Run Suite of Tests
@@ -438,14 +440,14 @@ These tests do not require any admin authentication, so they can be run without 
 
   ```bash
   # Writes to admin profile (admin.html)
-  HEADED=1 npx cucumber-js -p admin features/features/admin/admin-nav.feature
+  HEADED=1 npx y2k-guestbook test -p admin features/features/admin/admin-nav.feature
   ```
 
   # Run All Tests
 
   ```bash
   # Writes to admin profile (admin.html)
-  HEADED=1 npx cucumber-js -p admin features/features/admin
+  HEADED=1 npx y2k-guestbook test -p admin features/features/admin
   ```
 
   :::
@@ -467,7 +469,7 @@ By default, Playwright hides the browser window. To watch a run:
 
 ```bash
 # Headed runs will run in Chrome by default
-HEADED=1 npx cucumber-js
+HEADED=1 npx y2k-guestbook test
 ```
 
 # Test a Deployed URL
@@ -475,7 +477,7 @@ HEADED=1 npx cucumber-js
 To hit a deployed URL instead of localhost:
 
 ```bash
-BASE_URL=https://<your-deployed-url>.vercel.app npx cucumber-js
+BASE_URL=https://<your-deployed-url>.vercel.app npx y2k-guestbook test
 ```
 
 :::
@@ -508,7 +510,7 @@ BASE_URL=https://<your-deployed-url>.vercel.app npx cucumber-js
 
 ::: {.public}
 
-The `features/features/` directory is included with the guestbook repository and contains the following `.feature` files displayed in this section.
+The packaged `features/features/` directory contains the following `.feature` files displayed in this section.
 
 ::: {.callout}
 # For testing with Playwright, keep all the Gherkin wording as written. Cucumber matches step definitions to those lines.
