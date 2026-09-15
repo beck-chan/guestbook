@@ -212,10 +212,11 @@ If you already define your own `rewrites()`, merge them carefully — `withGuest
 Create `app/admin/example/route.ts` (or `app/guestbook/admin/example/route.ts` if you set a custom admin path): 
 
 ```typescript
-export { GET, dynamic } from "y2k-guestbook/example-css";
+export { GET } from "y2k-guestbook/example-css";
+export const dynamic = "force-static";
 ```
 
-This is the file that **view example** loads — it only works after the config wrapping.
+Next cannot statically parse `dynamic` if it is re-exported from the package — declare it in this file. This is the route that **view example** loads, and it only works after the config wrapping.
 
 # 3. Add Stylesheet and Providers
 

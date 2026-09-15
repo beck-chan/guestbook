@@ -22,37 +22,59 @@ This guide assumes:
 
 ## Install Node.js with npm
 
-Install from [nodejs.org](https://nodejs.org){.blank}, or via your terminal for a recommended version:
+::: {.tabset}
 
-::: {tabset}
+# Windows
 
-# nvm
+Download the **22 LTS** Windows installer from [nodejs.org](https://nodejs.org){.blank}. The installer includes `npm`.
 
-```bash
-nvm install 22
-nvm use 22
+Or, install [fnm](https://github.com/Schniz/fnm/releases){.blank} (`fnm-windows.zip`), then call:
 
-# Confirm that you have the right versions
-node -v
-npm -v
-```
-
-# fnm
 
 ```bash
 fnm install 22
 fnm use 22
+```
 
-# Confirm that you have the right versions
+Confirm that you have the right versions:
+
+```bash
+# Should return v22.23.2
 node -v
+# Should return 10.9.8
+npm -v
+```
+
+    ::: {.callout}
+    The Unix `nvm` installer does **not** work in Windows. Use fnm, [nvm-windows](https://github.com/coreybutler/nvm-windows){.blank}, or Node inside Windows Subsystem for Linux (WSL).
+    :::
+
+# macOS
+
+Download the **22 LTS** macOS installer from [nodejs.org](https://nodejs.org){.blank}. The installer includes `npm`.
+
+Or install [nvm](https://github.com/nvm-sh/nvm){.blank}, restart the terminal, then call:
+
+```bash
+nvm install 22
+nvm use 22
+```
+
+Confirm that you have the right versions:
+
+```bash
+# Should return v22.23.2
+node -v
+# Should return 10.9.8
 npm -v
 ```
 
 :::
 
 ::: {.callout}
-Use **Node.js 20 LTS** or **22 LTS** (either includes `npm`). Next.js `16` needs `18.18+`; `20+` is the safer default.
+# Do not use odd-numbered or current releases.
 
+Use **Node.js 22 LTS** or **24 LTS** (either includes `npm`). Next.js `16` needs Node.js `20.9`+. 
 :::
 
 ## Create Supabase Project
