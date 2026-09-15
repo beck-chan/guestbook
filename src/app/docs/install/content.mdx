@@ -203,7 +203,10 @@ export default withGuestbookConfig(nextConfig);
 ```
 
 ::: {.callout}  
-If you already define your own `rewrites()`, merge them carefully — `withGuestbookConfig` adds one rewrite of its own.
+# If you already define your own `rewrites()`, merge them carefully — `withGuestbookConfig` adds one rewrite of its own. 
+
+- Next, React, and React DOM must come from *your* app (`peerDependencies`). 
+- If `node_modules/y2k-guestbook/node_modules/next` exists after install, delete `node_modules` and reinstall so you are not type-checking two copies of Next.
 
 :::
 
