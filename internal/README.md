@@ -28,12 +28,27 @@ guestbook-install-test/
   package.json
 ```
 
-<!-- ```
+## Commands
+
+### npm Versioning
+
+```bash
 npm version patch
 npm version minor
 npm version major
-``` -->
+```
 
+### Etc.
+
+
+```bash
+npm run allow-admin -- example@gmail.com
+npm run delete-admin -- example@gmail.com
+```
+
+```bash
+npx cucumber-js 
+```
 
 
 
