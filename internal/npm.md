@@ -28,6 +28,12 @@ npm run allow-admin -- example@gmail.com
 npm run delete-admin -- example@gmail.com
 ```
 
+## Deploy Edge Functions
+
+```bash
+npx supabase functions deploy notify-admins on-user-created --project-ref yahduqsmchkyapakpvdh --use-api
+```
+
 ## Cucumber
 
 ```bash

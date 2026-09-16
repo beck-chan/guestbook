@@ -2,7 +2,7 @@
 subject: Settings Updated
 ---
 
-Poetry Guestbooksettings were updated:
+Poetry Guestbook settings were updated:
 
 {{summary}}
 
