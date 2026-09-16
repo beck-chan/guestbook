@@ -225,9 +225,9 @@ Next cannot statically parse `dynamic` if it is re-exported from the package —
 
 Place two last pieces in your root layout (`app/layout.tsx`):
 
-a. Import the default guestbook stylesheet (`y2k-guestbook/styles.css`) so the board and admin dashboard have the skeleton theme. Styles are scoped to `.admin-page` / `.guestbook-page`. Leave your own Tailwind import in `globals.css` as-is.
+a. Import `y2k-guestbook/styles.css` to apply the default look for the comment board and admin dashboard.
 
-b. Wrap the app in `GuestbookProviders`. That mounts the admin auth error overlay. The packaged pages already load settings and custom theme.
+b. Wrap `{children}` in `GuestbookProviders` to display the error dialogue when someone signs in with a Google account that is not on the admin list.
 
 ```typescript
 import type { Metadata } from "next";
@@ -253,7 +253,10 @@ export default function RootLayout({
 ```
 
 ::: {.callout}
-If you already have a root layout, merge these in: import the stylesheet once, and wrap `{children}` with `GuestbookProviders`.
+# Keep your existing `globals.css` / Tailwind import for the rest of your application.
+
+- Guestbook styles only apply to guestbook pages — the rest of your app keeps your own styling.
+- You do not need to add wrappers for settings or custom CSS — guestbook pages load those themselves.
 
 :::
 
