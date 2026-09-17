@@ -1,31 +1,69 @@
 import { unstable_cache } from "next/cache";
-import { flags } from "@/lib/flags";
 import { FALLBACK_HIT_COUNT } from "@/lib/hitCount";
 
 function escapeHogqlString(value: string) {
   return value.replace(/\\/g, "\\\\").replace(/'/g, "\\'");
 }
 
-function urlFilterClause(urlFilter: string) {
-  const escaped = escapeHogqlString(urlFilter);
-  // Full URL → substring on $current_url; path (e.g. / or /guestbook) → exact $pathname
-  if (urlFilter.includes("://")) {
-    return `properties.$current_url LIKE '%${escaped}%'`;
+function productionHost() {
+  const raw = process.env.VERCEL_PROJECT_PRODUCTION_URL?.trim();
+  if (!raw) return "";
+  try {
+    return new URL(raw.includes("://") ? raw : `https://${raw}`).host;
+  } catch {
+    return "";
   }
-  return `properties.$pathname = '${escaped}'`;
 }
 
-const UTC_INSTANT = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/;
+function exactPathname(pathname: string) {
+  const trimmed = pathname.trim();
+  if (!trimmed || trimmed === "/") return "/";
+  const withSlash = trimmed.startsWith("/") ? trimmed : `/${trimmed}`;
+  return withSlash.replace(/\/+$/, "") || "/";
+}
+
+function urlFilterClause(urlFilter: string, fallbackHost: string) {
+  if (urlFilter.includes("://")) {
+    try {
+      const parsed = new URL(urlFilter);
+      const host = escapeHogqlString(parsed.host);
+      const path = escapeHogqlString(exactPathname(parsed.pathname));
+      return `(properties.$host = '${host}' AND properties.$pathname = '${path}')`;
+    } catch {
+      const path = escapeHogqlString(exactPathname(urlFilter));
+      return `properties.$pathname = '${path}'`;
+    }
+  }
+
+  const path = escapeHogqlString(exactPathname(urlFilter));
+  if (fallbackHost) {
+    return `(properties.$host = '${escapeHogqlString(fallbackHost)}' AND properties.$pathname = '${path}')`;
+  }
+  return `properties.$pathname = '${path}'`;
+}
 
 function dateFilterClause(dateStamp: string) {
-  if (!UTC_INSTANT.test(dateStamp) || !Number.isFinite(Date.parse(dateStamp))) {
-    return null;
+  const trimmed = dateStamp.trim().replace(/^['"]|['"]$/g, "");
+  if (!trimmed) return null;
+  // PostHog/HogQL UTC: "YYYY-MM-DD" or "YYYY-MM-DD HH:mm:ss" (T/Z optional)
+  const day = /^(\d{4}-\d{2}-\d{2})$/.exec(trimmed);
+  if (day) {
+    return `timestamp >= toDateTime('${day[1]} 00:00:00', 'UTC')`;
   }
-  const hogqlDateTime = `${dateStamp.slice(0, 10)} ${dateStamp.slice(11, 19)}`;
-  return `timestamp >= toDateTime('${escapeHogqlString(hogqlDateTime)}', 'UTC')`;
+  const instant = /^(\d{4}-\d{2}-\d{2})[ T](\d{2}:\d{2}:\d{2})(?:Z)?$/.exec(
+    trimmed,
+  );
+  if (instant) {
+    return `timestamp >= toDateTime('${instant[1]} ${instant[2]}', 'UTC')`;
+  }
+  return null;
 }
 
-function uniqueVisitorsQuery(urlFilter: string, dateFilter: string) {
+function uniqueVisitorsQuery(
+  urlFilter: string,
+  dateFilter: string,
+  fallbackHost: string,
+) {
   let query =
     "SELECT uniq(distinct_id) FROM events WHERE event = '$pageview'";
   const filters = urlFilter
@@ -33,9 +71,9 @@ function uniqueVisitorsQuery(urlFilter: string, dateFilter: string) {
     .map((part) => part.trim())
     .filter(Boolean);
   if (filters.length === 1) {
-    query += ` AND ${urlFilterClause(filters[0])}`;
+    query += ` AND ${urlFilterClause(filters[0], fallbackHost)}`;
   } else if (filters.length > 1) {
-    query += ` AND (${filters.map(urlFilterClause).join(" OR ")})`;
+    query += ` AND (${filters.map((part) => urlFilterClause(part, fallbackHost)).join(" OR ")})`;
   }
   const dateClause = dateFilterClause(dateFilter);
   if (dateClause) {
@@ -47,6 +85,7 @@ function uniqueVisitorsQuery(urlFilter: string, dateFilter: string) {
 async function fetchUniqueVisitors(
   urlFilter: string,
   dateFilter: string,
+  fallbackHost: string,
 ): Promise<number> {
   if (process.env.NODE_ENV !== "production") {
     return FALLBACK_HIT_COUNT;
@@ -62,6 +101,8 @@ async function fetchUniqueVisitors(
     return FALLBACK_HIT_COUNT;
   }
 
+  const hogql = uniqueVisitorsQuery(urlFilter, dateFilter, fallbackHost);
+
   try {
     const response = await fetch(
       `${apiHost}/api/projects/${projectId}/query/`,
@@ -74,7 +115,7 @@ async function fetchUniqueVisitors(
         body: JSON.stringify({
           query: {
             kind: "HogQLQuery",
-            query: uniqueVisitorsQuery(urlFilter, dateFilter),
+            query: hogql,
           },
           name: "guestbook_unique_visitors",
         }),
@@ -82,6 +123,11 @@ async function fetchUniqueVisitors(
     );
 
     if (!response.ok) {
+      console.error(
+        "PostHog unique visitors query failed",
+        response.status,
+        hogql,
+      );
       return FALLBACK_HIT_COUNT;
     }
 
@@ -94,17 +140,26 @@ async function fetchUniqueVisitors(
     }
 
     return Math.floor(count);
-  } catch {
+  } catch (error) {
+    console.error("PostHog unique visitors query failed", error);
     return FALLBACK_HIT_COUNT;
   }
 }
 
 export async function getUniqueVisitors() {
-  const urlFilter = flags.hitCounterUrl;
-  const dateFilter = flags.hitCounterDate;
+  // Read at request time (not from flags.ts) so FLAG_COUNTER_* are not
+  // build-inlined via next.config env / client imports.
+  const urlFilter = (process.env.FLAG_COUNTER_URL ?? "").trim();
+  const dateFilter = (process.env.FLAG_COUNTER_DATE ?? "").trim();
+  const fallbackHost = productionHost();
   return unstable_cache(
-    () => fetchUniqueVisitors(urlFilter, dateFilter),
-    ["posthog-unique-visitors", urlFilter || "all", dateFilter || "all"],
+    () => fetchUniqueVisitors(urlFilter, dateFilter, fallbackHost),
+    [
+      "posthog-unique-visitors",
+      urlFilter || "all",
+      dateFilter || "all",
+      fallbackHost || "any-host",
+    ],
     { revalidate: 60 },
   )();
 }

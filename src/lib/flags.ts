@@ -3,20 +3,11 @@ function envFlag(value: string | undefined, fallback: boolean) {
   return value === "true" || value === "1";
 }
 
-function envString(value: string | undefined, fallback: string) {
-  if (value === undefined) return fallback;
-  return value.trim();
-}
-
 export const flags = {
   // Static process.env.* access so Next can inline these for client components.
   docs: envFlag(process.env.FLAG_DOCS, true), // Show docs link
   docsOnly: envFlag(process.env.FLAG_DOCSONLY, false), // Only serve /docs (skip desk, guestbook, admin)
   hitCounter: envFlag(process.env.FLAG_COUNTER, true), // Show hit counter
-  /** Comma-separated paths/URLs for unique-visitor query (empty = all $pageview events). */
-  hitCounterUrl: envString(process.env.FLAG_COUNTER_URL, ""),
-  /** UTC instant YYYY-MM-DDTHH:mm:ssZ for unique-visitor query (empty = all time). */
-  hitCounterDate: envString(process.env.FLAG_COUNTER_DATE, ""),
   public: envFlag(process.env.FLAG_PUBLIC, false), // Show public guestbook home/public repo + dark green favicon
   apiTest: envFlag(process.env.FLAG_APITEST, false), // Show API Test Request on private docs
 };

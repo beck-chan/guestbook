@@ -91,7 +91,15 @@ c. Enter the following as **Config** Type variables:
     ```bash
     NEXT_PUBLIC_POSTHOG_KEY=<your-project-token>
     NEXT_PUBLIC_POSTHOG_HOST=<your-project-api-host>
+    FLAG_COUNTER=true
+    # End `FLAG_COUNTER_URL` with a trailing slash for one exact page
+    FLAG_COUNTER_URL=https://<your-project-url>.vercel.app/
+    # Use PostHog UTC time: `YYYY-MM-DD HH:mm:ss` (or `YYYY-MM-DD` for midnight)
+    # Leave `FLAG_COUNTER_DATE` empty to count all time
+    FLAG_COUNTER_DATE=2026-09-16 00:00:00
     ```
+
+     
 
 d. Enter the following as **Secret** Type variables:
 
@@ -110,7 +118,7 @@ b. Under Products, select **Web analytics**.
 
 c. Under **Web analytics domains**, click **+ Add new authorized URL**.
 
-d. Enter in the URL of your deployed guestbook application. For example: `https://<your-project-url>.vercel.app`
+d. Enter in the URL of your deployed guestbook application, including the trailing slash if you want to gate only to your guestbook page. For example: `https://<your-project-url>.vercel.app/`
 
 e. Click **Save**.
 
@@ -119,26 +127,48 @@ e. Click **Save**.
 
 ## Enable Hit Counter
 
-In `env.local` (for local development) or your Vercel environment variables (for cloud deployment):
+In `.env.local` (for local development) or your Vercel environment variables (for cloud deployment):
 
 1. Toggle **`FLAG_COUNTER=`** to `true`.
 
-2. Scope the counter to your guestbook page(s) with `FLAG_COUNTER_URL` (comma-separated for more than one). For example:
+2. Scope the counter with **`FLAG_COUNTER_URL=`**. 
 
-    - **Path:** `/guestbook`, or `/` if the guestbook is the home page.
-    - **Full URL:** `https://example.com/guestbook` — matched as a substring of `$current_url`.
-    - **Several pages:** `/guestbook,/docs/example`
+    - An empty `FLAG_COUNTER_URL` counts every `$pageview` in your PostHog project.
+    - Each entered URL scopes to one exact page (`$host` + `$pathname`) — subpages are not included.
+    - Always use a trailing slash on full URLs. 
 
-    Leaving this variable empty counts all `$pageview` events on the site.
+    ```bash
+    # Home board (this page only)
+    FLAG_COUNTER_URL=https://<your-project-url>.vercel.app/
 
-3. Optionally set **`FLAG_COUNTER_DATE=`** to a UTC instant (`YYYY-MM-DDTHH:mm:ssZ`, e.g. `2025-09-12T00:00:00Z`) so unique `$pageview` visitors are counted only at or after that time. 
+    # Nested board (this page only, not /guestbook/admin)
+    FLAG_COUNTER_URL=https://<your-site>.vercel.app/guestbook/
 
-    Leave it empty to count all time.
+    # Path only — same exact-page match; on Vercel this is also scoped to the production host
+    FLAG_COUNTER_URL=/
+
+    # Several exact pages
+    FLAG_COUNTER_URL=https://example.com/,https://example.com/guestbook/
+    ```
+
+
+3. Optionally set **`FLAG_COUNTER_DATE=`** so unique `$pageview` visitors are counted only at or after that UTC time. Use the same timestamp format as PostHog SQL (`toDateTime`).
+
+    ```bash
+    # Exact UTC instant (same string as in HogQL)
+    FLAG_COUNTER_DATE=2026-09-18 01:57:00
+
+    # Midnight UTC on that calendar day
+    FLAG_COUNTER_DATE=2026-09-16
+    ```
+
+    Leave it empty to count all time. Values that do not match those formats are ignored.
 
 ::: {.callout}
-# `npm run dev` keeps the decorative fallback (`000481`) and does not call PostHog. 
+# `npm run dev` keeps the decorative fallback (000481) and does not call PostHog.
 
-Digits displayed are unique `$pageview` visitors from PostHog’s Query API. In production they live-update: — +1 on a browser’s first visit, then poll about every 45 seconds, and never tick down.
+- Digits displayed are unique $pageview visitors from PostHog’s Query API. 
+- In production they live-update: — +1 on a browser’s first visit, then poll about every 45 seconds, and never tick down.
 
 :::
 
@@ -189,7 +219,7 @@ export { GET } from "y2k-guestbook/hits";
 
 ## Test Hit Counter & Tracking 
 
-Since development builds do not send tracking events, test the hit counter by building and serving the application locally:
+Development builds do not **send** `$pageview` events. To grow the count, build and serve (or use a Vercel deployment) so `instrumentation-client.ts` can capture:
 
 ```bash
 # Linter check for errors
@@ -200,33 +230,45 @@ npm run build
 npm run start
 ```
 
-Confirm the hit counter is displaying the expected number of unique visitors for your guestbook page(s):
+Confirm the hit counter matches an exact-page query (not a `$current_url LIKE`, which includes subpages):
 
 1. From the PostHog dashboard's left sidebar, click **Product analytics**.
 
 2. Click **+ New**, then select **SQL**.
 
-3. Enter in a SQL query to count the unique visitors for your guestbook page(s):
+3. Enter a SQL query that matches `FLAG_COUNTER_URL` and `FLAG_COUNTER_DATE`:
 
     ```sql
-    # Single URL
+    -- Home: FLAG_COUNTER_URL=https://<your-project-url>.vercel.app/
+    -- FLAG_COUNTER_DATE=2026-09-18 01:57:00
     SELECT uniq(distinct_id)
     FROM events
     WHERE event = '$pageview'
-    AND properties.$current_url LIKE '%/guestbook%' # Example slug
-    AND timestamp >= toDateTime('2025-09-12 00:00:00', 'UTC') # Optional: match FLAG_COUNTER_DATE
+    AND properties.$host = '<your-project-url>.vercel.app'
+    AND properties.$pathname = '/'
+    AND timestamp >= toDateTime('2026-09-18 01:57:00', 'UTC')
     ```
 
     ```sql
-    # Multiple URLs
+    -- Nested board: FLAG_COUNTER_URL=https://example.com/guestbook/
+    SELECT uniq(distinct_id)
+    FROM events
+    WHERE event = '$pageview'
+    AND properties.$host = 'example.com'
+    AND properties.$pathname = '/guestbook'
+    AND timestamp >= toDateTime('2026-09-18 01:57:00', 'UTC')
+    ```
+
+    ```sql
+    -- Several exact pages
     SELECT uniq(distinct_id)
     FROM events
     WHERE event = '$pageview'
     AND (
-        properties.$current_url LIKE '<your-url-one>'
-        OR properties.$current_url LIKE '<your-url-two>'
+        (properties.$host = 'example.com' AND properties.$pathname = '/')
+        OR (properties.$host = 'example.com' AND properties.$pathname = '/guestbook')
     )
-    AND timestamp >= toDateTime('2025-09-12 00:00:00', 'UTC') # Optional: match FLAG_COUNTER_DATE
+    AND timestamp >= toDateTime('2026-09-18 01:57:00', 'UTC')
     ```
 
 4. Click **Run**.
