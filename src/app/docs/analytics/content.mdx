@@ -99,8 +99,6 @@ c. Enter the following as **Config** Type variables:
     FLAG_COUNTER_DATE=2026-09-16 00:00:00
     ```
 
-     
-
 d. Enter the following as **Secret** Type variables:
 
     ```bash
@@ -125,11 +123,38 @@ e. Click **Save**.
 :::
 
 
-## Enable Hit Counter
+## Enabling Hit Counter
+
+### Enable Hit Counter
+
+::: {.tabset}
+
+# 1. Configure `next.config.ts`
+
+::: {.callout}
+# [Quickstart](/docs/quickstart) installs already include this configuration. 
+
+[Install via npm](/docs/install) applications need the adjustments below.
+
+:::
+
+In your `next.config.ts` (or `next.config.js`), insert `FLAG_COUNTER` under `env`:
+
+```typescript
+const nextConfig: NextConfig = {
+  env: {
+    FLAG_COUNTER: process.env.FLAG_COUNTER,
+  },
+  // your existing options
+};
+```
+
+
+# 2. Configure Environment Variables
 
 In `.env.local` (for local development) or your Vercel environment variables (for cloud deployment):
 
-1. Toggle **`FLAG_COUNTER=`** to `true`.
+1. Set **`FLAG_COUNTER=`** to `true`.
 
 2. Scope the counter with **`FLAG_COUNTER_URL=`**. 
 
@@ -169,6 +194,8 @@ In `.env.local` (for local development) or your Vercel environment variables (fo
 
 - Digits displayed are unique $pageview visitors from PostHog’s Query API. 
 - In production they live-update: — +1 on a browser’s first visit, then poll about every 45 seconds, and never tick down.
+
+:::
 
 :::
 

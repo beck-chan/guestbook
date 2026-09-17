@@ -208,8 +208,8 @@ HogQL scoping (`FLAG_COUNTER_URL`, `FLAG_COUNTER_DATE`) is documented under **Hi
 
 Flags are built on compile:
 
-- [`src/lib/flags.ts`](https://github.com/beck-chan/guestbook/blob/main/src/lib/flags.ts){.blank} reads `process.env.FLAG_*` with `envFlag` (`true` / `1` vs `false` / `0` — unset uses the default) and `envString` for `FLAG_COUNTER_URL` and `FLAG_COUNTER_DATE`. 
-- [`next.config.ts`](https://github.com/beck-chan/guestbook/blob/main/next.config.ts){.blank} lists those names under `env` so Next can inline them into client components. 
+- [`src/lib/flags.ts`](https://github.com/beck-chan/guestbook/blob/main/src/lib/flags.ts){.blank} reads `process.env.FLAG_*` with `envFlag` (`true` / `1` vs `false` / `0` — unset uses the default). `FLAG_COUNTER_URL` and `FLAG_COUNTER_DATE` are not in this file — [`getUniqueVisitors()`](https://github.com/beck-chan/guestbook/blob/main/src/lib/uniqueVisitors.ts){.blank} reads them at request time so Next does not bake them into the client bundle.
+- [`next.config.ts`](https://github.com/beck-chan/guestbook/blob/main/next.config.ts){.blank} lists the boolean flag names under `env` so Next can inline them into client components. 
 
 ::: {.tabset}
 
@@ -237,11 +237,11 @@ When set to `true`, enables display of the [`HitCounter`](https://github.com/bec
 
 ### `FLAG_COUNTER_URL`
 
-Comma-separated paths or URLs that scope the unique-visitor query. A path (for example `/` or `/guestbook`) matches `$pathname` exactly — a full URL substring-matches `$current_url`. Empty counts every `$pageview`. 
+Comma-separated paths or URLs that scope the unique-visitor query. Each value is one exact page (`$host` + `$pathname`) — subpages are not included. 
 
 ### `FLAG_COUNTER_DATE`
 
-UTC instant (`YYYY-MM-DDTHH:mm:ssZ`, for example `2025-09-12T00:00:00Z`) that starts the unique-visitor query. Empty counts all time. Values that are not that exact format are ignored. 
+UTC start date for the unique-visitor query, in the same form as PostHog SQL (`toDateTime`): `YYYY-MM-DD HH:mm:ss` (for example `2026-09-18 01:57:00`) or `YYYY-MM-DD` for midnight UTC. 
 
 # Documentation
 
