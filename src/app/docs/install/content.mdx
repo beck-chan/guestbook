@@ -71,13 +71,6 @@ npm install y2k-guestbook@github:beck-chan/y2k-guestbook @supabase/supabase-js @
 
 ## Configuring the Application
 
-::: {.callout}
-# The package ships the user interface, server actions, settings, CSS layer, auth handlers, ready-made page entrypoints, and the notifications Supabase Edge Functions source.
-
-Next still only loads routes and `proxy.ts` from *your* project, so the steps below are thin re-exports and one layout mount. Deploy notifications later with `npx y2k-guestbook deploy-notifs` — see [Notifications](/docs/notifs).
-
-:::
-
 ### Protect Admin Login
 
 Next only runs auth/session files from *your* project. Add three small files. Put `proxy.ts` next to `app/` (repository root, or `src/proxy.ts` if you use `src/app`) — not inside `app/`.
