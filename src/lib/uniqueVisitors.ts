@@ -59,13 +59,36 @@ function dateFilterClause(dateStamp: string) {
   return null;
 }
 
+/** events_recent keeps ~7 days of fresher rows than `events`. */
+const EVENTS_RECENT_MAX_AGE_MS = 6 * 24 * 60 * 60 * 1000;
+
+function hogqlEventsTable(dateFilter: string): "events" | "events_recent" {
+  const trimmed = dateFilter.trim().replace(/^['"]|['"]$/g, "");
+  const day = /^(\d{4}-\d{2}-\d{2})$/.exec(trimmed);
+  const instant = /^(\d{4}-\d{2}-\d{2})[ T](\d{2}:\d{2}:\d{2})(?:Z)?$/.exec(
+    trimmed,
+  );
+  const start = day
+    ? Date.parse(`${day[1]}T00:00:00Z`)
+    : instant
+      ? Date.parse(`${instant[1]}T${instant[2]}Z`)
+      : Number.NaN;
+  if (
+    !Number.isFinite(start) ||
+    Date.now() - start > EVENTS_RECENT_MAX_AGE_MS
+  ) {
+    return "events";
+  }
+  return "events_recent";
+}
+
 function uniqueVisitorsQuery(
   urlFilter: string,
   dateFilter: string,
   fallbackHost: string,
+  table: "events" | "events_recent" = "events",
 ) {
-  let query =
-    "SELECT uniq(distinct_id) FROM events WHERE event = '$pageview'";
+  let query = `SELECT uniq(distinct_id) FROM ${table} WHERE event = '$pageview'`;
   const filters = urlFilter
     .split(",")
     .map((part) => part.trim())
@@ -101,50 +124,67 @@ async function fetchUniqueVisitors(
     return FALLBACK_HIT_COUNT;
   }
 
-  const hogql = uniqueVisitorsQuery(urlFilter, dateFilter, fallbackHost);
-
-  try {
-    const response = await fetch(
-      `${apiHost}/api/projects/${projectId}/query/`,
-      {
-        method: "POST",
-        cache: "no-store",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${apiKey}`,
-        },
-        body: JSON.stringify({
-          query: {
-            kind: "HogQLQuery",
-            query: hogql,
-          },
-          name: "guestbook_unique_visitors",
-        }),
-      },
+  async function queryCount(
+    table: "events" | "events_recent",
+  ): Promise<number | null> {
+    const hogql = uniqueVisitorsQuery(
+      urlFilter,
+      dateFilter,
+      fallbackHost,
+      table,
     );
-
-    if (!response.ok) {
-      console.error(
-        "PostHog unique visitors query failed",
-        response.status,
-        hogql,
+    try {
+      const response = await fetch(
+        `${apiHost}/api/projects/${projectId}/query/`,
+        {
+          method: "POST",
+          cache: "no-store",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${apiKey}`,
+          },
+          body: JSON.stringify({
+            query: {
+              kind: "HogQLQuery",
+              query: hogql,
+            },
+            // Default `blocking` returns PostHog's cached uniq until cache_target_age
+            // (often minutes). The SQL editor runs fresh; match that here.
+            refresh: "force_blocking",
+            name: "guestbook_unique_visitors",
+          }),
+        },
       );
-      return FALLBACK_HIT_COUNT;
+
+      if (!response.ok) {
+        console.error(
+          "PostHog unique visitors query failed",
+          response.status,
+          hogql,
+        );
+        return null;
+      }
+
+      const data = (await response.json()) as { results?: unknown[][] };
+      const value = data.results?.[0]?.[0];
+      const count = typeof value === "number" ? value : Number(value);
+
+      if (!Number.isFinite(count) || count < 0) {
+        return null;
+      }
+
+      return Math.floor(count);
+    } catch (error) {
+      console.error("PostHog unique visitors query failed", error);
+      return null;
     }
-
-    const data = (await response.json()) as { results?: unknown[][] };
-    const value = data.results?.[0]?.[0];
-    const count = typeof value === "number" ? value : Number(value);
-
-    if (!Number.isFinite(count) || count < 0) {
-      return FALLBACK_HIT_COUNT;
-    }
-
-    return Math.floor(count);
-  } catch (error) {
-    console.error("PostHog unique visitors query failed", error);
-    return FALLBACK_HIT_COUNT;
   }
+
+  const table = hogqlEventsTable(dateFilter);
+  const value =
+    (await queryCount(table)) ??
+    (table === "events_recent" ? await queryCount("events") : null);
+  return value ?? FALLBACK_HIT_COUNT;
 }
 
 type VisitorCountCache = {
