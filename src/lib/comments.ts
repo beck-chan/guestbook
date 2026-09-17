@@ -38,37 +38,84 @@ const MONTHS = [
   "Dec",
 ] as const;
 
-/** Formats in the runtime's local timezone, e.g. `2026-Aug-09 / 5:36pm`. */
-export function formatCommentTime(iso: string) {
+function formatCommentTimeParts(
+  year: number,
+  monthIndex: number,
+  day: number,
+  hour24: number,
+  minute: number,
+) {
+  const month = MONTHS[monthIndex];
+  const dayPad = String(day).padStart(2, "0");
+  const minutes = String(minute).padStart(2, "0");
+  const ampm = hour24 >= 12 ? "pm" : "am";
+  const hour12 = hour24 % 12 || 12;
+  return `${year}-${month}-${dayPad} / ${hour12}:${minutes}${ampm}`;
+}
+
+/** Formats an ISO timestamp, e.g. `2026-Aug-09 / 5:36pm`. */
+export function formatCommentTime(iso: string, timeZone?: string) {
   const date = new Date(iso);
   if (Number.isNaN(date.getTime())) {
     return iso;
   }
 
-  const year = date.getFullYear();
-  const month = MONTHS[date.getMonth()];
-  const day = String(date.getDate()).padStart(2, "0");
-  const minutes = String(date.getMinutes()).padStart(2, "0");
-  const hour24 = date.getHours();
-  const ampm = hour24 >= 12 ? "pm" : "am";
-  const hour12 = hour24 % 12 || 12;
+  if (timeZone) {
+    try {
+      const parts: Record<string, string> = {};
+      for (const part of new Intl.DateTimeFormat("en-US", {
+        timeZone,
+        year: "numeric",
+        month: "numeric",
+        day: "numeric",
+        hour: "numeric",
+        minute: "numeric",
+        hourCycle: "h23",
+      }).formatToParts(date)) {
+        if (part.type !== "literal") {
+          parts[part.type] = part.value;
+        }
+      }
+      return formatCommentTimeParts(
+        Number(parts.year),
+        Number(parts.month) - 1,
+        Number(parts.day),
+        Number(parts.hour),
+        Number(parts.minute),
+      );
+    } catch {
+      // Invalid IANA zone — use the runtime timezone below.
+    }
+  }
 
-  return `${year}-${month}-${day} / ${hour12}:${minutes}${ampm}`;
+  return formatCommentTimeParts(
+    date.getFullYear(),
+    date.getMonth(),
+    date.getDate(),
+    date.getHours(),
+    date.getMinutes(),
+  );
 }
 
-export function mapPublicComment(row: PublicCommentRow): GuestbookComment {
+export function mapPublicComment(
+  row: PublicCommentRow,
+  timeZone?: string,
+): GuestbookComment {
   return {
     id: row.id,
     name: row.display_name,
     body: row.body,
     createdAt: row.created_at,
-    time: formatCommentTime(row.created_at),
+    time: formatCommentTime(row.created_at, timeZone),
   };
 }
 
-export function mapAdminComment(row: AdminCommentRow): GuestbookComment {
+export function mapAdminComment(
+  row: AdminCommentRow,
+  timeZone?: string,
+): GuestbookComment {
   return {
-    ...mapPublicComment(row),
+    ...mapPublicComment(row, timeZone),
     email: row.email ?? undefined,
     read: Boolean(row.is_read),
   };
