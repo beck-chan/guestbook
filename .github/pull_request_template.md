@@ -20,4 +20,4 @@ To prevent the release notes check from triggering an error, add the label: `int
 
 <!-- Leave below untouched -->
 
-> **Browse the updated guestbook at: [https://beck-chan.vercel.app/](https://beck-chan.vercel.app/)**
+> **Browse the updated guestbook at: [https://beck-chan.vercel.app](https://beck-chan.vercel.app)**
