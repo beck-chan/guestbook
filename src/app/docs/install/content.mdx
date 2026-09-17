@@ -136,6 +136,7 @@ a. Create `page.tsx` for your public guestbook comment board where you want it t
     GuestbookPublicPage as default,
     guestbookPublicMetadata as metadata,
   } from "y2k-guestbook";
+  export const dynamic = "force-dynamic";
   ```
 
 b. Set `NEXT_PUBLIC_GUESTBOOK_PATH` in `.env.local` according to where your public comment board lives (no trailing slash). 

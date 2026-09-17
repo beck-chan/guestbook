@@ -213,6 +213,7 @@ Create `app/api/hits/route.ts` which polls `/api/hits` in production:
 
 ```typescript
 export { GET } from "y2k-guestbook/hits";
+export const dynamic = "force-dynamic";
 ```
 
 ## Enable Web Tracking
