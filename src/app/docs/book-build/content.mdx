@@ -188,7 +188,7 @@ When users click **Submit**, the `submitComment` server action:
 
 # Hit Counter
 
-[`getUniqueVisitors()`](https://github.com/beck-chan/guestbook/blob/main/src/lib/uniqueVisitors.ts){.blank} (PostHog `$pageview` uniqueness, refreshed every 15s) passes the number returned from PostHog into [`HitCounter`](https://github.com/beck-chan/guestbook/blob/main/src/components/_shared/HitCounter.tsx){.blank}.
+[`getUniqueVisitors()`](https://github.com/beck-chan/guestbook/blob/main/src/lib/uniqueVisitors.ts){.blank} runs the UTC-filtered PostHog `$pageview` query and passes that number into [`HitCounter`](https://github.com/beck-chan/guestbook/blob/main/src/components/_shared/HitCounter.tsx){.blank}.
 
 Development always shows the static [`FALLBACK_HIT_COUNT`](https://github.com/beck-chan/guestbook/blob/main/src/lib/hitCount.ts){.blank} (`000481`) and does not call PostHog. In production it:
 

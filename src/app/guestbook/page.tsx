@@ -10,6 +10,8 @@ import { ReportIssueLink } from "@/components/_shared/ReportIssueLink";
 import { loadGuestbookSettings } from "@/lib/loadGuestbookSettings";
 import { getUniqueVisitors } from "@/lib/uniqueVisitors";
 
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: "guestbook",
   description: "Sign the guestbook.",

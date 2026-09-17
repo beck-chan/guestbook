@@ -6,6 +6,8 @@ import { PoetryDesk } from "@/components/_desk/PoetryDesk";
 import { PageReveal } from "@/components/_shared/PageReveal";
 import { getUniqueVisitors } from "@/lib/uniqueVisitors";
 
+export const dynamic = "force-dynamic";
+
 const DESK_COMMENT_PAGE_SIZE = 4;
 
 export default function Home() {

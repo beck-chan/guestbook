@@ -193,7 +193,7 @@ In `.env.local` (for local development) or your Vercel environment variables (fo
 # `npm run dev` keeps the decorative fallback (000481) and does not call PostHog.
 
 - Digits displayed are unique $pageview visitors from PostHog’s Query API. 
-- In production they live-update: — +1 on a browser’s first visit, then poll about every 45 seconds, and never tick down.
+- In production the counter live-updates — poll `/api/hits` on load, then about every 15 seconds, so the digits match the UTC-filtered PostHog query. 
 
 :::
 

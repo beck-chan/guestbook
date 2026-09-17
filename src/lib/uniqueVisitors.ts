@@ -172,6 +172,12 @@ export async function getUniqueVisitors() {
     return visitorCountCache.value;
   }
   const value = await fetchUniqueVisitors(urlFilter, dateFilter, fallbackHost);
-  visitorCountCache = { key, value, expiresAt: now + HIT_COUNT_REFRESH_MS };
+  // Do not cache 0: a cutoff in the near future (or a just-empty window)
+  // would otherwise stick at 000000 after PostHog has rows.
+  if (value > 0) {
+    visitorCountCache = { key, value, expiresAt: now + HIT_COUNT_REFRESH_MS };
+  } else {
+    visitorCountCache = null;
+  }
   return value;
 }
