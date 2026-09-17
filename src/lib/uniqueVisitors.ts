@@ -7,12 +7,17 @@ function ok(count: number): HitCountResult {
   return { count, error: false };
 }
 
+/** Dot-access `process.env.FOO` in node_modules can be inlined as undefined. */
+function runtimeEnv(name: string) {
+  return process.env[name];
+}
+
 function escapeHogqlString(value: string) {
   return value.replace(/\\/g, "\\\\").replace(/'/g, "\\'");
 }
 
 function productionHost() {
-  const raw = process.env.VERCEL_PROJECT_PRODUCTION_URL?.trim();
+  const raw = runtimeEnv("VERCEL_PROJECT_PRODUCTION_URL")?.trim();
   if (!raw) return "";
   try {
     return new URL(raw.includes("://") ? raw : `https://${raw}`).host;
@@ -93,14 +98,14 @@ async function fetchUniqueVisitors(
   dateFilter: string,
   fallbackHost: string,
 ): Promise<HitCountResult> {
-  if (process.env.NODE_ENV !== "production") {
+  if (runtimeEnv("NODE_ENV") === "development") {
     return QUERY_ERROR;
   }
 
-  const apiKey = process.env.POSTHOG_PERSONAL_API_KEY;
-  const projectId = process.env.POSTHOG_PROJECT_ID;
+  const apiKey = runtimeEnv("POSTHOG_PERSONAL_API_KEY");
+  const projectId = runtimeEnv("POSTHOG_PROJECT_ID");
   const apiHost =
-    process.env.POSTHOG_API_HOST?.replace(/\/$/, "") ||
+    runtimeEnv("POSTHOG_API_HOST")?.replace(/\/$/, "") ||
     "https://us.posthog.com";
 
   if (!apiKey || !projectId) {
@@ -171,8 +176,8 @@ export async function getUniqueVisitors(): Promise<HitCountResult> {
   // Read at request time (not from flags.ts) so FLAG_COUNTER_* are not
   // build-inlined via next.config env / client imports.
   await connection();
-  const urlFilter = (process.env.FLAG_COUNTER_URL ?? "").trim();
-  const dateFilter = (process.env.FLAG_COUNTER_DATE ?? "").trim();
+  const urlFilter = (runtimeEnv("FLAG_COUNTER_URL") ?? "").trim();
+  const dateFilter = (runtimeEnv("FLAG_COUNTER_DATE") ?? "").trim();
   const fallbackHost = productionHost();
   const key = `${urlFilter}|${dateFilter}|${fallbackHost}`;
   const now = Date.now();
