@@ -190,7 +190,7 @@ In `.env.local` (for local development) or your Vercel environment variables (fo
     Leave it empty to count all time. Values that do not match those formats are ignored.
 
 ::: {.callout}
-# `npm run dev` keeps the decorative fallback (000481) and does not call PostHog.
+# `npm run dev` shows `ERROR!` and does not call PostHog.
 
 - Digits displayed are unique $pageview visitors from PostHog’s Query API. 
 - In production the counter live-updates — poll `/api/hits` on load, then about every 15 seconds, from a fresh UTC-filtered Query API uniq (not PostHog’s default cached result). 
@@ -301,6 +301,15 @@ Confirm the hit counter matches an exact-page query (not a `$current_url LIKE`, 
 4. Click **Run**.
 
 5. Confirm that the returned **Results** match your displayed hit counter.
+
+::: {.callout}
+# `000000` vs `ERROR!`
+
+- A successful uniq of 0 shows `000000` (empty window).
+- `ERROR!` means the counter has no usable PostHog result: `npm run dev`, missing or incorrect keys/host/project, or a failed Query API call (timeout, `429`).
+- Digits are not instant: `$pageview` still has to ingest. After that, the counter is at most one 15-second poll behind a fresh SQL run. Several always-open tabs can queue PostHog’s 3 concurrent queries and add wait.
+
+:::
 
 ## What's Next
 

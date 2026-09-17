@@ -19,6 +19,7 @@ type PoetryDeskProps = {
   poems: Poem[];
   initialIndex: number;
   hitCount: number;
+  hitCountError?: boolean;
   initialComments: GuestbookComment[];
   initialPage: number;
   initialTotalPages: number;
@@ -56,6 +57,7 @@ export function PoetryDesk({
   poems,
   initialIndex,
   hitCount,
+  hitCountError = false,
   initialComments,
   initialPage,
   initialTotalPages,
@@ -240,6 +242,7 @@ export function PoetryDesk({
             sectionId="guestbook"
             limit={commentPageSize}
             hitCount={hitCount}
+            hitCountError={hitCountError}
             initialComments={initialComments}
             initialPage={initialPage}
             initialTotalPages={initialTotalPages}
@@ -256,6 +259,7 @@ export function PoetryDesk({
         heartPending={heartPending}
         onToggleHeart={onToggleHeart}
         hitCount={hitCount}
+        hitCountError={hitCountError}
         initialComments={initialComments}
         initialPage={initialPage}
         initialTotalPages={initialTotalPages}

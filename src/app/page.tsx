@@ -32,7 +32,8 @@ async function HomeDesk() {
       <PoetryDesk
         poems={poems}
         initialIndex={initialIndex}
-        hitCount={hitCount}
+        hitCount={hitCount.count}
+        hitCountError={hitCount.error}
         initialComments={commentsPage.comments}
         initialPage={commentsPage.page}
         initialTotalPages={commentsPage.totalPages}

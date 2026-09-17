@@ -37,7 +37,7 @@ async function GuestbookBody() {
       <DeskBookmarks publicMode />
       <MobileMenu publicMode />
       <ReportIssueLink />
-      <HitCounter count={hitCount} />
+      <HitCounter count={hitCount.count} error={hitCount.error} />
       <div className="admin-shell">
         <GuestbookBoard
           initialComments={commentsPage.comments}

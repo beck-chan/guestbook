@@ -190,9 +190,9 @@ When users click **Submit**, the `submitComment` server action:
 
 [`getUniqueVisitors()`](https://github.com/beck-chan/guestbook/blob/main/src/lib/uniqueVisitors.ts){.blank} runs the UTC-filtered PostHog `$pageview` query and passes that number into [`HitCounter`](https://github.com/beck-chan/guestbook/blob/main/src/components/_shared/HitCounter.tsx){.blank}.
 
-Development always shows the static [`FALLBACK_HIT_COUNT`](https://github.com/beck-chan/guestbook/blob/main/src/lib/hitCount.ts){.blank} (`000481`) and does not call PostHog. In production it:
+Development always shows `ERROR!` and does not call PostHog. In production it:
 
-1. Renders the server count from the UTC-filtered HogQL query.
+1. Renders the server count from the UTC-filtered HogQL query on `events`. Missing or incorrect PostHog configuration and Query API failures render `ERROR!`.
 2. Polls [`/api/hits`](https://github.com/beck-chan/guestbook/blob/main/src/app/api/hits/route.ts){.blank} immediately, then every `15` seconds, re-running a fresh Query API uniq (not PostHog’s default cached result) so the digits can tick up after a new unique visitor lands.
 
 HogQL scoping (`FLAG_COUNTER_URL`, `FLAG_COUNTER_DATE`) is documented under **Hit Counter** in [Feature Flags](#feature-flags).
