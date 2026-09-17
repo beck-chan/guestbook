@@ -2,10 +2,9 @@
 
 import { useEffect, useState } from "react";
 import { flags } from "@/lib/flags";
-import { FALLBACK_HIT_COUNT } from "@/lib/hitCount";
+import { FALLBACK_HIT_COUNT, HIT_COUNT_REFRESH_MS } from "@/lib/hitCount";
 
-const STORAGE_KEY = "guestbook.hit-counted";
-const POLL_MS = 45_000;
+const POLL_MS = HIT_COUNT_REFRESH_MS;
 const IS_PROD = process.env.NODE_ENV === "production";
 
 type HitCounterProps = {
@@ -20,7 +19,7 @@ export function HitCounter({ count }: HitCounterProps) {
 
   if (IS_PROD && prevCount !== count) {
     setPrevCount(count);
-    setDisplayed((current) => Math.max(current, count));
+    setDisplayed(count);
   }
 
   useEffect(() => {
@@ -30,32 +29,19 @@ export function HitCounter({ count }: HitCounterProps) {
 
     let cancelled = false;
 
-    queueMicrotask(() => {
-      if (cancelled) return;
-      let firstVisitBonus = 0;
-      try {
-        if (localStorage.getItem(STORAGE_KEY) !== "1") {
-          firstVisitBonus = 1;
-          localStorage.setItem(STORAGE_KEY, "1");
-        }
-      } catch {
-        // ignore storage errors (private mode, etc.)
-      }
-      setDisplayed((current) => Math.max(current, count + firstVisitBonus));
-    });
-
     async function poll() {
       try {
-        const response = await fetch("/api/hits");
+        const response = await fetch("/api/hits", { cache: "no-store" });
         if (!response.ok) return;
         const data = (await response.json()) as { count?: number };
         if (cancelled || typeof data.count !== "number") return;
-        setDisplayed((current) => Math.max(current, data.count as number));
+        setDisplayed(data.count);
       } catch {
         // keep last displayed value
       }
     }
 
+    void poll();
     const id = window.setInterval(poll, POLL_MS);
     return () => {
       cancelled = true;
