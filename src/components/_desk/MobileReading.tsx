@@ -13,6 +13,7 @@ type MobileReadingProps = {
   poems: Poem[];
   initialIndex: number;
   hitCount: number;
+  hitCountError?: boolean;
   heartCount?: number;
   liked?: boolean;
   onToggleHeart?: () => void;
@@ -118,6 +119,7 @@ export function MobileReading({
   poems,
   initialIndex,
   hitCount,
+  hitCountError = false,
   heartCount = 0,
   liked = false,
   onToggleHeart,
@@ -251,7 +253,7 @@ export function MobileReading({
           <div className="cover-copy">
             <h1 className="cover-title">ORIGINAL POETRY</h1>
             <p className="cover-author">by Beck Chan</p>
-            <HitCounter count={hitCount} />
+            <HitCounter count={hitCount} error={hitCountError} />
           </div>
         </div>
         <ScrollHint

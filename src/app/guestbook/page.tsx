@@ -10,6 +10,8 @@ import { ReportIssueLink } from "@/components/_shared/ReportIssueLink";
 import { loadGuestbookSettings } from "@/lib/loadGuestbookSettings";
 import { getUniqueVisitors } from "@/lib/uniqueVisitors";
 
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: "guestbook",
   description: "Sign the guestbook.",
@@ -35,7 +37,7 @@ async function GuestbookBody() {
       <DeskBookmarks publicMode />
       <MobileMenu publicMode />
       <ReportIssueLink />
-      <HitCounter count={hitCount} />
+      <HitCounter count={hitCount.count} error={hitCount.error} />
       <div className="admin-shell">
         <GuestbookBoard
           initialComments={commentsPage.comments}

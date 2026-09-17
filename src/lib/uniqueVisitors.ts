@@ -1,5 +1,11 @@
 import { connection } from "next/server";
-import { FALLBACK_HIT_COUNT, HIT_COUNT_REFRESH_MS } from "@/lib/hitCount";
+import { HIT_COUNT_REFRESH_MS, type HitCountResult } from "@/lib/hitCount";
+
+const QUERY_ERROR: HitCountResult = { count: 0, error: true };
+
+function ok(count: number): HitCountResult {
+  return { count, error: false };
+}
 
 function escapeHogqlString(value: string) {
   return value.replace(/\\/g, "\\\\").replace(/'/g, "\\'");
@@ -86,9 +92,9 @@ async function fetchUniqueVisitors(
   urlFilter: string,
   dateFilter: string,
   fallbackHost: string,
-): Promise<number> {
+): Promise<HitCountResult> {
   if (process.env.NODE_ENV !== "production") {
-    return FALLBACK_HIT_COUNT;
+    return QUERY_ERROR;
   }
 
   const apiKey = process.env.POSTHOG_PERSONAL_API_KEY;
@@ -98,11 +104,10 @@ async function fetchUniqueVisitors(
     "https://us.posthog.com";
 
   if (!apiKey || !projectId) {
-    return FALLBACK_HIT_COUNT;
+    return QUERY_ERROR;
   }
 
   const hogql = uniqueVisitorsQuery(urlFilter, dateFilter, fallbackHost);
-
   try {
     const response = await fetch(
       `${apiHost}/api/projects/${projectId}/query/`,
@@ -118,6 +123,9 @@ async function fetchUniqueVisitors(
             kind: "HogQLQuery",
             query: hogql,
           },
+          // Default `blocking` returns PostHog's cached uniq until cache_target_age
+          // (often minutes). The SQL editor runs fresh; match that here.
+          refresh: "force_blocking",
           name: "guestbook_unique_visitors",
         }),
       },
@@ -129,7 +137,7 @@ async function fetchUniqueVisitors(
         response.status,
         hogql,
       );
-      return FALLBACK_HIT_COUNT;
+      return QUERY_ERROR;
     }
 
     const data = (await response.json()) as { results?: unknown[][] };
@@ -137,13 +145,13 @@ async function fetchUniqueVisitors(
     const count = typeof value === "number" ? value : Number(value);
 
     if (!Number.isFinite(count) || count < 0) {
-      return FALLBACK_HIT_COUNT;
+      return QUERY_ERROR;
     }
 
-    return Math.floor(count);
+    return ok(Math.floor(count));
   } catch (error) {
     console.error("PostHog unique visitors query failed", error);
-    return FALLBACK_HIT_COUNT;
+    return QUERY_ERROR;
   }
 }
 
@@ -154,8 +162,12 @@ type VisitorCountCache = {
 };
 
 let visitorCountCache: VisitorCountCache | null = null;
+let visitorCountInflight: {
+  key: string;
+  promise: Promise<HitCountResult>;
+} | null = null;
 
-export async function getUniqueVisitors() {
+export async function getUniqueVisitors(): Promise<HitCountResult> {
   // Read at request time (not from flags.ts) so FLAG_COUNTER_* are not
   // build-inlined via next.config env / client imports.
   await connection();
@@ -169,9 +181,33 @@ export async function getUniqueVisitors() {
     visitorCountCache.key === key &&
     visitorCountCache.expiresAt > now
   ) {
-    return visitorCountCache.value;
+    return ok(visitorCountCache.value);
   }
-  const value = await fetchUniqueVisitors(urlFilter, dateFilter, fallbackHost);
-  visitorCountCache = { key, value, expiresAt: now + HIT_COUNT_REFRESH_MS };
-  return value;
+  if (visitorCountInflight && visitorCountInflight.key === key) {
+    return visitorCountInflight.promise;
+  }
+  const promise = fetchUniqueVisitors(urlFilter, dateFilter, fallbackHost).then(
+    (result) => {
+      // Do not cache 0 or errors: an empty window or a failed query would
+      // otherwise stick after PostHog has rows or recovers.
+      if (!result.error && result.count > 0) {
+        visitorCountCache = {
+          key,
+          value: result.count,
+          expiresAt: Date.now() + HIT_COUNT_REFRESH_MS,
+        };
+      } else {
+        visitorCountCache = null;
+      }
+      return result;
+    },
+  );
+  visitorCountInflight = { key, promise };
+  try {
+    return await promise;
+  } finally {
+    if (visitorCountInflight?.promise === promise) {
+      visitorCountInflight = null;
+    }
+  }
 }
