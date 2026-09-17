@@ -212,7 +212,8 @@ In `.env.local` (for local development) or your Vercel environment variables (fo
 Create `app/api/hits/route.ts` which polls `/api/hits` in production:
 
 ```typescript
-export { GET, dynamic } from "y2k-guestbook/hits";
+export { GET } from "y2k-guestbook/hits";
+export const dynamic = "force-dynamic";
 ```
 
 ## Enable Web Tracking
