@@ -5,11 +5,9 @@ import {
   getPublicCommentsPage,
   submitComment,
 } from "@/app/actions/comments";
+import { CommentTime } from "@/components/_shared/CommentTime";
 import { HitCounter } from "@/components/_shared/HitCounter";
-import {
-  formatCommentTime,
-  type GuestbookComment,
-} from "@/lib/comments";
+import type { GuestbookComment } from "@/lib/comments";
 import { commentLengthError } from "@/lib/commentLimits";
 import {
   guestbookCommentPlaceholder,
@@ -169,15 +167,7 @@ export function CommentBubbles({
           >
             <figcaption className="comment-meta">
               <span className="comment-name">{note.name}</span>
-              <time
-                className="comment-time"
-                dateTime={note.createdAt}
-                suppressHydrationWarning
-              >
-                {note.createdAt
-                  ? formatCommentTime(note.createdAt)
-                  : note.time}
-              </time>
+              <CommentTime createdAt={note.createdAt} fallback={note.time} />
             </figcaption>
             <p className="comment-body">{note.body}</p>
           </figure>

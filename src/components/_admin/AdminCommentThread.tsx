@@ -9,7 +9,8 @@ import {
 } from "@/app/actions/comments";
 import { MarkReadCheckbox } from "@/components/_admin/MarkReadCheckbox";
 import { commentLengthError } from "@/lib/commentLimits";
-import { formatCommentTime, type GuestbookComment } from "@/lib/comments";
+import { CommentTime } from "@/components/_shared/CommentTime";
+import type { GuestbookComment } from "@/lib/comments";
 import { useGuestbookSettings } from "@/lib/guestbookSettings";
 
 type CommentMode = { kind: "edit" | "delete"; id: string } | null;
@@ -257,15 +258,10 @@ export function AdminCommentThread({
                 <>
                   <figcaption className="comment-meta">
                     <span className="comment-name">{note.name}</span>
-                    <time
-                      className="comment-time"
-                      dateTime={note.createdAt}
-                      suppressHydrationWarning
-                    >
-                      {note.createdAt
-                        ? formatCommentTime(note.createdAt)
-                        : note.time}
-                    </time>
+                    <CommentTime
+                      createdAt={note.createdAt}
+                      fallback={note.time}
+                    />
                   </figcaption>
                   {note.email ? (
                     <p className="admin-comment-email">{note.email}</p>

@@ -18,6 +18,7 @@ import {
   profanityErrorMessage,
 } from "@/lib/profanity";
 import { consumeCommentRateLimit } from "@/lib/rate-limit";
+import { getRequestTimeZone } from "@/lib/requestTimeZone";
 import { createClient } from "@/lib/supabase/server";
 
 export type ActionResult =
@@ -68,10 +69,11 @@ export async function getPublicCommentsPage(
   const total = count ?? 0;
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
   const safePage = Math.min(current, totalPages);
+  const timeZone = await getRequestTimeZone();
 
   return {
     comments: ((data ?? []) as PublicCommentRow[]).map((row) =>
-      mapPublicComment(row),
+      mapPublicComment(row, timeZone),
     ),
     page: safePage,
     totalPages,
@@ -174,7 +176,10 @@ export async function loadAdminComments(): Promise<GuestbookComment[]> {
     return [];
   }
 
-  return (data as AdminCommentRow[]).map((row) => mapAdminComment(row));
+  const timeZone = await getRequestTimeZone();
+  return (data as AdminCommentRow[]).map((row) =>
+    mapAdminComment(row, timeZone),
+  );
 }
 
 export async function updateComment(input: {
