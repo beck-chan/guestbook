@@ -1,5 +1,5 @@
-import { unstable_cache } from "next/cache";
-import { FALLBACK_HIT_COUNT } from "@/lib/hitCount";
+import { connection } from "next/server";
+import { FALLBACK_HIT_COUNT, HIT_COUNT_REFRESH_MS } from "@/lib/hitCount";
 
 function escapeHogqlString(value: string) {
   return value.replace(/\\/g, "\\\\").replace(/'/g, "\\'");
@@ -108,6 +108,7 @@ async function fetchUniqueVisitors(
       `${apiHost}/api/projects/${projectId}/query/`,
       {
         method: "POST",
+        cache: "no-store",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${apiKey}`,
@@ -146,20 +147,31 @@ async function fetchUniqueVisitors(
   }
 }
 
+type VisitorCountCache = {
+  key: string;
+  value: number;
+  expiresAt: number;
+};
+
+let visitorCountCache: VisitorCountCache | null = null;
+
 export async function getUniqueVisitors() {
   // Read at request time (not from flags.ts) so FLAG_COUNTER_* are not
   // build-inlined via next.config env / client imports.
+  await connection();
   const urlFilter = (process.env.FLAG_COUNTER_URL ?? "").trim();
   const dateFilter = (process.env.FLAG_COUNTER_DATE ?? "").trim();
   const fallbackHost = productionHost();
-  return unstable_cache(
-    () => fetchUniqueVisitors(urlFilter, dateFilter, fallbackHost),
-    [
-      "posthog-unique-visitors",
-      urlFilter || "all",
-      dateFilter || "all",
-      fallbackHost || "any-host",
-    ],
-    { revalidate: 60 },
-  )();
+  const key = `${urlFilter}|${dateFilter}|${fallbackHost}`;
+  const now = Date.now();
+  if (
+    visitorCountCache &&
+    visitorCountCache.key === key &&
+    visitorCountCache.expiresAt > now
+  ) {
+    return visitorCountCache.value;
+  }
+  const value = await fetchUniqueVisitors(urlFilter, dateFilter, fallbackHost);
+  visitorCountCache = { key, value, expiresAt: now + HIT_COUNT_REFRESH_MS };
+  return value;
 }

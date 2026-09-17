@@ -188,16 +188,12 @@ When users click **Submit**, the `submitComment` server action:
 
 # Hit Counter
 
-[`src/app/page.tsx`](https://github.com/beck-chan/guestbook/blob/main/src/app/page.tsx){.blank} and [`src/app/guestbook/page.tsx`](https://github.com/beck-chan/guestbook/blob/main/src/app/guestbook/page.tsx){.blank} both call [`getUniqueVisitors()`](https://github.com/beck-chan/guestbook/blob/main/src/lib/uniqueVisitors.ts){.blank} (PostHog `$pageview` uniqueness, cached 60s) and pass the number into [`HitCounter`](https://github.com/beck-chan/guestbook/blob/main/src/components/_shared/HitCounter.tsx){.blank}:
+[`getUniqueVisitors()`](https://github.com/beck-chan/guestbook/blob/main/src/lib/uniqueVisitors.ts){.blank} (PostHog `$pageview` uniqueness, refreshed every 15s) passes the number returned from PostHog into [`HitCounter`](https://github.com/beck-chan/guestbook/blob/main/src/components/_shared/HitCounter.tsx){.blank}.
 
-- [`HitCounter`](https://github.com/beck-chan/guestbook/blob/main/src/components/_shared/HitCounter.tsx){.blank} is a client component. 
-- When `FLAG_COUNTER` is off it returns `null`. 
+Development always shows the static [`FALLBACK_HIT_COUNT`](https://github.com/beck-chan/guestbook/blob/main/src/lib/hitCount.ts){.blank} (`000481`) and does not call PostHog. In production it:
 
-Development always shows the static [`FALLBACK_HIT_COUNT`](https://github.com/beck-chan/guestbook/blob/main/src/lib/hitCount.ts){.blank} (`481`). In production it:
-
-1. Renders the server count.
-2. Adds a one-time first-visit bonus from `localStorage` (`guestbook.hit-counted`).
-3. Polls [`/api/hits`](https://github.com/beck-chan/guestbook/blob/main/src/app/api/hits/route.ts){.blank} every `45` seconds and never lets the displayed value drop.
+1. Renders the server count from the UTC-filtered HogQL query.
+2. Polls [`/api/hits`](https://github.com/beck-chan/guestbook/blob/main/src/app/api/hits/route.ts){.blank} immediately, then every `15` seconds so the digits can tick up after PostHog ingests a new unique visitor.
 
 HogQL scoping (`FLAG_COUNTER_URL`, `FLAG_COUNTER_DATE`) is documented under **Hit Counter** in [Feature Flags](#feature-flags).
 
@@ -233,7 +229,7 @@ Used to deploy to the public version of the site at [https://y2k-guestbook.verce
 
 ### `FLAG_COUNTER`
 
-When set to `true`, enables display of the [`HitCounter`](https://github.com/beck-chan/guestbook/blob/main/src/components/_shared/HitCounter.tsx){.blank}. Counts come from [`getUniqueVisitors()`](https://github.com/beck-chan/guestbook/blob/main/src/lib/uniqueVisitors.ts){.blank} (PostHog `$pageview` uniqueness, cached 60s). Development mode always shows the static fallback in [`hitCount.ts`](https://github.com/beck-chan/guestbook/blob/main/src/lib/hitCount.ts){.blank}. In production the counter polls `/api/hits` and adds a one-time first-visit bonus from `localStorage`.
+When set to `true`, enables display of the [`HitCounter`](https://github.com/beck-chan/guestbook/blob/main/src/components/_shared/HitCounter.tsx){.blank} in production builds.
 
 ### `FLAG_COUNTER_URL`
 
