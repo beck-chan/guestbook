@@ -48,3 +48,9 @@ next-env.d.ts
 .cursor
 .cursorignore
 .vscode
+
+# Etc.
+
+notes.md
+ssh-key-2026-09-20.key
+ssh-key-2026-09-20.key.pub
