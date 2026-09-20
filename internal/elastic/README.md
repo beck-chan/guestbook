@@ -39,6 +39,29 @@ Turn iElasticsearch off and erase saved data. Next `up -d` starts empty:
 docker compose -f docker-compose.es.yml down -v
 ```
 
+## Reference
+
+### Generate Elastic API Key
+
+`up -d` / `down` uses the `ELASTIC_API_KEY` saved in `.env.local`. You'll only need to create a new key if `down -v` was run (wiping the saved data), or if the key was deleted.
+
+```bash
+curl -s -u elastic:password -H "Content-Type: application/json" \
+-X POST http://127.0.0.1:9200/_security/api_key \
+-d "{\"name\":\"guestbook-docs\"}"
+```
+
+### Sync Docs
+
+Indexes the documentation MDX files from a remote Git branch into local Elasticsearch (default `main`):
+
+```bash
+npm run sync-docs
+# Example branch `elastibot`
+BRANCH=elastibot npm run sync-docs
+```
+
+
 
 
 
