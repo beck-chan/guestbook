@@ -28,6 +28,10 @@ npm run allow-admin -- example@gmail.com
 npm run delete-admin -- example@gmail.com
 ```
 
+## Sync Docs
+
+<!-- here -->
+
 ## Deploy Edge Functions
 
 ```bash
