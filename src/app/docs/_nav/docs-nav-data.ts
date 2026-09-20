@@ -105,7 +105,7 @@ export const DOCS_NAV_SECTIONS: DocsNavSection[] = [
               },
               {
                 label: "Chatbot Build",
-                href: "/docs/chatbot/",
+                href: "/docs/bot-build/",
                 },
             {
               label: "Documentation Reference",
