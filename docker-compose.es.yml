@@ -1,0 +1,27 @@
+# Local Elasticsearch for the guestbook docs-chat demo.
+# Bound to 127.0.0.1 only — not reachable from Vercel or GitHub Actions.
+#
+#   docker compose -f docker-compose.es.yml up -d
+#   docker compose -f docker-compose.es.yml down      # keep volume
+#   docker compose -f docker-compose.es.yml down -v   # wipe index data
+#
+# Full runbook: internal/elastic/README.md
+
+services:
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.19.7
+    container_name: guestbook-elasticsearch
+    environment:
+      discovery.type: single-node
+      xpack.security.enabled: "true"
+      xpack.security.http.ssl.enabled: "false"
+      xpack.license.self_generated.type: basic
+      ELASTIC_PASSWORD: password
+      ES_JAVA_OPTS: -Xms1g -Xmx1g
+    ports:
+      - "127.0.0.1:9200:9200"
+    volumes:
+      - guestbook-es-data:/usr/share/elasticsearch/data
+
+volumes:
+  guestbook-es-data:

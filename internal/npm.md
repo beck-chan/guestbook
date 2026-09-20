@@ -30,7 +30,9 @@ npm run delete-admin -- example@gmail.com
 
 ## Sync Docs
 
-<!-- here -->
+```bash
+npm run sync-docs
+```
 
 ## Deploy Edge Functions
 
