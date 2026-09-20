@@ -2376,9 +2376,13 @@ a[role="option"][data-docs-hide-heading="true"],
   max-width: min(22.5rem, calc(100vw - 1.5rem));
 }
 
+.docs-chat-is-max {
+  z-index: 90;
+}
+
 .docs-chat-toggle,
 .docs-chat-send,
-.docs-chat-close {
+.docs-chat-max {
   margin: 0;
   border: 0;
   cursor: pointer;
@@ -2391,6 +2395,7 @@ a[role="option"][data-docs-hide-heading="true"],
   background: var(--peony);
   color: #fff;
   font-size: 0.95rem;
+  font-variant: small-caps;
   box-shadow: 0 8px 24px rgb(255 97 98 / 0.28);
 }
 
@@ -2399,7 +2404,29 @@ a[role="option"][data-docs-hide-heading="true"],
   background: var(--peony-hot);
 }
 
+.docs-chat-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+}
+
+.docs-chat-backdrop {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: rgb(47 46 44 / 0.42);
+  cursor: pointer;
+}
+
 .docs-chat-panel {
+  position: relative;
+  z-index: 1;
   width: min(22.5rem, calc(100vw - 1.5rem));
   max-height: min(32rem, calc(100vh - 6rem));
   display: flex;
@@ -2407,6 +2434,17 @@ a[role="option"][data-docs-hide-heading="true"],
   background: var(--bubble);
   border: 1px solid var(--peony-soft);
   box-shadow: 0 16px 40px rgb(111 78 55 / 0.12);
+}
+
+.docs-chat-panel-max {
+  width: min(50vw, calc(100vw - 3rem));
+  max-height: min(80vh, calc(100vh - 3rem));
+}
+
+@media (max-width: 40rem) {
+  .docs-chat-panel-max {
+    width: calc(100vw - 2rem);
+  }
 }
 
 .docs-chat-head {
@@ -2424,18 +2462,40 @@ a[role="option"][data-docs-hide-heading="true"],
   color: var(--peony);
 }
 
-.docs-chat-close,
+.docs-chat-max {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.2rem;
+  background: transparent;
+  color: var(--peony);
+}
+
+.docs-chat-max-glyph {
+  display: block;
+  width: 1rem;
+  height: 1rem;
+}
+
+.docs-chat-max:hover,
+.docs-chat-max:focus-visible {
+  color: var(--peony-hot);
+}
+
+.docs-chat-max:focus-visible {
+  outline: 2px solid var(--peony-soft);
+  outline-offset: 2px;
+}
+
 .docs-chat-send {
   background: transparent;
   color: var(--peony);
-  font-size: 0.85rem;
-  text-decoration: underline;
-  padding: 0.15rem;
+  font-size: 1.15rem;
+  text-decoration: none;
+  padding: 0.2rem 0.1rem;
 }
 
-.docs-chat-close:hover,
 .docs-chat-send:hover,
-.docs-chat-close:focus-visible,
 .docs-chat-send:focus-visible {
   color: var(--peony-hot);
 }
@@ -2468,9 +2528,64 @@ a[role="option"][data-docs-hide-heading="true"],
   font-family: var(--futura-font);
 }
 
-.docs-chat-bubble p {
-  margin: 0;
-  white-space: pre-wrap;
+.docs-chat-bubble > :first-child {
+  margin-top: 0;
+}
+
+.docs-chat-bubble > :last-child {
+  margin-bottom: 0;
+}
+
+.docs-chat-bubble h2 {
+  margin: 0.7rem 0 0.25rem;
+  font-family: var(--peony-font);
+  font-size: 1.25rem;
+  font-weight: 400;
+  color: var(--peony);
+}
+
+.docs-chat-bubble h2:first-child {
+  margin-top: 0;
+}
+
+.docs-chat-bubble p,
+.docs-chat-bubble ul,
+.docs-chat-bubble ol,
+.docs-chat-bubble pre {
+  margin: 0.4rem 0;
+}
+
+.docs-chat-bubble ul,
+.docs-chat-bubble ol {
+  padding-left: 1.2rem;
+}
+
+.docs-chat-bubble code {
+  font-size: 0.85em;
+}
+
+.docs-chat-bubble pre {
+  overflow: auto;
+  padding: 0.45rem 0.55rem;
+  background: rgb(47 46 44 / 0.05);
+}
+
+.docs-chat-bubble a {
+  color: var(--peony);
+  text-decoration: underline;
+}
+
+.docs-chat-bubble table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.88rem;
+}
+
+.docs-chat-bubble th,
+.docs-chat-bubble td {
+  border: 1px solid var(--peony-soft);
+  padding: 0.2rem 0.4rem;
+  text-align: left;
 }
 
 .docs-chat-bubble-user {
@@ -2482,17 +2597,6 @@ a[role="option"][data-docs-hide-heading="true"],
   align-self: flex-start;
   background: #fff;
   border: 1px solid color-mix(in srgb, var(--peony-soft) 55%, white);
-}
-
-.docs-chat-sources {
-  margin: 0.45rem 0 0;
-  padding: 0;
-  list-style: none;
-}
-
-.docs-chat-sources a {
-  color: var(--peony);
-  text-decoration: underline;
 }
 
 .docs-chat-form {

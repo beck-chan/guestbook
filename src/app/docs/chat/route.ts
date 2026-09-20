@@ -1,6 +1,8 @@
 import { cookies } from "next/headers";
 import {
   convertToModelMessages,
+  createUIMessageStream,
+  createUIMessageStreamResponse,
   embed,
   streamText,
   type UIMessage,
@@ -43,6 +45,25 @@ function lastUserText(messages: UIMessage[]) {
   return "";
 }
 
+function docsListMarkdown(sources: ChatSource[]) {
+  const unique: ChatSource[] = [];
+  const seen = new Set<string>();
+  for (const source of sources) {
+    if (!source.href || seen.has(source.href)) continue;
+    seen.add(source.href);
+    unique.push(source);
+  }
+  return unique
+    .map((source) => `- [${source.heading || source.title}](${source.href})`)
+    .join("\n");
+}
+
+function assistantMarkdown(summary: string, sources: ChatSource[]) {
+  const list = docsListMarkdown(sources);
+  if (!list) return summary;
+  return `## Docs\n\n${list}\n\n## Summary\n\n${summary}`;
+}
+
 function toUiMessages(
   rows: {
     id: string;
@@ -53,16 +74,14 @@ function toUiMessages(
 ): UIMessage[] {
   return rows.map((row) => {
     const sources = Array.isArray(row.sources) ? row.sources : [];
-    const citation =
-      row.role === "assistant" && sources.length > 0
-        ? `\n\n${sources
-            .map((source) => `- [${source.heading || source.title}](${source.href})`)
-            .join("\n")}`
-        : "";
+    const text =
+      row.role === "assistant"
+        ? assistantMarkdown(row.content, sources)
+        : row.content;
     return {
       id: row.id,
       role: row.role === "assistant" ? "assistant" : "user",
-      parts: [{ type: "text", text: `${row.content}${citation}` }],
+      parts: [{ type: "text", text }],
     };
   });
 }
@@ -221,11 +240,12 @@ export async function POST(request: Request) {
     .join("\n\n");
 
   const refusal = hits.length === 0;
+  const prefix = refusal ? "" : assistantMarkdown("", sources);
   const result = streamText({
     model: google("gemini-3.6-flash"),
     system: refusal
       ? "You answer questions about guestbook documentation. Reply with exactly: I could not find that in these docs."
-      : `You answer questions about guestbook documentation. Use only the excerpts below. If they are not enough, say you could not find that in these docs. Cite sources as markdown links using the provided URLs. Do not invent pages.\n\n${excerpts}`,
+      : `You answer questions about guestbook documentation. Use only the excerpts below. If they are not enough, say you could not find that in these docs. Write the answer only. Do not list documentation URLs or add a sources section. Do not invent pages.\n\n${excerpts}`,
     messages: await convertToModelMessages(messages),
     onFinish: async ({ text }) => {
       try {
@@ -241,5 +261,21 @@ export async function POST(request: Request) {
     },
   });
 
-  return result.toUIMessageStreamResponse();
+  if (!prefix) {
+    return result.toUIMessageStreamResponse();
+  }
+
+  const stream = createUIMessageStream({
+    execute: async ({ writer }) => {
+      const id = "docs-chat";
+      writer.write({ type: "text-start", id });
+      writer.write({ type: "text-delta", id, delta: prefix });
+      for await (const delta of result.textStream) {
+        writer.write({ type: "text-delta", id, delta });
+      }
+      writer.write({ type: "text-end", id });
+    },
+  });
+
+  return createUIMessageStreamResponse({ stream });
 }
