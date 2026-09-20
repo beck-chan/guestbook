@@ -12,6 +12,7 @@ export type ComposedDoc = {
   subtitle?: string;
   markdown: string;
   sections: ComposedSection[];
+  public: boolean;
 };
 
 export type DocsSearchDoc = {
@@ -21,4 +22,5 @@ export type DocsSearchDoc = {
   heading: string;
   section?: string;
   body: string;
+  public: boolean;
 };

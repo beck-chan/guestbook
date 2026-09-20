@@ -173,3 +173,46 @@ export async function consumeCommentRateLimit(
 
   return { ok: true };
 }
+
+export async function consumeDocsChatRateLimit(
+  ip: string,
+): Promise<{ ok: true } | { ok: false; error: string }> {
+  const key = hashIp(ip || "unknown");
+  const burst = await getLimiter({
+    points: 10,
+    duration: 60 * 60,
+    keyPrefix: "docs_chat_burst_10_60m",
+  });
+  const daily = await getLimiter({
+    points: 40,
+    duration: 86_400,
+    keyPrefix: "docs_chat_daily_40",
+  });
+
+  const [dailyRes, burstRes] = await Promise.all([
+    daily.get(key),
+    burst.get(key),
+  ]);
+
+  if (!hasRoom(dailyRes) || !hasRoom(burstRes)) {
+    return {
+      ok: false,
+      error: "Too many questions right now. Please wait a bit and try again.",
+    };
+  }
+
+  try {
+    await daily.consume(key);
+    await burst.consume(key);
+  } catch (err) {
+    if (isRateLimiterRes(err)) {
+      return {
+        ok: false,
+        error: "Too many questions right now. Please wait a bit and try again.",
+      };
+    }
+    throw err;
+  }
+
+  return { ok: true };
+}

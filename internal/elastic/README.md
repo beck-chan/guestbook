@@ -25,6 +25,12 @@ curl -s -u elastic:password http://127.0.0.1:9200
 - Ready looks like a chunk of JSON — if you get `401`, the process is up but the password does not match. 
 - If `curl` returns nothing, it is still starting — wait and run the same command again.
 
+Serve just the docs to access the chatbot:
+
+```bash
+npm run docs
+```
+
 ## 3. Stop Demo
 
 Turn Elasticsearch off but keep what is already indexed (synced docs). Next `up -d` will still have that data:
@@ -33,7 +39,7 @@ Turn Elasticsearch off but keep what is already indexed (synced docs). Next `up 
 docker compose -f docker-compose.es.yml down
 ```
 
-Turn iElasticsearch off and erase saved data. Next `up -d` starts empty:
+Turn Elasticsearch off and erase saved data. Next `up -d` starts empty:
 
 ```bash
 docker compose -f docker-compose.es.yml down -v
@@ -53,10 +59,15 @@ curl -s -u elastic:password -H "Content-Type: application/json" \
 
 ### Sync Docs
 
-Indexes the documentation MDX files from a remote Git branch into local Elasticsearch (default `main`):
+Once the Elasticsearch container is up, index the documentation MDX files from a remote Git branch (default `main`):
 
 ```bash
 npm run sync-docs
+```
+
+To index from a specific branch:
+
+```bash
 # Example branch `elastibot`
 BRANCH=elastibot npm run sync-docs
 ```

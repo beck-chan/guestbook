@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { DocsSearchProvider } from "./_components/DocsSearch";
+import { DocsChat } from "./_components/DocsChat";
 import { DocsApiNavProvider } from "./_nav/DocsApiNavContext";
 import { DocsSidenav } from "./_nav/DocsSidenav";
 import "./docs.css";
@@ -23,6 +24,7 @@ export default function DocsLayout({
         <div className="docs-shell">
           <DocsSidenav />
           <main className="docs-main">{children}</main>
+          <DocsChat />
         </div>
       </DocsSearchProvider>
     </DocsApiNavProvider>

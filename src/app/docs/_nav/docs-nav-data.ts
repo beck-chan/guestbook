@@ -1,4 +1,4 @@
-import { flags, releasesUrl, reportIssueUrl } from "@/lib/flags";
+import { flags, releasesUrl, reportIssueUrl } from "../../../lib/flags";
 
 export type DocsNavItem = {
   label: string;
