@@ -127,10 +127,10 @@ async function main() {
       properties: {
         id: { type: "keyword" },
         href: { type: "keyword" },
-        title: { type: "text" },
-        heading: { type: "text" },
+        title: { type: "text", analyzer: "english" },
+        heading: { type: "text", analyzer: "english" },
         section: { type: "keyword" },
-        body: { type: "text" },
+        body: { type: "text", analyzer: "english" },
         public: { type: "boolean" },
         embedding: {
           type: "dense_vector",

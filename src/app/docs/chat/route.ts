@@ -12,6 +12,7 @@ import { flags } from "@/lib/flags";
 import { clientIp } from "@/lib/clientIp";
 import { consumeDocsChatRateLimit } from "@/lib/rate-limit";
 import { DOCS_INDEX, elasticClient } from "@/lib/docs/elastic";
+import { expandDocsSearchTerm } from "@/lib/docs/searchTerms";
 import { createServiceClient } from "@/lib/supabase/service";
 
 export const runtime = "nodejs";
@@ -20,6 +21,9 @@ export const maxDuration = 60;
 const COOKIE = "docs_chat_id";
 const COOKIE_MAX_AGE = 60 * 60 * 24 * 365 * 5;
 const INDEX = DOCS_INDEX;
+const RETRIEVE_SIZE = 20;
+const RRF_RANK_CONSTANT = 60;
+const MAX_GUIDES = 3;
 
 type ChatSource = {
   href: string;
@@ -45,23 +49,156 @@ function lastUserText(messages: UIMessage[]) {
   return "";
 }
 
+function pageHref(href: string) {
+  const hash = href.indexOf("#");
+  return hash === -1 ? href : href.slice(0, hash);
+}
+
 function docsListMarkdown(sources: ChatSource[]) {
   const unique: ChatSource[] = [];
   const seen = new Set<string>();
   for (const source of sources) {
-    if (!source.href || seen.has(source.href)) continue;
-    seen.add(source.href);
-    unique.push(source);
+    const href = pageHref(source.href);
+    if (!href || seen.has(href)) continue;
+    seen.add(href);
+    unique.push({ ...source, href });
   }
   return unique
-    .map((source) => `- [${source.heading || source.title}](${source.href})`)
+    .map((source) => `- [${source.title || source.heading}](${source.href})`)
     .join("\n");
 }
 
 function assistantMarkdown(summary: string, sources: ChatSource[]) {
   const list = docsListMarkdown(sources);
   if (!list) return summary;
-  return `## Docs\n\n${list}\n\n## Summary\n\n${summary}`;
+  return `## Relevant Guides\n\n${list}\n\n## Summary\n\n${summary}`;
+}
+
+type RankedHit = {
+  id: string;
+  href: string;
+  title: string;
+  heading: string;
+  body: string;
+};
+
+function readHits(
+  hits: Array<{
+    _id?: string;
+    _source?: Partial<RankedHit> | null;
+  }>,
+): RankedHit[] {
+  const out: RankedHit[] = [];
+  for (const hit of hits) {
+    const src = hit._source;
+    if (!src?.href || !src.body) continue;
+    out.push({
+      id: String(hit._id ?? src.href),
+      href: src.href,
+      title: src.title || "",
+      heading: src.heading || src.title || "",
+      body: src.body,
+    });
+  }
+  return out;
+}
+
+function rrfRanks(hits: RankedHit[]) {
+  const ranks = new Map<string, number>();
+  hits.forEach((hit, index) => {
+    if (!ranks.has(hit.id)) {
+      ranks.set(hit.id, index + 1);
+    }
+  });
+  return ranks;
+}
+
+function pickRelevantGuides(lexical: RankedHit[], semantic: RankedHit[]) {
+  const byId = new Map<string, RankedHit>();
+  for (const hit of [...lexical, ...semantic]) {
+    if (!byId.has(hit.id)) byId.set(hit.id, hit);
+  }
+
+  const scores = new Map<string, number>();
+  for (const ranks of [rrfRanks(lexical), rrfRanks(semantic)]) {
+    for (const [id, rank] of ranks) {
+      scores.set(id, (scores.get(id) ?? 0) + 1 / (RRF_RANK_CONSTANT + rank));
+    }
+  }
+
+  const lexicalPages = new Set(lexical.map((hit) => pageHref(hit.href)));
+  const bestByPage = new Map<string, { hit: RankedHit; score: number }>();
+  const ordered = [...scores.entries()].sort((a, b) => b[1] - a[1]);
+  for (const [id, score] of ordered) {
+    const hit = byId.get(id);
+    if (!hit) continue;
+    const page = pageHref(hit.href);
+    const existing = bestByPage.get(page);
+    if (!existing || score > existing.score) {
+      bestByPage.set(page, { hit, score });
+    }
+  }
+
+  const ranked = [...bestByPage.values()].sort((a, b) => b.score - a.score);
+  if (ranked.length === 0) return [];
+
+  const top = ranked[0].score;
+  return ranked
+    .filter((row) => {
+      if (row.score < top * 0.45) return false;
+      if (lexicalPages.size === 0) return true;
+      if (lexicalPages.has(pageHref(row.hit.href))) return true;
+      return row.score >= top * 0.85;
+    })
+    .slice(0, MAX_GUIDES)
+    .map((row) => row.hit);
+}
+
+function lexicalQuery(question: string, publicFilter?: { term: { public: boolean } }) {
+  const expanded = [
+    ...new Set(
+      question
+        .split(/\s+/)
+        .map((word) => word.replace(/[^\w'-]/g, ""))
+        .filter((word) => word.length >= 4)
+        .flatMap((word) => expandDocsSearchTerm(word)),
+    ),
+  ].join(" ");
+
+  return {
+    bool: {
+      should: [
+        {
+          multi_match: {
+            query: question,
+            type: "best_fields" as const,
+            fields: ["title^5", "heading^3", "body"],
+            fuzziness: "AUTO" as const,
+            prefix_length: 2,
+            boost: 2,
+          },
+        },
+        ...(expanded
+          ? [
+              {
+                multi_match: {
+                  query: expanded,
+                  type: "best_fields" as const,
+                  fields: ["title^4", "heading^2", "body"],
+                },
+              },
+            ]
+          : []),
+        {
+          match_phrase: {
+            title: { query: question, slop: 3, boost: 8 },
+          },
+        },
+      ],
+      minimum_should_match: 1,
+      ...(publicFilter ? { filter: [publicFilter] } : {}),
+    },
+  };
 }
 
 function toUiMessages(
@@ -184,68 +321,63 @@ export async function POST(request: Request) {
 
   const publicFilter = flags.public ? { term: { public: true } } : undefined;
   const client = elasticClient();
-  const search = await client.search<{
-    href: string;
-    title: string;
-    heading: string;
-    body: string;
-  }>({
-    index: INDEX,
-    size: 8,
-    query: {
-      bool: {
-        should: [
-          {
-            multi_match: {
-              query: question,
-              fields: ["title^2", "heading^2", "body"],
-            },
-          },
-        ],
-        ...(publicFilter ? { filter: [publicFilter] } : {}),
+  const sourceFields = ["href", "title", "heading", "body"] as const;
+  const [lexicalRes, semanticRes] = await Promise.all([
+    client.search<{
+      href: string;
+      title: string;
+      heading: string;
+      body: string;
+    }>({
+      index: INDEX,
+      size: RETRIEVE_SIZE,
+      query: lexicalQuery(question, publicFilter),
+      _source: [...sourceFields],
+    }),
+    client.search<{
+      href: string;
+      title: string;
+      heading: string;
+      body: string;
+    }>({
+      index: INDEX,
+      size: RETRIEVE_SIZE,
+      knn: {
+        field: "embedding",
+        query_vector: embedding,
+        k: RETRIEVE_SIZE,
+        num_candidates: 50,
+        ...(publicFilter ? { filter: publicFilter } : {}),
       },
-    },
-    knn: {
-      field: "embedding",
-      query_vector: embedding,
-      k: 8,
-      num_candidates: 40,
-      ...(publicFilter ? { filter: publicFilter } : {}),
-    },
-    _source: ["href", "title", "heading", "body"],
-  });
+      _source: [...sourceFields],
+    }),
+  ]);
 
-  const hits = (search.hits.hits ?? [])
-    .map((hit) => hit._source)
-    .filter((row): row is NonNullable<typeof row> => Boolean(row?.href && row.body));
+  const picked = pickRelevantGuides(
+    readHits(lexicalRes.hits.hits ?? []),
+    readHits(semanticRes.hits.hits ?? []),
+  );
 
-  const sources: ChatSource[] = [];
-  const seen = new Set<string>();
-  for (const hit of hits) {
-    if (seen.has(hit.href)) continue;
-    seen.add(hit.href);
-    sources.push({
-      href: hit.href,
-      title: hit.title,
-      heading: hit.heading || hit.title,
-    });
-  }
+  const sources: ChatSource[] = picked.map((hit) => ({
+    href: pageHref(hit.href),
+    title: hit.title,
+    heading: hit.title || hit.heading,
+  }));
 
-  const excerpts = hits
-    .slice(0, 6)
+  const excerpts = picked
     .map(
       (hit, i) =>
-        `[${i + 1}] ${hit.title} — ${hit.heading}\nURL: ${hit.href}\n${hit.body}`,
+        `[${i + 1}] ${hit.title} — ${hit.heading}\nURL: ${pageHref(hit.href)}\n${hit.body}`,
     )
     .join("\n\n");
 
-  const refusal = hits.length === 0;
+  const refusal = picked.length === 0;
   const prefix = refusal ? "" : assistantMarkdown("", sources);
   const result = streamText({
     model: google("gemini-3.6-flash"),
     system: refusal
       ? "You answer questions about guestbook documentation. Reply with exactly: I could not find that in these docs."
-      : `You answer questions about guestbook documentation. Use only the excerpts below. If they are not enough, say you could not find that in these docs. Write the answer only. Do not list documentation URLs or add a sources section. Do not invent pages.\n\n${excerpts}`,
+      : `You answer questions about guestbook documentation. Use only the excerpts below. If they are not enough, say you could not find that in these docs. Prefer the most specific matching guide. Write the answer only. Do not list documentation URLs or add a sources section. Do not invent pages.\n\n${excerpts}`,
     messages: await convertToModelMessages(messages),
     onFinish: async ({ text }) => {
       try {

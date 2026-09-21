@@ -2412,6 +2412,8 @@ a[role="option"][data-docs-hide-heading="true"],
   align-items: center;
   justify-content: center;
   padding: 1.5rem;
+  --docs-ink: color-mix(in srgb, #6f4e37 80%, white);
+  color: var(--docs-ink);
 }
 
 .docs-chat-backdrop {
@@ -2434,6 +2436,8 @@ a[role="option"][data-docs-hide-heading="true"],
   background: var(--bubble);
   border: 1px solid var(--peony-soft);
   box-shadow: 0 16px 40px rgb(111 78 55 / 0.12);
+  --docs-ink: color-mix(in srgb, #6f4e37 80%, white);
+  color: var(--docs-ink);
 }
 
 .docs-chat-panel-max {
@@ -2458,7 +2462,7 @@ a[role="option"][data-docs-hide-heading="true"],
 .docs-chat-title {
   margin: 0;
   font-family: var(--peony-font);
-  font-size: 1.35rem;
+  font-size: 1.75rem;
   color: var(--peony);
 }
 
@@ -2507,6 +2511,35 @@ a[role="option"][data-docs-hide-heading="true"],
   display: flex;
   flex-direction: column;
   gap: 0.55rem;
+  scrollbar-width: thin;
+  scrollbar-color: var(--peony-hot) var(--desk);
+}
+
+html:has(.docs-shell) .docs-chat-log {
+  scrollbar-width: thin;
+  scrollbar-color: var(--peony-hot) var(--desk);
+}
+
+html:has(.docs-shell) .docs-chat-log::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+
+html:has(.docs-shell) .docs-chat-log::-webkit-scrollbar-track {
+  background: var(--desk);
+}
+
+html:has(.docs-shell) .docs-chat-log::-webkit-scrollbar-thumb {
+  background: var(--peony-hot);
+  border-radius: 999px;
+}
+
+html:has(.docs-shell) .docs-chat-log::-webkit-scrollbar-thumb:hover {
+  background: var(--peony-soft);
+}
+
+html:has(.docs-shell) .docs-chat-log::-webkit-scrollbar-corner {
+  background: var(--desk);
 }
 
 .docs-chat-empty,
@@ -2526,6 +2559,7 @@ a[role="option"][data-docs-hide-heading="true"],
   font-size: 0.92rem;
   line-height: 1.45;
   font-family: var(--futura-font);
+  color: var(--docs-ink);
 }
 
 .docs-chat-bubble > :first-child {
@@ -2538,10 +2572,12 @@ a[role="option"][data-docs-hide-heading="true"],
 
 .docs-chat-bubble h2 {
   margin: 0.7rem 0 0.25rem;
-  font-family: var(--peony-font);
-  font-size: 1.25rem;
+  font-family: var(--body-font);
   font-weight: 400;
-  color: var(--peony);
+  letter-spacing: 0.02em;
+  line-height: 1.2;
+  color: color-mix(in srgb, #6f4e37 48%, white);
+  font-size: clamp(0.95rem, 1.25vw, 1.12rem);
 }
 
 .docs-chat-bubble h2:first-child {
