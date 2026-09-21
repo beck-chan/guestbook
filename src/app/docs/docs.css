@@ -2635,7 +2635,9 @@ html:has(.docs-shell) .docs-chat-log::-webkit-scrollbar-corner {
 }
 
 .docs-chat-bubble-assistant {
-  align-self: flex-start;
+  align-self: stretch;
+  width: 100%;
+  box-sizing: border-box;
   background: #fff;
   border: 1px solid color-mix(in srgb, var(--peony-soft) 55%, white);
 }
