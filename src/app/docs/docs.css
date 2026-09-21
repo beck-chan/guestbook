@@ -2382,6 +2382,7 @@ a[role="option"][data-docs-hide-heading="true"],
 
 .docs-chat-toggle,
 .docs-chat-send,
+.docs-chat-clear,
 .docs-chat-max {
   margin: 0;
   border: 0;
@@ -2491,7 +2492,8 @@ a[role="option"][data-docs-hide-heading="true"],
   outline-offset: 2px;
 }
 
-.docs-chat-send {
+.docs-chat-send,
+.docs-chat-clear {
   background: transparent;
   color: var(--peony);
   font-size: 1.15rem;
@@ -2500,7 +2502,9 @@ a[role="option"][data-docs-hide-heading="true"],
 }
 
 .docs-chat-send:hover,
-.docs-chat-send:focus-visible {
+.docs-chat-send:focus-visible,
+.docs-chat-clear:hover,
+.docs-chat-clear:focus-visible {
   color: var(--peony-hot);
 }
 
@@ -2674,11 +2678,20 @@ html:has(.docs-shell) .docs-chat-log::-webkit-scrollbar-corner {
   outline-offset: 1px;
 }
 
-.docs-chat-send {
-  align-self: flex-end;
+.docs-chat-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.75rem;
+}
+
+.docs-chat-clear {
+  margin-right: auto;
+  font-size: 0.95rem;
 }
 
 .docs-chat-send:disabled,
+.docs-chat-clear:disabled,
 .docs-chat-input:disabled {
   opacity: 0.55;
   cursor: not-allowed;

@@ -79,13 +79,15 @@ function questionAsksLegalOrTest(question: string) {
   );
 }
 
+const MIN_SEARCH_TOKEN = 3;
+
 function searchTokens(text: string) {
   return [
     ...new Set(
       text
         .toLowerCase()
         .split(/[^a-z0-9]+/)
-        .filter((word) => word.length >= 4)
+        .filter((word) => word.length >= MIN_SEARCH_TOKEN)
         .flatMap((word) => expandDocsSearchTerm(word)),
     ),
   ];
@@ -169,17 +171,12 @@ function pickChunkForPage(
   question: string,
 ) {
   const ranked = [...rows].sort((a, b) => b.score - a.score);
-  const best = ranked[0];
-  const pageLevel = ranked.find((row) => isPageLevel(row.hit));
-  if (!pageLevel || pageLevel === best) return best;
-  if (
-    titleMatchesQuestion(pageLevel.hit.title, question) &&
-    pageLevel.score >= best.score * 0.75
-  ) {
-    return pageLevel;
-  }
-  if (pageLevel.score >= best.score * 0.9) return pageLevel;
-  return best;
+  const headingMatch = ranked.find(
+    (row) =>
+      !isPageLevel(row.hit) &&
+      titleMatchesQuestion(row.hit.heading, question),
+  );
+  return headingMatch ?? ranked[0];
 }
 
 function pickRelevantGuides(
@@ -240,7 +237,7 @@ function lexicalQuery(question: string, publicFilter?: { term: { public: boolean
       question
         .split(/\s+/)
         .map((word) => word.replace(/[^\w'-]/g, ""))
-        .filter((word) => word.length >= 4)
+        .filter((word) => word.length >= MIN_SEARCH_TOKEN)
         .flatMap((word) => expandDocsSearchTerm(word)),
     ),
   ].join(" ");
@@ -362,6 +359,29 @@ export async function GET() {
   });
 }
 
+export async function DELETE() {
+  const store = await cookies();
+  const sessionId = store.get(COOKIE)?.value?.trim();
+  if (sessionId) {
+    const supabase = createServiceClient();
+    const { error } = await supabase
+      .from("docs_chat_session")
+      .delete()
+      .eq("id", sessionId);
+    if (error) {
+      return Response.json({ error: error.message }, { status: 500 });
+    }
+  }
+  store.set(COOKIE, "", {
+    httpOnly: true,
+    sameSite: "lax",
+    secure: process.env.NODE_ENV === "production",
+    path: "/",
+    maxAge: 0,
+  });
+  return Response.json({ ok: true });
+}
+
 export async function POST(request: Request) {
   const limited = await consumeDocsChatRateLimit(await clientIp());
   if (!limited.ok) {
@@ -458,7 +478,7 @@ export async function POST(request: Request) {
     model: google("gemini-3.6-flash"),
     system: refusal
       ? "You answer questions about guestbook documentation. Reply with exactly: I could not find that in these docs."
-      : `You answer questions about guestbook documentation. Use only the excerpts below. If they are not enough, say you could not find that in these docs. Prefer the most specific matching guide. Write the answer only. Do not list documentation URLs or add a sources section. Do not invent pages.\n\n${excerpts}`,
+      : `You answer questions about guestbook documentation. Use only the excerpts below. Prefer a heading that matches the question over a page overview. Answer from those excerpts even if they are brief — name the steps they contain. Write the answer only. Do not list documentation URLs or add a sources section. Do not invent pages. Only say you could not find that in these docs if the excerpts are about a different topic.\n\n${excerpts}`,
     messages: await convertToModelMessages(messages),
     onFinish: async ({ text }) => {
       try {

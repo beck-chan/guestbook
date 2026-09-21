@@ -120,7 +120,7 @@ We do not sell personal data.
 - Admin sessions use Supabase Auth (short-lived access tokens, long-lived refresh until sign-out or cookie clear).
 - Admin Google account emails are stored in the admin allow-list until removed by a super-admin.
 - Rate-limit keys are temporary.
-- Docs chat messages stay in Supabase until those rows are deleted. The `docs_chat_id` cookie lasts until you delete it.
+- Docs chatbot messages stay in Supabase until you click **Clear Chat** in Ask the Documentation or clear your browser's cookies.
 - Analytics retention follows the PostHog project settings.
 
 :::
@@ -128,7 +128,7 @@ We do not sell personal data.
 ::: {.public}
 - Guestbook comments (and optional emails) stay until an admin removes them or the database is cleared.
 - Rate-limit keys are temporary.
-- Docs chat messages stay in Supabase until those rows are deleted. The `docs_chat_id` cookie lasts until you delete it.
+- Docs chatbot messages stay in Supabase until you click **Clear Chat** in Ask the Documentation or clear your browser's cookies.
 - Analytics retention follows the PostHog project settings.
 
 :::
@@ -143,14 +143,14 @@ To request deletion of a comment or related data you submitted, contact us (refe
 ::: {.private}
 - Do not submit an email if you prefer not to share one.
 - Admins can sign out to end the current session — Clear site cookies to drop stored auth/visitor cookies.
-- Delete the `docs_chat_id` cookie in the browser (DevTools → Application → Cookies, path `/`) to start a new docs chat. Old messages are not loaded without that cookie.
+- Click **Clear Chat** in Ask the Documentation to delete your browser's chat session, stored prompts and replies, and the related cookie.
 - You can ask us to delete a comment or stored contact email you provided.
 
 :::
 
 ::: {.public}
 - Do not submit an email if you prefer not to share one.
-- Delete the `docs_chat_id` cookie in the browser (DevTools → Application → Cookies, path `/`) to start a new docs chat. Old messages are not loaded without that cookie.
+- Click **Clear Chat** in Ask the Documentation to delete your browser's chat session, stored prompts and replies, and the related cookie.
 - You can ask us to delete a comment or stored contact email you provided.
 
 :::

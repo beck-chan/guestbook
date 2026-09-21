@@ -54,8 +54,10 @@ public: false
 
 ## Chatbot Interface
 
-- On first open of [`DocsChat`](https://github.com/beck-chan/guestbook/blob/main/src/app/docs/_components/DocsChat.tsx){.blank} (the [ask the documentation]{.smallcaps} / [hide chat]{.smallcaps} control), [`DocsChatPanel`](https://github.com/beck-chan/guestbook/blob/main/src/app/docs/_components/DocsChatPanel.tsx){.blank} is dynamically imported. 
+On first open of [`DocsChat`](https://github.com/beck-chan/guestbook/blob/main/src/app/docs/_components/DocsChat.tsx){.blank} (the [ask the documentation]{.smallcaps} / [hide chat]{.smallcaps} control), [`DocsChatPanel`](https://github.com/beck-chan/guestbook/blob/main/src/app/docs/_components/DocsChatPanel.tsx){.blank} is dynamically imported:
+
 - Clicking **Send** posts the question to [`src/app/docs/chat/route.ts`](https://github.com/beck-chan/guestbook/blob/main/src/app/docs/chat/route.ts){.blank}, which looks up matching docs in Elasticsearch, then asks Gemini to write a summary from those excerpts only, or uses the same route to restore previous  messages from the same session.
+- Clicking **Clear Chat** drops the current `docs_chat_id` cookie and the matching Supabase session, [clearing message history](#chat-history).
 
 ::: {.tabset}
 
@@ -65,12 +67,14 @@ public: false
 - Elasticsearch then runs two searches: keyword match (BM25) and meaning match (kNN). Those ranked lists are combined (RRF) so a page that does well on either can still surface.
 - At most three pages are kept, and only if their combined score is close to the best hit. Weaker matches are dropped.
 - Privacy Policy, Terms of Service, and Cucumber Tests are pushed down unless the question is actually about them.
-- If the page title already matches the question, the whole-page excerpt is preferred over a heading chunk.
+- Short words such as `api` and `add` are kept for matching (three characters or more).
+- If a heading on that page matches the question, that heading's excerpt is used instead of the page overview.
 - When `FLAG_PUBLIC` is on, only `public: true` pages are retrieved.
 
 # Answers
 
 - Gemini (`gemini-3.6-flash`) writes the reply from those retrieved excerpts only — it does not read the rest of the docs.
+- It answers from those excerpts even when they are brief, and only says it could not find that if they are about a different topic.
 - The stream lists **Relevant Guides** (links to those pages) first, then **Summary**.
 - The same browser IP is hashed and limited to 10 questions per hour and 40 per day ([`consumeDocsChatRateLimit`](https://github.com/beck-chan/guestbook/blob/main/src/lib/rate-limit.ts){.blank}).
 
@@ -84,7 +88,7 @@ public: false
 
 # `docs_chat_session` 
 
-`docs_chat_session` is one conversation — cookie `docs_chat_id` (httpOnly, path `/`) stores that row's id so opening [ask the documentation]{.smallcaps} again restores the same thread — not a login, and not shared across devices.
+`docs_chat_session` is one conversation — cookie `docs_chat_id` (httpOnly, path `/`) stores that row's id so opening [ask the documentation]{.smallcaps} again restores the same thread — not a login, and not shared across devices. **Clear Chat** deletes that cookie and this session row.
 
 # `docs_chat_message` 
 

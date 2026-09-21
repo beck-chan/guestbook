@@ -109,6 +109,7 @@ export function DocsChatPanel({
   const [maximized, setMaximized] = useState(false);
   const [input, setInput] = useState("");
   const [ready, setReady] = useState(false);
+  const [clearing, setClearing] = useState(false);
   const listRef = useRef<HTMLDivElement>(null);
   const mounted = useSyncExternalStore(subscribeNever, () => true, () => false);
 
@@ -175,6 +176,23 @@ export function DocsChatPanel({
   }
 
   const busy = !ready || status === "streaming" || status === "submitted";
+  const hasAnswers = messages.some(
+    (message) => message.role === "assistant" && messageText(message),
+  );
+
+  async function onClearChat() {
+    if (clearing || busy) return;
+    setClearing(true);
+    try {
+      const res = await fetch("/docs/chat", { method: "DELETE" });
+      if (!res.ok) return;
+      setMessages([]);
+      setInput("");
+    } finally {
+      setClearing(false);
+    }
+  }
+
   const lastMessage = messages[messages.length - 1];
   const lastText = lastMessage ? messageText(lastMessage) : "";
   const waitingOnSummary =
@@ -270,7 +288,7 @@ export function DocsChatPanel({
           rows={3}
           placeholder="Ask a question about the documentation ..."
           value={input}
-          disabled={busy}
+          disabled={busy || clearing}
           onChange={(event) => setInput(event.target.value)}
           onKeyDown={(event) => {
             if (event.key === "Enter" && !event.shiftKey) {
@@ -279,13 +297,25 @@ export function DocsChatPanel({
             }
           }}
         />
-        <button
-          type="submit"
-          className="docs-chat-send"
-          disabled={busy || !input.trim()}
-        >
-          Send
-        </button>
+        <div className="docs-chat-actions">
+          {hasAnswers ? (
+            <button
+              type="button"
+              className="docs-chat-clear"
+              disabled={busy || clearing}
+              onClick={onClearChat}
+            >
+              Clear Chat
+            </button>
+          ) : null}
+          <button
+            type="submit"
+            className="docs-chat-send"
+            disabled={busy || clearing || !input.trim()}
+          >
+            Send
+          </button>
+        </div>
       </form>
     </div>
   );
