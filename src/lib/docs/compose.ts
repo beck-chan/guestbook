@@ -494,7 +494,7 @@ export function flattenSearchDocs(docs: ComposedDoc[]): DocsSearchDoc[] {
     });
 
     for (const section of doc.sections) {
-      if (!section.id) continue;
+      if (!section.id || !section.body.trim()) continue;
       push({
         id: `${doc.slug}#${section.id}`,
         href: `${doc.href}#${section.id}`,

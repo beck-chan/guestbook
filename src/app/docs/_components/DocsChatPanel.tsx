@@ -55,11 +55,35 @@ function formatChatQuotaError(raw: string) {
   return `Chat quota reached — try again after ${when.toLocaleString()}.`;
 }
 
+function unwrapChatError(raw: string) {
+  const trimmed = raw.trim();
+  if (!trimmed.startsWith("{")) return raw;
+  try {
+    const parsed = JSON.parse(trimmed) as { error?: unknown };
+    if (typeof parsed.error === "string") return parsed.error;
+  } catch {
+    return raw;
+  }
+  return raw;
+}
+
 function formatChatError(raw: string) {
-  if (/high demand|UNAVAILABLE/i.test(raw)) {
+  const text = unwrapChatError(raw);
+  if (/high demand|UNAVAILABLE/i.test(text)) {
     return "This chatbot is currently experiencing high demand. Please try again later.";
   }
-  return formatChatQuotaError(raw);
+  return formatChatQuotaError(text);
+}
+
+function isChatFailureText(text: string) {
+  const formatted = formatChatError(text);
+  return (
+    formatted.startsWith(
+      "This chatbot is currently experiencing high demand",
+    ) ||
+    formatted.startsWith("Chat quota reached") ||
+    formatted === "Something went wrong. Please try again later."
+  );
 }
 
 function RetrievingBubble({
@@ -141,6 +165,7 @@ export function DocsChatPanel({
   const [input, setInput] = useState("");
   const [ready, setReady] = useState(false);
   const [clearing, setClearing] = useState(false);
+  const [chatError, setChatError] = useState<string | null>(null);
   const listRef = useRef<HTMLDivElement>(null);
   const mounted = useSyncExternalStore(subscribeNever, () => true, () => false);
 
@@ -151,6 +176,9 @@ export function DocsChatPanel({
 
   const { messages, sendMessage, setMessages, status, error } = useChat({
     transport,
+    onError(err) {
+      setChatError(err.message);
+    },
   });
 
   useEffect(() => {
@@ -179,7 +207,7 @@ export function DocsChatPanel({
 
   useEffect(() => {
     listRef.current?.scrollTo({ top: listRef.current.scrollHeight });
-  }, [messages, maximized, error]);
+  }, [messages, maximized, error, chatError]);
 
   useEffect(() => {
     if (!maximized) return;
@@ -202,6 +230,7 @@ export function DocsChatPanel({
     event.preventDefault();
     const text = input.trim();
     if (!text || status === "streaming" || status === "submitted") return;
+    setChatError(null);
     setInput("");
     await sendMessage({ text });
   }
@@ -219,6 +248,7 @@ export function DocsChatPanel({
       if (!res.ok) return;
       setMessages([]);
       setInput("");
+      setChatError(null);
     } finally {
       setClearing(false);
     }
@@ -226,6 +256,7 @@ export function DocsChatPanel({
 
   const lastMessage = messages[messages.length - 1];
   const lastText = lastMessage ? messageText(lastMessage) : "";
+  const shownError = error?.message || chatError || "";
   const waitingOnSummary =
     status === "submitted" ||
     (status === "streaming" &&
@@ -234,7 +265,7 @@ export function DocsChatPanel({
         !summaryBody(lastText)));
   const retrievingBanner =
     ready &&
-    !error &&
+    !shownError &&
     waitingOnSummary &&
     (!lastMessage ||
       lastMessage.role !== "assistant" ||
@@ -285,7 +316,13 @@ export function DocsChatPanel({
                       : "docs-chat-bubble docs-chat-bubble-assistant"
                   }
                 >
-                  <ChatMarkdown text={text} />
+                  {message.role === "assistant" && isChatFailureText(text) ? (
+                    <p className="docs-chat-error" role="alert">
+                      {formatChatError(text)}
+                    </p>
+                  ) : (
+                    <ChatMarkdown text={text} />
+                  )}
                   {showSummaryHint ? (
                     <p
                       className="docs-chat-retrieving"
@@ -300,9 +337,13 @@ export function DocsChatPanel({
             })
           : null}
         {retrievingBanner ? <RetrievingBubble /> : null}
-        {error ? (
+        {shownError && !isChatFailureText(lastText) ? (
           <p className="docs-chat-error" role="alert">
-            {formatChatError(error.message)}
+            {formatChatError(shownError)}
+          </p>
+        ) : !shownError && status === "error" && !isChatFailureText(lastText) ? (
+          <p className="docs-chat-error" role="alert">
+            Something went wrong. Please try again later.
           </p>
         ) : null}
       </div>

@@ -279,18 +279,20 @@ function searchTokens(text: string) {
   ];
 }
 
-function tokensClose(a: string, b: string) {
-  if (a === b) return true;
-  if (a.length < 4 || b.length < 4) return false;
-  if (a.startsWith(b) || b.startsWith(a)) return true;
-  return a.slice(0, 4) === b.slice(0, 4);
+function isStubBody(hit: RankedHit) {
+  const body = hit.body.trim();
+  if (!body) return true;
+  const fallback = `${hit.title} ${hit.heading}`.trim();
+  return body === fallback || body === hit.title || body === hit.heading;
 }
 
-function titleMatchesQuestion(title: string, question: string) {
-  const questionTokens = searchTokens(question);
-  return searchTokens(title).some((titleToken) =>
-    questionTokens.some((questionToken) => tokensClose(titleToken, questionToken)),
-  );
+function headingMatchesQuestion(hit: RankedHit, question: string) {
+  if (isPageLevel(hit) || isStubBody(hit)) return false;
+  const titleTokens = new Set(searchTokens(hit.title));
+  const extra = searchTokens(hit.heading).filter((token) => !titleTokens.has(token));
+  if (extra.length === 0) return false;
+  const questionTokens = new Set(searchTokens(question));
+  return extra.some((headingToken) => questionTokens.has(headingToken));
 }
 
 function docsListMarkdown(sources: ChatSource[]) {
@@ -357,12 +359,11 @@ function pickChunkForPage(
   question: string,
 ) {
   const ranked = [...rows].sort((a, b) => b.score - a.score);
-  const headingMatch = ranked.find(
-    (row) =>
-      !isPageLevel(row.hit) &&
-      titleMatchesQuestion(row.hit.heading, question),
+  const headingMatch = ranked.find((row) =>
+    headingMatchesQuestion(row.hit, question),
   );
-  return headingMatch ?? ranked[0];
+  if (headingMatch) return headingMatch;
+  return ranked.find((row) => !isStubBody(row.hit)) ?? ranked[0];
 }
 
 function pickRelevantGuides(
@@ -685,26 +686,36 @@ export async function POST(request: Request) {
   });
 
   const stream = createUIMessageStream({
+    onError: chatStreamErrorText,
     execute: async ({ writer }) => {
       const id = "docs-chat";
       let summary = "";
+      let started = false;
       try {
-        writer.write({ type: "text-start", id });
-        if (prefix) {
-          writer.write({ type: "text-delta", id, delta: prefix });
-        }
         for await (const delta of result.textStream) {
+          if (!started) {
+            writer.write({ type: "text-start", id });
+            if (prefix) {
+              writer.write({ type: "text-delta", id, delta: prefix });
+            }
+            started = true;
+          }
           summary += delta;
           writer.write({ type: "text-delta", id, delta });
         }
-        writer.write({ type: "text-end", id });
+        if (started) {
+          writer.write({ type: "text-end", id });
+        }
       } catch (err) {
         console.error(err);
-        writer.write({
-          type: "error",
-          errorText: chatStreamErrorText(err),
-        });
-        return;
+        const text = chatStreamErrorText(err);
+        if (!started) {
+          writer.write({ type: "text-start", id });
+        }
+        writer.write({ type: "text-delta", id, delta: text });
+        writer.write({ type: "text-end", id });
+        writer.setOutcome({ status: "failed", error: err });
+        throw err;
       }
       const assistantText = summary.trim();
       if (!assistantText && sources.length === 0) return;
