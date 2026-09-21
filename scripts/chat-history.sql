@@ -1,6 +1,7 @@
--- Docs chatbot history (paste once into the Supabase SQL Editor).
+-- Docs chatbot history and chat IP quotas (paste once into the Supabase SQL Editor).
 -- Guestbook only. Do not merge into schema.sql. Do not copy to y2k-guestbook.
--- The Next.js /docs/chat route uses the service_role client + cookie docs_chat_id.
+-- History: /docs/chat uses the service_role client + cookie docs_chat_id.
+-- Quotas: /docs/chat uses DATABASE_URL (pg pooler) against docs_chat_limits.
 -- Same-browser resume / debug / abuse traces. Not login. Not cross-device.
 
 -- ---------------------------------------------------------------------------
@@ -60,3 +61,25 @@ grant select, insert, update, delete on table public.docs_chat_message to servic
 --   where not exists (
 --     select 1 from public.docs_chat_message m where m.session_id = s.id
 --   );
+
+-- ---------------------------------------------------------------------------
+-- docs_chat_limits
+-- ---------------------------------------------------------------------------
+-- Chat IP quotas (5/hour, 10/day). Same shape as guestbook_rate_limits so
+-- rate-limiter-flexible can use it. Next.js writes this through DATABASE_URL
+-- (pg pooler), not the service_role client. Comment quotas stay on
+-- guestbook_rate_limits.
+
+create table public.docs_chat_limits (
+  key varchar(255) primary key,
+  points integer not null default 0,
+  expire bigint
+);
+
+alter table public.docs_chat_limits enable row level security;
+revoke all on table public.docs_chat_limits from anon, authenticated, public;
+grant select, insert, update, delete on table public.docs_chat_limits to postgres, service_role;
+
+-- Optional: drop leftover chat buckets from the comment table after this exists.
+-- delete from public.guestbook_rate_limits
+-- where key like 'docs_chat_%';

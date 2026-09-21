@@ -77,7 +77,7 @@ Clicking the [ask the documentation]{.smallcaps} button ([`DocsChat`](https://gi
 - Gemini (`gemini-3.6-flash`) writes the reply from those retrieved excerpts only — it does not read the rest of the docs.
 - It answers from those excerpts even when they are brief, and only says it could not find that if they are about a different topic.
 - The stream lists **Relevant Guides** (links to those pages) first, then **Summary**.
-- The same browser IP is hashed and limited to 5 questions per hour and 10 per day ([`consumeDocsChatRateLimit`](https://github.com/beck-chan/guestbook/blob/main/src/lib/rate-limit.ts){.blank}).
+- The same browser IP is hashed and limited to 5 questions per hour and 10 per day ([`consumeDocsChatRateLimit`](https://github.com/beck-chan/guestbook/blob/main/src/lib/rate-limit.ts){.blank}), stored in `docs_chat_limits` (not `guestbook_rate_limits`).
 
 :::
 
