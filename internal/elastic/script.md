@@ -15,7 +15,7 @@ Next I'm going to quickly generate the API key that allows the frontend chatbot 
 
 ***
 
-With the Elasticsearch container responsive, I'm going to use my script to sync MDX files from my GitHub repo where the source of truth for the documentation lives. This indexing is what loads those docs into Elasticsearch so the chatbot has something to search. 
+With the Elasticsearch container responsive, I'm going to use my script that syncs MDX files from my GitHub repo where the source of truth for the documentation lives. This indexing is what loads those docs into Elasticsearch so the chatbot has something to search. 
 
 ***
 
