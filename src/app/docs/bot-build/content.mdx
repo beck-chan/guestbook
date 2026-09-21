@@ -10,7 +10,7 @@ public: false
 
 # Elasticsearch index served by Docker pulls from MDX files synced from a `guestbook` repository branch, and Gemini answers from that index.
 
-- [`composeDocsCorpus({ forIndex: true })`](https://github.com/beck-chan/guestbook/blob/main/src/lib/docs/compose.ts){.blank} reads MDX files in [`src/app/docs`](https://github.com/beck-chan/guestbook/tree/main/src/app/docs){.blank} the same way the [inline searching](/docs/docs-build/#search-and-llm-ingestion) does.
+- [`composeDocsCorpus({ forIndex: true })`](https://github.com/beck-chan/guestbook/blob/main/src/lib/docs/compose.ts){.blank} builds chunk text from MDX under [`src/app/docs`](https://github.com/beck-chan/guestbook/tree/main/src/app/docs){.blank} for the Elasticsearch index. 
 - [`scripts/sync-docs.ts`](https://github.com/beck-chan/guestbook/blob/main/scripts/sync-docs.ts){.blank} embeds chunks and bulk-loads them into Elasticsearch.
 - [`DocsChat`](https://github.com/beck-chan/guestbook/blob/main/src/app/docs/_components/DocsChat.tsx){.blank} is the [ask the documentation]{.smallcaps} bubble on every docs page that talks to [`/docs/chat`](https://github.com/beck-chan/guestbook/blob/main/src/app/docs/chat/route.ts){.blank}.
 
@@ -39,7 +39,7 @@ public: false
 [`npm run sync-docs`](https://github.com/beck-chan/guestbook/blob/main/package.json){.blank} runs [`scripts/sync-docs.ts`](https://github.com/beck-chan/guestbook/blob/main/scripts/sync-docs.ts){.blank} to embed that text and load it into Elasticsearch:
 
 - Gemini (`gemini-embedding-001`, 768 dimensions, `RETRIEVAL_DOCUMENT`) turns each chunk into a vector for meaning search.
-- The `guestbook-docs` index is deleted if it already exists, then recreated with the English analyzer on `title`, `heading`, and `body` (so “running” and “run” can match).
+- The `guestbook-docs` index is deleted if it already exists, then recreated with the English analyzer on `title`, `heading`, and `body` (so "running" and "run" can match).
 - Chunks and vectors are written in bulk through the Elasticsearch 8 client.
 - Vectors are cached in `internal/elastic/embed-cache.json` (gitignored). Unchanged chunk text is not sent to Gemini again.
 
@@ -54,17 +54,18 @@ public: false
 
 ## Chatbot Interface
 
-On first open of [`DocsChat`](https://github.com/beck-chan/guestbook/blob/main/src/app/docs/_components/DocsChat.tsx){.blank} (the [ask the documentation]{.smallcaps} / [hide chat]{.smallcaps} control), [`DocsChatPanel`](https://github.com/beck-chan/guestbook/blob/main/src/app/docs/_components/DocsChatPanel.tsx){.blank} is dynamically imported:
+Clicking the [ask the documentation]{.smallcaps} button ([`DocsChat`](https://github.com/beck-chan/guestbook/blob/main/src/app/docs/_components/DocsChat.tsx){.blank}) opens the [`DocsChatPanel`](https://github.com/beck-chan/guestbook/blob/main/src/app/docs/_components/DocsChatPanel.tsx){.blank}. [`/docs/chat/route.ts`](https://github.com/beck-chan/guestbook/blob/main/src/app/docs/chat/route.ts){.blank}:
 
-- Clicking **Send** posts the question to [`src/app/docs/chat/route.ts`](https://github.com/beck-chan/guestbook/blob/main/src/app/docs/chat/route.ts){.blank}, which looks up matching docs in Elasticsearch, then asks Gemini to write a summary from those excerpts only, or uses the same route to restore previous  messages from the same session.
-- Clicking **Clear Chat** drops the current `docs_chat_id` cookie and the matching Supabase session, [clearing message history](#chat-history).
+- Restores message history it the browser has a `docs_chat_id` cookie. ({.get})
+- Looks up matching docs in Elasticsearch, then asks Gemini to write a summary from those excerpts only on **Send**. ({.post})
+- [Clears the message history](#chat-history) by dropping the current `docs_chat_id` cookie and the matching Supabase session when **Clear Chat** is clicked. ({.delete})
 
 ::: {.tabset}
 
 # Retrieval
 
 - Gemini (`gemini-embedding-001`, 768 dimensions, `RETRIEVAL_QUERY`) turns the question into a vector so pages can match by meaning, not only by the same words.
-- Elasticsearch then runs two searches: keyword match (BM25) and meaning match (kNN). Those ranked lists are combined (RRF) so a page that does well on either can still surface.
+- Elasticsearch then runs two searches — keyword match (BM25) and meaning match (kNN). Those ranked lists are combined (RRF) so a page that does well on either can still surface.
 - At most three pages are kept, and only if their combined score is close to the best hit. Weaker matches are dropped.
 - Privacy Policy, Terms of Service, and Cucumber Tests are pushed down unless the question is actually about them.
 - Short words such as `api` and `add` are kept for matching (three characters or more).
