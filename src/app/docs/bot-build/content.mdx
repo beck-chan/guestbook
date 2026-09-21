@@ -38,7 +38,7 @@ public: false
 
 [`npm run sync-docs`](https://github.com/beck-chan/guestbook/blob/main/package.json){.blank} runs [`scripts/sync-docs.ts`](https://github.com/beck-chan/guestbook/blob/main/scripts/sync-docs.ts){.blank} to embed that text and load it into Elasticsearch:
 
-- Gemini (`gemini-embedding-001`, 768 dimensions, `RETRIEVAL_DOCUMENT`) turns each chunk into a vector for meaning search.
+- Gemini (`gemini-embedding-001`, 768 dimensions, `RETRIEVAL_DOCUMENT`) turns chunks into vectors in batches of 20 for meaning search.
 - The `guestbook-docs` index is deleted if it already exists, then recreated with the English analyzer on `title`, `heading`, and `body` (so "running" and "run" can match).
 - Chunks and vectors are written in bulk through the Elasticsearch 8 client.
 - Vectors are cached in `internal/elastic/embed-cache.json` (gitignored). Unchanged chunk text is not sent to Gemini again.
@@ -64,7 +64,7 @@ Clicking the [ask the documentation]{.smallcaps} button ([`DocsChat`](https://gi
 
 # Retrieval
 
-- Gemini (`gemini-embedding-001`, 768 dimensions, `RETRIEVAL_QUERY`) turns the question into a vector so pages can match by meaning, not only by the same words.
+- Gemini (`gemini-embedding-001`, 768 dimensions, `RETRIEVAL_QUERY`) turns the question into a vector so pages can match by meaning, not only by the same words. The same wording reuses `internal/elastic/query-embed-cache.json` (gitignored). If embed quota is hit, keyword search still runs.
 - Elasticsearch then runs two searches — keyword match (BM25) and meaning match (kNN). Those ranked lists are combined (RRF) so a page that does well on either can still surface.
 - At most three pages are kept, and only if their combined score is close to the best hit. Weaker matches are dropped.
 - Privacy Policy, Terms of Service, and Cucumber Tests are pushed down unless the question is actually about them.

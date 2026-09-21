@@ -37,8 +37,9 @@ yarn-error.log*
 .env.local
 .env.example
 
-# docs chat embedding cache
+# docs chat embedding caches
 internal/elastic/embed-cache.json
+internal/elastic/query-embed-cache.json
 
 # vercel
 .vercel

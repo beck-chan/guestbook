@@ -1,4 +1,6 @@
 import { createHash } from "node:crypto";
+import fs from "node:fs";
+import path from "node:path";
 import { cookies } from "next/headers";
 import {
   convertToModelMessages,
@@ -30,6 +32,161 @@ const RRF_RANK_CONSTANT = 60;
 const MAX_GUIDES = 3;
 const MIN_RELATIVE_RRF = 0.65;
 const LEGAL_SCORE_PENALTY = 0.3;
+const QUERY_EMBED_MODEL = "gemini-embedding-001";
+const QUERY_EMBED_DIMS = 768;
+const QUERY_EMBED_TASK = "RETRIEVAL_QUERY";
+const QUERY_EMBED_CACHE_MAX = 200;
+const QUERY_CACHE_PATH = path.join(
+  process.cwd(),
+  "internal/elastic/query-embed-cache.json",
+);
+
+type QueryEmbedCache = {
+  model: string;
+  dims: number;
+  taskType: string;
+  vectors: Record<string, number[]>;
+};
+
+let queryEmbedCache: QueryEmbedCache | null = null;
+
+function errorText(err: unknown) {
+  return err instanceof Error ? err.message : String(err);
+}
+
+function isQuotaError(err: unknown) {
+  return /429|RESOURCE_EXHAUSTED|quota/i.test(errorText(err));
+}
+
+function isDailyQuota(err: unknown) {
+  return /PerDay|GenerateRequestsPerDay|per day/i.test(errorText(err));
+}
+
+function geminiRetryMs(err: unknown) {
+  const match = errorText(err).match(/Please retry in ([0-9.]+)s/i);
+  if (!match) return null;
+  return Number(match[1]) * 1000;
+}
+
+function tzOffsetMs(utcMs: number, timeZone: string) {
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone,
+    hourCycle: "h23",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+  }).formatToParts(new Date(utcMs));
+  const n = (type: Intl.DateTimeFormatPartTypes) =>
+    Number(parts.find((part) => part.type === type)?.value);
+  return (
+    Date.UTC(
+      n("year"),
+      n("month") - 1,
+      n("day"),
+      n("hour"),
+      n("minute"),
+      n("second"),
+    ) - utcMs
+  );
+}
+
+function nextMidnightInTimeZone(timeZone: string, nowMs = Date.now()) {
+  const offset = tzOffsetMs(nowMs, timeZone);
+  const local = new Date(nowMs + offset);
+  const nextLocalMidnightAsUtc = Date.UTC(
+    local.getUTCFullYear(),
+    local.getUTCMonth(),
+    local.getUTCDate() + 1,
+  );
+  const guess = nextLocalMidnightAsUtc - offset;
+  return new Date(nextLocalMidnightAsUtc - tzOffsetMs(guess, timeZone));
+}
+
+function retryAtFromGemini(err: unknown) {
+  if (isDailyQuota(err)) {
+    return nextMidnightInTimeZone("America/Los_Angeles");
+  }
+  const delay = geminiRetryMs(err);
+  if (delay != null) return new Date(Date.now() + delay);
+  return nextMidnightInTimeZone("America/Los_Angeles");
+}
+
+function questionEmbedKey(text: string) {
+  return createHash("sha256").update(text.trim().toLowerCase()).digest("hex");
+}
+
+function emptyQueryCache(): QueryEmbedCache {
+  return {
+    model: QUERY_EMBED_MODEL,
+    dims: QUERY_EMBED_DIMS,
+    taskType: QUERY_EMBED_TASK,
+    vectors: {},
+  };
+}
+
+function loadQueryCache(): QueryEmbedCache {
+  if (queryEmbedCache) return queryEmbedCache;
+  try {
+    const parsed = JSON.parse(
+      fs.readFileSync(QUERY_CACHE_PATH, "utf8"),
+    ) as QueryEmbedCache;
+    if (
+      parsed.model !== QUERY_EMBED_MODEL ||
+      parsed.dims !== QUERY_EMBED_DIMS ||
+      parsed.taskType !== QUERY_EMBED_TASK ||
+      !parsed.vectors ||
+      typeof parsed.vectors !== "object"
+    ) {
+      queryEmbedCache = emptyQueryCache();
+      return queryEmbedCache;
+    }
+    queryEmbedCache = parsed;
+    return queryEmbedCache;
+  } catch {
+    queryEmbedCache = emptyQueryCache();
+    return queryEmbedCache;
+  }
+}
+
+function saveQueryCache(cache: QueryEmbedCache) {
+  const keys = Object.keys(cache.vectors);
+  if (keys.length > QUERY_EMBED_CACHE_MAX) {
+    const drop = keys.length - QUERY_EMBED_CACHE_MAX;
+    for (const key of keys.slice(0, drop)) {
+      delete cache.vectors[key];
+    }
+  }
+  fs.mkdirSync(path.dirname(QUERY_CACHE_PATH), { recursive: true });
+  fs.writeFileSync(QUERY_CACHE_PATH, `${JSON.stringify(cache)}\n`);
+}
+
+async function embedQuestion(question: string) {
+  const cache = loadQueryCache();
+  const key = questionEmbedKey(question);
+  const cached = cache.vectors[key];
+  if (Array.isArray(cached) && cached.length === QUERY_EMBED_DIMS) {
+    return cached;
+  }
+
+  const { embedding } = await embed({
+    model: google.embedding(QUERY_EMBED_MODEL),
+    value: question,
+    maxRetries: 0,
+    providerOptions: {
+      google: {
+        outputDimensionality: QUERY_EMBED_DIMS,
+        taskType: QUERY_EMBED_TASK,
+      },
+    },
+  });
+
+  cache.vectors[key] = embedding;
+  saveQueryCache(cache);
+  return embedding;
+}
 
 type ChatSource = {
   href: string;
@@ -410,51 +567,50 @@ export async function POST(request: Request) {
     return Response.json({ error: "Could not start a chat session." }, { status: 500 });
   }
 
-  await persistMessage({ sessionId, role: "user", content: question });
-
-  const { embedding } = await embed({
-    model: google.embedding("gemini-embedding-001"),
-    value: question,
-    providerOptions: {
-      google: {
-        outputDimensionality: 768,
-        taskType: "RETRIEVAL_QUERY",
-      },
-    },
-  });
+  let embedding: number[] | null = null;
+  try {
+    embedding = await embedQuestion(question);
+  } catch (err) {
+    if (!isQuotaError(err)) throw err;
+  }
 
   const publicFilter = flags.public ? { term: { public: true } } : undefined;
   const client = elasticClient();
   const sourceFields = ["href", "title", "heading", "body"] as const;
+  const lexicalSearch = client.search<{
+    href: string;
+    title: string;
+    heading: string;
+    body: string;
+  }>({
+    index: INDEX,
+    size: RETRIEVE_SIZE,
+    query: lexicalQuery(question, publicFilter),
+    _source: [...sourceFields],
+  });
+  const semanticSearch = embedding
+    ? client.search<{
+        href: string;
+        title: string;
+        heading: string;
+        body: string;
+      }>({
+        index: INDEX,
+        size: RETRIEVE_SIZE,
+        knn: {
+          field: "embedding",
+          query_vector: embedding,
+          k: RETRIEVE_SIZE,
+          num_candidates: 50,
+          ...(publicFilter ? { filter: publicFilter } : {}),
+        },
+        _source: [...sourceFields],
+      })
+    : Promise.resolve({ hits: { hits: [] } });
+
   const [lexicalRes, semanticRes] = await Promise.all([
-    client.search<{
-      href: string;
-      title: string;
-      heading: string;
-      body: string;
-    }>({
-      index: INDEX,
-      size: RETRIEVE_SIZE,
-      query: lexicalQuery(question, publicFilter),
-      _source: [...sourceFields],
-    }),
-    client.search<{
-      href: string;
-      title: string;
-      heading: string;
-      body: string;
-    }>({
-      index: INDEX,
-      size: RETRIEVE_SIZE,
-      knn: {
-        field: "embedding",
-        query_vector: embedding,
-        k: RETRIEVE_SIZE,
-        num_candidates: 50,
-        ...(publicFilter ? { filter: publicFilter } : {}),
-      },
-      _source: [...sourceFields],
-    }),
+    lexicalSearch,
+    semanticSearch,
   ]);
 
   const picked = pickRelevantGuides(
@@ -480,12 +636,15 @@ export async function POST(request: Request) {
   const prefix = refusal ? "" : assistantMarkdown("", sources);
   const result = streamText({
     model: google("gemini-3.6-flash"),
+    maxRetries: 0,
     system: refusal
       ? "You answer questions about guestbook documentation. Reply with exactly: I could not find that in these docs."
       : `You answer questions about guestbook documentation. Use only the excerpts below. Prefer a heading that matches the question over a page overview. Answer from those excerpts even if they are brief — name the steps they contain. Write the answer only. Do not list documentation URLs or add a sources section. Do not invent pages. Only say you could not find that in these docs if the excerpts are about a different topic.\n\n${excerpts}`,
     messages: await convertToModelMessages(messages),
     onFinish: async ({ text }) => {
+      if (!text.trim()) return;
       try {
+        await persistMessage({ sessionId, role: "user", content: question });
         await persistMessage({
           sessionId,
           role: "assistant",
@@ -498,19 +657,28 @@ export async function POST(request: Request) {
     },
   });
 
-  if (!prefix) {
-    return result.toUIMessageStreamResponse();
-  }
-
   const stream = createUIMessageStream({
     execute: async ({ writer }) => {
       const id = "docs-chat";
-      writer.write({ type: "text-start", id });
-      writer.write({ type: "text-delta", id, delta: prefix });
-      for await (const delta of result.textStream) {
-        writer.write({ type: "text-delta", id, delta });
+      try {
+        writer.write({ type: "text-start", id });
+        if (prefix) {
+          writer.write({ type: "text-delta", id, delta: prefix });
+        }
+        for await (const delta of result.textStream) {
+          writer.write({ type: "text-delta", id, delta });
+        }
+        writer.write({ type: "text-end", id });
+      } catch (err) {
+        if (isQuotaError(err)) {
+          writer.write({
+            type: "error",
+            errorText: chatQuotaReachedError(retryAtFromGemini(err)),
+          });
+          return;
+        }
+        throw err;
       }
-      writer.write({ type: "text-end", id });
     },
   });
 

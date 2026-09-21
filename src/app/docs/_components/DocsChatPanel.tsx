@@ -45,6 +45,16 @@ function summaryBody(text: string) {
   return parts.slice(1).join("").trim();
 }
 
+function formatChatQuotaError(raw: string) {
+  const match = raw.match(
+    /Chat quota reached — try again after (\S+?)\.?/i,
+  );
+  if (!match) return raw;
+  const when = new Date(match[1]);
+  if (Number.isNaN(when.getTime())) return raw;
+  return `Chat quota reached — try again after ${when.toLocaleString()}.`;
+}
+
 function RetrievingBubble({
   label = "Retrieving responses ...",
 }: {
@@ -282,7 +292,9 @@ export function DocsChatPanel({
             })
           : null}
         {retrievingBanner ? <RetrievingBubble /> : null}
-        {error ? <p className="docs-chat-error">{error.message}</p> : null}
+        {error ? (
+          <p className="docs-chat-error">{formatChatQuotaError(error.message)}</p>
+        ) : null}
       </div>
       <form className="docs-chat-form" onSubmit={onSubmit}>
         <label className="docs-chat-label" htmlFor="docs-chat-input">

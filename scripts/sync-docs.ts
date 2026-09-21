@@ -5,7 +5,7 @@ import { config } from "dotenv";
 
 config({ path: ".env.local" });
 
-import { embed } from "ai";
+import { embedMany } from "ai";
 import { google } from "@ai-sdk/google";
 import {
   composeDocsCorpus,
@@ -14,6 +14,7 @@ import {
 import { DOCS_INDEX, elasticClient } from "../src/lib/docs/elastic";
 
 const EMBED_PER_MINUTE = 80;
+const EMBED_BATCH = 20;
 const EMBED_MODEL = "gemini-embedding-001";
 const EMBED_DIMS = 768;
 const EMBED_TASK = "RETRIEVAL_DOCUMENT";
@@ -97,8 +98,8 @@ async function embedTexts(docs: { id: string; text: string }[]) {
   let windowCount = 0;
   let windowStart = Date.now();
 
-  for (let n = 0; n < missing.length; n += 1) {
-    const i = missing[n];
+  for (let n = 0; n < missing.length; n += EMBED_BATCH) {
+    const slice = missing.slice(n, n + EMBED_BATCH);
     if (windowCount >= EMBED_PER_MINUTE) {
       const wait = 60_000 - (Date.now() - windowStart) + 1500;
       if (wait > 0) {
@@ -112,9 +113,10 @@ async function embedTexts(docs: { id: string; text: string }[]) {
     let lastError: unknown;
     for (let attempt = 0; attempt < 6; attempt += 1) {
       try {
-        const result = await embed({
+        const result = await embedMany({
           model: google.embedding(EMBED_MODEL),
-          value: docs[i].text,
+          values: slice.map((i) => docs[i].text),
+          maxRetries: 0,
           providerOptions: {
             google: {
               outputDimensionality: EMBED_DIMS,
@@ -122,8 +124,10 @@ async function embedTexts(docs: { id: string; text: string }[]) {
             },
           },
         });
-        embeddings[i] = result.embedding;
-        cache.vectors[cacheKey(docs[i].id, docs[i].text)] = result.embedding;
+        slice.forEach((i, j) => {
+          embeddings[i] = result.embeddings[j];
+          cache.vectors[cacheKey(docs[i].id, docs[i].text)] = result.embeddings[j];
+        });
         saveCache(cache);
         lastError = undefined;
         break;
@@ -131,7 +135,7 @@ async function embedTexts(docs: { id: string; text: string }[]) {
         lastError = err;
         const delay = retryDelayMs(err);
         console.log(
-          `Embed ${n + 1}/${missing.length} hit quota; retry in ${Math.ceil(delay / 1000)}s`,
+          `Embed batch ${Math.floor(n / EMBED_BATCH) + 1} hit quota; retry in ${Math.ceil(delay / 1000)}s`,
         );
         await sleep(delay);
         windowCount = 0;
@@ -142,9 +146,8 @@ async function embedTexts(docs: { id: string; text: string }[]) {
       throw lastError;
     }
     windowCount += 1;
-    if ((n + 1) % 10 === 0 || n + 1 === missing.length) {
-      console.log(`Embedded ${n + 1} / ${missing.length}`);
-    }
+    const done = Math.min(n + EMBED_BATCH, missing.length);
+    console.log(`Embedded ${done} / ${missing.length}`);
   }
 
   return embeddings;
