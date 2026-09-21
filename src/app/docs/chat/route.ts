@@ -23,7 +23,9 @@ const COOKIE_MAX_AGE = 60 * 60 * 24 * 365 * 5;
 const INDEX = DOCS_INDEX;
 const RETRIEVE_SIZE = 20;
 const RRF_RANK_CONSTANT = 60;
-const MAX_GUIDES = 3;
+const MAX_GUIDES = 2;
+const MIN_RELATIVE_RRF = 0.65;
+const LEGAL_SCORE_PENALTY = 0.3;
 
 type ChatSource = {
   href: string;
@@ -52,6 +54,55 @@ function lastUserText(messages: UIMessage[]) {
 function pageHref(href: string) {
   const hash = href.indexOf("#");
   return hash === -1 ? href : href.slice(0, hash);
+}
+
+function pageKey(href: string) {
+  return pageHref(href).replace(/\/+$/, "");
+}
+
+function isPageLevel(hit: RankedHit) {
+  return !hit.href.includes("#") || hit.heading === hit.title;
+}
+
+function isLegalOrTestPage(href: string) {
+  const page = pageKey(href);
+  return (
+    page.endsWith("/policy") ||
+    page.endsWith("/service") ||
+    page.endsWith("/tests")
+  );
+}
+
+function questionAsksLegalOrTest(question: string) {
+  return /\b(privacy|policy|terms|tos|legal|license|gdpr|cookie|cucumber|test(s|ing)?)\b/i.test(
+    question,
+  );
+}
+
+function searchTokens(text: string) {
+  return [
+    ...new Set(
+      text
+        .toLowerCase()
+        .split(/[^a-z0-9]+/)
+        .filter((word) => word.length >= 4)
+        .flatMap((word) => expandDocsSearchTerm(word)),
+    ),
+  ];
+}
+
+function tokensClose(a: string, b: string) {
+  if (a === b) return true;
+  if (a.length < 4 || b.length < 4) return false;
+  if (a.startsWith(b) || b.startsWith(a)) return true;
+  return a.slice(0, 4) === b.slice(0, 4);
+}
+
+function titleMatchesQuestion(title: string, question: string) {
+  const questionTokens = searchTokens(question);
+  return searchTokens(title).some((titleToken) =>
+    questionTokens.some((questionToken) => tokensClose(titleToken, questionToken)),
+  );
 }
 
 function docsListMarkdown(sources: ChatSource[]) {
@@ -113,7 +164,29 @@ function rrfRanks(hits: RankedHit[]) {
   return ranks;
 }
 
-function pickRelevantGuides(lexical: RankedHit[], semantic: RankedHit[]) {
+function pickChunkForPage(
+  rows: { hit: RankedHit; score: number }[],
+  question: string,
+) {
+  const ranked = [...rows].sort((a, b) => b.score - a.score);
+  const best = ranked[0];
+  const pageLevel = ranked.find((row) => isPageLevel(row.hit));
+  if (!pageLevel || pageLevel === best) return best;
+  if (
+    titleMatchesQuestion(pageLevel.hit.title, question) &&
+    pageLevel.score >= best.score * 0.75
+  ) {
+    return pageLevel;
+  }
+  if (pageLevel.score >= best.score * 0.9) return pageLevel;
+  return best;
+}
+
+function pickRelevantGuides(
+  lexical: RankedHit[],
+  semantic: RankedHit[],
+  question: string,
+) {
   const byId = new Map<string, RankedHit>();
   for (const hit of [...lexical, ...semantic]) {
     if (!byId.has(hit.id)) byId.set(hit.id, hit);
@@ -127,25 +200,32 @@ function pickRelevantGuides(lexical: RankedHit[], semantic: RankedHit[]) {
   }
 
   const lexicalPages = new Set(lexical.map((hit) => pageHref(hit.href)));
-  const bestByPage = new Map<string, { hit: RankedHit; score: number }>();
-  const ordered = [...scores.entries()].sort((a, b) => b[1] - a[1]);
-  for (const [id, score] of ordered) {
+  const byPage = new Map<string, { hit: RankedHit; score: number }[]>();
+  for (const [id, score] of scores) {
     const hit = byId.get(id);
     if (!hit) continue;
     const page = pageHref(hit.href);
-    const existing = bestByPage.get(page);
-    if (!existing || score > existing.score) {
-      bestByPage.set(page, { hit, score });
-    }
+    const list = byPage.get(page) ?? [];
+    list.push({ hit, score });
+    byPage.set(page, list);
   }
 
-  const ranked = [...bestByPage.values()].sort((a, b) => b.score - a.score);
+  const allowLegal = questionAsksLegalOrTest(question);
+  const ranked = [...byPage.values()]
+    .map((rows) => pickChunkForPage(rows, question))
+    .map((row) =>
+      !allowLegal && isLegalOrTestPage(row.hit.href)
+        ? { ...row, score: row.score * LEGAL_SCORE_PENALTY }
+        : row,
+    )
+    .sort((a, b) => b.score - a.score);
+
   if (ranked.length === 0) return [];
 
   const top = ranked[0].score;
   return ranked
     .filter((row) => {
-      if (row.score < top * 0.45) return false;
+      if (row.score < top * MIN_RELATIVE_RRF) return false;
       if (lexicalPages.size === 0) return true;
       if (lexicalPages.has(pageHref(row.hit.href))) return true;
       return row.score >= top * 0.85;
@@ -356,6 +436,7 @@ export async function POST(request: Request) {
   const picked = pickRelevantGuides(
     readHits(lexicalRes.hits.hits ?? []),
     readHits(semanticRes.hits.hits ?? []),
+    question,
   );
 
   const sources: ChatSource[] = picked.map((hit) => ({
