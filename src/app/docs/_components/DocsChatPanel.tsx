@@ -55,6 +55,13 @@ function formatChatQuotaError(raw: string) {
   return `Chat quota reached — try again after ${when.toLocaleString()}.`;
 }
 
+function formatChatError(raw: string) {
+  if (/high demand|UNAVAILABLE/i.test(raw)) {
+    return "This chatbot is currently experiencing high demand. Please try again later.";
+  }
+  return formatChatQuotaError(raw);
+}
+
 function RetrievingBubble({
   label = "Retrieving responses ...",
 }: {
@@ -172,7 +179,7 @@ export function DocsChatPanel({
 
   useEffect(() => {
     listRef.current?.scrollTo({ top: listRef.current.scrollHeight });
-  }, [messages, maximized]);
+  }, [messages, maximized, error]);
 
   useEffect(() => {
     if (!maximized) return;
@@ -227,6 +234,7 @@ export function DocsChatPanel({
         !summaryBody(lastText)));
   const retrievingBanner =
     ready &&
+    !error &&
     waitingOnSummary &&
     (!lastMessage ||
       lastMessage.role !== "assistant" ||
@@ -293,7 +301,9 @@ export function DocsChatPanel({
           : null}
         {retrievingBanner ? <RetrievingBubble /> : null}
         {error ? (
-          <p className="docs-chat-error">{formatChatQuotaError(error.message)}</p>
+          <p className="docs-chat-error" role="alert">
+            {formatChatError(error.message)}
+          </p>
         ) : null}
       </div>
       <form className="docs-chat-form" onSubmit={onSubmit}>

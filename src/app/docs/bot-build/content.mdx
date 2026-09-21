@@ -89,7 +89,9 @@ Clicking the [ask the documentation]{.smallcaps} button ([`DocsChat`](https://gi
 
 # `docs_chat_session` 
 
-`docs_chat_session` is one conversation — cookie `docs_chat_id` (httpOnly, path `/`) stores that row's id so opening [ask the documentation]{.smallcaps} again restores the same thread — not a login, and not shared across devices. **Clear Chat** deletes that cookie and this session row.
+- `docs_chat_session` is one conversation — cookie `docs_chat_id` (httpOnly, path `/`) stores that row's ID so opening [ask the documentation]{.smallcaps} again restores the same thread within that browser session. 
+- **Send** upserts that session (a leftover cookie still captures) and writes the question immediately, then the reply after Gemini finishes. 
+- **Clear Chat** deletes that cookie and this session row.
 
 # `docs_chat_message` 
 

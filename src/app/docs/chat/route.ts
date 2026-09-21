@@ -58,6 +58,31 @@ function isQuotaError(err: unknown) {
   return /429|RESOURCE_EXHAUSTED|quota/i.test(errorText(err));
 }
 
+function isHighDemandError(err: unknown) {
+  if (
+    err &&
+    typeof err === "object" &&
+    "statusCode" in err &&
+    (err as { statusCode?: unknown }).statusCode === 503
+  ) {
+    return true;
+  }
+  return /UNAVAILABLE|high demand/i.test(errorText(err));
+}
+
+const CHAT_HIGH_DEMAND_ERROR =
+  "This chatbot is currently experiencing high demand. Please try again later.";
+
+function chatStreamErrorText(err: unknown) {
+  if (isQuotaError(err)) {
+    return chatQuotaReachedError(retryAtFromGemini(err));
+  }
+  if (isHighDemandError(err)) {
+    return CHAT_HIGH_DEMAND_ERROR;
+  }
+  return "Something went wrong. Please try again later.";
+}
+
 function isDailyQuota(err: unknown) {
   return /PerDay|GenerateRequestsPerDay|per day/i.test(errorText(err));
 }
@@ -461,26 +486,38 @@ function toUiMessages(
   });
 }
 
-async function getOrCreateSessionId(create: boolean) {
-  const store = await cookies();
-  const existing = store.get(COOKIE)?.value?.trim();
-  if (existing) return existing;
-  if (!create) return null;
+function isSessionId(value: string) {
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
+    value,
+  );
+}
 
-  const id = crypto.randomUUID();
-  const supabase = createServiceClient();
-  const { error } = await supabase.from("docs_chat_session").insert({ id });
-  if (error) {
-    throw new Error(error.message);
-  }
-  store.set(COOKIE, id, {
+function sessionCookieOptions() {
+  return {
     httpOnly: true,
-    sameSite: "lax",
+    sameSite: "lax" as const,
     secure: process.env.NODE_ENV === "production",
     path: "/",
     maxAge: COOKIE_MAX_AGE,
-  });
-  return id;
+  };
+}
+
+async function getOrCreateSessionId(create: boolean) {
+  const store = await cookies();
+  const existing = store.get(COOKIE)?.value?.trim();
+  const cookieId = existing && isSessionId(existing) ? existing : null;
+  if (!create) return cookieId;
+
+  const sessionId = cookieId ?? crypto.randomUUID();
+  const supabase = createServiceClient();
+  const { error } = await supabase
+    .from("docs_chat_session")
+    .upsert({ id: sessionId });
+  if (error) {
+    throw new Error(error.message);
+  }
+  store.set(COOKIE, sessionId, sessionCookieOptions());
+  return sessionId;
 }
 
 async function persistMessage(row: {
@@ -533,13 +570,7 @@ export async function DELETE() {
       return Response.json({ error: error.message }, { status: 500 });
     }
   }
-  store.set(COOKIE, "", {
-    httpOnly: true,
-    sameSite: "lax",
-    secure: process.env.NODE_ENV === "production",
-    path: "/",
-    maxAge: 0,
-  });
+  store.set(COOKIE, "", { ...sessionCookieOptions(), maxAge: 0 });
   return Response.json({ ok: true });
 }
 
@@ -567,11 +598,21 @@ export async function POST(request: Request) {
     return Response.json({ error: "Could not start a chat session." }, { status: 500 });
   }
 
+  try {
+    await persistMessage({ sessionId, role: "user", content: question });
+  } catch (err) {
+    console.error(err);
+    return Response.json(
+      { error: "Could not save this chat turn." },
+      { status: 500 },
+    );
+  }
+
   let embedding: number[] | null = null;
   try {
     embedding = await embedQuestion(question);
   } catch (err) {
-    if (!isQuotaError(err)) throw err;
+    if (!isQuotaError(err) && !isHighDemandError(err)) throw err;
   }
 
   const publicFilter = flags.public ? { term: { public: true } } : undefined;
@@ -641,43 +682,41 @@ export async function POST(request: Request) {
       ? "You answer questions about guestbook documentation. Reply with exactly: I could not find that in these docs."
       : `You answer questions about guestbook documentation. Use only the excerpts below. Prefer a heading that matches the question over a page overview. Answer from those excerpts even if they are brief — name the steps they contain. Write the answer only. Do not list documentation URLs or add a sources section. Do not invent pages. Only say you could not find that in these docs if the excerpts are about a different topic.\n\n${excerpts}`,
     messages: await convertToModelMessages(messages),
-    onFinish: async ({ text }) => {
-      if (!text.trim()) return;
-      try {
-        await persistMessage({ sessionId, role: "user", content: question });
-        await persistMessage({
-          sessionId,
-          role: "assistant",
-          content: text,
-          sources: refusal ? [] : sources,
-        });
-      } catch (err) {
-        console.error(err);
-      }
-    },
   });
 
   const stream = createUIMessageStream({
     execute: async ({ writer }) => {
       const id = "docs-chat";
+      let summary = "";
       try {
         writer.write({ type: "text-start", id });
         if (prefix) {
           writer.write({ type: "text-delta", id, delta: prefix });
         }
         for await (const delta of result.textStream) {
+          summary += delta;
           writer.write({ type: "text-delta", id, delta });
         }
         writer.write({ type: "text-end", id });
       } catch (err) {
-        if (isQuotaError(err)) {
-          writer.write({
-            type: "error",
-            errorText: chatQuotaReachedError(retryAtFromGemini(err)),
-          });
-          return;
-        }
-        throw err;
+        console.error(err);
+        writer.write({
+          type: "error",
+          errorText: chatStreamErrorText(err),
+        });
+        return;
+      }
+      const assistantText = summary.trim();
+      if (!assistantText && sources.length === 0) return;
+      try {
+        await persistMessage({
+          sessionId,
+          role: "assistant",
+          content: assistantText,
+          sources: refusal ? [] : sources,
+        });
+      } catch (err) {
+        console.error(err);
       }
     },
   });
