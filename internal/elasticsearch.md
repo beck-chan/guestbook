@@ -13,6 +13,7 @@ docker version
 From the guestbook repo root, call:
 
 ```bash
+# Start Elasticsearch with the `elastic` / `password` login
 docker compose -f docker-compose.es.yml up -d
 ```
 
@@ -47,9 +48,11 @@ docker compose -f docker-compose.es.yml down -v
 
 ## Reference
 
+**Send** posts to `src/app/docs/chat/route.ts`, which needs `ELASTIC_URL` and `ELASTIC_API_KEY` to search the documentation synced Elasticsearch index. 
+
 ### Generate Elastic API Key
 
-`up -d` / `down` uses the `ELASTIC_API_KEY` saved in `.env.local`. You'll only need to create a new key if `down -v` was run (wiping the saved data), or if the key was deleted.
+Create a key after the first Docker build, after using `down -v` (wiping the saved data), or if the key was deleted:
 
 ```bash
 curl -s -u elastic:password -H "Content-Type: application/json" \
@@ -57,9 +60,12 @@ curl -s -u elastic:password -H "Content-Type: application/json" \
 -d "{\"name\":\"guestbook-docs\"}"
 ```
 
+1. Copy the `encoded` field into `.env.local` as `ELASTIC_API_KEY` (keep `ELASTIC_URL=http://127.0.0.1:9200`). 
+2. Restart `npm run docs` if it was already running so it picks up the `.env` change.
+
 ### Sync Docs
 
-Once the Elasticsearch container is up, index the documentation MDX files from a remote Git branch (default `main`):
+[`scripts/sync-docs.ts`](/scripts/sync-docs.ts) uses the API key to index our MDX documentation into Elasticsearch:
 
 ```bash
 npm run sync-docs

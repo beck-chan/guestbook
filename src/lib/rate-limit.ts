@@ -174,19 +174,23 @@ export async function consumeCommentRateLimit(
   return { ok: true };
 }
 
+export function chatQuotaReachedError(retryAt: Date) {
+  return `Chat quota reached — try again after ${retryAt.toISOString()}.`;
+}
+
 export async function consumeDocsChatRateLimit(
   ip: string,
 ): Promise<{ ok: true } | { ok: false; error: string }> {
   const key = hashIp(ip || "unknown");
   const burst = await getLimiter({
-    points: 10,
+    points: 5,
     duration: 60 * 60,
-    keyPrefix: "docs_chat_burst_10_60m",
+    keyPrefix: "docs_chat_burst_5_60m",
   });
   const daily = await getLimiter({
-    points: 40,
+    points: 10,
     duration: 86_400,
-    keyPrefix: "docs_chat_daily_40",
+    keyPrefix: "docs_chat_daily_10",
   });
 
   const [dailyRes, burstRes] = await Promise.all([
@@ -195,9 +199,13 @@ export async function consumeDocsChatRateLimit(
   ]);
 
   if (!hasRoom(dailyRes) || !hasRoom(burstRes)) {
+    const ms = Math.max(
+      !hasRoom(dailyRes) ? (dailyRes?.msBeforeNext ?? 0) : 0,
+      !hasRoom(burstRes) ? (burstRes?.msBeforeNext ?? 0) : 0,
+    );
     return {
       ok: false,
-      error: "Too many questions right now. Please wait a bit and try again.",
+      error: chatQuotaReachedError(new Date(Date.now() + ms)),
     };
   }
 
@@ -208,7 +216,7 @@ export async function consumeDocsChatRateLimit(
     if (isRateLimiterRes(err)) {
       return {
         ok: false,
-        error: "Too many questions right now. Please wait a bit and try again.",
+        error: chatQuotaReachedError(new Date(Date.now() + err.msBeforeNext)),
       };
     }
     throw err;

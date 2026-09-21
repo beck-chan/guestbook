@@ -45,6 +45,20 @@ function summaryBody(text: string) {
   return parts.slice(1).join("").trim();
 }
 
+function RetrievingBubble({
+  label = "Retrieving responses ...",
+}: {
+  label?: string;
+}) {
+  return (
+    <div className="docs-chat-bubble docs-chat-bubble-assistant">
+      <p className="docs-chat-retrieving" role="status" aria-live="polite">
+        {label}
+      </p>
+    </div>
+  );
+}
+
 function ChatMarkdown({ text }: { text: string }) {
   if (!text) return null;
   return (
@@ -229,11 +243,7 @@ export function DocsChatPanel({
         </button>
       </div>
       <div className="docs-chat-log" ref={listRef}>
-        {!ready ? (
-          <p className="docs-chat-retrieving" role="status" aria-live="polite">
-            Retrieving responses ...
-          </p>
-        ) : null}
+        {!ready ? <RetrievingBubble label="Loading chat ..." /> : null}
         {ready && messages.length === 0 && !waitingOnSummary ? (
           <p className="docs-chat-empty">
             Answers are generated from the content of these documentation pages using Gemini and Elasticsearch.
@@ -271,11 +281,7 @@ export function DocsChatPanel({
               );
             })
           : null}
-        {retrievingBanner ? (
-          <p className="docs-chat-retrieving" role="status" aria-live="polite">
-            Retrieving responses ...
-          </p>
-        ) : null}
+        {retrievingBanner ? <RetrievingBubble /> : null}
         {error ? <p className="docs-chat-error">{error.message}</p> : null}
       </div>
       <form className="docs-chat-form" onSubmit={onSubmit}>

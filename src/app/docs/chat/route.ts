@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import { cookies } from "next/headers";
 import {
   convertToModelMessages,
@@ -10,7 +11,10 @@ import {
 import { google } from "@ai-sdk/google";
 import { flags } from "@/lib/flags";
 import { clientIp } from "@/lib/clientIp";
-import { consumeDocsChatRateLimit } from "@/lib/rate-limit";
+import {
+  chatQuotaReachedError,
+  consumeDocsChatRateLimit,
+} from "@/lib/rate-limit";
 import { DOCS_INDEX, elasticClient } from "@/lib/docs/elastic";
 import { expandDocsSearchTerm } from "@/lib/docs/searchTerms";
 import { createServiceClient } from "@/lib/supabase/service";
