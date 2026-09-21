@@ -2543,10 +2543,15 @@ html:has(.docs-shell) .docs-chat-log::-webkit-scrollbar-corner {
 }
 
 .docs-chat-empty,
-.docs-chat-error {
+.docs-chat-error,
+.docs-chat-retrieving {
   margin: 0;
   font-size: 0.9rem;
   color: var(--ink-muted);
+}
+
+.docs-chat-retrieving {
+  font-style: italic;
 }
 
 .docs-chat-error {

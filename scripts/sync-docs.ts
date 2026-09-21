@@ -1,3 +1,6 @@
+import { createHash } from "node:crypto";
+import fs from "node:fs";
+import path from "node:path";
 import { config } from "dotenv";
 
 config({ path: ".env.local" });
@@ -11,6 +14,53 @@ import {
 import { DOCS_INDEX, elasticClient } from "../src/lib/docs/elastic";
 
 const EMBED_PER_MINUTE = 80;
+const EMBED_MODEL = "gemini-embedding-001";
+const EMBED_DIMS = 768;
+const EMBED_TASK = "RETRIEVAL_DOCUMENT";
+const CACHE_PATH = path.join(process.cwd(), "internal/elastic/embed-cache.json");
+
+type EmbedCache = {
+  model: string;
+  dims: number;
+  taskType: string;
+  vectors: Record<string, number[]>;
+};
+
+function cacheKey(id: string, text: string) {
+  return createHash("sha256").update(`${id}\n${text}`).digest("hex");
+}
+
+function emptyCache(): EmbedCache {
+  return {
+    model: EMBED_MODEL,
+    dims: EMBED_DIMS,
+    taskType: EMBED_TASK,
+    vectors: {},
+  };
+}
+
+function loadCache(): EmbedCache {
+  try {
+    const parsed = JSON.parse(fs.readFileSync(CACHE_PATH, "utf8")) as EmbedCache;
+    if (
+      parsed.model !== EMBED_MODEL ||
+      parsed.dims !== EMBED_DIMS ||
+      parsed.taskType !== EMBED_TASK ||
+      !parsed.vectors ||
+      typeof parsed.vectors !== "object"
+    ) {
+      return emptyCache();
+    }
+    return parsed;
+  } catch {
+    return emptyCache();
+  }
+}
+
+function saveCache(cache: EmbedCache) {
+  fs.mkdirSync(path.dirname(CACHE_PATH), { recursive: true });
+  fs.writeFileSync(CACHE_PATH, `${JSON.stringify(cache)}\n`);
+}
 
 function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -25,12 +75,30 @@ function retryDelayMs(err: unknown) {
   return 20_000;
 }
 
-async function embedTexts(texts: string[]) {
-  const embeddings: number[][] = [];
+async function embedTexts(docs: { id: string; text: string }[]) {
+  const cache = loadCache();
+  const embeddings: number[][] = new Array(docs.length);
+  const missing: number[] = [];
+
+  for (let i = 0; i < docs.length; i += 1) {
+    const key = cacheKey(docs[i].id, docs[i].text);
+    const cached = cache.vectors[key];
+    if (Array.isArray(cached) && cached.length === EMBED_DIMS) {
+      embeddings[i] = cached;
+    } else {
+      missing.push(i);
+    }
+  }
+
+  console.log(
+    `Embed cache: ${docs.length - missing.length} unchanged, ${missing.length} to send to Gemini`,
+  );
+
   let windowCount = 0;
   let windowStart = Date.now();
 
-  for (let i = 0; i < texts.length; i += 1) {
+  for (let n = 0; n < missing.length; n += 1) {
+    const i = missing[n];
     if (windowCount >= EMBED_PER_MINUTE) {
       const wait = 60_000 - (Date.now() - windowStart) + 1500;
       if (wait > 0) {
@@ -45,23 +113,25 @@ async function embedTexts(texts: string[]) {
     for (let attempt = 0; attempt < 6; attempt += 1) {
       try {
         const result = await embed({
-          model: google.embedding("gemini-embedding-001"),
-          value: texts[i],
+          model: google.embedding(EMBED_MODEL),
+          value: docs[i].text,
           providerOptions: {
             google: {
-              outputDimensionality: 768,
-              taskType: "RETRIEVAL_DOCUMENT",
+              outputDimensionality: EMBED_DIMS,
+              taskType: EMBED_TASK,
             },
           },
         });
-        embeddings.push(result.embedding);
+        embeddings[i] = result.embedding;
+        cache.vectors[cacheKey(docs[i].id, docs[i].text)] = result.embedding;
+        saveCache(cache);
         lastError = undefined;
         break;
       } catch (err) {
         lastError = err;
         const delay = retryDelayMs(err);
         console.log(
-          `Embed ${i + 1}/${texts.length} hit quota; retry in ${Math.ceil(delay / 1000)}s`,
+          `Embed ${n + 1}/${missing.length} hit quota; retry in ${Math.ceil(delay / 1000)}s`,
         );
         await sleep(delay);
         windowCount = 0;
@@ -72,8 +142,8 @@ async function embedTexts(texts: string[]) {
       throw lastError;
     }
     windowCount += 1;
-    if ((i + 1) % 10 === 0 || i + 1 === texts.length) {
-      console.log(`Embedded ${i + 1} / ${texts.length}`);
+    if ((n + 1) % 10 === 0 || n + 1 === missing.length) {
+      console.log(`Embedded ${n + 1} / ${missing.length}`);
     }
   }
 
@@ -103,12 +173,15 @@ async function main() {
     process.exit(1);
   }
 
-  const texts = docs.map((doc) => {
+  const chunks = docs.map((doc) => {
     const body = doc.body.trim();
-    return body || `${doc.title} ${doc.heading}`.trim();
+    return {
+      id: doc.id,
+      text: body || `${doc.title} ${doc.heading}`.trim(),
+    };
   });
 
-  const embeddings = await embedTexts(texts);
+  const embeddings = await embedTexts(chunks);
 
   if (embeddings.length !== docs.length) {
     console.error("Embedding count did not match document count.");
@@ -117,7 +190,7 @@ async function main() {
 
   const client = elasticClient();
   const exists = await client.indices.exists({ index: DOCS_INDEX });
-  if (exists === true || (exists as { body?: boolean })?.body === true) {
+  if (exists) {
     await client.indices.delete({ index: DOCS_INDEX });
   }
 
@@ -148,7 +221,7 @@ async function main() {
     title: doc.title,
     heading: doc.heading,
     section: doc.section ?? "",
-    body: texts[i],
+    body: chunks[i].text,
     public: doc.public,
     embedding: embeddings[i],
   }));

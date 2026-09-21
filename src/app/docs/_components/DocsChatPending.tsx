@@ -12,7 +12,7 @@ export function DocsChatPending({ maximized = false }: { maximized?: boolean }) 
         <p className="docs-chat-title">Ask the Documentation</p>
       </div>
       <div className="docs-chat-log">
-        <p className="docs-chat-empty">Retrieving responses ...</p>
+        <p className="docs-chat-retrieving">Retrieving responses ...</p>
       </div>
     </div>
   );
