@@ -5,7 +5,7 @@
 #   docker compose -f docker-compose.es.yml down      # keep volume
 #   docker compose -f docker-compose.es.yml down -v   # wipe index data
 #
-# Full runbook: internal/elastic/README.md
+# Full runbook: internal/elasticsearch.md
 
 services:
   elasticsearch:

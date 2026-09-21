@@ -2,7 +2,7 @@
 
 ## 1. Start Docker
 
-Start Docker Desktop, then in a new terminal confirm that Docker is running a Server with ` OS/Arch: linux/amd64`:
+Start Docker Desktop, then in a new terminal confirm that Docker is running a Server with `OS/Arch: linux/amd64`:
 
 ```bash
 docker version
@@ -71,6 +71,9 @@ To index from a specific branch:
 # Example branch `elastibot`
 BRANCH=elastibot npm run sync-docs
 ```
+
+- Chunk text is hashed locally in `internal/elastic/embed-cache.json` (gitignored). 
+- Unchanged chunks are not sent to Gemini again. The first run still embeds everything — later syncs only pay for edits.
 
 
 
