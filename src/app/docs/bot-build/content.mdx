@@ -7,88 +7,109 @@ public: false
 # Chatbot Build
 
 ::: {.callout}
-# Git Markdown is the source of truth. A local Docker Elasticsearch index is derived from it, and Gemini answers from that index.
 
-- Documentation pages in [`src/app/docs`](https://github.com/beck-chan/guestbook/tree/main/src/app/docs){.blank} stay in Git. [`composeDocsCorpus({ forIndex: true })`](https://github.com/beck-chan/guestbook/blob/main/src/lib/docs/compose.ts){.blank} reads those MDX files the same way search compose does.
-- [`scripts/sync-docs.ts`](https://github.com/beck-chan/guestbook/blob/main/scripts/sync-docs.ts){.blank} embeds chunks and bulk-loads them into Elasticsearch on `127.0.0.1:9200`.
-- [`DocsChat`](https://github.com/beck-chan/guestbook/blob/main/src/app/docs/_components/DocsChat.tsx){.blank} is the [ask the documentation]{.smallcaps} bubble on every docs page. It talks to [`/docs/chat`](https://github.com/beck-chan/guestbook/blob/main/src/app/docs/chat/route.ts){.blank}.
+# Elasticsearch index served by Docker pulls from MDX files synced from a `guestbook` repository branch, and Gemini answers from that index.
 
-How to start Docker, curl the cluster, run `npm run docs`, and `npm run sync-docs` is in [`internal/elasticsearch.md`](https://github.com/beck-chan/guestbook/blob/main/internal/elasticsearch.md){.blank}.
+- [`composeDocsCorpus({ forIndex: true })`](https://github.com/beck-chan/guestbook/blob/main/src/lib/docs/compose.ts){.blank} reads MDX files in [`src/app/docs`](https://github.com/beck-chan/guestbook/tree/main/src/app/docs){.blank} the same way the [inline searching](/docs/docs-build/#search-and-llm-ingestion) does.
+- [`scripts/sync-docs.ts`](https://github.com/beck-chan/guestbook/blob/main/scripts/sync-docs.ts){.blank} embeds chunks and bulk-loads them into Elasticsearch.
+- [`DocsChat`](https://github.com/beck-chan/guestbook/blob/main/src/app/docs/_components/DocsChat.tsx){.blank} is the [ask the documentation]{.smallcaps} bubble on every docs page that talks to [`/docs/chat`](https://github.com/beck-chan/guestbook/blob/main/src/app/docs/chat/route.ts){.blank}.
+
 :::
 
-## Index Pipeline
+## Chat Indexing
 
-`search: false` pages are omitted from the index. `public: false` pages are still indexed; [`/docs/chat`](https://github.com/beck-chan/guestbook/blob/main/src/app/docs/chat/route.ts){.blank} applies `FLAG_PUBLIC` at query time so a public build only retrieves `public: true` chunks. MiniSearch and [`/llms.txt`](/llms.txt){.blank} keep the existing `flags.public` filter and are separate from this index.
+- `search: false` pages are omitted from the index (none for the local demo, usually pages under the "Internal" section are omitted). 
+- `public: false` pages are still indexed — [`/docs/chat`](https://github.com/beck-chan/guestbook/blob/main/src/app/docs/chat/route.ts){.blank} applies `FLAG_PUBLIC` at query time so a public build only retrieves `public: true` chunks. 
+- Inline user guide search and [`/llms.txt`](/llms.txt){.blank} keep the existing `flags.public` filter and are separate from the chatbot index.
 
 ::: {.tabset}
 
 # compose.ts
 
-[`src/lib/docs/compose.ts`](https://github.com/beck-chan/guestbook/blob/main/src/lib/docs/compose.ts){.blank} with `forIndex: true`:
+[`src/lib/docs/compose.ts`](https://github.com/beck-chan/guestbook/blob/main/src/lib/docs/compose.ts){.blank} with `forIndex: true` builds the text that later goes into Elasticsearch:
 
-- Reads MDX from a Git ref when `gitRef` is set (the indexer always passes `BRANCH`).
-- Inlines `_snippets` into the host page.
-- Stamps `public` on each chunk.
-- Skips only `search: false`.
-- Flattens a page-level chunk plus one chunk per heading (`href` may include `#anchor`).
+- Reads the docs MDX files from a Git branch (`BRANCH`, default `main`).
+- Shared `_snippets` files are pasted into the page that imports them, so the index stores the full wording, not an import line.
+- Each chunk is marked `public: true` or `false` from the page frontmatter, so chat can filter later.
+- Pages with `search: false` are left out. `public: false` pages are still included.
+- A page becomes one overview chunk plus one chunk per heading (the heading's `href` may include `#anchor`).
 
 # sync-docs.ts
 
-[`npm run sync-docs`](https://github.com/beck-chan/guestbook/blob/main/package.json){.blank} runs [`scripts/sync-docs.ts`](https://github.com/beck-chan/guestbook/blob/main/scripts/sync-docs.ts){.blank}:
+[`npm run sync-docs`](https://github.com/beck-chan/guestbook/blob/main/package.json){.blank} runs [`scripts/sync-docs.ts`](https://github.com/beck-chan/guestbook/blob/main/scripts/sync-docs.ts){.blank} to embed that text and load it into Elasticsearch:
 
-- Default Git ref is `main`. Override with `BRANCH=elastibot npm run sync-docs`.
-- Embeds with Gemini `gemini-embedding-001` at 768 dimensions (`RETRIEVAL_DOCUMENT`).
-- Recreates the `guestbook-docs` index with the English analyzer on `title`, `heading`, and `body`.
-- Bulk-loads through the Elasticsearch 8 client `helpers.bulk()`.
-- Caches vectors in `internal/elastic/embed-cache.json` (gitignored). Unchanged chunk text is not sent to Gemini again.
+- Gemini (`gemini-embedding-001`, 768 dimensions, `RETRIEVAL_DOCUMENT`) turns each chunk into a vector for meaning search.
+- The `guestbook-docs` index is deleted if it already exists, then recreated with the English analyzer on `title`, `heading`, and `body` (so “running” and “run” can match).
+- Chunks and vectors are written in bulk through the Elasticsearch 8 client.
+- Vectors are cached in `internal/elastic/embed-cache.json` (gitignored). Unchanged chunk text is not sent to Gemini again.
 
 # docker-compose.es.yml
 
-[`docker-compose.es.yml`](https://github.com/beck-chan/guestbook/blob/main/docker-compose.es.yml){.blank} runs Elasticsearch **8.19.7** Basic, single-node, bound to `127.0.0.1:9200`, heap 1g, volume `guestbook-es-data`.
+[`docker-compose.es.yml`](https://github.com/beck-chan/guestbook/blob/main/docker-compose.es.yml){.blank} serves local Elasticsearch:
+
+- Image **8.19.7** Basic, one node, 1g heap, listening only on this machine at `127.0.0.1:9200`.
+- Index data lives in the Docker volume `guestbook-es-data`, so `docker compose … down` keeps it. `down -v` wipes it.
 
 :::
 
-## Chat
+## Chatbot Interface
 
-[`src/app/docs/layout.tsx`](https://github.com/beck-chan/guestbook/blob/main/src/app/docs/layout.tsx){.blank} mounts [`DocsChat`](https://github.com/beck-chan/guestbook/blob/main/src/app/docs/_components/DocsChat.tsx){.blank}. That shell is a small [ask the documentation]{.smallcaps} / [hide chat]{.smallcaps} control. The first open dynamically imports [`DocsChatPanel`](https://github.com/beck-chan/guestbook/blob/main/src/app/docs/_components/DocsChatPanel.tsx){.blank} (`useChat`, markdown). While the panel loads, history restores, or Gemini is still writing under **Summary**, the UI shows *Retrieving responses ...*.
-
-[`src/app/docs/chat/route.ts`](https://github.com/beck-chan/guestbook/blob/main/src/app/docs/chat/route.ts){.blank}:
+- On first open of [`DocsChat`](https://github.com/beck-chan/guestbook/blob/main/src/app/docs/_components/DocsChat.tsx){.blank} (the [ask the documentation]{.smallcaps} / [hide chat]{.smallcaps} control), [`DocsChatPanel`](https://github.com/beck-chan/guestbook/blob/main/src/app/docs/_components/DocsChatPanel.tsx){.blank} is dynamically imported. 
+- Clicking **Send** posts the question to [`src/app/docs/chat/route.ts`](https://github.com/beck-chan/guestbook/blob/main/src/app/docs/chat/route.ts){.blank}, which looks up matching docs in Elasticsearch, then asks Gemini to write a summary from those excerpts only, or uses the same route to restore previous  messages from the same session.
 
 ::: {.tabset}
 
-# Retrieve
+# Retrieval
 
-- Embeds the question with `gemini-embedding-001` (`RETRIEVAL_QUERY`, 768 dimensions).
-- Runs BM25 and kNN separately, then fuses ranks (RRF).
-- Keeps at most two pages whose fused score is close to the top hit.
-- Downranks Privacy Policy, Terms of Service, and Cucumber Tests unless the question is about them.
-- Prefers the page-level chunk when the title already matches.
-- Filters `public: true` when `FLAG_PUBLIC` is on.
+- Gemini (`gemini-embedding-001`, 768 dimensions, `RETRIEVAL_QUERY`) turns the question into a vector so pages can match by meaning, not only by the same words.
+- Elasticsearch then runs two searches: keyword match (BM25) and meaning match (kNN). Those ranked lists are combined (RRF) so a page that does well on either can still surface.
+- At most three pages are kept, and only if their combined score is close to the best hit. Weaker matches are dropped.
+- Privacy Policy, Terms of Service, and Cucumber Tests are pushed down unless the question is actually about them.
+- If the page title already matches the question, the whole-page excerpt is preferred over a heading chunk.
+- When `FLAG_PUBLIC` is on, only `public: true` pages are retrieved.
 
-# Answer
+# Answers
 
-- Generates with `gemini-3.6-flash` from those excerpts only.
-- Streams **Relevant Guides** (the retrieved page links) then **Summary**.
-- Rate-limits hashed client IP to 10 questions per hour and 40 per day ([`consumeDocsChatRateLimit`](https://github.com/beck-chan/guestbook/blob/main/src/lib/rate-limit.ts){.blank}).
+- Gemini (`gemini-3.6-flash`) writes the reply from those retrieved excerpts only — it does not read the rest of the docs.
+- The stream lists **Relevant Guides** (links to those pages) first, then **Summary**.
+- The same browser IP is hashed and limited to 10 questions per hour and 40 per day ([`consumeDocsChatRateLimit`](https://github.com/beck-chan/guestbook/blob/main/src/lib/rate-limit.ts){.blank}).
 
 :::
 
 ## Chat History
 
-Paste [`scripts/chat-history.sql`](https://github.com/beck-chan/guestbook/blob/main/scripts/chat-history.sql){.blank} once in the Supabase SQL editor (not `schema.sql`).
+`docs_chat_session` and `docs_chat_message` tables in Supabase created by [`scripts/chat-history.sql`](https://github.com/beck-chan/guestbook/blob/main/scripts/chat-history.sql){.blank} store chat history per browser session. The browser never talks to these tables — row-level security is on with no `anon` / `authenticated` policies, [`/docs/chat`](https://github.com/beck-chan/guestbook/blob/main/src/app/docs/chat/route.ts){.blank} reads and writes them with the `service_role` client:
 
-- Tables: `docs_chat_session`, `docs_chat_message`.
-- Row-level security is on; `anon` / `authenticated` have no policies. The route uses the `service_role` client.
-- Browser cookie `docs_chat_id` (httpOnly, path `/`) is the session id — same-browser resume, not login.
+::: {.tabset}
 
-How to delete that cookie is under **Clear Chat Session** in [`internal/elasticsearch.md`](https://github.com/beck-chan/guestbook/blob/main/internal/elasticsearch.md){.blank}.
+# `docs_chat_session` 
 
-## Environment
+`docs_chat_session` is one conversation — cookie `docs_chat_id` (httpOnly, path `/`) stores that row's id so opening [ask the documentation]{.smallcaps} again restores the same thread — not a login, and not shared across devices.
 
-Set these in `.env.local` (never `NEXT_PUBLIC_`):
+# `docs_chat_message` 
 
-| Name | Demo value |
-| --- | --- |
-| `ELASTIC_URL` | `http://127.0.0.1:9200` |
-| `ELASTIC_API_KEY` | Key minted on the local cluster |
-| `GOOGLE_GENERATIVE_AI_API_KEY` | Google AI Studio key |
+`docs_chat_message` is each turn in that conversation — the user's question or the assistant's reply (`role`), the wording (`content`), and for replies the retrieved page links (`sources`). Deleting a session deletes its messages.
+
+# Entity Relationship Diagram
+
+<DocsMermaid chart={`erDiagram
+    direction TB
+    docs_chat_session {
+        uuid id PK
+        timestamptz created_at
+        timestamptz updated_at
+    }
+    docs_chat_message {
+        uuid id PK
+        uuid session_id FK
+        text role
+        text content
+        jsonb sources
+        timestamptz created_at
+    }
+    docs_chat_session ||--o{ docs_chat_message : "session_id"
+`} />
+
+:::
+
+

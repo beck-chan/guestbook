@@ -23,7 +23,7 @@ const COOKIE_MAX_AGE = 60 * 60 * 24 * 365 * 5;
 const INDEX = DOCS_INDEX;
 const RETRIEVE_SIZE = 20;
 const RRF_RANK_CONSTANT = 60;
-const MAX_GUIDES = 2;
+const MAX_GUIDES = 3;
 const MIN_RELATIVE_RRF = 0.65;
 const LEGAL_SCORE_PENALTY = 0.3;
 
