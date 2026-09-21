@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, type ComponentType } from "react";
+import { DocsChatPending } from "./DocsChatPending";
 
 type PanelProps = {
   onMaximizedChange?: (maximized: boolean) => void;
@@ -26,7 +27,7 @@ export function DocsChat() {
 
   return (
     <div className={maximized ? "docs-chat docs-chat-is-max" : "docs-chat"}>
-      {open && Panel ? <Panel onMaximizedChange={setMaximized} /> : null}
+      {open ? Panel ? <Panel onMaximizedChange={setMaximized} /> : <DocsChatPending /> : null}
       <button
         type="button"
         className="docs-chat-toggle"

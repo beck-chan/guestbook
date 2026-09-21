@@ -169,6 +169,15 @@ export function DocsChatPanel({
   }
 
   const busy = !ready || status === "streaming" || status === "submitted";
+  const lastMessage = messages[messages.length - 1];
+  const lastAssistantEmpty =
+    !lastMessage ||
+    lastMessage.role !== "assistant" ||
+    !messageText(lastMessage);
+  const retrieving =
+    !ready ||
+    status === "submitted" ||
+    (status === "streaming" && lastAssistantEmpty);
 
   const panel = (
     <div
@@ -191,23 +200,35 @@ export function DocsChatPanel({
         </button>
       </div>
       <div className="docs-chat-log" ref={listRef}>
-        {messages.length === 0 ? (
+        {!ready ? (
+          <p className="docs-chat-empty" role="status" aria-live="polite">
+            Retrieving responses ...
+          </p>
+        ) : null}
+        {ready && messages.length === 0 && !retrieving ? (
           <p className="docs-chat-empty">
             Answers are generated from the content of these documentation pages using Gemini and Elasticsearch.
           </p>
         ) : null}
-        {messages.map((message) => (
-          <div
-            key={message.id}
-            className={
-              message.role === "user"
-                ? "docs-chat-bubble docs-chat-bubble-user"
-                : "docs-chat-bubble docs-chat-bubble-assistant"
-            }
-          >
-            <ChatMarkdown text={messageText(message)} />
-          </div>
-        ))}
+        {ready
+          ? messages.map((message) => (
+              <div
+                key={message.id}
+                className={
+                  message.role === "user"
+                    ? "docs-chat-bubble docs-chat-bubble-user"
+                    : "docs-chat-bubble docs-chat-bubble-assistant"
+                }
+              >
+                <ChatMarkdown text={messageText(message)} />
+              </div>
+            ))
+          : null}
+        {ready && retrieving ? (
+          <p className="docs-chat-empty" role="status" aria-live="polite">
+            Retrieving responses ...
+          </p>
+        ) : null}
         {error ? <p className="docs-chat-error">{error.message}</p> : null}
       </div>
       <form className="docs-chat-form" onSubmit={onSubmit}>
