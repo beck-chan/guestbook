@@ -77,13 +77,14 @@ Clicking the [ask the documentation]{.smallcaps} button ([`DocsChat`](https://gi
 - Gemini (`gemini-3.6-flash`) writes the reply from those retrieved excerpts only — it does not read the rest of the docs.
 - It answers from those excerpts even when they are brief, and only says it could not find that if they are about a different topic.
 - The stream lists **Relevant Guides** (links to those pages) first, then **Summary**.
-- The same browser IP is hashed and limited to 5 questions per hour and 10 per day ([`consumeDocsChatRateLimit`](https://github.com/beck-chan/guestbook/blob/main/src/lib/rate-limit.ts){.blank}), stored in `docs_chat_limits` (not `guestbook_rate_limits`).
+- The same browser IP is hashed and limited to 5 questions per hour and 10 per day ([`consumeDocsChatRateLimit`](https://github.com/beck-chan/guestbook/blob/main/src/lib/rate-limit.ts){.blank}), stored in `docs_chat_limits`.
 
 :::
 
 ## Chat History
 
-`docs_chat_session` and `docs_chat_message` tables in Supabase created by [`scripts/chat-history.sql`](https://github.com/beck-chan/guestbook/blob/main/scripts/chat-history.sql){.blank} store chat history per browser session. The browser never talks to these tables — row-level security is on with no `anon` / `authenticated` policies, [`/docs/chat`](https://github.com/beck-chan/guestbook/blob/main/src/app/docs/chat/route.ts){.blank} reads and writes them with the `service_role` client:
+- `docs_chat_session`, `docs_chat_message`, and `docs_chat_limits` tables in Supabase created by [`scripts/chat-history.sql`](https://github.com/beck-chan/guestbook/blob/main/scripts/chat-history.sql){.blank} store chat history per browser session and chat IP quotas. 
+- The browser never talks to these tables — row-level security is on with no `anon` / `authenticated` policies. [`/docs/chat`](https://github.com/beck-chan/guestbook/blob/main/src/app/docs/chat/route.ts){.blank} reads and writes session and message rows with the `service_role` client — quotas go through `DATABASE_URL`.
 
 ::: {.tabset}
 
@@ -95,9 +96,20 @@ Clicking the [ask the documentation]{.smallcaps} button ([`DocsChat`](https://gi
 
 # `docs_chat_message` 
 
-`docs_chat_message` is each turn in that conversation — the user's question or the assistant's reply (`role`), the wording (`content`), and for replies the retrieved page links (`sources`). Deleting a session deletes its messages.
+- `docs_chat_message` is each turn in that conversation — the user's question or the assistant's reply (`role`), the wording (`content`), and for replies the retrieved page links (`sources`). 
+- Deleting a session deletes associated messages.
 
-# Entity Relationship Diagram
+# `docs_chat_limits`
+
+- `docs_chat_limits` is the chat IP quota store — one row per hashed IP window (`key`), how many questions have been used (`points`), and when that window expires (`expire`). [`rate-limiter-flexible`](https://github.com/animir/node-rate-limiter-flexible){.blank} writes these rows. 
+- **Send** hashes the browser IP and counts 5 questions per hour and 10 per day ([`consumeDocsChatRateLimit`](https://github.com/beck-chan/guestbook/blob/main/src/lib/rate-limit.ts){.blank}). Next.js writes these rows through `DATABASE_URL`, not the `service_role` client.
+- **Clear Chat** does not reset quotas.
+
+
+
+:::
+
+### Entity Relationship Diagram
 
 <DocsMermaid chart={`erDiagram
     direction TB
@@ -114,9 +126,12 @@ Clicking the [ask the documentation]{.smallcaps} button ([`DocsChat`](https://gi
         jsonb sources
         timestamptz created_at
     }
+    docs_chat_limits {
+        varchar key PK
+        integer points
+        bigint expire
+    }
     docs_chat_session ||--o{ docs_chat_message : "session_id"
 `} />
-
-:::
 
 
