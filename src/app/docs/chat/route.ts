@@ -1,6 +1,4 @@
 import { createHash } from "node:crypto";
-import fs from "node:fs";
-import path from "node:path";
 import { cookies } from "next/headers";
 import {
   convertToModelMessages,
@@ -34,10 +32,6 @@ const QUERY_EMBED_MODEL = "gemini-embedding-001";
 const QUERY_EMBED_DIMS = 768;
 const QUERY_EMBED_TASK = "RETRIEVAL_QUERY";
 const QUERY_EMBED_CACHE_MAX = 200;
-const QUERY_CACHE_PATH = path.join(
-  process.cwd(),
-  "internal/elastic/query-embed-cache.json",
-);
 
 type QueryEmbedCache = {
   model: string;
@@ -158,48 +152,73 @@ function emptyQueryCache(): QueryEmbedCache {
   };
 }
 
-function loadQueryCache(): QueryEmbedCache {
-  if (queryEmbedCache) return queryEmbedCache;
-  try {
-    const parsed = JSON.parse(
-      fs.readFileSync(QUERY_CACHE_PATH, "utf8"),
-    ) as QueryEmbedCache;
-    if (
-      parsed.model !== QUERY_EMBED_MODEL ||
-      parsed.dims !== QUERY_EMBED_DIMS ||
-      parsed.taskType !== QUERY_EMBED_TASK ||
-      !parsed.vectors ||
-      typeof parsed.vectors !== "object"
-    ) {
-      queryEmbedCache = emptyQueryCache();
-      return queryEmbedCache;
-    }
-    queryEmbedCache = parsed;
-    return queryEmbedCache;
-  } catch {
-    queryEmbedCache = emptyQueryCache();
-    return queryEmbedCache;
+function rememberedEmbedding(key: string) {
+  const cached = queryEmbedCache?.vectors[key];
+  if (Array.isArray(cached) && cached.length === QUERY_EMBED_DIMS) return cached;
+  return null;
+}
+
+function rememberEmbedding(key: string, embedding: number[]) {
+  if (!queryEmbedCache) queryEmbedCache = emptyQueryCache();
+  queryEmbedCache.vectors[key] = embedding;
+  const keys = Object.keys(queryEmbedCache.vectors);
+  if (keys.length <= QUERY_EMBED_CACHE_MAX) return;
+  for (const old of keys.slice(0, keys.length - QUERY_EMBED_CACHE_MAX)) {
+    delete queryEmbedCache.vectors[old];
   }
 }
 
-function saveQueryCache(cache: QueryEmbedCache) {
-  const keys = Object.keys(cache.vectors);
-  if (keys.length > QUERY_EMBED_CACHE_MAX) {
-    const drop = keys.length - QUERY_EMBED_CACHE_MAX;
-    for (const key of keys.slice(0, drop)) {
-      delete cache.vectors[key];
-    }
+function parseEmbedding(value: unknown) {
+  const nums = Array.isArray(value)
+    ? value
+    : typeof value === "string"
+      ? value.replace(/^\[|\]$/g, "").split(",")
+      : null;
+  if (!nums || nums.length !== QUERY_EMBED_DIMS) return null;
+  const embedding = nums.map(Number);
+  if (embedding.some((n) => Number.isNaN(n))) return null;
+  return embedding;
+}
+
+async function readSharedEmbedding(key: string) {
+  const supabase = createServiceClient();
+  const { data, error } = await supabase
+    .from("docs_query_embedding")
+    .select("embedding")
+    .eq("id", key)
+    .eq("model", QUERY_EMBED_MODEL)
+    .eq("dims", QUERY_EMBED_DIMS)
+    .eq("task_type", QUERY_EMBED_TASK)
+    .maybeSingle();
+  if (error) {
+    console.error(error.message);
+    return null;
   }
-  fs.mkdirSync(path.dirname(QUERY_CACHE_PATH), { recursive: true });
-  fs.writeFileSync(QUERY_CACHE_PATH, `${JSON.stringify(cache)}\n`);
+  return data ? parseEmbedding(data.embedding) : null;
+}
+
+async function writeSharedEmbedding(key: string, embedding: number[]) {
+  const supabase = createServiceClient();
+  const { error } = await supabase.from("docs_query_embedding").upsert({
+    id: key,
+    model: QUERY_EMBED_MODEL,
+    dims: QUERY_EMBED_DIMS,
+    task_type: QUERY_EMBED_TASK,
+    embedding: `[${embedding.join(",")}]`,
+    created_at: new Date().toISOString(),
+  });
+  if (error) console.error(error.message);
 }
 
 async function embedQuestion(question: string) {
-  const cache = loadQueryCache();
   const key = questionEmbedKey(question);
-  const cached = cache.vectors[key];
-  if (Array.isArray(cached) && cached.length === QUERY_EMBED_DIMS) {
-    return cached;
+  const remembered = rememberedEmbedding(key);
+  if (remembered) return remembered;
+
+  const shared = await readSharedEmbedding(key);
+  if (shared) {
+    rememberEmbedding(key, shared);
+    return shared;
   }
 
   const { embedding } = await embed({
@@ -214,8 +233,8 @@ async function embedQuestion(question: string) {
     },
   });
 
-  cache.vectors[key] = embedding;
-  saveQueryCache(cache);
+  rememberEmbedding(key, embedding);
+  await writeSharedEmbedding(key, embedding);
   return embedding;
 }
 

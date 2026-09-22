@@ -46,7 +46,11 @@
 .docs-erd-admin,
 .docs-erd-comments,
 .docs-erd-settings,
-.docs-erd-poems {
+.docs-erd-poems,
+.docs-erd-session,
+.docs-erd-limits,
+.docs-erd-query,
+.docs-erd-section {
   width: 100%;
   min-width: 0;
 }
@@ -66,6 +70,38 @@
 
 .docs-erd-poems {
   grid-area: poems;
+}
+
+.docs-erd-grid.docs-erd-grid-chat {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  grid-template-rows: auto auto;
+  grid-template-areas:
+    "session side"
+    "query side";
+  align-items: start;
+}
+
+.docs-erd-session {
+  grid-area: session;
+}
+
+.docs-erd-query {
+  grid-area: query;
+}
+
+.docs-erd-side {
+  grid-area: side;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.35rem;
+  width: 100%;
+  min-width: 0;
+}
+
+.docs-erd-grid-chat .docs-erd-legend {
+  align-self: center;
+  justify-self: center;
 }
 
 .docs-erd-grid .docs-mermaid {
@@ -180,6 +216,15 @@
       "legend"
       "comments"
       "poems";
+  }
+
+  .docs-erd-grid.docs-erd-grid-chat {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: none;
+    grid-template-areas:
+      "session"
+      "side"
+      "query";
   }
 }
 
