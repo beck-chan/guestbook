@@ -6,19 +6,20 @@ import { config } from "dotenv";
 config({ path: ".env.local" });
 
 import { embedMany } from "ai";
-import { google } from "@ai-sdk/google";
+import { createGoogleGenerativeAI } from "@ai-sdk/google";
 import {
   composeDocsCorpus,
   flattenSearchDocs,
 } from "../src/lib/docs/compose";
-import { DOCS_INDEX, elasticClient } from "../src/lib/docs/elastic";
+import { createServiceClient } from "../src/lib/supabase/service";
 
 const EMBED_PER_MINUTE = 80;
 const EMBED_BATCH = 20;
+const UPSERT_BATCH = 40;
 const EMBED_MODEL = "gemini-embedding-001";
 const EMBED_DIMS = 768;
 const EMBED_TASK = "RETRIEVAL_DOCUMENT";
-const CACHE_PATH = path.join(process.cwd(), "internal/elastic/embed-cache.json");
+const CACHE_PATH = path.join(process.cwd(), "internal/supabot/embed-cache.json");
 
 type EmbedCache = {
   model: string;
@@ -27,8 +28,19 @@ type EmbedCache = {
   vectors: Record<string, number[]>;
 };
 
-function cacheKey(id: string, text: string) {
-  return createHash("sha256").update(`${id}\n${text}`).digest("hex");
+type Chunk = {
+  id: string;
+  text: string;
+  hash: string;
+  href: string;
+  title: string;
+  heading: string;
+  section: string;
+  public: boolean;
+};
+
+function contentHash(text: string) {
+  return createHash("sha256").update(text).digest("hex");
 }
 
 function emptyCache(): EmbedCache {
@@ -76,14 +88,21 @@ function retryDelayMs(err: unknown) {
   return 20_000;
 }
 
-async function embedTexts(docs: { id: string; text: string }[]) {
+function vectorLiteral(values: number[]) {
+  return `[${values.join(",")}]`;
+}
+
+async function embedTexts(
+  docs: { hash: string; text: string }[],
+  apiKey: string,
+) {
+  const google = createGoogleGenerativeAI({ apiKey });
   const cache = loadCache();
   const embeddings: number[][] = new Array(docs.length);
   const missing: number[] = [];
 
   for (let i = 0; i < docs.length; i += 1) {
-    const key = cacheKey(docs[i].id, docs[i].text);
-    const cached = cache.vectors[key];
+    const cached = cache.vectors[docs[i].hash];
     if (Array.isArray(cached) && cached.length === EMBED_DIMS) {
       embeddings[i] = cached;
     } else {
@@ -92,7 +111,7 @@ async function embedTexts(docs: { id: string; text: string }[]) {
   }
 
   console.log(
-    `Embed cache: ${docs.length - missing.length} unchanged, ${missing.length} to send to Gemini`,
+    `Embed cache: ${docs.length - missing.length} reused, ${missing.length} to send to Gemini`,
   );
 
   let windowCount = 0;
@@ -126,7 +145,7 @@ async function embedTexts(docs: { id: string; text: string }[]) {
         });
         slice.forEach((i, j) => {
           embeddings[i] = result.embeddings[j];
-          cache.vectors[cacheKey(docs[i].id, docs[i].text)] = result.embeddings[j];
+          cache.vectors[docs[i].hash] = result.embeddings[j];
         });
         saveCache(cache);
         lastError = undefined;
@@ -155,18 +174,18 @@ async function embedTexts(docs: { id: string; text: string }[]) {
 
 async function main() {
   const branch = process.env.BRANCH?.trim() || "main";
-  const elasticUrl = process.env.ELASTIC_URL?.trim();
-  const elasticKey = process.env.ELASTIC_API_KEY?.trim();
-  const geminiKey = process.env.GOOGLE_GENERATIVE_AI_API_KEY?.trim();
+  const geminiKey = process.env.SUPABOT_API_KEY?.trim();
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL?.trim();
+  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY?.trim();
 
-  if (!elasticUrl || !elasticKey || !geminiKey) {
+  if (!geminiKey || !supabaseUrl || !serviceKey) {
     console.error(
-      "Missing ELASTIC_URL, ELASTIC_API_KEY, or GOOGLE_GENERATIVE_AI_API_KEY in .env.local",
+      "Missing SUPABOT_API_KEY, NEXT_PUBLIC_SUPABASE_URL, or SUPABASE_SERVICE_ROLE_KEY in .env.local",
     );
     process.exit(1);
   }
 
-  console.log(`Indexing docs from Git ref ${branch} into ${elasticUrl}`);
+  console.log(`Indexing docs from Git ref ${branch} into docs_section`);
 
   const docs = flattenSearchDocs(
     composeDocsCorpus({ forIndex: true, gitRef: branch }),
@@ -176,74 +195,80 @@ async function main() {
     process.exit(1);
   }
 
-  const chunks = docs.map((doc) => {
+  const chunks: Chunk[] = docs.map((doc) => {
     const body = doc.body.trim();
+    const text = body || `${doc.title} ${doc.heading}`.trim();
     return {
       id: doc.id,
-      text: body || `${doc.title} ${doc.heading}`.trim(),
+      text,
+      hash: contentHash(text),
+      href: doc.href,
+      title: doc.title,
+      heading: doc.heading,
+      section: doc.section ?? "",
+      public: doc.public,
     };
   });
 
-  const embeddings = await embedTexts(chunks);
+  const supabase = createServiceClient();
+  const { data: existing, error: existingError } = await supabase
+    .from("docs_section")
+    .select("id, content_hash");
+  if (existingError) {
+    throw new Error(existingError.message);
+  }
 
-  if (embeddings.length !== docs.length) {
+  const hashById = new Map(
+    (existing ?? []).map((row) => [row.id as string, row.content_hash as string]),
+  );
+  const staleIds = (existing ?? [])
+    .map((row) => row.id as string)
+    .filter((id) => !chunks.some((chunk) => chunk.id === id));
+  const pending = chunks.filter((chunk) => hashById.get(chunk.id) !== chunk.hash);
+
+  console.log(
+    `docs_section: ${chunks.length - pending.length} unchanged, ${pending.length} to upsert, ${staleIds.length} to delete`,
+  );
+
+  const embeddings = await embedTexts(
+    pending.map((chunk) => ({ hash: chunk.hash, text: chunk.text })),
+    geminiKey,
+  );
+
+  if (embeddings.length !== pending.length) {
     console.error("Embedding count did not match document count.");
     process.exit(1);
   }
 
-  const client = elasticClient();
-  const exists = await client.indices.exists({ index: DOCS_INDEX });
-  if (exists) {
-    await client.indices.delete({ index: DOCS_INDEX });
-  }
-
-  await client.indices.create({
-    index: DOCS_INDEX,
-    mappings: {
-      properties: {
-        id: { type: "keyword" },
-        href: { type: "keyword" },
-        title: { type: "text", analyzer: "english" },
-        heading: { type: "text", analyzer: "english" },
-        section: { type: "keyword" },
-        body: { type: "text", analyzer: "english" },
-        public: { type: "boolean" },
-        embedding: {
-          type: "dense_vector",
-          dims: 768,
-          index: true,
-          similarity: "cosine",
-        },
-      },
-    },
-  });
-
-  const operations = docs.map((doc, i) => ({
-    id: doc.id,
-    href: doc.href,
-    title: doc.title,
-    heading: doc.heading,
-    section: doc.section ?? "",
-    body: chunks[i].text,
-    public: doc.public,
-    embedding: embeddings[i],
+  const rows = pending.map((chunk, i) => ({
+    id: chunk.id,
+    href: chunk.href,
+    title: chunk.title,
+    heading: chunk.heading,
+    section: chunk.section,
+    body: chunk.text,
+    public: chunk.public,
+    content_hash: chunk.hash,
+    embedding: vectorLiteral(embeddings[i]),
   }));
 
-  const bulk = await client.helpers.bulk({
-    datasource: operations,
-    onDocument(doc) {
-      return {
-        index: { _index: DOCS_INDEX, _id: doc.id },
-      };
-    },
-  });
-
-  if (bulk.failed > 0) {
-    console.error(`Bulk index failed ${bulk.failed} of ${operations.length}`);
-    process.exit(1);
+  for (let n = 0; n < rows.length; n += UPSERT_BATCH) {
+    const slice = rows.slice(n, n + UPSERT_BATCH);
+    const { error } = await supabase.from("docs_section").upsert(slice);
+    if (error) {
+      throw new Error(error.message);
+    }
   }
 
-  console.log(`Indexed ${operations.length} chunks from ${branch}.`);
+  for (let n = 0; n < staleIds.length; n += UPSERT_BATCH) {
+    const slice = staleIds.slice(n, n + UPSERT_BATCH);
+    const { error } = await supabase.from("docs_section").delete().in("id", slice);
+    if (error) {
+      throw new Error(error.message);
+    }
+  }
+
+  console.log(`Indexed ${chunks.length} chunks from ${branch}.`);
 }
 
 main().catch((err) => {

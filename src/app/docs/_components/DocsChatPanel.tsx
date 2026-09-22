@@ -316,7 +316,7 @@ export function DocsChatPanel({
         {!ready ? <RetrievingBubble label="Loading chat ..." /> : null}
         {ready && messages.length === 0 && !waitingOnSummary ? (
           <p className="docs-chat-empty">
-            Answers are generated from the content of these documentation pages using Gemini and Elasticsearch.
+            Answers are generated from the content of these documentation pages using Gemini.
           </p>
         ) : null}
         {ready

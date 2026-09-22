@@ -10,14 +10,13 @@ import {
   streamText,
   type UIMessage,
 } from "ai";
-import { google } from "@ai-sdk/google";
+import { createGoogleGenerativeAI } from "@ai-sdk/google";
 import { flags } from "@/lib/flags";
 import { clientIp } from "@/lib/clientIp";
 import {
   chatQuotaReachedError,
   consumeDocsChatRateLimit,
 } from "@/lib/rate-limit";
-import { DOCS_INDEX, elasticClient } from "@/lib/docs/elastic";
 import { expandDocsSearchTerm } from "@/lib/docs/searchTerms";
 import { createServiceClient } from "@/lib/supabase/service";
 
@@ -26,7 +25,6 @@ export const maxDuration = 60;
 
 const COOKIE = "docs_chat_id";
 const COOKIE_MAX_AGE = 60 * 60 * 24 * 365 * 5;
-const INDEX = DOCS_INDEX;
 const RETRIEVE_SIZE = 20;
 const RRF_RANK_CONSTANT = 60;
 const MAX_GUIDES = 3;
@@ -139,6 +137,14 @@ function retryAtFromGemini(err: unknown) {
   return nextMidnightInTimeZone("America/Los_Angeles");
 }
 
+function gemini() {
+  const apiKey = process.env.SUPABOT_API_KEY?.trim();
+  if (!apiKey) {
+    throw new Error("Missing SUPABOT_API_KEY");
+  }
+  return createGoogleGenerativeAI({ apiKey });
+}
+
 function questionEmbedKey(text: string) {
   return createHash("sha256").update(text.trim().toLowerCase()).digest("hex");
 }
@@ -197,7 +203,7 @@ async function embedQuestion(question: string) {
   }
 
   const { embedding } = await embed({
-    model: google.embedding(QUERY_EMBED_MODEL),
+    model: gemini().embedding(QUERY_EMBED_MODEL),
     value: question,
     maxRetries: 0,
     providerOptions: {
@@ -323,27 +329,6 @@ type RankedHit = {
   body: string;
 };
 
-function readHits(
-  hits: Array<{
-    _id?: string;
-    _source?: Partial<RankedHit> | null;
-  }>,
-): RankedHit[] {
-  const out: RankedHit[] = [];
-  for (const hit of hits) {
-    const src = hit._source;
-    if (!src?.href || !src.body) continue;
-    out.push({
-      id: String(hit._id ?? src.href),
-      href: src.href,
-      title: src.title || "",
-      heading: src.heading || src.title || "",
-      body: src.body,
-    });
-  }
-  return out;
-}
-
 function rrfRanks(hits: RankedHit[]) {
   const ranks = new Map<string, number>();
   hits.forEach((hit, index) => {
@@ -418,51 +403,42 @@ function pickRelevantGuides(
     .map((row) => row.hit);
 }
 
-function lexicalQuery(question: string, publicFilter?: { term: { public: boolean } }) {
-  const expanded = [
+function keywordTsQuery(question: string) {
+  const terms = [
     ...new Set(
       question
         .split(/\s+/)
         .map((word) => word.replace(/[^\w'-]/g, ""))
         .filter((word) => word.length >= MIN_SEARCH_TOKEN)
-        .flatMap((word) => expandDocsSearchTerm(word)),
+        .flatMap((word) => expandDocsSearchTerm(word))
+        .map((word) => word.toLowerCase().replace(/[^a-z0-9]/g, ""))
+        .filter((word) => word.length >= MIN_SEARCH_TOKEN),
     ),
-  ].join(" ");
+  ];
+  return terms.join(" | ");
+}
 
-  return {
-    bool: {
-      should: [
-        {
-          multi_match: {
-            query: question,
-            type: "best_fields" as const,
-            fields: ["title^5", "heading^3", "body"],
-            fuzziness: "AUTO" as const,
-            prefix_length: 2,
-            boost: 2,
-          },
-        },
-        ...(expanded
-          ? [
-              {
-                multi_match: {
-                  query: expanded,
-                  type: "best_fields" as const,
-                  fields: ["title^4", "heading^2", "body"],
-                },
-              },
-            ]
-          : []),
-        {
-          match_phrase: {
-            title: { query: question, slop: 3, boost: 8 },
-          },
-        },
-      ],
-      minimum_should_match: 1,
-      ...(publicFilter ? { filter: [publicFilter] } : {}),
-    },
-  };
+type DocsSectionRow = {
+  id: string;
+  href: string;
+  title: string | null;
+  heading: string | null;
+  body: string | null;
+};
+
+function sectionHits(rows: DocsSectionRow[] | null): RankedHit[] {
+  const out: RankedHit[] = [];
+  for (const row of rows ?? []) {
+    if (!row.href || !row.body) continue;
+    out.push({
+      id: row.id,
+      href: row.href,
+      title: row.title || "",
+      heading: row.heading || row.title || "",
+      body: row.body,
+    });
+  }
+  return out;
 }
 
 function toUiMessages(
@@ -616,48 +592,38 @@ export async function POST(request: Request) {
     if (!isQuotaError(err) && !isHighDemandError(err)) throw err;
   }
 
-  const publicFilter = flags.public ? { term: { public: true } } : undefined;
-  const client = elasticClient();
-  const sourceFields = ["href", "title", "heading", "body"] as const;
-  const lexicalSearch = client.search<{
-    href: string;
-    title: string;
-    heading: string;
-    body: string;
-  }>({
-    index: INDEX,
-    size: RETRIEVE_SIZE,
-    query: lexicalQuery(question, publicFilter),
-    _source: [...sourceFields],
-  });
-  const semanticSearch = embedding
-    ? client.search<{
-        href: string;
-        title: string;
-        heading: string;
-        body: string;
-      }>({
-        index: INDEX,
-        size: RETRIEVE_SIZE,
-        knn: {
-          field: "embedding",
-          query_vector: embedding,
-          k: RETRIEVE_SIZE,
-          num_candidates: 50,
-          ...(publicFilter ? { filter: publicFilter } : {}),
-        },
-        _source: [...sourceFields],
+  const onlyPublic = flags.public;
+  const keyword = keywordTsQuery(question);
+  const supabase = createServiceClient();
+  const lexicalSearch = keyword
+    ? supabase.rpc("search_docs_sections", {
+        query: keyword,
+        match_count: RETRIEVE_SIZE,
+        only_public: onlyPublic,
       })
-    : Promise.resolve({ hits: { hits: [] } });
+    : Promise.resolve({ data: [] as DocsSectionRow[], error: null });
+  const semanticSearch = embedding
+    ? supabase.rpc("match_docs_sections", {
+        query_embedding: `[${embedding.join(",")}]`,
+        match_count: RETRIEVE_SIZE,
+        only_public: onlyPublic,
+      })
+    : Promise.resolve({ data: [] as DocsSectionRow[], error: null });
 
   const [lexicalRes, semanticRes] = await Promise.all([
     lexicalSearch,
     semanticSearch,
   ]);
+  if (lexicalRes.error) {
+    throw new Error(lexicalRes.error.message);
+  }
+  if (semanticRes.error) {
+    throw new Error(semanticRes.error.message);
+  }
 
   const picked = pickRelevantGuides(
-    readHits(lexicalRes.hits.hits ?? []),
-    readHits(semanticRes.hits.hits ?? []),
+    sectionHits(lexicalRes.data as DocsSectionRow[] | null),
+    sectionHits(semanticRes.data as DocsSectionRow[] | null),
     question,
   );
 
@@ -677,7 +643,7 @@ export async function POST(request: Request) {
   const refusal = picked.length === 0;
   const prefix = refusal ? "" : assistantMarkdown("", sources);
   const result = streamText({
-    model: google("gemini-3.6-flash"),
+    model: gemini()("gemini-3.6-flash"),
     maxRetries: 0,
     providerOptions: {
       google: {

@@ -1,0 +1,45 @@
+name: Sync docs index
+
+on:
+  pull_request:
+    types: [closed]
+    branches: [main]
+    paths:
+      - "src/app/docs/**/*.mdx"
+
+permissions:
+  contents: read
+
+jobs:
+  sync:
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Sync docs into Supabase
+        env:
+          SUPABOT_API_KEY: ${{ secrets.SUPABOT_API_KEY }}
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          BRANCH: main
+        run: |
+          set -euo pipefail
+          if [ -z "${SUPABOT_API_KEY:-}" ] || [ -z "${NEXT_PUBLIC_SUPABASE_URL:-}" ] || [ -z "${SUPABASE_SERVICE_ROLE_KEY:-}" ]; then
+            echo "Missing GitHub secrets SUPABOT_API_KEY, NEXT_PUBLIC_SUPABASE_URL, and/or SUPABASE_SERVICE_ROLE_KEY"
+            exit 1
+          fi
+          npm run sync-docs

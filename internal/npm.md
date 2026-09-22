@@ -49,7 +49,7 @@ To index from a specific branch:
 BRANCH=supabot npm run sync-docs
 ```
 
-- Chunk text is hashed locally in `internal/elastic/embed-cache.json` (gitignored). 
+- Unchanged chunks are skipped via `content_hash` on `docs_section`. Vectors already computed stay in `internal/supabot/embed-cache.json` (gitignored).
 - Unchanged chunks are not sent to Gemini again. The first run still embeds everything — later syncs only pay for edits.
 
 ## Cucumber

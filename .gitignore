@@ -38,7 +38,7 @@ yarn-error.log*
 .env.example
 
 # docs chat embedding caches
-internal/elastic/embed-cache.json
+internal/supabot/embed-cache.json
 internal/elastic/query-embed-cache.json
 
 # vercel
