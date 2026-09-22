@@ -2,9 +2,6 @@ import { createHash } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 import { config } from "dotenv";
-
-config({ path: ".env.local" });
-
 import { embedMany } from "ai";
 import { createGoogleGenerativeAI } from "@ai-sdk/google";
 import {
@@ -12,6 +9,8 @@ import {
   flattenSearchDocs,
 } from "../src/lib/docs/compose";
 import { createServiceClient } from "../src/lib/supabase/service";
+
+config({ path: ".env.local" });
 
 const EMBED_PER_MINUTE = 80;
 const EMBED_BATCH = 20;

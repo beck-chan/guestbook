@@ -103,7 +103,7 @@ Clicking the [ask the documentation]{.smallcaps} button ([`DocsChat`](https://gi
 
 :::
 
-### Entity Relationship Diagram
+## Entity Relationship Diagram
 
 <DocsMermaid chart={`erDiagram
     direction TB
@@ -124,6 +124,18 @@ Clicking the [ask the documentation]{.smallcaps} button ([`DocsChat`](https://gi
         varchar key PK
         integer points
         bigint expire
+    }
+    docs_section {
+        text id PK
+        text href
+        text title
+        text heading
+        text section
+        text body
+        boolean public
+        text content_hash
+        vector embedding
+        tsvector search_vector
     }
     docs_chat_session ||--o{ docs_chat_message : "session_id"
 `} />

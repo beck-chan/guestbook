@@ -2,6 +2,7 @@
   "name": "guestbook",
   "version": "1.0.4",
   "private": true,
+  "type": "module",
   "scripts": {
     "dev": "next dev",
     "docs": "node scripts/docs-dev.mjs",
