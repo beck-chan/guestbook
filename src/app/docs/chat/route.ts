@@ -645,16 +645,17 @@ export async function POST(request: Request) {
   const result = streamText({
     model: gemini()("gemini-3.6-flash"),
     maxRetries: 0,
+    maxOutputTokens: 4096,
     providerOptions: {
       google: {
         thinkingConfig: {
-          thinkingLevel: "low",
+          thinkingLevel: "minimal",
         },
       },
     },
     system: refusal
       ? "You answer questions about guestbook documentation. Reply with exactly: I could not find that in these docs."
-      : `You answer questions about guestbook documentation. Use only the excerpts below. Prefer a heading that matches the question over a page overview. Answer from those excerpts even if they are brief — name the steps they contain. Write the answer only. Do not list documentation URLs or add a sources section. Do not invent pages. Only say you could not find that in these docs if the excerpts are about a different topic.\n\n${excerpts}`,
+      : `You answer questions about guestbook documentation. Use only the excerpts below. Prefer a heading that matches the question over a page overview. Answer from those excerpts even if they are brief — name the steps they contain. Write a short complete summary: a few sentences, or up to five finished bullets. Finish the last sentence. Do not stop mid-phrase. Do not list documentation URLs or add a sources section. Do not invent pages. Only say you could not find that in these docs if the excerpts are about a different topic.\n\n${excerpts}`,
     messages: await convertToModelMessages(messages),
   });
 

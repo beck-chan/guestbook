@@ -18,7 +18,6 @@ public: false
 
 ## Chat Indexing
 
-- `search: false` pages are omitted from the index (none for the local demo, usually pages under the "Internal" section are omitted). 
 - `public: false` pages are still indexed — [`/docs/chat`](https://github.com/beck-chan/guestbook/blob/main/src/app/docs/chat/route.ts){.blank} applies `FLAG_PUBLIC` at query time so a public build only retrieves `public: true` chunks. 
 - Inline user guide search and [`/llms.txt`](/llms.txt){.blank} keep the existing `flags.public` filter and are separate from the chatbot index.
 
@@ -31,7 +30,6 @@ public: false
 - Reads the docs MDX files from a Git branch (`BRANCH`, default `main`).
 - Shared `_snippets` files are pasted into the page that imports them, so the index stores the full wording, not an import line.
 - Each chunk is marked `public: true` or `false` from the page frontmatter, so chat can filter later.
-- Pages with `search: false` are left out. `public: false` pages are still included.
 - A page becomes one overview chunk plus one chunk per heading (the heading's `href` may include `#anchor`).
 
 # sync-docs.ts
@@ -138,6 +136,7 @@ Clicking the [ask the documentation]{.smallcaps} button ([`DocsChat`](https://gi
         tsvector search_vector
     }
     docs_chat_session ||--o{ docs_chat_message : "session_id"
+    docs_chat_limits ||--o{ docs_section : "layout"
 `} />
 
 

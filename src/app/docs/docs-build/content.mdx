@@ -160,12 +160,12 @@ The Test Request feature available on the public build allows visitors to enter 
 ## Search & LLM Ingestion
 
 ::: {.callout}
-# [`composeDocsCorpus`](https://github.com/beck-chan/guestbook/blob/main/src/lib/docs/compose.ts){.blank} reads each `content.mdx` page under `src/app/docs`, inserts shared `_snippets`, and follows the same `search: false`, `public: false`, and public/private fence rules as the rendered documentation. 
+# [`composeDocsCorpus`](https://github.com/beck-chan/guestbook/blob/main/src/lib/docs/compose.ts){.blank} reads each `content.mdx` page under `src/app/docs`, inserts shared `_snippets`, and follows the same `public: false` and public/private fence rules as the rendered documentation. 
 
 - Humans search that copy with the User Guide Search or API Library Search. 
 - Large language models (LLMs) find it through [`/llms.txt`](/llms.txt){.blank} and `/docs/<slug>.md`. 
 
-Nothing is hand-maintained for search or LLM catalogs. On each deploy, compose re-reads `.mdx` pages for that build’s flags when `/docs/search-index`, `/llms.txt`, or `/docs/<slug>.md` are built — not on every documentation page render.
+Nothing is hand-maintained for search or LLM catalogs. On each deploy, compose re-reads `.mdx` pages for that build's flags when `/docs/search-index`, `/llms.txt`, or `/docs/<slug>.md` are built — not on every documentation page render.
 :::
 
 ::: {.tabset}
@@ -181,7 +181,6 @@ For every documentation page except API Library (`/docs/api`), **Search Docs** o
 
 - Host pages only (`**/content.mdx`); `_snippets` are never rendered or indexed independently
 - Snippet imports are inlined into the host before flattening headings/body
-- Pages with `search: false` are omitted (anything under "Internal" in the sidebar)
 - When `FLAG_PUBLIC=true`, pages with `public: false` are omitted (anything under "Internal" in the sidebar)
 - `{.public}` / `{.private}` fences and `*-public` embed pairs resolve through the live Remark plugin so public deploys never index private-only copy
 - OpenAPI / Scalar operations are not returned in the user guide search — only other docs `.mdx` files (including `/docs/api` prose from `api/content.mdx` when it is searchable)
@@ -201,7 +200,7 @@ Agents follow **discover → fetch → cite** against the same composed guides t
 - One line per indexed guide with HTML and `.md` links
 - Grouped by nav section when available
 - A short API pointer to `/docs/api` (Scalar) — no OpenAPI schema dump
-- Same opt-outs as the user guide search (`search: false`, `public: false` under `FLAG_PUBLIC`)
+- Same opt-outs as the user guide search (`public: false` under `FLAG_PUBLIC`)
 
 **`/docs/<slug>.md`**
 
@@ -214,9 +213,8 @@ Agents follow **discover → fetch → cite** against the same composed guides t
 
 | Mechanism | Effect on search / LLM surfaces |
 | --- | --- |
-| `search: false` | Page dropped from user guide search, `/llms.txt`, and `.md` mirrors |
 | `public: false` + `FLAG_PUBLIC=true` | Page dropped from the composed corpus for that deploy |
-| `{.public}` / `{.private}` fences | Only the active fence’s copy is composed/indexed |
+| `{.public}` / `{.private}` fences | Only the active fence's copy is composed/indexed |
 | `*-public` embed pairs | Remark picks the embed that matches the flag |
 
 :::

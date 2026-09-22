@@ -255,11 +255,27 @@ function fitSvgCanvas(host: HTMLElement) {
   svg.style.height = "auto";
 }
 
+function dropLayoutEdges(svg: SVGSVGElement) {
+  const labelGroups = [...svg.querySelectorAll(".edgeLabels > g")];
+  const pathGroups = [...svg.querySelectorAll(".edgePaths > *")];
+  labelGroups.forEach((group, index) => {
+    if (labelText(group) !== "layout") return;
+    const id = group.getAttribute("id") ?? "";
+    group.remove();
+    pathGroups[index]?.remove();
+    if (!id) return;
+    for (const node of svg.querySelectorAll(`[id="${id}"]`)) {
+      node.remove();
+    }
+  });
+}
+
 function prepareSvg(svg: string, border: string) {
   const wrap = document.createElement("div");
   wrap.innerHTML = svg;
   const svgEl = wrap.querySelector("svg");
   if (svgEl) {
+    dropLayoutEdges(svgEl);
     pinMermaidSvgSize(svgEl);
     sanitizeSvgStyles(svgEl);
     tintConnectors(svgEl, border);

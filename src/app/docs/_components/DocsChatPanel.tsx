@@ -316,7 +316,7 @@ export function DocsChatPanel({
         {!ready ? <RetrievingBubble label="Loading chat ..." /> : null}
         {ready && messages.length === 0 && !waitingOnSummary ? (
           <p className="docs-chat-empty">
-            Answers are generated from the content of these documentation pages using Gemini.
+            Answers are generated from the content of these documentation pages. The Supabase `pgvector` extension finds pages close in meaning to your question, and Gemini writes the reply.
           </p>
         ) : null}
         {ready
