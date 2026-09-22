@@ -24,7 +24,9 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          # @supabase/supabase-js opens a Realtime client, which needs the
+          # global WebSocket that ships with Node 22+.
+          node-version: "22"
           cache: npm
 
       - name: Install dependencies
