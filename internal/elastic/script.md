@@ -19,11 +19,11 @@ With the Elasticsearch container responsive, I'm going to use my script that syn
 
 ***
 
-Since my project's backend was already hosted on Supabase, I went ahead and created some tables for the chat integration: 
+My project's backend is hosted on Supabase, so I created some tables for the chat integration: 
 
 - `docs_chat_session` holds one conversation in the `docs_chat_id` session cookie. 
 - `docs_chat_message` captures each turn in a conversation, the user's question or the chatbot's reply.
-- And since I already had `rate-limiter-flexible` installed to limit commenting frequency in my application, I reused it with `docs_chat_limits` to store how many questions have been used and when that window expires. 
+- And since I already had `rate-limiter-flexible` installed to limit commenting frequency, I reused it with `docs_chat_limits` to store how many questions have been asked and when the restriction window expires. 
 
 ***
 
@@ -31,7 +31,9 @@ With the documentation indexed in the Elasticsearch container, I'm going to run 
 
 ***
 
-This next bit is from a new session, where I ask the chatbot a few more questions, have the session persist as I navigate to a different page of the documentation, and we can verify that the session appears on the `docs_chat_session` table, and each turn in our conversation gets captured in `docs_chat_message`.
+This next bit is from a new session, where I ask the chatbot a few more questions, and have the session persist as I navigate to a different page of the documentation.
+
+We can verify that the session appears on the `docs_chat_session` table, and each turn in our conversation gets captured in `docs_chat_message`.
 
 Then once we click **Clear Chat**, the session is deleted from the `docs_chat_session` and the history gone from the chat window, starting a new session.
 
