@@ -6,6 +6,7 @@ import { useGSAP } from "@gsap/react";
 import type { Poem } from "@/lib/poems";
 import { DocsHeart } from "@/app/docs/_components/DocsHeart";
 import { EasterEgg } from "@/components/_desk/EasterEgg";
+import { PoemSection } from "@/components/_desk/PoemBody";
 import { StickyNote } from "@/components/_desk/StickyNote";
 
 gsap.registerPlugin(useGSAP);
@@ -1267,13 +1268,11 @@ export function Book({
                   aria-hidden={!isOpen}
                 >
                   {poem.sections.map((section) => (
-                    <section key={section.title} className="poem-piece">
-                      <h2 className="poem-title">{section.title}</h2>
-                      <div
-                        className="poem-body"
-                        dangerouslySetInnerHTML={{ __html: section.html }}
-                      />
-                    </section>
+                    <PoemSection
+                      key={section.title}
+                      title={section.title}
+                      html={section.html}
+                    />
                   ))}
                 </article>
               ) : null}

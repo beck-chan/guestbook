@@ -1,13 +1,14 @@
 "use client";
 
-import { useLayoutEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { CommentBubbles } from "@/components/_shared/CommentBubbles";
 import { DocsHeart } from "@/app/docs/_components/DocsHeart";
 import { EasterEgg } from "@/components/_desk/EasterEgg";
 import { HitCounter } from "@/components/_shared/HitCounter";
 import { MobileMenu } from "@/components/_shared/MobileMenu";
 import type { GuestbookComment } from "@/lib/comments";
-import { pickPoemIndex, poemMeasureLines, type Poem } from "@/lib/poems";
+import { PoemSection } from "@/components/_desk/PoemBody";
+import { pickPoemIndex, type Poem } from "@/lib/poems";
 
 type MobileReadingProps = {
   poems: Poem[];
@@ -28,8 +29,7 @@ type MobileReadingProps = {
 
 const FONT_BOOST_MAX = 4;
 const FONT_BOOST_FACTOR = 1.16;
-const FONT_FIT_MIN = 11;
-const FONT_FIT_MAX = 17;
+const POEM_FONT_REM = 0.86;
 
 function Chevron({ up = false }: { up?: boolean }) {
   return (
@@ -70,51 +70,6 @@ function ScrollHint({ up, label, onPaper, onClick, ariaLabel }: HintProps) {
   );
 }
 
-function fitPoemFont(copy: HTMLElement, poem: Poem) {
-  const body = copy.querySelector(".poem-body");
-  const title = copy.querySelector(".poem-title");
-  const styles = getComputedStyle(copy);
-  const available =
-    copy.clientWidth -
-    Number.parseFloat(styles.paddingLeft) -
-    Number.parseFloat(styles.paddingRight) -
-    8;
-  const titleInset = title
-    ? Number.parseFloat(getComputedStyle(title).paddingRight) || 0
-    : 0;
-  const family = getComputedStyle(body ?? copy).fontFamily;
-  const canvas = document.createElement("canvas");
-  const ctx = canvas.getContext("2d");
-  if (!ctx || available <= 0) {
-    return FONT_FIT_MIN;
-  }
-
-  const lines = poemMeasureLines(poem);
-
-  function fits(size: number) {
-    return lines.every((line) => {
-      ctx!.font = `${line.weight} ${size * line.scale}px ${family}`;
-      const limit = line.weight === 700 ? available - titleInset : available;
-      return ctx!.measureText(line.text).width <= limit;
-    });
-  }
-
-  let lo = FONT_FIT_MIN;
-  let hi = FONT_FIT_MAX;
-  if (!fits(lo)) {
-    return lo;
-  }
-  for (let i = 0; i < 12; i += 1) {
-    const mid = (lo + hi) / 2;
-    if (fits(mid)) {
-      lo = mid;
-    } else {
-      hi = mid;
-    }
-  }
-  return lo;
-}
-
 export function MobileReading({
   poems,
   initialIndex,
@@ -132,7 +87,6 @@ export function MobileReading({
   commentPageSize,
 }: MobileReadingProps) {
   const scrollerRef = useRef<HTMLElement>(null);
-  const poemCopyRef = useRef<HTMLElement>(null);
   const [uncontrolledIndex, setUncontrolledIndex] = useState(initialIndex);
   const poemIndex = controlledIndex ?? uncontrolledIndex;
   const setPoemIndex = (updater: number | ((current: number) => number)) => {
@@ -146,33 +100,8 @@ export function MobileReading({
   };
   const [commentsOpen, setCommentsOpen] = useState(false);
   const [fontBoost, setFontBoost] = useState(0);
-  const [fitPx, setFitPx] = useState<number | null>(null);
   const poem = poems[poemIndex];
-
-  useLayoutEffect(() => {
-    const copy = poemCopyRef.current;
-    if (!copy || !poem) {
-      return;
-    }
-
-    let cancelled = false;
-
-    function measure() {
-      if (!copy || cancelled) {
-        return;
-      }
-      setFitPx(fitPoemFont(copy, poem));
-    }
-
-    measure();
-    void document.fonts.ready.then(measure);
-    const observer = new ResizeObserver(measure);
-    observer.observe(copy);
-    return () => {
-      cancelled = true;
-      observer.disconnect();
-    };
-  }, [poem]);
+  const poemSize = `${POEM_FONT_REM * FONT_BOOST_FACTOR ** fontBoost}rem`;
 
   function scrollToPanel(index: number) {
     const scroller = scrollerRef.current;
@@ -291,25 +220,16 @@ export function MobileReading({
         <div className="leaf">
           {poem ? (
             <article
-              className={`leaf-copy${fontBoost > 0 ? " is-font-boosted" : ""}`}
+              className="leaf-copy"
               key={poem.id}
-              ref={poemCopyRef}
-              style={
-                fitPx
-                  ? {
-                      ["--poem-size" as string]: `${fitPx * FONT_BOOST_FACTOR ** fontBoost}px`,
-                    }
-                  : undefined
-              }
+              style={{ ["--poem-size" as string]: poemSize }}
             >
               {poem.sections.map((section) => (
-                <section key={section.title} className="poem-piece">
-                  <h2 className="poem-title">{section.title}</h2>
-                  <div
-                    className="poem-body"
-                    dangerouslySetInnerHTML={{ __html: section.html }}
-                  />
-                </section>
+                <PoemSection
+                  key={section.title}
+                  title={section.title}
+                  html={section.html}
+                />
               ))}
             </article>
           ) : null}

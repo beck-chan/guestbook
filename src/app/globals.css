@@ -1046,7 +1046,11 @@ html:has(.desk-split) .mobile-reading {
 }
 
 .poem-piece {
+  --poem-gutter: calc(var(--poem-num-ch, 2ch) + 0.7em);
+  padding-left: var(--poem-gutter);
   font-family: var(--poem-font);
+  font-size: clamp(0.9rem, 1.4vw, 1.18rem);
+  line-height: 1.55;
 }
 
 .poem-title {
@@ -1059,12 +1063,34 @@ html:has(.desk-split) .mobile-reading {
 
 .poem-body {
   font-family: var(--poem-font);
-  font-size: clamp(0.9rem, 1.4vw, 1.18rem);
-  line-height: 1.55;
+  font-size: inherit;
+  line-height: inherit;
 }
 
 .poem-body em {
   font-style: italic;
+}
+
+.poem-line {
+  display: grid;
+  grid-template-columns: var(--poem-num-ch, 2ch) minmax(0, 1fr);
+  column-gap: 0.7em;
+  align-items: baseline;
+  width: calc(100% + var(--poem-gutter));
+  margin-left: calc(var(--poem-gutter) * -1);
+  min-height: 1lh;
+}
+
+.poem-line-num {
+  justify-self: end;
+  color: color-mix(in srgb, currentColor 48%, transparent);
+  font-variant-numeric: tabular-nums;
+  line-height: inherit;
+}
+
+.poem-line-text {
+  min-width: 0;
+  overflow-wrap: break-word;
 }
 
 .leaf-copy a,
@@ -3029,15 +3055,11 @@ html:has(.desk-split) .mobile-reading {
   .mobile-poem .poem-title {
     font-size: calc(var(--poem-size, 0.86rem) * 1.22);
     padding-right: 2.6rem;
+    overflow-wrap: break-word;
   }
 
-  .mobile-poem .poem-body {
+  .mobile-poem .poem-piece {
     font-size: var(--poem-size, 0.86rem);
-  }
-
-  .mobile-poem .leaf-copy:not(.is-font-boosted) .poem-title,
-  .mobile-poem .leaf-copy:not(.is-font-boosted) .poem-body {
-    white-space: nowrap;
   }
 
   .mobile-font-zoom {
