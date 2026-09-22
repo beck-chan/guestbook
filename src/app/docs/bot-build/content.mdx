@@ -56,7 +56,8 @@ Clicking the [ask the documentation]{.smallcaps} button ([`DocsChat`](https://gi
 
 # Retrieval
 
-- Gemini (`gemini-embedding-001`, 768 dimensions, `RETRIEVAL_QUERY`) turns the question into a vector so pages can match by meaning, not only by the same words. The same wording reuses a gitignored query embed cache. If embed quota is hit, keyword search still runs.
+- Gemini (`gemini-embedding-001`, 768 dimensions, `RETRIEVAL_QUERY`) turns the question into a vector so pages can match by meaning, not only by the same words. If embed quota is hit, keyword search still runs.
+- The same wording reuses `docs_query_embedding` ([`scripts/supabot.sql`](https://github.com/beck-chan/guestbook/blob/main/scripts/supabot.sql){.blank}). The row ID is a hash of the question, so the question text is not stored. The server instance also keeps vectors it has already loaded, and a trigger keeps the newest 200 rows. Row-level security is on with no `anon` / `authenticated` policies. [`/docs/chat`](https://github.com/beck-chan/guestbook/blob/main/src/app/docs/chat/route.ts){.blank} reads and writes those rows with the `service_role` client.
 - Postgres then runs two lookups — wording match (`search_docs_sections`, ranked on `search_vector`) and meaning match (`match_docs_sections`, cosine distance). Those ranked lists are combined (RRF) in [`/docs/chat`](https://github.com/beck-chan/guestbook/blob/main/src/app/docs/chat/route.ts){.blank} so a page that does well on either can still surface.
 - At most three pages are kept, and only if their combined score is close to the best hit. Weaker matches are dropped.
 - Privacy Policy, Terms of Service, and Cucumber Tests are pushed down unless the question is actually about them.
@@ -103,6 +104,8 @@ Clicking the [ask the documentation]{.smallcaps} button ([`DocsChat`](https://gi
 
 ## Entity Relationship Diagram
 
+<DocsErdGrid layout="chat">
+
 <DocsMermaid chart={`erDiagram
     direction TB
     docs_chat_session {
@@ -118,11 +121,32 @@ Clicking the [ask the documentation]{.smallcaps} button ([`DocsChat`](https://gi
         jsonb sources
         timestamptz created_at
     }
+    docs_chat_session ||--o{ docs_chat_message : "session_id"
+`} />
+
+<DocsMermaid chart={`erDiagram
+    direction TB
     docs_chat_limits {
         varchar key PK
         integer points
         bigint expire
     }
+`} />
+
+<DocsMermaid chart={`erDiagram
+    direction TB
+    docs_query_embedding {
+        text id PK
+        text model
+        integer dims
+        text task_type
+        vector embedding
+        timestamptz created_at
+    }
+`} />
+
+<DocsMermaid chart={`erDiagram
+    direction TB
     docs_section {
         text id PK
         text href
@@ -135,8 +159,8 @@ Clicking the [ask the documentation]{.smallcaps} button ([`DocsChat`](https://gi
         vector embedding
         tsvector search_vector
     }
-    docs_chat_session ||--o{ docs_chat_message : "session_id"
-    docs_chat_limits ||--o{ docs_section : "layout"
 `} />
+
+</DocsErdGrid>
 
 

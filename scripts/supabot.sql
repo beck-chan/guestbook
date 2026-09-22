@@ -110,3 +110,50 @@ revoke all on function public.search_docs_sections(text, int, boolean)
   from public, anon, authenticated;
 grant execute on function public.search_docs_sections(text, int, boolean)
   to service_role;
+
+-- ---------------------------------------------------------------------------
+-- docs_query_embedding
+-- ---------------------------------------------------------------------------
+-- Shared cache of question embeddings for /docs/chat. The key is a hash of
+-- the question, so the question text is not stored. Safe to run again.
+-- A statement trigger keeps the newest 200 rows.
+
+create table if not exists public.docs_query_embedding (
+  id text primary key,
+  model text not null,
+  dims int not null,
+  task_type text not null,
+  embedding extensions.vector(768) not null,
+  created_at timestamptz not null default now()
+);
+
+alter table public.docs_query_embedding enable row level security;
+revoke all on table public.docs_query_embedding from anon, authenticated, public;
+grant select, insert, update, delete on table public.docs_query_embedding to service_role;
+
+create or replace function public.trim_docs_query_embedding()
+returns trigger
+language plpgsql
+set search_path = public
+as $$
+begin
+  delete from public.docs_query_embedding
+  where id in (
+    select id
+    from public.docs_query_embedding
+    order by created_at desc
+    offset 200
+  );
+  return null;
+end;
+$$;
+
+revoke all on function public.trim_docs_query_embedding()
+  from public, anon, authenticated;
+grant execute on function public.trim_docs_query_embedding() to service_role;
+
+drop trigger if exists docs_query_embedding_trim on public.docs_query_embedding;
+create trigger docs_query_embedding_trim
+  after insert or update on public.docs_query_embedding
+  for each statement
+  execute function public.trim_docs_query_embedding();
