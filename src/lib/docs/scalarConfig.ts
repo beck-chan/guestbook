@@ -466,6 +466,26 @@ a[role="option"][data-docs-hide-op-desc="true"] .text-c-2 {
   max-width: 100% !important;
 }
 
+/* Tag groupings only. Side padding lives on the section so the divider stays full width. */
+.scalar-app .tag-section-container:not(.tag-section-nested) > .section {
+  padding-inline: 2rem !important;
+}
+
+/* Endpoints under a group sit a step further in than that group's heading. */
+.scalar-app .tag-section-container:not(.tag-section-nested) > .contents .section {
+  padding-inline: 3rem !important;
+}
+
+@media (max-width: 800px) {
+  .scalar-app .tag-section-container:not(.tag-section-nested) > .section {
+    padding-inline: 0.875rem !important;
+  }
+
+  .scalar-app .tag-section-container:not(.tag-section-nested) > .contents .section {
+    padding-inline: 1.625rem !important;
+  }
+}
+
 /* Match sidebar method colors on Scalar operation labels. */
 .scalar-app .text-blue,
 .scalar-app [style*="--scalar-color-blue"] {
