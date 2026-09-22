@@ -132,7 +132,8 @@ body {
   justify-content: center;
   background: var(--desk);
   opacity: 1;
-  transition: opacity 700ms linear;
+  --route-out: 700ms;
+  transition: opacity var(--route-out) linear;
 }
 
 .route-loading-layer.is-out {

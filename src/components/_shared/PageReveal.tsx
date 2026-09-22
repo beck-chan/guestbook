@@ -5,6 +5,7 @@ import {
   useCallback,
   useEffect,
   useState,
+  type CSSProperties,
   type ReactNode,
 } from "react";
 import { usePathname } from "next/navigation";
@@ -13,7 +14,15 @@ import { RouteLoading } from "@/components/_shared/RouteLoading";
 type Phase = "wait" | "out" | "in";
 
 const OUT_MS = 700;
+const FIRST_OUT_MS = OUT_MS * 2;
 const revealedPathnames = new Set<string>();
+
+function isDocumentNavigate() {
+  const entry = performance.getEntriesByType("navigation")[0] as
+    | PerformanceNavigationTiming
+    | undefined;
+  return entry?.type === "navigate";
+}
 
 export function PageReveal({
   as: Tag = "div",
@@ -27,6 +36,14 @@ export function PageReveal({
   const pathname = usePathname();
   const [skipReveal] = useState(() => revealedPathnames.has(pathname));
   const [phase, setPhase] = useState<Phase>(skipReveal ? "in" : "wait");
+  const [outMs, setOutMs] = useState<number | null>(skipReveal ? OUT_MS : null);
+
+  useEffect(() => {
+    if (skipReveal) return;
+    // Longer fade when this document was opened. A refresh keeps the shorter one.
+    const slow = revealedPathnames.size === 0 && isDocumentNavigate();
+    setOutMs(slow ? FIRST_OUT_MS : OUT_MS);
+  }, [skipReveal]);
 
   const onResolved = useCallback(() => {
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
@@ -41,10 +58,10 @@ export function PageReveal({
   }, []);
 
   useEffect(() => {
-    if (phase !== "out") return;
-    const timer = window.setTimeout(onOutDone, OUT_MS);
+    if (phase !== "out" || outMs == null) return;
+    const timer = window.setTimeout(onOutDone, outMs);
     return () => window.clearTimeout(timer);
-  }, [phase, onOutDone]);
+  }, [phase, outMs, onOutDone]);
 
   useEffect(() => {
     if (phase !== "in") return;
@@ -61,6 +78,11 @@ export function PageReveal({
           className={["route-loading-layer", phase === "out" && "is-out"]
             .filter(Boolean)
             .join(" ")}
+          style={
+            outMs === FIRST_OUT_MS
+              ? ({ "--route-out": `${FIRST_OUT_MS}ms` } as CSSProperties)
+              : undefined
+          }
           onTransitionEnd={(event) => {
             if (event.target !== event.currentTarget) return;
             if (event.propertyName !== "opacity") return;
@@ -76,6 +98,7 @@ export function PageReveal({
           className={className}
           animate={!skipReveal}
           visible={phase === "in"}
+          armed={outMs !== null}
           onResolved={onResolved}
         >
           {children}
@@ -90,6 +113,7 @@ function RevealContent({
   className,
   animate,
   visible,
+  armed,
   onResolved,
   children,
 }: {
@@ -97,13 +121,15 @@ function RevealContent({
   className?: string;
   animate: boolean;
   visible: boolean;
+  armed: boolean;
   onResolved: () => void;
   children: ReactNode;
 }) {
   useEffect(() => {
+    if (!armed) return;
     const frame = requestAnimationFrame(onResolved);
     return () => cancelAnimationFrame(frame);
-  }, [onResolved]);
+  }, [armed, onResolved]);
 
   return (
     <Tag
