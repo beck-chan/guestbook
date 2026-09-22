@@ -1,0 +1,142 @@
+---
+subtitle: How was the docs chatbot implemented?
+# search: false
+public: false
+---
+
+# Chatbot Build
+
+::: {.callout}
+
+# Supabase `docs_section` stores MDX chunks and Gemini embeddings synced from a `guestbook` repository branch, and Gemini answers from those rows.
+
+- [`composeDocsCorpus({ forIndex: true })`](https://github.com/beck-chan/guestbook/blob/main/src/lib/docs/compose.ts){.blank} builds chunk text from MDX under [`src/app/docs`](https://github.com/beck-chan/guestbook/tree/main/src/app/docs){.blank} for `docs_section`. 
+- [`scripts/sync-docs.ts`](https://github.com/beck-chan/guestbook/blob/main/scripts/sync-docs.ts){.blank} embeds chunks and upserts them into `docs_section`.
+- [`DocsChat`](https://github.com/beck-chan/guestbook/blob/main/src/app/docs/_components/DocsChat.tsx){.blank} is the [ask the documentation]{.smallcaps} bubble on every docs page that talks to [`/docs/chat`](https://github.com/beck-chan/guestbook/blob/main/src/app/docs/chat/route.ts){.blank}.
+
+:::
+
+## Chat Indexing
+
+- `public: false` pages are still indexed — [`/docs/chat`](https://github.com/beck-chan/guestbook/blob/main/src/app/docs/chat/route.ts){.blank} applies `FLAG_PUBLIC` at query time so a public build only retrieves `public: true` chunks. 
+- Inline user guide search and [`/llms.txt`](/llms.txt){.blank} keep the existing `flags.public` filter and are separate from the chatbot index.
+
+::: {.tabset}
+
+# compose.ts
+
+[`src/lib/docs/compose.ts`](https://github.com/beck-chan/guestbook/blob/main/src/lib/docs/compose.ts){.blank} with `forIndex: true` builds the text that later goes into `docs_section`:
+
+- Reads the docs MDX files from a Git branch (`BRANCH`, default `main`).
+- Shared `_snippets` files are pasted into the page that imports them, so the index stores the full wording, not an import line.
+- Each chunk is marked `public: true` or `false` from the page frontmatter, so chat can filter later.
+- A page becomes one overview chunk plus one chunk per heading (the heading's `href` may include `#anchor`).
+
+# sync-docs.ts
+
+[`npm run sync-docs`](https://github.com/beck-chan/guestbook/blob/main/package.json){.blank} runs [`scripts/sync-docs.ts`](https://github.com/beck-chan/guestbook/blob/main/scripts/sync-docs.ts){.blank} to embed that text and upsert it into `docs_section`:
+
+- Gemini (`gemini-embedding-001`, 768 dimensions, `RETRIEVAL_DOCUMENT`) turns chunks into vectors in batches of 20 for meaning search.
+- Each chunk is stored with a `content_hash` of that text. A matching hash skips Gemini and the write.
+- Title, heading, and body also fill a weighted `search_vector` (English full text, so "running" and "run" can match). A title match outranks a heading, and a heading outranks the body.
+- Rows are upserted with the Supabase `service_role` client. Chunk ids that disappeared from the corpus are deleted.
+- Vectors already computed stay in `internal/supabot/embed-cache.json` (gitignored), so a machine that embedded a chunk can skip Gemini when the row is missing. A merged docs change on `main` runs the same script from GitHub Actions, which uses `content_hash` because that cache file is not in the repo.
+
+:::
+
+## Chatbot Interface
+
+Clicking the [ask the documentation]{.smallcaps} button ([`DocsChat`](https://github.com/beck-chan/guestbook/blob/main/src/app/docs/_components/DocsChat.tsx){.blank}) opens the [`DocsChatPanel`](https://github.com/beck-chan/guestbook/blob/main/src/app/docs/_components/DocsChatPanel.tsx){.blank}. [`/docs/chat/route.ts`](https://github.com/beck-chan/guestbook/blob/main/src/app/docs/chat/route.ts){.blank}:
+
+- Restores message history it the browser has a `docs_chat_id` cookie. ({.get})
+- Looks up matching docs in `docs_section`, then asks Gemini to write a summary from those excerpts only on **Send**. ({.post})
+- [Clears the message history](#chat-history) by dropping the current `docs_chat_id` cookie and the matching Supabase session when **Clear Chat** is clicked. ({.delete})
+
+::: {.tabset}
+
+# Retrieval
+
+- Gemini (`gemini-embedding-001`, 768 dimensions, `RETRIEVAL_QUERY`) turns the question into a vector so pages can match by meaning, not only by the same words. The same wording reuses a gitignored query embed cache. If embed quota is hit, keyword search still runs.
+- Postgres then runs two lookups — wording match (`search_docs_sections`, ranked on `search_vector`) and meaning match (`match_docs_sections`, cosine distance). Those ranked lists are combined (RRF) in [`/docs/chat`](https://github.com/beck-chan/guestbook/blob/main/src/app/docs/chat/route.ts){.blank} so a page that does well on either can still surface.
+- At most three pages are kept, and only if their combined score is close to the best hit. Weaker matches are dropped.
+- Privacy Policy, Terms of Service, and Cucumber Tests are pushed down unless the question is actually about them.
+- Short words such as `api` and `add` are kept for matching (three characters or more).
+- If a heading on that page matches the question, that heading's excerpt is used instead of the page overview.
+- When `FLAG_PUBLIC` is on, only `public: true` pages are retrieved. That filter runs inside each lookup, before the row limit.
+
+# Answers
+
+- Gemini (`gemini-3.6-flash`) writes the reply from those retrieved excerpts only — it does not read the rest of the docs.
+- It answers from those excerpts even when they are brief, and only says it could not find that if they are about a different topic.
+- The stream lists **Relevant Guides** (links to those pages) first, then **Summary**.
+- The same browser IP is hashed and limited to 5 questions per hour and 10 per day ([`consumeDocsChatRateLimit`](https://github.com/beck-chan/guestbook/blob/main/src/lib/rate-limit.ts){.blank}), stored in `docs_chat_limits`.
+
+:::
+
+## Chat History
+
+- `docs_chat_session`, `docs_chat_message`, and `docs_chat_limits` tables in Supabase created by [`scripts/chat-history.sql`](https://github.com/beck-chan/guestbook/blob/main/scripts/chat-history.sql){.blank} store chat history per browser session and chat IP quotas. 
+- The browser never talks to these tables — row-level security is on with no `anon` / `authenticated` policies. [`/docs/chat`](https://github.com/beck-chan/guestbook/blob/main/src/app/docs/chat/route.ts){.blank} reads and writes session and message rows with the `service_role` client — quotas go through `DATABASE_URL`.
+
+::: {.tabset}
+
+# `docs_chat_session` 
+
+- `docs_chat_session` is one conversation — cookie `docs_chat_id` (httpOnly, path `/`) stores that row's ID so opening [ask the documentation]{.smallcaps} again restores the same thread within that browser session. 
+- **Send** upserts that session (a leftover cookie still captures) and writes the question immediately, then the reply after Gemini finishes. 
+- **Clear Chat** deletes that cookie and this session row.
+
+# `docs_chat_message` 
+
+- `docs_chat_message` is each turn in that conversation — the user's question or the assistant's reply (`role`), the wording (`content`), and for replies the retrieved page links (`sources`). 
+- Deleting a session deletes associated messages.
+
+# `docs_chat_limits`
+
+- `docs_chat_limits` is the chat IP quota store — one row per hashed IP window (`key`), how many questions have been used (`points`), and when that window expires (`expire`). [`rate-limiter-flexible`](https://github.com/animir/node-rate-limiter-flexible){.blank} writes these rows. 
+- **Send** hashes the browser IP and counts 5 questions per hour and 10 per day ([`consumeDocsChatRateLimit`](https://github.com/beck-chan/guestbook/blob/main/src/lib/rate-limit.ts){.blank}). Next.js writes these rows through `DATABASE_URL`, not the `service_role` client.
+- **Clear Chat** does not reset quotas.
+
+
+
+:::
+
+## Entity Relationship Diagram
+
+<DocsMermaid chart={`erDiagram
+    direction TB
+    docs_chat_session {
+        uuid id PK
+        timestamptz created_at
+        timestamptz updated_at
+    }
+    docs_chat_message {
+        uuid id PK
+        uuid session_id FK
+        text role
+        text content
+        jsonb sources
+        timestamptz created_at
+    }
+    docs_chat_limits {
+        varchar key PK
+        integer points
+        bigint expire
+    }
+    docs_section {
+        text id PK
+        text href
+        text title
+        text heading
+        text section
+        text body
+        boolean public
+        text content_hash
+        vector embedding
+        tsvector search_vector
+    }
+    docs_chat_session ||--o{ docs_chat_message : "session_id"
+    docs_chat_limits ||--o{ docs_section : "layout"
+`} />
+
+

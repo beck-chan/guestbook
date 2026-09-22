@@ -2363,3 +2363,341 @@ a[role="option"][data-docs-hide-heading="true"],
     transition: none;
   }
 }
+
+.docs-chat {
+  position: fixed;
+  right: 1.25rem;
+  bottom: 1.25rem;
+  z-index: 40;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.7rem;
+  max-width: min(22.5rem, calc(100vw - 1.5rem));
+}
+
+.docs-chat-is-max {
+  z-index: 90;
+}
+
+.docs-chat-toggle,
+.docs-chat-send,
+.docs-chat-clear,
+.docs-chat-max {
+  margin: 0;
+  border: 0;
+  cursor: pointer;
+  font-family: var(--futura-font);
+}
+
+.docs-chat-toggle {
+  padding: 0.55rem 1rem;
+  border-radius: 999px;
+  background: var(--peony);
+  color: #fff;
+  font-size: 0.95rem;
+  font-variant: small-caps;
+  box-shadow: 0 8px 24px rgb(255 97 98 / 0.28);
+}
+
+.docs-chat-toggle:hover,
+.docs-chat-toggle:focus-visible {
+  background: var(--peony-hot);
+}
+
+.docs-chat-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  --docs-ink: color-mix(in srgb, #6f4e37 80%, white);
+  color: var(--docs-ink);
+}
+
+.docs-chat-backdrop {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: rgb(47 46 44 / 0.42);
+  cursor: pointer;
+}
+
+.docs-chat-panel {
+  position: relative;
+  z-index: 1;
+  width: min(22.5rem, calc(100vw - 1.5rem));
+  max-height: min(32rem, calc(100vh - 6rem));
+  display: flex;
+  flex-direction: column;
+  background: var(--bubble);
+  border: 1px solid var(--peony-soft);
+  box-shadow: 0 16px 40px rgb(111 78 55 / 0.12);
+  --docs-ink: color-mix(in srgb, #6f4e37 80%, white);
+  color: var(--docs-ink);
+}
+
+.docs-chat-panel-max {
+  width: min(50vw, calc(100vw - 3rem));
+  max-height: min(80vh, calc(100vh - 3rem));
+}
+
+@media (max-width: 40rem) {
+  .docs-chat-panel-max {
+    width: calc(100vw - 2rem);
+  }
+}
+
+.docs-chat-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.7rem 0.85rem 0.4rem;
+}
+
+.docs-chat-title {
+  margin: 0;
+  font-family: var(--peony-font);
+  font-size: 1.75rem;
+  color: var(--peony);
+}
+
+.docs-chat-max {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.2rem;
+  background: transparent;
+  color: var(--peony);
+}
+
+.docs-chat-max-glyph {
+  display: block;
+  width: 1rem;
+  height: 1rem;
+}
+
+.docs-chat-max:hover,
+.docs-chat-max:focus-visible {
+  color: var(--peony-hot);
+}
+
+.docs-chat-max:focus-visible {
+  outline: 2px solid var(--peony-soft);
+  outline-offset: 2px;
+}
+
+.docs-chat-send,
+.docs-chat-clear {
+  background: transparent;
+  color: var(--peony);
+  font-size: 1.15rem;
+  text-decoration: none;
+  padding: 0.2rem 0.1rem;
+}
+
+.docs-chat-send:hover,
+.docs-chat-send:focus-visible,
+.docs-chat-clear:hover,
+.docs-chat-clear:focus-visible {
+  color: var(--peony-hot);
+}
+
+.docs-chat-log {
+  min-height: 8rem;
+  overflow: auto;
+  padding: 0.4rem 0.85rem 0.7rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  scrollbar-width: thin;
+  scrollbar-color: var(--peony-hot) var(--desk);
+}
+
+html:has(.docs-shell) .docs-chat-log {
+  scrollbar-width: thin;
+  scrollbar-color: var(--peony-hot) var(--desk);
+}
+
+html:has(.docs-shell) .docs-chat-log::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+
+html:has(.docs-shell) .docs-chat-log::-webkit-scrollbar-track {
+  background: var(--desk);
+}
+
+html:has(.docs-shell) .docs-chat-log::-webkit-scrollbar-thumb {
+  background: var(--peony-hot);
+  border-radius: 999px;
+}
+
+html:has(.docs-shell) .docs-chat-log::-webkit-scrollbar-thumb:hover {
+  background: var(--peony-soft);
+}
+
+html:has(.docs-shell) .docs-chat-log::-webkit-scrollbar-corner {
+  background: var(--desk);
+}
+
+.docs-chat-empty,
+.docs-chat-error,
+.docs-chat-retrieving {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--ink-muted);
+}
+
+.docs-chat-retrieving {
+  font-style: italic;
+}
+
+.docs-chat-retrieving-dots {
+  display: inline-block;
+  width: 3ch;
+}
+
+.docs-chat-error {
+  color: var(--peony);
+}
+
+.docs-chat-bubble {
+  margin: 0;
+  padding: 0.55rem 0.7rem;
+  font-size: 0.92rem;
+  line-height: 1.45;
+  font-family: var(--futura-font);
+  color: var(--docs-ink);
+}
+
+.docs-chat-bubble > :first-child {
+  margin-top: 0;
+}
+
+.docs-chat-bubble > :last-child {
+  margin-bottom: 0;
+}
+
+.docs-chat-bubble h2 {
+  margin: 0.7rem 0 0.25rem;
+  font-family: var(--body-font);
+  font-weight: 400;
+  letter-spacing: 0.02em;
+  line-height: 1.2;
+  color: color-mix(in srgb, #6f4e37 48%, white);
+  font-size: clamp(0.95rem, 1.25vw, 1.12rem);
+}
+
+.docs-chat-bubble h2:first-child {
+  margin-top: 0;
+}
+
+.docs-chat-bubble p,
+.docs-chat-bubble ul,
+.docs-chat-bubble ol,
+.docs-chat-bubble pre {
+  margin: 0.4rem 0;
+}
+
+.docs-chat-bubble ul,
+.docs-chat-bubble ol {
+  padding-left: 1.2rem;
+}
+
+.docs-chat-bubble code {
+  font-size: 0.85em;
+}
+
+.docs-chat-bubble pre {
+  overflow: auto;
+  padding: 0.45rem 0.55rem;
+  background: rgb(47 46 44 / 0.05);
+}
+
+.docs-chat-bubble a {
+  color: var(--peony);
+  text-decoration: underline;
+}
+
+.docs-chat-bubble table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.88rem;
+}
+
+.docs-chat-bubble th,
+.docs-chat-bubble td {
+  border: 1px solid var(--peony-soft);
+  padding: 0.2rem 0.4rem;
+  text-align: left;
+}
+
+.docs-chat-bubble-user {
+  align-self: flex-end;
+  background: var(--bubble-nested);
+}
+
+.docs-chat-bubble-assistant {
+  align-self: stretch;
+  width: 100%;
+  box-sizing: border-box;
+  background: #fff;
+  border: 1px solid color-mix(in srgb, var(--peony-soft) 55%, white);
+}
+
+.docs-chat-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  padding: 0 0.85rem 0.85rem;
+}
+
+.docs-chat-label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+}
+
+.docs-chat-input {
+  resize: vertical;
+  min-height: 3.4rem;
+  padding: 0.5rem 0.6rem;
+  border: 1px solid #c9c5bc;
+  border-radius: 1px;
+  font-family: var(--futura-font);
+  font-size: 0.92rem;
+  color: var(--docs-ink);
+  background: #fff;
+}
+
+.docs-chat-input:focus {
+  outline: 2px solid var(--peony-soft);
+  outline-offset: 1px;
+}
+
+.docs-chat-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.75rem;
+}
+
+.docs-chat-clear {
+  margin-right: auto;
+  font-size: 0.95rem;
+}
+
+.docs-chat-send:disabled,
+.docs-chat-clear:disabled,
+.docs-chat-input:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}

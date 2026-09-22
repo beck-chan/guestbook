@@ -9,12 +9,13 @@ This policy page describes how the *y2k Guestbook* ("the Site") handles informat
 
 - [x] Guestbook commenters 
 - [x] Visitors who interact with the Original Poetry volume
+- [x] Visitors who use the Ask the Documentation chatbot
 - [x] Google account holders who sign in as admins, who can only access the guestbook administration panel via invite
 
 :::
 
 ::: {.public}
-This policy page describes how the *y2k Guestbook* ("the Site") handles information. The policy is written for visitors who choose to leave comments in the guestbook.
+This policy page describes how the *y2k Guestbook* ("the Site") handles information. The policy is written for visitors who choose to leave comments in the guestbook, and for visitors who use Ask the Documentation chatbot.
 
 :::
 
@@ -39,6 +40,9 @@ This page is not intended to be a substitute for legal advice. If you have any q
 | Page-view / analytics events | Visitors | Traffic & hit-counter stats |
 | Google account email & basic profile | Admins signing in with Google | Authenticate allow-listed users, send admins email notifications |
 | Anonymous visitor cookie (poem {.heart}#) | Visitors who {.heart} like poems | Count one {.heart} like interaction per visitor per poem |
+| Docs chat prompts & replies | Visitors who use Ask the Documentation | Answer questions from these documentation pages |
+| `docs_chat_id` cookie | Visitors who use Ask the Documentation | Resume the same-browser chat |
+| IP address (stored hashed) | Visitors who use Ask the Documentation | Rate-limit docs chat (10 questions per hour, 40 per day) |
 
 :::
 
@@ -49,6 +53,9 @@ This page is not intended to be a substitute for legal advice. If you have any q
 | Optional email | Commenters | Visible to admins only — will not be used to contact you unless requested in your comment |
 | IP address (stored hashed) | Commenters | Rate-limit abuse |
 | Page-view / analytics events | Visitors | Traffic & hit-counter stats |
+| Docs chat prompts & replies | Visitors who use Ask the Documentation | Answer questions from these documentation pages |
+| `docs_chat_id` cookie | Visitors who use Ask the Documentation | Resume the same-browser chat |
+| IP address (stored hashed) | Visitors who use Ask the Documentation | Rate-limit docs chat (10 questions per hour, 40 per day) |
 
 :::
 
@@ -79,6 +86,8 @@ If you use **Test Request**:
 - Restrict guestbook administration to allow-listed Google accounts.
 - Send allow-listed admins email notifications for guestbook events.
 - Measure visits to display hit counter / track visitor interactions with PostHog.
+- Answer questions through the Ask the Documentation chatbot.
+- Resume the same-browser Ask the Documentation chat and limit chat abuse.
 
 :::
 
@@ -86,13 +95,16 @@ If you use **Test Request**:
 - Run and manage the guestbook (edit and delete comments as needed).
 - Limit spam and abuse (profanity checks, rate limits).
 - Measure visits to display hit counter / track visitor interactions with PostHog.
+- Answer questions through the Ask the Documentation chatbot.
+- Resume the same-browser Ask the Documentation chat and limit chat abuse.
 
 :::
 
 ## Who Processes It
 
 - **Google Cloud OAuth Client** — SSO for admins
-- **Supabase** — Auth sessions and database storage
+- **Google Gemini** — Embeddings and generate for Ask the Documentation
+- **Supabase** — Auth sessions, database storage, and chatbot history
 - **Vercel** — Serves the site on the cloud
 - **PostHog** — Analytics tracking
 
@@ -108,6 +120,7 @@ We do not sell personal data.
 - Admin sessions use Supabase Auth (short-lived access tokens, long-lived refresh until sign-out or cookie clear).
 - Admin Google account emails are stored in the admin allow-list until removed by a super-admin.
 - Rate-limit keys are temporary.
+- Docs chatbot messages stay in Supabase until you click **Clear Chat** in Ask the Documentation or clear your browser's cookies.
 - Analytics retention follows the PostHog project settings.
 
 :::
@@ -115,6 +128,7 @@ We do not sell personal data.
 ::: {.public}
 - Guestbook comments (and optional emails) stay until an admin removes them or the database is cleared.
 - Rate-limit keys are temporary.
+- Docs chatbot messages stay in Supabase until you click **Clear Chat** in Ask the Documentation or clear your browser's cookies.
 - Analytics retention follows the PostHog project settings.
 
 :::
@@ -129,16 +143,18 @@ To request deletion of a comment or related data you submitted, contact us (refe
 ::: {.private}
 - Do not submit an email if you prefer not to share one.
 - Admins can sign out to end the current session — Clear site cookies to drop stored auth/visitor cookies.
+- Click **Clear Chat** in Ask the Documentation to delete your browser's chat session, stored prompts and replies, and the related cookie.
 - You can ask us to delete a comment or stored contact email you provided.
 
 :::
 
 ::: {.public}
 - Do not submit an email if you prefer not to share one.
+- Click **Clear Chat** in Ask the Documentation to delete your browser's chat session, stored prompts and replies, and the related cookie.
 - You can ask us to delete a comment or stored contact email you provided.
 
 :::
 
 ## Changes
 
-We may update this policy when the Site’s features or processors change. The version on this page is the current one.
+We may update this policy when the Site's features or processors change. The version on this page is the current one.

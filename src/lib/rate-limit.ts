@@ -6,8 +6,11 @@ import { guestbookRateLimits } from "@/lib/guestbookSettingsShared";
 
 type RateLimits = ReturnType<typeof guestbookRateLimits>;
 
+const COMMENT_LIMITS_TABLE = "guestbook_rate_limits";
+const DOCS_CHAT_LIMITS_TABLE = "docs_chat_limits";
+
 let pool: Pool | null = null;
-let tableReady = false;
+const tableReady = new Set<string>();
 const limiterCache = new Map<string, RateLimiterPostgres>();
 
 function getPool() {
@@ -78,8 +81,10 @@ async function getLimiter(opts: {
   points: number;
   duration: number;
   keyPrefix: string;
+  tableName: string;
 }) {
-  const cached = limiterCache.get(opts.keyPrefix);
+  const cacheKey = `${opts.tableName}:${opts.keyPrefix}`;
+  const cached = limiterCache.get(cacheKey);
   if (cached) {
     return cached;
   }
@@ -98,7 +103,7 @@ async function getLimiter(opts: {
         reject(err);
         return;
       }
-      tableReady = true;
+      tableReady.add(opts.tableName);
       queueMicrotask(() => resolve(instance));
     };
 
@@ -111,8 +116,12 @@ async function getLimiter(opts: {
           points: opts.points,
           duration: opts.duration,
           keyPrefix: opts.keyPrefix,
-          tableName: "guestbook_rate_limits",
-          tableCreated: tableReady,
+          tableName: opts.tableName,
+          // docs_chat_limits is created by scripts/chat-history.sql, so skip
+          // CREATE TABLE. guestbook_rate_limits may still be created on first use.
+          tableCreated:
+            opts.tableName === DOCS_CHAT_LIMITS_TABLE ||
+            tableReady.has(opts.tableName),
         },
         (err) => finish(err ?? undefined),
       );
@@ -121,7 +130,7 @@ async function getLimiter(opts: {
     }
   });
 
-  limiterCache.set(opts.keyPrefix, limiter);
+  limiterCache.set(cacheKey, limiter);
   return limiter;
 }
 
@@ -141,11 +150,13 @@ export async function consumeCommentRateLimit(
     points: limits.count,
     duration: limits.minutes * 60,
     keyPrefix: `gb_burst_${limits.count}_${limits.minutes}m`,
+    tableName: COMMENT_LIMITS_TABLE,
   });
   const daily = await getLimiter({
     points: limits.daily,
     duration: 86_400,
     keyPrefix: `gb_daily_${limits.daily}`,
+    tableName: COMMENT_LIMITS_TABLE,
   });
 
   const [dailyRes, burstRes] = await Promise.all([
@@ -167,6 +178,59 @@ export async function consumeCommentRateLimit(
   } catch (err) {
     if (isRateLimiterRes(err)) {
       return { ok: false, error: rateLimitMessage(limits, err.msBeforeNext) };
+    }
+    throw err;
+  }
+
+  return { ok: true };
+}
+
+export function chatQuotaReachedError(retryAt: Date) {
+  return `Chat quota reached — try again after ${retryAt.toISOString()}.`;
+}
+
+export async function consumeDocsChatRateLimit(
+  ip: string,
+): Promise<{ ok: true } | { ok: false; error: string }> {
+  const key = hashIp(ip || "unknown");
+  const burst = await getLimiter({
+    points: 5,
+    duration: 60 * 60,
+    keyPrefix: "docs_chat_burst_5_60m",
+    tableName: DOCS_CHAT_LIMITS_TABLE,
+  });
+  const daily = await getLimiter({
+    points: 10,
+    duration: 86_400,
+    keyPrefix: "docs_chat_daily_10",
+    tableName: DOCS_CHAT_LIMITS_TABLE,
+  });
+
+  const [dailyRes, burstRes] = await Promise.all([
+    daily.get(key),
+    burst.get(key),
+  ]);
+
+  if (!hasRoom(dailyRes) || !hasRoom(burstRes)) {
+    const ms = Math.max(
+      !hasRoom(dailyRes) ? (dailyRes?.msBeforeNext ?? 0) : 0,
+      !hasRoom(burstRes) ? (burstRes?.msBeforeNext ?? 0) : 0,
+    );
+    return {
+      ok: false,
+      error: chatQuotaReachedError(new Date(Date.now() + ms)),
+    };
+  }
+
+  try {
+    await daily.consume(key);
+    await burst.consume(key);
+  } catch (err) {
+    if (isRateLimiterRes(err)) {
+      return {
+        ok: false,
+        error: chatQuotaReachedError(new Date(Date.now() + err.msBeforeNext)),
+      };
     }
     throw err;
   }

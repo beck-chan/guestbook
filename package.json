@@ -2,6 +2,7 @@
   "name": "guestbook",
   "version": "1.0.4",
   "private": true,
+  "type": "module",
   "scripts": {
     "dev": "next dev",
     "docs": "node scripts/docs-dev.mjs",
@@ -12,9 +13,12 @@
     "lint:a11y": "eslint src --ignore-pattern \"src/app/docs/**\" --no-config-lookup --config eslint.a11y.config.mjs",
     "lint:a11y-docs": "eslint src/app/docs --no-config-lookup --config eslint.a11y.config.mjs",
     "allow-admin": "tsx scripts/allow-admin.ts",
-    "delete-admin": "tsx scripts/delete-admin.ts"
+    "delete-admin": "tsx scripts/delete-admin.ts",
+    "sync-docs": "node --import tsx/esm scripts/sync-docs.ts"
   },
   "dependencies": {
+    "@ai-sdk/google": "^4.0.76",
+    "@ai-sdk/react": "^4.0.110",
     "@gsap/react": "^2.1.2",
     "@mdx-js/loader": "^3.1.1",
     "@mdx-js/mdx": "^3.1.1",
@@ -23,6 +27,7 @@
     "@scalar/api-reference": "^1.68.0",
     "@supabase/ssr": "^0.12.6",
     "@supabase/supabase-js": "^2.115.0",
+    "ai": "^7.0.107",
     "estree-util-value-to-estree": "^3.5.0",
     "github-slugger": "^2.0.0",
     "gsap": "^3.15.0",
@@ -36,6 +41,7 @@
     "rate-limiter-flexible": "^11.2.0",
     "react": "19.2.8",
     "react-dom": "19.2.8",
+    "react-markdown": "^10.1.0",
     "rehype-highlight": "^7.0.2",
     "rehype-slug": "^6.0.0",
     "remark-gfm": "^4.0.1",

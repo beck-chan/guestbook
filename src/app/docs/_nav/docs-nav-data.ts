@@ -1,4 +1,4 @@
-import { flags, releasesUrl, reportIssueUrl } from "@/lib/flags";
+import { flags, releasesUrl, reportIssueUrl } from "../../../lib/flags";
 
 export type DocsNavItem = {
   label: string;
@@ -103,6 +103,10 @@ export const DOCS_NAV_SECTIONS: DocsNavSection[] = [
               label: "Documentation Build",
               href: "/docs/docs-build/",
               },
+              {
+                label: "Chatbot Build",
+                href: "/docs/bot-build/",
+                },
             {
               label: "Documentation Reference",
               href: "/docs/example/",

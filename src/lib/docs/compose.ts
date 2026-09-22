@@ -1,13 +1,14 @@
 import fs from "node:fs";
 import path from "node:path";
+import { execFileSync } from "node:child_process";
 import { cache } from "react";
 import { createProcessor } from "@mdx-js/mdx";
 import GithubSlugger from "github-slugger";
 import remarkGfm from "remark-gfm";
 import { VFile } from "vfile";
-import { flags } from "@/lib/flags";
-import { DOCS_NAV_SECTIONS } from "@/app/docs/_nav/docs-nav-data";
 import remarkDocsSyntax from "../mdx/remark-docs-syntax.mjs";
+import { flags } from "../flags";
+import { DOCS_NAV_SECTIONS } from "../../app/docs/_nav/docs-nav-data";
 import type { ComposedDoc, ComposedSection, DocsSearchDoc } from "./searchTypes";
 
 export type { ComposedDoc, ComposedSection, DocsSearchDoc } from "./searchTypes";
@@ -144,8 +145,122 @@ function walkContentFiles(dir: string, out: string[] = []) {
   return out;
 }
 
-function slugFromContentPath(filePath: string) {
-  return path.relative(DOCS_ROOT, path.dirname(filePath)).replace(/\\/g, "/");
+function pageIsPublic(frontmatter: Record<string, unknown>) {
+  return frontmatter.public !== false;
+}
+
+export type ComposeDocsOptions = {
+  /** Indexer: keep public:false pages and stamp `public`. MiniSearch omits this. */
+  forIndex?: boolean;
+  /** Read MDX from this Git ref instead of the working tree. */
+  gitRef?: string;
+};
+
+type DocsSource = {
+  read(filePath: string): string;
+  exists(filePath: string): boolean;
+  listContentFiles(): string[];
+  resolve(fromFile: string, rel: string): string;
+  slug(filePath: string): string;
+};
+
+function toPosix(filePath: string) {
+  return filePath.replace(/\\/g, "/");
+}
+
+function assertGitRef(ref: string) {
+  const trimmed = ref.trim();
+  if (
+    !trimmed ||
+    trimmed.includes("..") ||
+    trimmed.startsWith("-") ||
+    !/^[A-Za-z0-9][A-Za-z0-9._/\-]*$/.test(trimmed)
+  ) {
+    throw new Error(`Invalid BRANCH ref: ${ref}`);
+  }
+  return trimmed;
+}
+
+function git(args: string[]) {
+  return execFileSync("git", args, {
+    cwd: process.cwd(),
+    encoding: "utf8",
+    stdio: ["ignore", "pipe", "pipe"],
+  }).trim();
+}
+
+function diskDocsSource(): DocsSource {
+  return {
+    read(filePath) {
+      return fs.readFileSync(filePath, "utf8");
+    },
+    exists(filePath) {
+      return fs.existsSync(filePath);
+    },
+    listContentFiles() {
+      if (!fs.existsSync(DOCS_ROOT)) return [];
+      return walkContentFiles(DOCS_ROOT);
+    },
+    resolve(fromFile, rel) {
+      return path.resolve(path.dirname(fromFile), rel);
+    },
+    slug(filePath) {
+      return path.relative(DOCS_ROOT, path.dirname(filePath)).replace(/\\/g, "/");
+    },
+  };
+}
+
+function gitDocsSource(ref: string): DocsSource {
+  const verified = assertGitRef(ref);
+  try {
+    git(["rev-parse", "--verify", "--quiet", `${verified}^{commit}`]);
+  } catch {
+    throw new Error(`Unknown BRANCH ref: ${verified}`);
+  }
+
+  const listed = git([
+    "ls-tree",
+    "-r",
+    "--name-only",
+    verified,
+    "--",
+    "src/app/docs",
+  ]);
+  const files = new Set(
+    listed
+      ? listed.split(/\r?\n/).map((line) => toPosix(line.trim())).filter(Boolean)
+      : [],
+  );
+
+  return {
+    read(filePath) {
+      const repoPath = toPosix(filePath);
+      return git(["show", `${verified}:${repoPath}`]);
+    },
+    exists(filePath) {
+      return files.has(toPosix(filePath));
+    },
+    listContentFiles() {
+      return [...files].filter(
+        (filePath) =>
+          filePath.endsWith("content.mdx") && !filePath.includes("/_snippets/"),
+      );
+    },
+    resolve(fromFile, rel) {
+      const fromDir = path.posix.dirname(toPosix(fromFile));
+      let resolved = path.posix.normalize(path.posix.join(fromDir, toPosix(rel)));
+      if (resolved.startsWith("/")) {
+        resolved = resolved.slice(1);
+      }
+      return resolved;
+    },
+    slug(filePath) {
+      const rel = toPosix(filePath);
+      const prefix = "src/app/docs/";
+      const rest = rel.startsWith(prefix) ? rel.slice(prefix.length) : rel;
+      return path.posix.dirname(rest);
+    },
+  };
 }
 
 function createDocsProcessor() {
@@ -155,8 +270,12 @@ function createDocsProcessor() {
   });
 }
 
-function parseDocsFileSync(processor: DocsProcessor, filePath: string) {
-  const raw = fs.readFileSync(filePath, "utf8");
+function parseDocsFileSync(
+  processor: DocsProcessor,
+  filePath: string,
+  readFile: (path: string) => string,
+) {
+  const raw = readFile(filePath);
   const file = new VFile({ path: filePath, value: raw });
   const tree = processor.parse(file) as MdastNode;
   processor.runSync(tree as never, file);
@@ -176,6 +295,8 @@ function appendBody(parts: string[], text: string) {
 type WalkState = {
   filename: string;
   parseFile: (resolved: string) => MdastNode;
+  resolvePath: (fromFile: string, rel: string) => string;
+  existsPath: (filePath: string) => boolean;
   imports: Map<string, string>;
   seen: Set<string>;
   title: string;
@@ -210,11 +331,11 @@ function collectSearchWalk(
     state.imports.has(node.name)
   ) {
     if (!headingSkippedFromNav(parent)) {
-      const resolved = path.resolve(
-        path.dirname(state.filename),
+      const resolved = state.resolvePath(
+        state.filename,
         state.imports.get(node.name)!,
       );
-      if (!state.seen.has(resolved)) {
+      if (state.existsPath(resolved) && !state.seen.has(resolved)) {
         state.seen.add(resolved);
         const snippetTree = state.parseFile(resolved);
         const snippetImports = collectMdxComponentImports(snippetTree);
@@ -288,13 +409,18 @@ function treeToComposedDoc(
     frontmatter: Record<string, unknown>;
     filename: string;
     parseFile: (resolved: string) => MdastNode;
+    resolvePath: (fromFile: string, rel: string) => string;
+    existsPath: (filePath: string) => boolean;
+    public: boolean;
   },
 ): ComposedDoc | null {
   const state: WalkState = {
     filename: meta.filename,
     parseFile: meta.parseFile,
+    resolvePath: meta.resolvePath,
+    existsPath: meta.existsPath,
     imports: collectMdxComponentImports(tree),
-    seen: new Set([path.resolve(meta.filename)]),
+    seen: new Set([meta.filename]),
     title: "",
     sections: [],
     intro: [],
@@ -336,6 +462,7 @@ function treeToComposedDoc(
         : []),
       ...state.sections,
     ],
+    public: meta.public,
   };
 }
 
@@ -363,10 +490,11 @@ export function flattenSearchDocs(docs: ComposedDoc[]): DocsSearchDoc[] {
       heading: doc.title,
       section: doc.section,
       body: pageBody || doc.subtitle || "",
+      public: doc.public,
     });
 
     for (const section of doc.sections) {
-      if (!section.id) continue;
+      if (!section.id || !section.body.trim()) continue;
       push({
         id: `${doc.slug}#${section.id}`,
         href: `${doc.href}#${section.id}`,
@@ -374,6 +502,7 @@ export function flattenSearchDocs(docs: ComposedDoc[]): DocsSearchDoc[] {
         heading: section.heading,
         section: doc.section,
         body: section.body,
+        public: doc.public,
       });
     }
   }
@@ -381,8 +510,14 @@ export function flattenSearchDocs(docs: ComposedDoc[]): DocsSearchDoc[] {
   return out;
 }
 
-export function composeDocsCorpus(): ComposedDoc[] {
-  if (!fs.existsSync(DOCS_ROOT)) {
+export function composeDocsCorpus(options: ComposeDocsOptions = {}): ComposedDoc[] {
+  const forIndex = Boolean(options.forIndex);
+  const dropPrivate = !forIndex && flags.public;
+  const source = options.gitRef
+    ? gitDocsSource(options.gitRef)
+    : diskDocsSource();
+  const files = source.listContentFiles();
+  if (files.length === 0) {
     return [];
   }
 
@@ -391,29 +526,33 @@ export function composeDocsCorpus(): ComposedDoc[] {
   const docs: ComposedDoc[] = [];
 
   const parseFile = (resolvedPath: string) => {
-    const resolved = path.resolve(resolvedPath);
+    const resolved = resolvedPath;
     const cached = treeCache.get(resolved);
     if (cached) return cached;
-    const { tree } = parseDocsFileSync(processor, resolved);
+    const { tree } = parseDocsFileSync(processor, resolved, (p) => source.read(p));
     treeCache.set(resolved, tree);
     return tree;
   };
 
-  for (const filePath of walkContentFiles(DOCS_ROOT)) {
-    const raw = fs.readFileSync(filePath, "utf8");
+  for (const filePath of files) {
+    const raw = source.read(filePath);
     const { data: earlyMatter } = splitFrontmatter(raw);
 
     if (earlyMatter.search === false) continue;
-    if (flags.public && earlyMatter.public === false) continue;
+    if (dropPrivate && earlyMatter.public === false) continue;
 
-    const { tree, frontmatter } = parseDocsFileSync(processor, filePath);
-    treeCache.set(path.resolve(filePath), tree);
+    const { tree, frontmatter } = parseDocsFileSync(
+      processor,
+      filePath,
+      (p) => source.read(p),
+    );
+    treeCache.set(filePath, tree);
 
     if (frontmatter.search === false) continue;
-    if (flags.public && frontmatter.public === false) continue;
+    if (dropPrivate && frontmatter.public === false) continue;
 
-    const slug = slugFromContentPath(filePath);
-    if (!slug || slug.split("/").includes("_snippets")) continue;
+    const slug = source.slug(filePath);
+    if (!slug || slug === "." || slug.split("/").includes("_snippets")) continue;
 
     const composed = treeToComposedDoc(tree, {
       slug,
@@ -421,6 +560,9 @@ export function composeDocsCorpus(): ComposedDoc[] {
       frontmatter,
       filename: filePath,
       parseFile,
+      resolvePath: (from, rel) => source.resolve(from, rel),
+      existsPath: (p) => source.exists(p),
+      public: pageIsPublic(frontmatter),
     });
     if (composed) {
       docs.push(composed);

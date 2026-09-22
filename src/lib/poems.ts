@@ -9,31 +9,71 @@ export type Poem = {
   sections: PoemSection[];
 };
 
-function decodePoemHtml(html: string) {
+export type PoemFlowItem =
+  | { kind: "break" }
+  | { kind: "line"; html: string };
+
+function poemLineVisible(html: string) {
   return html
-    .replace(/<br\s*\/?>/gi, "\n")
     .replace(/<[^>]+>/g, "")
-    .replace(/&emsp;/g, "\u2003")
-    .replace(/&mdash;/g, "\u2014")
-    .replace(/&amp;/g, "&")
-    .replace(/&nbsp;/g, " ")
-    .replace(/&lt;/g, "<")
-    .replace(/&gt;/g, ">");
+    .replace(/&(?:[a-zA-Z]+|#\d+|#x[\da-fA-F]+);/g, "x")
+    .replace(/\s+/g, "");
 }
 
-export function poemMeasureLines(poem: Poem) {
-  const lines: Array<{ text: string; weight: 400 | 700; scale: number }> = [];
-  for (const section of poem.sections) {
-    if (section.title) {
-      lines.push({ text: section.title, weight: 700, scale: 1.22 });
+export function poemFlow(html: string): PoemFlowItem[] {
+  const parts = html.replace(/\r\n/g, "\n").replace(/\r/g, "\n").split(/<br\s*\/?>/gi);
+  const items: PoemFlowItem[] = [];
+  let swallowBlanks = false;
+
+  parts.forEach((part, partIndex) => {
+    if (!poemLineVisible(part)) {
+      items.push({ kind: "break" });
+      swallowBlanks = true;
+      return;
     }
-    for (const line of decodePoemHtml(section.html).split("\n")) {
-      if (line.length > 0) {
-        lines.push({ text: line, weight: 400, scale: 1 });
+
+    const lines = part.split("\n");
+    let index = 0;
+    if (partIndex > 0 && lines[0]?.trim() === "") {
+      index = 1;
+    }
+    while (index < lines.length && lines[index].trim() === "") {
+      if (!swallowBlanks) {
+        items.push({ kind: "break" });
+      }
+      index += 1;
+    }
+    swallowBlanks = false;
+
+    const verse: string[] = [];
+    const flush = () => {
+      if (verse.length === 0) {
+        return;
+      }
+      const line = verse.join("\n").replace(/\n/g, " ");
+      verse.length = 0;
+      if (poemLineVisible(line)) {
+        items.push({ kind: "line", html: line });
+      }
+    };
+    for (; index < lines.length; index += 1) {
+      if (lines[index].trim() === "") {
+        flush();
+        items.push({ kind: "break" });
+      } else {
+        verse.push(lines[index]);
       }
     }
+    flush();
+  });
+
+  while (items[0]?.kind === "break") {
+    items.shift();
   }
-  return lines;
+  while (items.at(-1)?.kind === "break") {
+    items.pop();
+  }
+  return items;
 }
 
 export function pickPoemIndex(count: number, except?: number): number {

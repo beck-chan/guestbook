@@ -1,6 +1,6 @@
 ---
 subtitle: How was the poetry guestbook implemented?
-search: false
+# search: false
 public: false
 ---
 
@@ -61,7 +61,7 @@ The schema applied by running [`scripts/schema.sql`](https://github.com/beck-cha
 
 - `comments` has no public {.select}, so emails stay on the private table. Visitors read the `comments_public` view instead (`id`, `display_name`, `body`, timestamps).
 - `guestbook_settings` is a singleton (`id = 1`) — no {.insert} or {.delete} policies. {.select} is granted to `anon` and `authenticated`.
-- `admin_allowlist` has RLS on with no policies, so `anon` / `authenticated` cannot read or write. `service_role` bypasses RLS (and still needs table grants). Auth’s `before-user-created hook` reads it as `supabase_auth_admin`.
+- `admin_allowlist` has RLS on with no policies, so `anon` / `authenticated` cannot read or write. `service_role` bypasses RLS (and still needs table grants). Auth's `before-user-created hook` reads it as `supabase_auth_admin`.
 - `poem_hearts` has no table policies. Likes go through the security-definer RPCs `toggle_poem_heart` and `poem_heart_state`. Public counts come from `poem_heart_counts` and `poem_heart_total`.
 
 # Entity Relationship Diagram
@@ -178,7 +178,7 @@ When users click **Submit**, the `submitComment` server action:
 
 # Admin Dashboard
 
-[`proxy.ts`](https://github.com/beck-chan/guestbook/blob/main/src/proxy.ts){.blank} (Next’s request proxy) only gates `/admin` (or `NEXT_PUBLIC_GUESTBOOK_ADMIN_PATH`). On those paths it refreshes the Supabase session:
+[`proxy.ts`](https://github.com/beck-chan/guestbook/blob/main/src/proxy.ts){.blank} (Next's request proxy) only gates `/admin` (or `NEXT_PUBLIC_GUESTBOOK_ADMIN_PATH`). On those paths it refreshes the Supabase session:
 
 - No existing admin login session — redirects to `/admin/login`.
 - Successful sign in but `app_metadata.role` is not `admin` — user is signed out and send home with `?admin_error=1`.
@@ -193,7 +193,7 @@ When users click **Submit**, the `submitComment` server action:
 Development always shows `ERROR!` and does not call PostHog. In production it:
 
 1. Renders the server count from the UTC-filtered HogQL query on `events`. Missing or incorrect PostHog configuration and Query API failures render `ERROR!`.
-2. Polls [`/api/hits`](https://github.com/beck-chan/guestbook/blob/main/src/app/api/hits/route.ts){.blank} immediately, then every `15` seconds, re-running a fresh Query API uniq (not PostHog’s default cached result) so the digits can tick up after a new unique visitor lands.
+2. Polls [`/api/hits`](https://github.com/beck-chan/guestbook/blob/main/src/app/api/hits/route.ts){.blank} immediately, then every `15` seconds, re-running a fresh Query API uniq (not PostHog's default cached result) so the digits can tick up after a new unique visitor lands.
 
 HogQL scoping (`FLAG_COUNTER_URL`, `FLAG_COUNTER_DATE`) is documented under **Hit Counter** in [Feature Flags](#feature-flags).
 
