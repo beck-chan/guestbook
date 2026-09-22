@@ -5,6 +5,7 @@ import {
   useCallback,
   useEffect,
   useState,
+  useSyncExternalStore,
   type CSSProperties,
   type ReactNode,
 } from "react";
@@ -24,6 +25,10 @@ function isDocumentNavigate() {
   return entry?.type === "navigate";
 }
 
+function subscribeClient() {
+  return () => {};
+}
+
 export function PageReveal({
   as: Tag = "div",
   className,
@@ -36,14 +41,14 @@ export function PageReveal({
   const pathname = usePathname();
   const [skipReveal] = useState(() => revealedPathnames.has(pathname));
   const [phase, setPhase] = useState<Phase>(skipReveal ? "in" : "wait");
+  const isClient = useSyncExternalStore(subscribeClient, () => true, () => false);
   const [outMs, setOutMs] = useState<number | null>(skipReveal ? OUT_MS : null);
 
-  useEffect(() => {
-    if (skipReveal) return;
+  if (isClient && outMs === null) {
     // Longer fade when this document was opened. A refresh keeps the shorter one.
     const slow = revealedPathnames.size === 0 && isDocumentNavigate();
     setOutMs(slow ? FIRST_OUT_MS : OUT_MS);
-  }, [skipReveal]);
+  }
 
   const onResolved = useCallback(() => {
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
