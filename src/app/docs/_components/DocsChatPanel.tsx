@@ -7,6 +7,7 @@ import { useChat } from "@ai-sdk/react";
 import Link from "next/link";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import { ChatStatusText } from "./ChatStatusText";
 
 function messageText(message: UIMessage) {
   return (message.parts ?? [])
@@ -39,10 +40,17 @@ function chatHref(href: string | undefined) {
   return undefined;
 }
 
-function summaryBody(text: string) {
+function splitSummary(text: string) {
   const parts = text.split(/^## Summary\s*$/m);
-  if (parts.length < 2) return text.trim();
-  return parts.slice(1).join("").trim();
+  if (parts.length < 2) return { guides: "", body: text.trim() };
+  return {
+    guides: parts[0].trim(),
+    body: parts.slice(1).join("").trim(),
+  };
+}
+
+function summaryBody(text: string) {
+  return splitSummary(text).body;
 }
 
 function formatChatQuotaError(raw: string) {
@@ -86,15 +94,28 @@ function isChatFailureText(text: string) {
   );
 }
 
+function chatFailureMessage(text: string) {
+  const { body } = splitSummary(text);
+  if (isChatFailureText(body)) return formatChatError(body);
+  if (isChatFailureText(text)) return formatChatError(text);
+  return null;
+}
+
 function RetrievingBubble({
   label = "Retrieving responses ...",
 }: {
   label?: string;
 }) {
+  const text = label.replace(/ \.\.\.$/, "");
   return (
     <div className="docs-chat-bubble docs-chat-bubble-assistant">
-      <p className="docs-chat-retrieving" role="status" aria-live="polite">
-        {label}
+      <p
+        className="docs-chat-retrieving"
+        role="status"
+        aria-live="polite"
+        aria-label={text}
+      >
+        <ChatStatusText text={text} />
       </p>
     </div>
   );
@@ -301,6 +322,9 @@ export function DocsChatPanel({
         {ready
           ? messages.map((message, index) => {
               const text = messageText(message);
+              const failure =
+                message.role === "assistant" ? chatFailureMessage(text) : null;
+              const guides = failure ? splitSummary(text).guides : "";
               const showSummaryHint =
                 message.role === "assistant" &&
                 index === messages.length - 1 &&
@@ -316,10 +340,13 @@ export function DocsChatPanel({
                       : "docs-chat-bubble docs-chat-bubble-assistant"
                   }
                 >
-                  {message.role === "assistant" && isChatFailureText(text) ? (
-                    <p className="docs-chat-error" role="alert">
-                      {formatChatError(text)}
-                    </p>
+                  {failure ? (
+                    <>
+                      {guides ? <ChatMarkdown text={guides} /> : null}
+                      <p className="docs-chat-error" role="alert">
+                        {failure}
+                      </p>
+                    </>
                   ) : (
                     <ChatMarkdown text={text} />
                   )}
@@ -328,8 +355,9 @@ export function DocsChatPanel({
                       className="docs-chat-retrieving"
                       role="status"
                       aria-live="polite"
+                      aria-label="Writing summary"
                     >
-                      Retrieving responses ...
+                      <ChatStatusText text="Writing summary" />
                     </p>
                   ) : null}
                 </div>
@@ -337,11 +365,11 @@ export function DocsChatPanel({
             })
           : null}
         {retrievingBanner ? <RetrievingBubble /> : null}
-        {shownError && !isChatFailureText(lastText) ? (
+        {shownError && !chatFailureMessage(lastText) ? (
           <p className="docs-chat-error" role="alert">
             {formatChatError(shownError)}
           </p>
-        ) : !shownError && status === "error" && !isChatFailureText(lastText) ? (
+        ) : !shownError && status === "error" && !chatFailureMessage(lastText) ? (
           <p className="docs-chat-error" role="alert">
             Something went wrong. Please try again later.
           </p>

@@ -1,3 +1,5 @@
+import { ChatStatusText } from "./ChatStatusText";
+
 export function DocsChatPending({ maximized = false }: { maximized?: boolean }) {
   return (
     <div
@@ -13,7 +15,9 @@ export function DocsChatPending({ maximized = false }: { maximized?: boolean }) 
       </div>
       <div className="docs-chat-log">
         <div className="docs-chat-bubble docs-chat-bubble-assistant">
-          <p className="docs-chat-retrieving">Loading chat ...</p>
+          <p className="docs-chat-retrieving" aria-label="Loading chat">
+            <ChatStatusText text="Loading chat" />
+          </p>
         </div>
       </div>
     </div>

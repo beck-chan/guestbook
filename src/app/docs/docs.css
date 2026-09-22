@@ -2558,6 +2558,11 @@ html:has(.docs-shell) .docs-chat-log::-webkit-scrollbar-corner {
   font-style: italic;
 }
 
+.docs-chat-retrieving-dots {
+  display: inline-block;
+  width: 3ch;
+}
+
 .docs-chat-error {
   color: var(--peony);
 }
