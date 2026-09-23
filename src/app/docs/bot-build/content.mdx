@@ -16,7 +16,7 @@ public: false
 
 :::
 
-## Chat Indexing
+## Docs Indexing
 
 - `public: false` pages are still indexed — [`/docs/chat`](https://github.com/beck-chan/guestbook/blob/main/src/app/docs/chat/route.ts){.blank} applies `FLAG_PUBLIC` at query time so a public build only retrieves `public: true` chunks. 
 - Inline user guide search and [`/llms.txt`](/llms.txt){.blank} keep the existing `flags.public` filter and are separate from the chatbot index.
@@ -102,7 +102,15 @@ Clicking the [ask the documentation]{.smallcaps} button ([`DocsChat`](https://gi
 
 :::
 
-## Entity Relationship Diagram
+## Chatbot Reference
+
+::: {.tabset}
+
+# API Library
+
+<DocsBotApiReference />
+
+# Entity Relationship Diagram
 
 <DocsErdGrid layout="chat">
 
@@ -162,5 +170,7 @@ Clicking the [ask the documentation]{.smallcaps} button ([`DocsChat`](https://gi
 `} />
 
 </DocsErdGrid>
+
+:::
 
 

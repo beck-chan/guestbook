@@ -8,6 +8,17 @@ import {
   type ScalarRequestBuilder,
 } from "./scalarApiKey";
 
+/** Library-only. The embed explorer omits this so Scalar's sidebar stays visible. */
+const LIBRARY_SIDEBAR_HIDE = `/* Keep Scalar SearchButton mounted (cmd+K / docs search) but hide its chrome.
+   Modern layout always mounts a sticky .t-doc__header below Tailwind lg
+   (1000px), even with showSidebar: false. That bar sits in the page and
+   sticks over the docs topbar on scroll. SearchModal still portals to body. */
+.scalar-app .t-doc__sidebar,
+.scalar-app .t-doc__header,
+.scalar-app [class*="sidebar-search"] {
+  display: none !important;
+}`;
+
 export const SCALAR_CUSTOM_CSS = `
 .scalar-app,
 .scalar-app.light-mode {
@@ -228,15 +239,7 @@ export const SCALAR_CUSTOM_CSS = `
   line-height: 1.2 !important;
 }
 
-/* Keep Scalar SearchButton mounted (cmd+K / docs search) but hide its chrome.
-   Modern layout always mounts a sticky .t-doc__header below Tailwind lg
-   (1000px), even with showSidebar: false. That bar sits in the page and
-   sticks over the docs topbar on scroll. SearchModal still portals to body. */
-.scalar-app .t-doc__sidebar,
-.scalar-app .t-doc__header,
-.scalar-app [class*="sidebar-search"] {
-  display: none !important;
-}
+${LIBRARY_SIDEBAR_HIDE}
 
 /* Operation rows keep the path; hide callout/markdown description snippets. */
 a[role="option"][data-docs-hide-op-desc="true"] .text-c-2 {
@@ -710,42 +713,59 @@ a[role="option"][data-docs-hide-op-desc="true"] .text-c-2 {
 export const SCALAR_STANDALONE_SRC =
   `/docs/api/scalar-standalone?v=${SCALAR_PACKAGE_VERSION}`;
 
-export function createScalarReferenceConfig() {
+function scalarEmbedCss() {
+  const css = SCALAR_CUSTOM_CSS.replace(LIBRARY_SIDEBAR_HIDE, "");
+  if (css === SCALAR_CUSTOM_CSS) {
+    throw new Error("Scalar embed CSS still hides the sidebar");
+  }
+  return css;
+}
+
+export function createScalarReferenceConfig(variant: "library" | "embed" = "library") {
+  const embed = variant === "embed";
   return {
     layout: "modern" as const,
     theme: "none" as const,
     hideClientButton: true,
     defaultOpenFirstTag: false,
-    hideSearch: false,
+    hideSearch: embed,
     showOperationId: true,
-    showSidebar: false,
+    showSidebar: embed,
     expandAllResponses: true,
-    showDeveloperTools: "localhost" as const,
+    showDeveloperTools: embed ? ("never" as const) : ("localhost" as const),
     operationTitleSource: "summary" as const,
     persistAuth: false,
     authentication: {
       preferredSecurityScheme: "apikey",
     },
-    plugins: [createAlwaysSendApiKeyPlugin()],
-    onBeforeRequest: ({ requestBuilder }: { requestBuilder: ScalarRequestBuilder }) => {
-      applyRememberedAuth(requestBuilder);
-    },
-    onRequestBuilt: ({
-      request,
-      requestBuilder,
-    }: {
-      request: Request;
-      requestBuilder: ScalarRequestBuilder;
-    }) => {
-      applyRememberedAuth(requestBuilder, undefined, request);
-    },
+    ...(embed
+      ? {}
+      : {
+          plugins: [createAlwaysSendApiKeyPlugin()],
+          onBeforeRequest: ({
+            requestBuilder,
+          }: {
+            requestBuilder: ScalarRequestBuilder;
+          }) => {
+            applyRememberedAuth(requestBuilder);
+          },
+          onRequestBuilt: ({
+            request,
+            requestBuilder,
+          }: {
+            request: Request;
+            requestBuilder: ScalarRequestBuilder;
+          }) => {
+            applyRememberedAuth(requestBuilder, undefined, request);
+          },
+        }),
     isEditable: false,
     hideModels: true,
     documentDownloadType: "none" as const,
-    hideTestRequestButton: !(flags.public || flags.apiTest),
+    hideTestRequestButton: embed || !(flags.public || flags.apiTest),
     hideDarkModeToggle: true,
     withDefaultFonts: false,
-    slug: "api",
+    slug: embed ? "docs-chat" : "api",
     defaultOpenAllTags: false,
     expandAllModelSections: false,
     expandAllSchemaProperties: false,
@@ -754,7 +774,7 @@ export function createScalarReferenceConfig() {
     darkMode: false,
     forceDarkModeState: "light" as const,
     modelsSectionLabel: "Models",
-    customCss: SCALAR_CUSTOM_CSS,
+    customCss: embed ? scalarEmbedCss() : SCALAR_CUSTOM_CSS,
     localization: {
       translations: {
         search: {
@@ -762,10 +782,15 @@ export function createScalarReferenceConfig() {
         },
       },
     },
-    ...(flags.public
-      ? { servers: publicApiServers() }
-      : flags.apiTest
-        ? { servers: publicApiServers(envSupabaseProjectRef()) }
-        : {}),
+    ...(embed
+      ? {
+          agent: { disabled: true },
+          mcp: { disabled: true },
+        }
+      : flags.public
+        ? { servers: publicApiServers() }
+        : flags.apiTest
+          ? { servers: publicApiServers(envSupabaseProjectRef()) }
+          : {}),
   };
 }

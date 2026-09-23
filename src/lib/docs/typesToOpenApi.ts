@@ -1,3 +1,5 @@
+import { isHiddenLibraryOperation } from "./hiddenApiCatalog";
+
 export type JsonSchema = {
   type?: string | string[];
   description?: string;
@@ -159,12 +161,6 @@ function tagForPath(path: string, operation: OpenApiOperation) {
   return path.split("/").filter(Boolean)[0] ?? "other";
 }
 
-function tagDescriptionKeyNav(name: string) {
-  return name.trim().toLowerCase().replace(/^\(rpc\)\s+/, "");
-}
-
-const HIDDEN_API_RPCS = new Set(["rls_auto_enable", "hook_before_user_created"]);
-
 function scalarNavSlug(value: string) {
   return value
     .slice(0, 255)
@@ -193,11 +189,7 @@ export function openApiNav(spec: OpenApiSpec): OpenApiNavSection[] {
         continue;
       }
       const tag = tagForPath(path, operationItem);
-      if (
-        tag.toLowerCase() === "introspection" ||
-        HIDDEN_API_RPCS.has(tagDescriptionKeyNav(tag)) ||
-        HIDDEN_API_RPCS.has(path.replace(/^\/rpc\//i, "").toLowerCase())
-      ) {
+      if (isHiddenLibraryOperation(tag, path)) {
         continue;
       }
       const list = byTag.get(tag) ?? [];

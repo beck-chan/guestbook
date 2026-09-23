@@ -23,12 +23,70 @@ import {
   publicApiServers,
   supabaseRestUrl,
 } from "@/lib/docs/publicApiServers";
+import { HIDDEN_API_SEARCH } from "@/lib/docs/hiddenApiCatalog";
 import type { OpenApiSpec } from "@/lib/docs/typesToOpenApi";
+
+type ScalarEventBus = {
+  emit?: (event: string, payload: { id: string; open: boolean }) => void;
+};
+
+type ScalarVNode = {
+  component?: {
+    props?: { eventBus?: ScalarEventBus };
+    subTree?: ScalarVNode | null;
+  } | null;
+  children?: ScalarVNode | ScalarVNode[] | string | null;
+  dynamicChildren?: ScalarVNode[] | null;
+};
 
 type ScalarInstance = {
   destroy?: () => void;
   updateConfiguration?: (configuration: Record<string, unknown>) => void;
 };
+
+type ScalarHost = HTMLElement & { _vnode?: ScalarVNode | null };
+
+function scalarEventBus(host: HTMLElement | null) {
+  const root = (host as ScalarHost | null)?._vnode;
+  if (!root) {
+    return null;
+  }
+  const seen = new Set<ScalarVNode>();
+  const stack: ScalarVNode[] = [root];
+  while (stack.length) {
+    const node = stack.pop();
+    if (!node || seen.has(node)) {
+      continue;
+    }
+    seen.add(node);
+    const bus = node.component?.props?.eventBus;
+    if (typeof bus?.emit === "function") {
+      return bus;
+    }
+    const subTree = node.component?.subTree;
+    if (subTree) {
+      stack.push(subTree);
+    }
+    const children = node.children;
+    if (Array.isArray(children)) {
+      for (const child of children) {
+        if (child && typeof child === "object") {
+          stack.push(child);
+        }
+      }
+    } else if (children && typeof children === "object") {
+      stack.push(children);
+    }
+    for (const child of node.dynamicChildren ?? []) {
+      stack.push(child);
+    }
+  }
+  return null;
+}
+
+function collapseScalarTag(host: HTMLElement | null, id: string) {
+  scalarEventBus(host)?.emit?.("toggle:nav-item", { id, open: false });
+}
 
 type ScalarGlobal = {
   createApiReference: (
@@ -134,7 +192,7 @@ function isScalarIntroHeading(option: HTMLElement) {
 
 function isHiddenApiSearchRow(option: HTMLElement) {
   const text = option.textContent?.replace(/\s+/g, " ").trim() ?? "";
-  return /rls_auto_enable|hook_before_user_created/i.test(text);
+  return HIDDEN_API_SEARCH.test(text);
 }
 
 function decorateScalarSearchResults(root: ParentNode = document) {
@@ -458,6 +516,22 @@ export function DocsApiReferenceView({ spec }: { spec: OpenApiSpec }) {
       characterData: true,
     });
     return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
+    function onCollapse(event: Event) {
+      const id =
+        event instanceof CustomEvent ? String(event.detail?.tagId ?? "") : "";
+      if (!id) {
+        return;
+      }
+      collapseScalarTag(hostRef.current, id);
+    }
+
+    window.addEventListener("docs-api:collapse-tag", onCollapse);
+    return () => {
+      window.removeEventListener("docs-api:collapse-tag", onCollapse);
+    };
   }, []);
 
   useEffect(() => {
