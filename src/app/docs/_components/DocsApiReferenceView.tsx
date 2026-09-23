@@ -23,6 +23,7 @@ import {
   publicApiServers,
   supabaseRestUrl,
 } from "@/lib/docs/publicApiServers";
+import { HIDDEN_API_SEARCH } from "@/lib/docs/hiddenApiCatalog";
 import type { OpenApiSpec } from "@/lib/docs/typesToOpenApi";
 
 type ScalarInstance = {
@@ -134,7 +135,7 @@ function isScalarIntroHeading(option: HTMLElement) {
 
 function isHiddenApiSearchRow(option: HTMLElement) {
   const text = option.textContent?.replace(/\s+/g, " ").trim() ?? "";
-  return /rls_auto_enable|hook_before_user_created/i.test(text);
+  return HIDDEN_API_SEARCH.test(text);
 }
 
 function decorateScalarSearchResults(root: ParentNode = document) {

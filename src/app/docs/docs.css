@@ -907,6 +907,52 @@ a[role="option"][data-docs-hide-heading="true"],
   font-family: var(--futura-font);
 }
 
+.docs-bot-api-host {
+  height: 70vh;
+  min-height: 32rem;
+  border: 1px solid var(--paper-dim, #e9e6df);
+  background: #fff;
+  overflow: hidden;
+}
+
+.docs-bot-api-host .scalar-app,
+.docs-bot-api-host .references-layout {
+  height: 100% !important;
+  max-height: 100% !important;
+  min-height: 0 !important;
+  --full-height: 70vh !important;
+}
+
+.docs-bot-api-host .references-layout {
+  overflow: hidden !important;
+  grid-template-rows: minmax(0, 1fr) !important;
+}
+
+.docs-bot-api-host .scalar-app .t-doc__sidebar {
+  display: flex !important;
+}
+
+.docs-bot-api-host .references-rendered,
+.docs-bot-api-host .t-doc__sidebar {
+  min-height: 0 !important;
+  max-height: 70vh !important;
+  overflow: auto !important;
+}
+
+.docs-bot-api-host .introduction-section,
+.docs-bot-api-host [data-docs-intro="true"],
+.docs-bot-api-host .darklight-reference,
+.docs-bot-api-host .scalar-mcp-layer,
+.docs-bot-api-host a[href="https://www.scalar.com"],
+.docs-bot-api-host a[href^="cursor:"],
+.docs-bot-api-host a[href^="vscode:"] {
+  display: none !important;
+}
+
+.docs-bot-api-host .scalar-sidebar-indent > div:nth-child(-n + 2) {
+  display: none !important;
+}
+
 .docs-api-nav.is-pending {
   min-height: min(32rem, 70vh);
 }
@@ -1075,37 +1121,37 @@ a[role="option"][data-docs-hide-heading="true"],
   min-width: 0;
 }
 
-.docs-article p {
+.docs-article p:not(.docs-bot-api *) {
   margin: 1.1rem 0 0;
   font-size: clamp(1rem, 1.5vw, 1.28rem);
   line-height: 1.55;
 }
 
-.docs-article ul,
-.docs-article ol {
+.docs-article ul:not(.docs-bot-api *),
+.docs-article ol:not(.docs-bot-api *) {
   margin: 1.1rem 0 0;
   padding: 0 0 0 1.5rem;
   font-size: clamp(1rem, 1.5vw, 1.28rem);
   line-height: 1.55;
 }
 
-.docs-article ul {
+.docs-article ul:not(.docs-bot-api *) {
   list-style: none;
   padding-left: 1.5rem;
 }
 
-.docs-article ol {
+.docs-article ol:not(.docs-bot-api *) {
   list-style: decimal;
   list-style-position: outside;
   padding-left: 2.35rem;
 }
 
 /* Nested decimal lists follow outline markers: 1. → a. → i. */
-.docs-article ol ol {
+.docs-article ol:not(.docs-bot-api *) ol {
   list-style-type: lower-alpha;
 }
 
-.docs-article ol ol ol {
+.docs-article ol:not(.docs-bot-api *) ol ol {
   list-style-type: lower-roman;
 }
 
@@ -1121,7 +1167,7 @@ a[role="option"][data-docs-hide-heading="true"],
   padding-left: 2.65rem;
 }
 
-.docs-article ol > li::marker {
+.docs-article ol:not(.docs-bot-api *) > li::marker {
   color: color-mix(in srgb, #6f4e37 55%, white);
   font-family: var(--peony-font);
   font-size: 1.35em;
@@ -1129,11 +1175,11 @@ a[role="option"][data-docs-hide-heading="true"],
   font-variant-numeric: lining-nums;
 }
 
-.docs-article ol > li {
+.docs-article ol:not(.docs-bot-api *) > li {
   padding-left: 0.2em;
 }
 
-.docs-article li + li {
+.docs-article li + li:not(.docs-bot-api *) {
   margin-top: 0.28rem;
 }
 
@@ -1142,8 +1188,8 @@ a[role="option"][data-docs-hide-heading="true"],
   margin-top: 1.15rem;
 }
 
-.docs-article li > ul,
-.docs-article li > ol {
+.docs-article li:not(.docs-bot-api *) > ul,
+.docs-article li:not(.docs-bot-api *) > ol {
   margin-top: 0.65rem;
   margin-bottom: 0.25rem;
   margin-left: 0;
@@ -1154,11 +1200,11 @@ a[role="option"][data-docs-hide-heading="true"],
   margin-left: 0.55rem;
 }
 
-.docs-article li > p {
+.docs-article li:not(.docs-bot-api *) > p {
   margin: 0;
 }
 
-.docs-article li > p + p {
+.docs-article li:not(.docs-bot-api *) > p + p {
   margin-top: 0.55rem;
 }
 
@@ -1213,7 +1259,7 @@ a[role="option"][data-docs-hide-heading="true"],
   display: none;
 }
 
-.docs-article ul > li {
+.docs-article ul:not(.docs-bot-api *) > li {
   position: relative;
   padding-left: 1.4em;
 }
@@ -1541,16 +1587,16 @@ a[role="option"][data-docs-hide-heading="true"],
   font-size: clamp(1.08rem, 1.55vw, 1.32rem);
 }
 
-.docs-article :not(pre) > code {
+.docs-article :not(pre) > code:not(.docs-bot-api *) {
   color: color-mix(in srgb, #6f4e37 48%, white);
   font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
   font-size: 0.92em;
 }
 
-.docs-article strong,
-.docs-article b,
-.docs-article em,
-.docs-article i,
+.docs-article strong:not(.docs-bot-api *),
+.docs-article b:not(.docs-bot-api *),
+.docs-article em:not(.docs-bot-api *),
+.docs-article i:not(.docs-bot-api *),
 .docs-article .docs-smallcaps {
   color: color-mix(in srgb, #6f4e37 48%, white);
 }
