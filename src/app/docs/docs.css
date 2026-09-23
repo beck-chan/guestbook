@@ -953,6 +953,89 @@ a[role="option"][data-docs-hide-heading="true"],
   display: none !important;
 }
 
+/* Match docs sidenav type. Panel stays white. */
+.docs-bot-api-host .t-doc__sidebar {
+  background: #fff !important;
+  --sidebar-b-1: #fff;
+  --sidebar-b-2: #fff;
+  --sidebar-b-active: var(--paper, #faf6ea);
+}
+
+.docs-bot-api-host .t-doc__sidebar .group\/button,
+.docs-bot-api-host .t-doc__sidebar .group\/button-label {
+  color: var(--docs-ink, color-mix(in srgb, #6f4e37 80%, white)) !important;
+  font-family: var(--body-font) !important;
+  font-size: 0.98rem !important;
+  font-weight: 400 !important;
+  letter-spacing: normal !important;
+  line-height: 1.4 !important;
+  text-decoration: none !important;
+}
+
+.docs-bot-api-host .t-doc__sidebar .group\/button:hover,
+.docs-bot-api-host .t-doc__sidebar .group\/button:focus-visible,
+.docs-bot-api-host .t-doc__sidebar .group\/button[aria-current="page"] {
+  background: var(--paper, #faf6ea) !important;
+}
+
+.docs-bot-api-host .t-doc__sidebar .group\/button:hover .group\/button-label,
+.docs-bot-api-host .t-doc__sidebar .group\/button:focus-visible .group\/button-label {
+  color: var(--cover-soft, #6f4e37) !important;
+}
+
+.docs-bot-api-host .t-doc__sidebar .group\/button:not(:has(.sidebar-heading-type)),
+.docs-bot-api-host .t-doc__sidebar .group\/button:not(:has(.sidebar-heading-type)) .group\/button-label {
+  color: color-mix(in srgb, #6f4e37 48%, white) !important;
+  font-family: var(--peony-font) !important;
+  font-size: 1.08rem !important;
+  font-weight: 400 !important;
+  letter-spacing: 0.03em !important;
+  line-height: 1.2 !important;
+}
+
+.docs-bot-api-host .t-doc__sidebar .group\/button:not(:has(.sidebar-heading-type)):hover,
+.docs-bot-api-host .t-doc__sidebar .group\/button:not(:has(.sidebar-heading-type)):hover .group\/button-label,
+.docs-bot-api-host .t-doc__sidebar .group\/button:not(:has(.sidebar-heading-type)):focus-visible,
+.docs-bot-api-host .t-doc__sidebar .group\/button:not(:has(.sidebar-heading-type)):focus-visible .group\/button-label {
+  color: color-mix(in srgb, #6f4e37 48%, white) !important;
+}
+
+.docs-bot-api-host .sidebar-heading-type {
+  font-family: var(--futura-font) !important;
+  font-size: 0.72rem !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.04em !important;
+  line-height: 1.4 !important;
+}
+
+.docs-bot-api-host .sidebar-heading-type--get,
+.docs-bot-api-host .sidebar-heading-type--select {
+  --method-color: color-mix(in srgb, #6f4e37 55%, white) !important;
+  color: color-mix(in srgb, #6f4e37 55%, white) !important;
+}
+
+.docs-bot-api-host .sidebar-heading-type--post,
+.docs-bot-api-host .sidebar-heading-type--insert {
+  --method-color: color-mix(in srgb, var(--cover) 42%, white) !important;
+  color: color-mix(in srgb, var(--cover) 42%, white) !important;
+}
+
+.docs-bot-api-host .sidebar-heading-type--put {
+  --method-color: color-mix(in srgb, var(--peony-soft) 70%, #6f4e37) !important;
+  color: color-mix(in srgb, var(--peony-soft) 70%, #6f4e37) !important;
+}
+
+.docs-bot-api-host .sidebar-heading-type--patch,
+.docs-bot-api-host .sidebar-heading-type--update {
+  --method-color: var(--peony-soft) !important;
+  color: var(--peony-soft) !important;
+}
+
+.docs-bot-api-host .sidebar-heading-type--delete {
+  --method-color: var(--peony) !important;
+  color: var(--peony) !important;
+}
+
 .docs-api-nav.is-pending {
   min-height: min(32rem, 70vh);
 }

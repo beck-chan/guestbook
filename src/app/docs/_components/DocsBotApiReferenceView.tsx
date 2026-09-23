@@ -30,7 +30,7 @@ function isIntroductionSearchRow(option: HTMLElement) {
 
 function hideIntroductionSearchRows(root: ParentNode) {
   const options: HTMLElement[] = [];
-  if (root instanceof Element && root.matches('[role="option"]')) {
+  if (root instanceof HTMLElement && root.matches('[role="option"]')) {
     options.push(root);
   }
   if ("querySelectorAll" in root) {

@@ -217,6 +217,12 @@ export function DocsApiNav({
       requestAnimationFrame(() => {
         scrollToScalarHash(section.href);
       });
+    } else {
+      window.dispatchEvent(
+        new CustomEvent("docs-api:collapse-tag", {
+          detail: { tagId: tagId(section.href) },
+        }),
+      );
     }
   }
 
