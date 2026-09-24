@@ -1,6 +1,7 @@
 import Link from "next/link";
-import { docsIndexSubtitle } from "@/lib/flags";
+import { docsIndexSubtitle, flags } from "@/lib/flags";
 import { DocsHeart } from "./_components/DocsHeart";
+import { DocsIndexMenu } from "./_components/DocsIndexMenu";
 import { DocsSearch } from "./_components/DocsSearch";
 import { DOCS_NAV_SECTIONS } from "./_nav/docs-nav-data";
 
@@ -23,6 +24,10 @@ export default function DocsPage() {
   const sections = DOCS_NAV_SECTIONS.filter((section) =>
     LANDING_TITLES.has(section.title),
   );
+  const internalGuides = flags.public
+    ? []
+    : (DOCS_NAV_SECTIONS.find((section) => section.title === "Internal")?.items ??
+      []);
   const footerLinks = ["Etc.", "Support"].flatMap(
     (title) =>
       DOCS_NAV_SECTIONS.find((section) => section.title === title)?.items?.filter(
@@ -72,6 +77,11 @@ export default function DocsPage() {
                   )}
                 </li>
               ))}
+              {section.title === "Reference" && internalGuides.length > 0 ? (
+                <li>
+                  <DocsIndexMenu label="Internal" items={internalGuides} />
+                </li>
+              ) : null}
             </ol>
           </section>
         ))}
