@@ -1,0 +1,163 @@
+name: Check release version bump
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, labeled, unlabeled]
+    branches:
+      - main
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  check-version:
+    name: Check package version
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Require a version bump for release labels
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { execFileSync } = require('child_process');
+            const pr = context.payload.pull_request;
+            const labels = (pr.labels || []).map((label) => label.name.toLowerCase());
+            const bump = labels.includes('major')
+              ? 'major'
+              : labels.includes('minor')
+                ? 'minor'
+                : labels.includes('patch')
+                  ? 'patch'
+                  : null;
+
+            const marker = '<!-- version-check-pr-comment -->';
+            const failures = [];
+            let detail = 'No major, minor, or patch label, so no version bump is required.';
+
+            const parseSemver = (value) => {
+              const match = String(value).trim().match(/^v?(\d+)\.(\d+)\.(\d+)$/);
+              return match
+                ? { major: Number(match[1]), minor: Number(match[2]), patch: Number(match[3]), raw: `${match[1]}.${match[2]}.${match[3]}` }
+                : null;
+            };
+
+            const compareSemver = (a, b) => {
+              if (a.major !== b.major) return a.major - b.major;
+              if (a.minor !== b.minor) return a.minor - b.minor;
+              return a.patch - b.patch;
+            };
+
+            const readJsonAt = (sha, path) => {
+              const text = execFileSync('git', ['show', `${sha}:${path}`], { encoding: 'utf8' });
+              return JSON.parse(text);
+            };
+
+            const appVersion = (manifest, lock) => {
+              const versions = [
+                manifest?.version,
+                lock?.version,
+                lock?.packages?.['']?.version,
+              ];
+              return versions;
+            };
+
+            if (bump) {
+              let headPkg;
+              let headLock;
+              let basePkg;
+              let baseLock;
+              try {
+                headPkg = readJsonAt(pr.head.sha, 'package.json');
+                headLock = readJsonAt(pr.head.sha, 'package-lock.json');
+                basePkg = readJsonAt(pr.base.sha, 'package.json');
+                baseLock = readJsonAt(pr.base.sha, 'package-lock.json');
+              } catch (error) {
+                failures.push(`Could not read package.json or package-lock.json: ${error.message}`);
+              }
+
+              if (failures.length === 0) {
+                const [headPackage, headLockRoot, headLockPackage] = appVersion(headPkg, headLock);
+                const [basePackage, baseLockRoot, baseLockPackage] = appVersion(basePkg, baseLock);
+                const head = parseSemver(headPackage);
+
+                if (!head || headPackage !== headLockRoot || headPackage !== headLockPackage) {
+                  failures.push(
+                    `package.json (${headPackage ?? 'missing'}) and package-lock.json (${headLockRoot ?? 'missing'} / packages."" ${headLockPackage ?? 'missing'}) must be the same x.y.z version.`
+                  );
+                }
+
+                const changed = headPackage !== basePackage
+                  || headLockRoot !== baseLockRoot
+                  || headLockPackage !== baseLockPackage;
+                if (!changed) {
+                  failures.push(
+                    `Version ${headPackage ?? 'missing'} has not changed from the base branch in package.json and package-lock.json.`
+                  );
+                }
+
+                const tags = await github.paginate(github.rest.repos.listTags, {
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  per_page: 100,
+                });
+
+                let latest = null;
+                let latestName = null;
+                for (const tag of tags) {
+                  const version = parseSemver(tag.name);
+                  if (!version) continue;
+                  if (!latest || compareSemver(version, latest) > 0) {
+                    latest = version;
+                    latestName = tag.name;
+                  }
+                }
+
+                if (head && latest && compareSemver(head, latest) <= 0) {
+                  failures.push(
+                    `Version ${head.raw} is not newer than the latest GitHub tag ${latestName}.`
+                  );
+                }
+
+                if (failures.length === 0) {
+                  const tagText = latestName ? `latest tag \`${latestName}\`` : 'no existing semver tags';
+                  detail = `\`${bump}\` label is set. \`package.json\` and \`package-lock.json\` are at \`${head.raw}\`, ahead of ${tagText}.`;
+                }
+              }
+            }
+
+            const failed = failures.length > 0;
+            const body = failed
+              ? `${marker}\n## Version check failed\n\n${failures.map((line) => `- ${line}`).join('\n')}`
+              : `${marker}\n## Version check passed\n\n${detail}`;
+
+            const comments = await github.paginate(github.rest.issues.listComments, {
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+            const existing = comments.find((comment) => comment.body?.includes(marker));
+
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: existing.id,
+                body,
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body,
+              });
+            }
+
+            if (failed) {
+              core.setFailed(failures.join(' '));
+            }
