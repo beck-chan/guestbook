@@ -418,12 +418,12 @@ You can also use these `.feature` files to test as a human user would.
 
 ## Write Additional Tests
 
-If a `Given` / `When` / `Then` already has a matching function, Playwright runs that function. The terminal prints a stub for a Gherkin line with no match. Create `features/step_definitions/your-steps.ts`, paste the stub, and add this import:
+If a `Given` / `When` / `Then` already has a matching function, Playwright runs that function. A line with no match fails with `Missing step:` and the text of that line. Create `features/step_definitions/your-steps.ts` for that line, and import the testing functions:
 
 ```typescript
 import { Given, When, Then } from "y2k-guestbook/testing";
 
-Given("a user is on the guestbook page", async function () {
+Given("your scenario here", async function () {
   await this.page.goto(this.guestbookUrl());
 });
 ```
