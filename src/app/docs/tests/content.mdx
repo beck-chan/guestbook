@@ -2,132 +2,86 @@
 subtitle: Test your installed guestbook against the expected specifications.
 ---
 
-# Cucumber Tests
+# Feature Tests
 
-The `.feature` files on this page are Gherkin specifications. Use [cucumber.js](https://github.com/cucumber/cucumber-js){.blank} to run these `.feature` scenarios against your installation of the guestbook:
+The `.feature` files on this page are [Gherkin specifications](https://cucumber.io/docs/gherkin/reference/){.blank}. `npx y2k-guestbook test` runs them with [Playwright](https://playwright.dev/){.blank} against your installation of the guestbook:
 
-- A `.feature` file says what should happen. 
-- A step definition is how TypeScript that actually applies the behaviour. 
+- A `.feature` file says what should happen.
+- A step definition is the TypeScript that applies that behaviour in the browser. 
 
 ::: {.callout}
 - [x] This guide assumes that you've set up the guestbook application with either [Quickstart](/docs/quickstart) or [Install via npm](/docs/install).
 :::
 
-## Install Cucumber and Playwright
+## Install Playwright
 
-To install Cucumber and Playwright in your app, call the following commands in your terminal from your Next.js app root:
+From your Next.js app root:
 
 ```bash
-npm install --save-dev @cucumber/cucumber playwright tsx
+npm install --save-dev @playwright/test playwright-bdd
 npx playwright install chromium
 ```
 
-- [`@cucumber/cucumber`](https://www.npmjs.com/package/@cucumber/cucumber){.blank} — Reads `.feature` files and reports pass/fail behaviour.
-- [`playwright`](https://www.npmjs.com/package/playwright){.blank} — Drives Chromium against the running app.
-- [`tsx`](https://www.npmjs.com/package/tsx){.blank} — Loads TypeScript step definitions without a separate compile step.
+- [`@playwright/test`](https://www.npmjs.com/package/@playwright/test){.blank} — Runs the scenarios and writes the HTML report.
+- [`playwright-bdd`](https://www.npmjs.com/package/playwright-bdd){.blank} — Reads the `.feature` files and calls your step definitions.
 
-Confirm your installations by running:
+::: {.callout}
+# Quickstart installs already include  `@playwright/test` and `playwright-bdd`.
+
+Only run `npx playwright install chromium` too to download the testing browser. 
+:::
+
+Confirm the package installations by running:
 
 ```bash
-npm ls @cucumber/cucumber playwright tsx
+npm ls @playwright/test playwright-bdd
 ```
 
-::: {.callout}
-# `npx playwright install chromium` downloads the browser binary once. 
+## Setup
 
-Re-run it after upgrading Playwright.
+### Test Reports
+
+A test run writes to a Playwright report folder — open `index.html` inside to view results:
+
+- A later run will overwrite the previous report.
+- A failed scenario keeps recording in the report you can use to debug.
+
+::: {.tabset}
+
+# User Test Reports
+
+The default folder is `features/reports/results/` — in this setup, we'll use this default folder for user tests.
+
+# Admin Test Reports
+
+`-p admin` writes `features/reports/admin/` instead of `features/reports/results/` — we'll use this custom folder for admin tests.
 
 :::
 
-## Cucumber Setup
+### Support Files
 
-::: {.callout}
-# The guestbook package ships [`cucumber.yaml`](https://github.com/beck-chan/y2k-guestbook/blob/main/cucumber.yaml){.blank}, [`features/support/`](https://github.com/beck-chan/y2k-guestbook/tree/main/features/support){.blank}, step definitions, and the `.feature` files. 
-
-`npx y2k-guestbook test` runs Cucumber against the packaged specifications from your app root (`.env.local`, reports, and Chrome debug profiles stay in *your* project). 
-
-:::
-
-### cucumber.yaml
-
-[`cucumber.yaml`](https://github.com/beck-chan/y2k-guestbook/blob/main/cucumber.yaml){.blank} tells Cucumber which `.feature` files to run, which TypeScript to load, and provides the default application URLs:
-
-```yaml
-default:
-  requireModule:
-    - tsx/cjs
-  require:
-    - features/support/**/*.ts
-    - features/step_definitions/**/*.ts
-  format:
-    - progress-bar
-    - html:features/reports/results.html
-  formatOptions:
-    snippetInterface: async-await
-  worldParameters:
-    baseUrl: http://localhost:3000
-    guestbookPath: /
-    adminPath: /admin
-
-admin:
-  requireModule:
-    - tsx/cjs
-  require:
-    - features/support/**/*.ts
-    - features/step_definitions/**/*.ts
-  format:
-    - progress-bar
-    - html:features/reports/admin.html
-  formatOptions:
-    snippetInterface: async-await
-  worldParameters:
-    baseUrl: http://localhost:3000
-    guestbookPath: /
-    adminPath: /admin
-```
-
-### `.features/support`
+[`features/support/`](https://github.com/beck-chan/y2k-guestbook/tree/main/features/support){.blank} contains files that help Playwright run tests by giving them shared context:
 
 ::: {.tabset}
 
 # `world.ts`
 
-[`features/support/world.ts`](https://github.com/beck-chan/y2k-guestbook/blob/main/features/support/world.ts){.blank} sets up a Playwright page on the world object so that every step can click the same browser:
+[`features/support/world.ts`](https://github.com/beck-chan/y2k-guestbook/blob/main/features/support/world.ts){.blank} holds the page, the guestbook URL, and values a later step needs to read:
 
 ```typescript
-import { config } from "dotenv";
-import { setWorldConstructor, World } from "@cucumber/cucumber";
-import type { Browser, BrowserContext, Page } from "playwright";
-
-config({ path: ".env.local" }); // BASE_URL, paths, and DATABASE_URL seed.ts uses
-
-export class PlaywrightWorld extends World {
-  browser!: Browser;
-  context!: BrowserContext;
-  page!: Page; // every Given / When / Then in this scenario uses this page
+export class PlaywrightWorld {
+  page!: Page;
   baseUrl: string;
   guestbookPath: string;
   adminPath: string;
-  postedName?: string; // stash in one step, read in a later Then (the comment you just posted)
+  postedName?: string;
 
-  constructor(options) {
-    super(options);
-    // cucumber.yaml worldParameters, overridable with BASE_URL / NEXT_PUBLIC_GUESTBOOK_PATH / NEXT_PUBLIC_GUESTBOOK_ADMIN_PATH
-    this.baseUrl = String(process.env.BASE_URL ?? options.parameters.baseUrl ?? "http://localhost:3000");
-    this.guestbookPath = String(process.env.NEXT_PUBLIC_GUESTBOOK_PATH || options.parameters.guestbookPath || "/");
-    this.adminPath = String(process.env.NEXT_PUBLIC_GUESTBOOK_ADMIN_PATH || options.parameters.adminPath || "/admin");
-  }
-
-  guestbookUrl() {
-    return this.guestbookPath === "/" ? this.baseUrl : `${this.baseUrl}${this.guestbookPath}`;
-  }
-
-  adminUrl() {
-    return `${this.baseUrl}${this.adminPath}`;
+  constructor() {
+    this.baseUrl = String(process.env.BASE_URL ?? "http://localhost:3000").replace(/\/$/, "");
+    this.guestbookPath = process.env.NEXT_PUBLIC_GUESTBOOK_PATH || "/";
+    this.adminPath = process.env.NEXT_PUBLIC_GUESTBOOK_ADMIN_PATH || "/admin";
   }
 }
-
-setWorldConstructor(PlaywrightWorld);
 ```
 
 ::: {.callout}
@@ -136,161 +90,23 @@ setWorldConstructor(PlaywrightWorld);
 If your guestbook doesn't live at the root of your domain (`/`) or the admin dashboard is not at `/admin`:
 
 - Ensure your `NEXT_PUBLIC_GUESTBOOK_PATH` and `NEXT_PUBLIC_GUESTBOOK_ADMIN_PATH` `.env.local` variables match your custom paths so that step definitions navigate using the correct `this.guestbookPath` / `this.adminPath`.
-- Keep the Gherkin wording as written (`/admin`). 
+- Keep the Gherkin wording as written (`/admin`).
 
 :::
 
-# `hooks.ts`
+# `fixtures.ts`
 
-[`features/support/hooks.ts`](https://github.com/beck-chan/y2k-guestbook/blob/main/features/support/hooks.ts){.blank} launches Playwright Chromium (or headed Chrome), puts guestbook, admin, and unauthorized scenarios on the right browser, and resets data so one run does not leak into the next:
-
-```typescript
-import { existsSync } from "node:fs";
-import path from "node:path";
-import { After, AfterAll, Before, BeforeAll } from "@cucumber/cucumber";
-import { chromium, type Browser, type BrowserContext, type Page } from "playwright";
-import { PlaywrightWorld } from "./world";
-import { resetGuestRateLimits, restoreDefaultSettings } from "./seed";
-
-const AUTH_FILE = path.join("features", "support", ".auth", "admin.json");
-const DESKTOP = { width: 1400, height: 720 };
-
-let browser: Browser;
-let incognitoBrowser: Browser;
-let sharedAdminContext: BrowserContext;
-let sharedAdminPage: Page;
-
-BeforeAll(async function () {
-  // Headless uses Playwright Chromium. HEADED=1 uses installed Chrome so Google SSO can finish.
-  browser = await chromium.launch({
-    headless: process.env.HEADED !== "1",
-    channel: process.env.HEADED === "1" ? "chrome" : undefined,
-  });
-});
-
-Before(async function (this: PlaywrightWorld, { pickle }) {
-  const uri = pickle.uri;
-  const guestbook = uri.includes("guestbook");
-  const unauthorized = uri.includes("unauthorized");
-  const settings = uri.includes("admin-settings");
-
-  if (guestbook || unauthorized) {
-    // Second Chromium so guest / unauthorized runs cannot reuse the admin cookie
-    if (!incognitoBrowser) {
-      incognitoBrowser = await chromium.launch({ headless: process.env.HEADED !== "1" });
-    }
-    this.browser = incognitoBrowser;
-    this.context = await incognitoBrowser.newContext({ viewport: DESKTOP });
-    this.page = await this.context.newPage();
-  } else if (uri.includes("admin")) {
-    // Headless: later admin runs reuse features/support/.auth/admin.json
-    // Headed: attach to the Chrome window started with --remote-debugging-port (see Run Admin Tests)
-    if (sharedAdminPage && !sharedAdminPage.isClosed()) {
-      this.context = sharedAdminContext;
-      this.page = sharedAdminPage;
-    } else {
-      this.browser = browser;
-      this.context = await browser.newContext({
-        viewport: DESKTOP,
-        storageState: existsSync(AUTH_FILE) ? AUTH_FILE : undefined,
-      });
-      this.page = await this.context.newPage();
-      sharedAdminContext = this.context;
-      sharedAdminPage = this.page;
-    }
-  } else {
-    this.browser = browser;
-    this.context = await browser.newContext({ viewport: DESKTOP });
-    this.page = await this.context.newPage();
-  }
-
-  if (guestbook || settings) await resetGuestRateLimits();
-  if (settings) await restoreDefaultSettings();
-});
-
-After(async function (this: PlaywrightWorld, { pickle }) {
-  // Headless admin: persist the cookie so the next run can skip Google's login screen
-  if (pickle.uri.includes("admin") && !pickle.uri.includes("unauthorized") && process.env.HEADED !== "1") {
-    await sharedAdminContext.storageState({ path: AUTH_FILE });
-  }
-  // admin-settings.feature writes title / fonts / page size — put the defaults back
-  if (pickle.uri.includes("admin-settings")) await restoreDefaultSettings();
-  if (this.page !== sharedAdminPage) await this.context.close();
-});
-
-AfterAll(async function () {
-  await browser.close();
-  if (incognitoBrowser) await incognitoBrowser.close();
-});
-```
+[`features/support/fixtures.ts`](https://github.com/beck-chan/y2k-guestbook/blob/main/features/support/fixtures.ts){.blank} gives every step that same world. 
 
 # `ui.ts`
 
-[`features/support/ui.ts`](https://github.com/beck-chan/y2k-guestbook/blob/main/features/support/ui.ts){.blank} holds the shared locators so step definitions click visible names (`submit`, `display name`) instead of copying CSS class names:
-
-```typescript
-import type { Page } from "playwright";
-import type { PlaywrightWorld } from "./world";
-
-export async function openGuestbook(world: PlaywrightWorld) {
-  await world.page.goto(world.guestbookUrl(), { waitUntil: "domcontentloaded" });
-  await world.page.getByRole("button", { name: "submit" }).waitFor();
-}
-
-export async function fillGuestComment(
-  page: Page,
-  input: { name: string; body: string },
-) {
-  await page.getByLabel("display name").fill(input.name);
-  await page.locator('textarea[name="comment"]').fill(input.body);
-}
-
-export async function clickSubmit(page: Page) {
-  await page.getByRole("button", { name: "submit" }).click();
-}
-```
+[`features/support/ui.ts`](https://github.com/beck-chan/y2k-guestbook/blob/main/features/support/ui.ts){.blank} holds the shared locators so step definitions click visible names (`submit`, `display name`) instead of copying CSS class names.
 
 # `seed.ts`
 
-[`features/support/seed.ts`](https://github.com/beck-chan/y2k-guestbook/blob/main/features/support/seed.ts){.blank} writes to the database when a scenario needs rows already on the board, or when hooks need to undo a previous run:
-
-```typescript
-import { Pool } from "pg";
-
-function guestbookDb() {
-  return new Pool({ connectionString: process.env.DATABASE_URL }); // needs DATABASE_URL
-}
-
-export async function seedComment(input: { body: string; display_name?: string }) {
-  // Gherkin that needs existing comments (pagination, admin filters)
-  const pool = guestbookDb();
-  const display_name = input.display_name ?? `cucumber-seed-${Date.now()}`;
-  const { rows } = await pool.query(
-    `insert into comments (display_name, body) values ($1, $2) returning id, display_name, body`,
-    [display_name, input.body],
-  );
-  await pool.end();
-  return { id: rows[0].id, name: rows[0].display_name, body: rows[0].body };
-}
-
-export async function resetGuestRateLimits() {
-  // hooks.ts runs this before guestbook features and around admin-settings
-  const pool = guestbookDb();
-  await pool.query("delete from guestbook_rate_limits");
-  await pool.end();
-}
-
-export async function restoreDefaultSettings() {
-  // hooks.ts runs this before and after admin-settings.feature
-  // Writes the shared DEFAULT_GUESTBOOK_SETTINGS row (title, fonts, page size, …)
-  const pool = guestbookDb();
-  await pool.query(`update guestbook_settings set /* defaults */ where id = 1`);
-  await pool.end();
-}
-```
+[`features/support/seed.ts`](https://github.com/beck-chan/y2k-guestbook/blob/main/features/support/seed.ts){.blank} writes to the database when a scenario needs rows already on the board, and resets rate limits and settings so one run does not leak into the next. 
 
 :::
-
 
 ### Step Definitions
 
@@ -298,46 +114,11 @@ Example [`features/step_definitions/`](https://github.com/beck-chan/y2k-guestboo
 
 You will need to [write step definitions](#write-additional-tests) for any additional functionality you opt into (notifications, analytics) or any other features that you add.
 
-## Running Cucumber Tests
+## Running Tests
 
-::: {.tabset}
-
-# Default Reports
-
-A passing test run writes `features/reports/results.html` by default:
-
-- Reruns will overwrite the file. 
-- You can change the output directory by modifying the `formatOptions` in `cucumber.yaml`.
-
-To write to a another file and the default at the same time, pass in `--format html:<filepath>`:
-
-```bash
-npx y2k-guestbook test --format html:features/reports/guestbook.html
-```
-
-# Custom Reports
-
-To write a different report *without* replacing the default `results.html`, add a named profile in `cucumber.yaml`. Profiles replace `default` entirely — copy the same `requireModule`, `require`, and `worldParameters` keys, and change the `paths` and `html:` values.
-
-To run a profile, use the `-p` flag. For example, the `admin` profile already in `cucumber.yaml`:
-
-```bash
-# Run with browser visible
-HEADED=1 npx y2k-guestbook test -p admin
-```
-
-That writes `features/reports/admin.html` and leaves `results.html` alone. 
-
-:::
 
 ::: {.callout}
 # Note that commenting, rate limits, and admin edits are live — if you're hooked up to a production database or guestbook instance, these tests will affect real data.
-:::
-
-::: {.callout}
-# `npx y2k-guestbook` is not on the npm registry.
-
-It must resolve from *this* app (Quickstart clone after `npm install`, or a host after `npm install y2k-guestbook@github:beck-chan/y2k-guestbook`). If npm looks up `registry.npmjs.org/y2k-guestbook` and 404s, you are in the wrong folder. In a clone you can also run `node scripts/cli.mjs test …` or `npm run test:cucumber -- …`.
 :::
 
 ### Run `.feature` Tests
@@ -361,7 +142,7 @@ These tests do not require any admin authentication, so they can be run without 
 
 
   ```bash
-  # Writes to default profile (results.html)
+  # Writes to features/reports/results/index.html
   npx y2k-guestbook test features/features/guestbook/guestbook-comments.feature --name "User submits a valid comment"
   ```
 
@@ -370,7 +151,7 @@ These tests do not require any admin authentication, so they can be run without 
   For a specific set of tests under one Rule, append the  `--tags @example-rule-name` flag:
 
   ```bash
-  # Writes to default profile (results.html)
+  # Writes to features/reports/results/index.html
   npx y2k-guestbook test features/features/guestbook/guestbook-comments.feature --tags @submit-comments
   ```
 
@@ -379,7 +160,7 @@ These tests do not require any admin authentication, so they can be run without 
   For example, the full `guestbook-nav.feature` file:
 
   ```bash
-  # Writes to default profile (results.html)
+  # Writes to features/reports/results/index.html
   npx y2k-guestbook test features/features/guestbook/guestbook-nav.feature
   ```
 
@@ -387,7 +168,7 @@ These tests do not require any admin authentication, so they can be run without 
   # To Run All Tests
 
   ```bash
-  # Writes to default profile (results.html)
+  # Writes to features/reports/results/index.html
   npx y2k-guestbook test features/features/guestbook
   ```
 
@@ -435,7 +216,7 @@ These tests do not require any admin authentication, so they can be run without 
   To run a specific test in a feature file, append the `--name` flag naming a Scenario. For example:
 
   ```bash
-  # Writes to admin profile (admin.html)
+  # Writes to features/reports/admin/index.html
   HEADED=1 npx y2k-guestbook test -p admin features/features/admin/admin-settings.feature --name "Admin can update the guestbook title"
   ```
 
@@ -444,7 +225,7 @@ These tests do not require any admin authentication, so they can be run without 
   For a specific set of tests under one Rule, append the `--tags @example-rule-name` flag:
 
   ```bash
-  # Writes to admin profile (admin.html)
+  # Writes to features/reports/admin/index.html
   HEADED=1 npx y2k-guestbook test -p admin features/features/admin/admin-nav.feature --tags @mobile-menu
   ```
 
@@ -453,14 +234,14 @@ These tests do not require any admin authentication, so they can be run without 
   For example, the full `admin-nav.feature` file:
 
   ```bash
-  # Writes to admin profile (admin.html)
+  # Writes to features/reports/admin/index.html
   HEADED=1 npx y2k-guestbook test -p admin features/features/admin/admin-nav.feature
   ```
 
   # Run All Tests
 
   ```bash
-  # Writes to admin profile (admin.html)
+  # Writes to features/reports/admin/index.html
   HEADED=1 npx y2k-guestbook test -p admin features/features/admin
   ```
 
@@ -512,7 +293,7 @@ BASE_URL=https://<your-deployed-url>.vercel.app npx y2k-guestbook test
 
 ::: {.40}
 
-[View Public Cucumber Specs](https://y2k-guestbook.vercel.app/docs/specs){.button .blank}
+[View Public Specifications](https://y2k-guestbook.vercel.app/docs/specs){.button .blank}
 
 :::
 
@@ -527,7 +308,7 @@ BASE_URL=https://<your-deployed-url>.vercel.app npx y2k-guestbook test
 The packaged `features/features/` directory contains the following `.feature` files displayed in this section.
 
 ::: {.callout}
-# For testing with Playwright, keep all the Gherkin wording as written. Cucumber matches step definitions to those lines.
+# For testing with Playwright, keep all the Gherkin wording as written. Playwright runs the step whose text matches each line.
 
 You can also use these `.feature` files to test as a human user would.
 
@@ -637,16 +418,17 @@ You can also use these `.feature` files to test as a human user would.
 
 ## Write Additional Tests
 
-If a `Given` / `When` / `Then` already has a matching function, Cucumber runs that function. Stubs are returned in the terminal console for Gherkin lines with no match. For example:
+If a `Given` / `When` / `Then` already has a matching function, Playwright runs that function. A line with no match fails with `Missing step:` and the text of that line. Create `features/step_definitions/your-steps.ts` for that line, and import the testing functions:
 
 ```typescript
-Given('a user is on the guestbook page', async function () {
-  // Write code here that turns the phrase above into concrete actions
-  return 'pending';
+import { Given, When, Then } from "y2k-guestbook/testing";
+
+Given("your scenario here", async function () {
+  await this.page.goto(this.guestbookUrl());
 });
 ```
 
-Create a file in `features/step_definitions/`, paste the stub into it, and fill in the body with the appropriate code to execute the step. Instruction should be written the way a human user would find things on the page — for example, reference the `submit` button, the `display name` field, the `prev` / `next` links, and not CSS class names or code.
+Fill in the body with the appropriate code to execute the step. Instruction should be written the way a human user would find things on the page — for example, reference the `submit` button, the `display name` field, the `prev` / `next` links, and not CSS class names or code.
 
 - It doesn't matter what the file is called, as long as it's in the `features/step_definitions/` directory and has the `.ts` extension.
 - Stash values you will need later on the World object (for example `this.postedName`).
@@ -665,4 +447,3 @@ Create a file in `features/step_definitions/`, paste the stub into it, and fill 
 | `this.page.setViewportSize({ width, height })` | Shrink the window *before* `goto` when the Gherkin line says *on mobile*. |
 
 :::
-
