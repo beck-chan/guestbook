@@ -17,7 +17,7 @@ import {
   chatQuotaReachedError,
   consumeDocsChatRateLimit,
 } from "@/lib/rate-limit";
-import { DOCS_INDEX, elasticClient } from "@/lib/docs/elastic";
+import { DOCS_INDEX, docsSearchClient } from "@/lib/docs/elastic";
 import { copyChatMessage, deleteChatSessionCopy } from "@/lib/docs/kibanaChat";
 import { expandDocsSearchTerm } from "@/lib/docs/searchTerms";
 import { createServiceClient } from "@/lib/supabase/service";
@@ -649,7 +649,7 @@ export async function POST(request: Request) {
   }
 
   const publicFilter = flags.public ? { term: { public: true } } : undefined;
-  const client = elasticClient();
+  const client = docsSearchClient();
   const sourceFields = ["href", "title", "heading", "body"] as const;
   const lexicalSearch = client.search<{
     href: string;

@@ -10,6 +10,7 @@ export const flags = {
   hitCounter: envFlag(process.env.FLAG_COUNTER, true), // Show hit counter
   public: envFlag(process.env.FLAG_PUBLIC, false), // Show public guestbook home/public repo + dark green favicon
   apiTest: envFlag(process.env.FLAG_APITEST, false), // Show API Test Request on private docs
+  kibana: envFlag(process.env.FLAG_KIBANA, false), // Local: docs chatbot searches KIBANA_URL (9201)
 };
 
 const githubRepo = flags.public ? "y2k-guestbook" : "guestbook";

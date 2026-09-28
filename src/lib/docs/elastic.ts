@@ -1,4 +1,5 @@
 import { Client } from "@elastic/elasticsearch";
+import { flags } from "../flags";
 
 export const DOCS_INDEX = "guestbook-docs";
 export const CHAT_INDEX = "guestbook-chat";
@@ -27,5 +28,18 @@ export function kibanaStackClient() {
     return null;
   }
   return new Client({ node, auth: { apiKey } });
+}
+
+export function docsSearchClient() {
+  if (!flags.kibana) {
+    return elasticClient();
+  }
+  const client = kibanaStackClient();
+  if (!client) {
+    throw new Error(
+      "FLAG_KIBANA is on but KIBANA_URL / KIBANA_API_KEY are missing or point at :5601",
+    );
+  }
+  return client;
 }
 
