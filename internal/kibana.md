@@ -46,13 +46,13 @@ http://127.0.0.1:5601
 Turn Kibana off but keep what is already indexed (synced docs and chat copies). Next `up -d` will still have that data:
 
 ```bash
-docker compose -f docker-compose.esk.yml down
+docker compose -f docker-compose.kb.yml down
 ```
 
 Turn Kibana off and erase saved data. Next `up -d` starts empty:
 
 ```bash
-docker compose -f docker-compose.esk.yml down -v
+docker compose -f docker-compose.kb.yml down -v
 ```
 
 <!-- After `down -v`, reset `kibana_system`, mint a new `KIBANA_API_KEY`, and run `npm run sync-docs-kb` again. Leave `ELASTIC_API_KEY` alone. -->
@@ -123,4 +123,4 @@ Each chat conversation turn is copied into `guestbook-chat` on port `9201`:
 5. **Discover** on `guestbook-chat` — filter `role: user` / `role: assistant`. Assistant `content` is the Summary text; `sources` is Relevant Guides. The retrieval snapshot is the less-manual compare (picked vs lexical/knn).
 6. **Clear Chat** in the bubble removes that `session_id` from both Supabase and `guestbook-chat` (best-effort).
 
-Practical loop with `FLAG_KIBANA=true`: `esk.yml` up; `npm run sync-docs-kb`; ask the bubble (9201); Discover `guestbook-docs` and `guestbook-chat` in Kibana. You do not need `es.yml`. With the flag off, the bubble stays on 9200; Kibana only sees the last `sync-docs-kb` and any chat copies on 9201.
+Practical loop with `FLAG_KIBANA=true`: `kb.yml` up; `npm run sync-docs-kb`; ask the bubble (9201); Discover `guestbook-docs` and `guestbook-chat` in Kibana. You do not need `es.yml`. With the flag off, the bubble stays on 9200; Kibana only sees the last `sync-docs-kb` and any chat copies on 9201.

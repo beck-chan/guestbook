@@ -2,9 +2,9 @@
 # Bound to 127.0.0.1 only — not reachable from Vercel or GitHub Actions.
 # Separate project + volume from docker-compose.es.yml so both stacks can run at once.
 #
-#   docker compose -f docker-compose.esk.yml up -d
-#   docker compose -f docker-compose.esk.yml down      # keep volume
-#   docker compose -f docker-compose.esk.yml down -v   # wipe inspect data only
+#   docker compose -f docker-compose.kb.yml up -d
+#   docker compose -f docker-compose.kb.yml down      # keep volume
+#   docker compose -f docker-compose.kb.yml down -v   # wipe inspect data only
 #
 # Full runbook: internal/kibana.md
 
@@ -13,7 +13,7 @@ name: guestbook-kb
 services:
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:8.19.7
-    container_name: guestbook-elasticsearch-esk
+    container_name: guestbook-elasticsearch-kb
     environment:
       discovery.type: single-node
       xpack.security.enabled: "true"
