@@ -1,0 +1,53 @@
+# Local Elasticsearch + Kibana for inspecting guestbook-docs / guestbook-chat.
+# Bound to 127.0.0.1 only — not reachable from Vercel or GitHub Actions.
+# Separate project + volume from docker-compose.es.yml so both stacks can run at once.
+#
+#   docker compose -f docker-compose.esk.yml up -d
+#   docker compose -f docker-compose.esk.yml down      # keep volume
+#   docker compose -f docker-compose.esk.yml down -v   # wipe inspect data only
+#
+# Full runbook: internal/kibana.md
+
+name: guestbook-esk
+
+services:
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.19.7
+    container_name: guestbook-elasticsearch-esk
+    environment:
+      discovery.type: single-node
+      xpack.security.enabled: "true"
+      xpack.security.http.ssl.enabled: "false"
+      xpack.license.self_generated.type: basic
+      ELASTIC_PASSWORD: password
+      ES_JAVA_OPTS: -Xms1g -Xmx1g
+    ports:
+      - "127.0.0.1:9201:9200"
+    volumes:
+      - guestbook-esk-data:/usr/share/elasticsearch/data
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "curl -s -u elastic:password http://localhost:9200 >/dev/null || exit 1",
+        ]
+      interval: 10s
+      timeout: 10s
+      retries: 30
+      start_period: 20s
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.19.7
+    container_name: guestbook-kibana
+    environment:
+      ELASTICSEARCH_HOSTS: http://elasticsearch:9200
+      ELASTICSEARCH_USERNAME: kibana_system
+      ELASTICSEARCH_PASSWORD: password
+    ports:
+      - "127.0.0.1:5601:5601"
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+
+volumes:
+  guestbook-esk-data:

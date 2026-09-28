@@ -13,7 +13,8 @@
     "lint:a11y-docs": "eslint src/app/docs --no-config-lookup --config eslint.a11y.config.mjs",
     "allow-admin": "tsx scripts/allow-admin.ts",
     "delete-admin": "tsx scripts/delete-admin.ts",
-    "sync-docs": "node --import tsx/esm scripts/sync-docs.ts"
+    "sync-docs": "node --import tsx/esm scripts/sync-docs.ts",
+    "sync-docs-kb": "node --import tsx/esm scripts/sync-docs-kb.ts"
   },
   "dependencies": {
     "@ai-sdk/google": "^4.0.76",

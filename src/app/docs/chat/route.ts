@@ -18,6 +18,7 @@ import {
   consumeDocsChatRateLimit,
 } from "@/lib/rate-limit";
 import { DOCS_INDEX, elasticClient } from "@/lib/docs/elastic";
+import { copyChatMessage, deleteChatSessionCopy } from "@/lib/docs/kibanaChat";
 import { expandDocsSearchTerm } from "@/lib/docs/searchTerms";
 import { createServiceClient } from "@/lib/supabase/service";
 
@@ -521,6 +522,15 @@ async function getOrCreateSessionId(create: boolean) {
   return sessionId;
 }
 
+function snapshotHits(hits: RankedHit[]) {
+  return hits.map((hit) => ({
+    id: hit.id,
+    href: hit.href,
+    title: hit.title,
+    heading: hit.heading,
+  }));
+}
+
 async function persistMessage(row: {
   sessionId: string;
   role: "user" | "assistant";
@@ -528,15 +538,23 @@ async function persistMessage(row: {
   sources?: ChatSource[];
 }) {
   const supabase = createServiceClient();
-  const { error } = await supabase.from("docs_chat_message").insert({
-    session_id: row.sessionId,
-    role: row.role,
-    content: row.content,
-    sources: row.sources ?? null,
-  });
-  if (error) {
-    throw new Error(error.message);
+  const { data, error } = await supabase
+    .from("docs_chat_message")
+    .insert({
+      session_id: row.sessionId,
+      role: row.role,
+      content: row.content,
+      sources: row.sources ?? null,
+    })
+    .select("id, created_at")
+    .single();
+  if (error || !data) {
+    throw new Error(error?.message ?? "Could not save this chat turn.");
   }
+  return {
+    id: String(data.id),
+    created_at: String(data.created_at),
+  };
 }
 
 export async function GET() {
@@ -570,6 +588,7 @@ export async function DELETE() {
     if (error) {
       return Response.json({ error: error.message }, { status: 500 });
     }
+    await deleteChatSessionCopy(sessionId);
   }
   store.set(COOKIE, "", { ...sessionCookieOptions(), maxAge: 0 });
   return Response.json({ ok: true });
@@ -599,8 +618,13 @@ export async function POST(request: Request) {
     return Response.json({ error: "Could not start a chat session." }, { status: 500 });
   }
 
+  let savedUser: { id: string; created_at: string };
   try {
-    await persistMessage({ sessionId, role: "user", content: question });
+    savedUser = await persistMessage({
+      sessionId,
+      role: "user",
+      content: question,
+    });
   } catch (err) {
     console.error(err);
     return Response.json(
@@ -608,6 +632,14 @@ export async function POST(request: Request) {
       { status: 500 },
     );
   }
+  await copyChatMessage({
+    id: savedUser.id,
+    session_id: sessionId,
+    role: "user",
+    content: question,
+    sources: null,
+    created_at: savedUser.created_at,
+  });
 
   let embedding: number[] | null = null;
   try {
@@ -729,11 +761,24 @@ export async function POST(request: Request) {
       const assistantText = summary.trim();
       if (!assistantText && sources.length === 0) return;
       try {
-        await persistMessage({
+        const saved = await persistMessage({
           sessionId,
           role: "assistant",
           content: assistantText,
           sources: refusal ? [] : sources,
+        });
+        await copyChatMessage({
+          id: saved.id,
+          session_id: sessionId,
+          role: "assistant",
+          content: assistantText,
+          sources: refusal ? [] : sources,
+          created_at: saved.created_at,
+          retrieval: {
+            picked: snapshotHits(picked),
+            lexical: snapshotHits(readHits(lexicalRes.hits.hits ?? [])),
+            knn: snapshotHits(readHits(semanticRes.hits.hits ?? [])),
+          },
         });
       } catch (err) {
         console.error(err);
