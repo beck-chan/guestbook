@@ -40,6 +40,7 @@ yarn-error.log*
 # docs chat embedding caches
 internal/elastic/embed-cache.json
 internal/elastic/query-embed-cache.json
+internal/supabot/
 
 # vercel
 .vercel
