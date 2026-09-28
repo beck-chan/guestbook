@@ -41,6 +41,23 @@ Open the Kibana UI and log in as `elastic` / `password`:
 http://127.0.0.1:5601
 ```
 
+To review data: Left sidebar > Analytics > **Discover** > **Data view** / **Try ES|QL**:
+
+```sql
+-- Docs index sync
+FROM guestbook-docs
+| KEEP title, heading, href, public
+| LIMIT 200
+```
+
+```sql
+-- Conversation turn history
+FROM guestbook-chat
+| KEEP role, content, session_id, created_at
+| SORT created_at DESC
+| LIMIT 200
+```
+
 ## 3. Stop Demo
 
 Turn Kibana off but keep what is already indexed (synced docs and chat copies). Next `up -d` will still have that data:
@@ -101,7 +118,7 @@ BRANCH=elastibot npm run sync-docs-kb
 - Unchanged chunks are not sent to Gemini again. You still bulk into port `9201`.
 <!-- - Keep `sync-docs` for port `9200`. If the flag is on, do not index with `sync-docs` — that still writes 9200 while the bubble reads 9201. -->
 
-#### Chat History Copy
+### Chat History Copy
 
 Each chat conversation turn is copied into `guestbook-chat` on port `9201`:
 
@@ -109,18 +126,36 @@ Each chat conversation turn is copied into `guestbook-chat` on port `9201`:
 - Missing `KIBANA_*` skips the copy. With `FLAG_KIBANA` off, the bubble still searches port `9200`. With the flag on, missing `KIBANA_*` also fails search (no fallback to 9200).
 - **Clear Chat** removes that session from Supabase and copy from `guestbook-chat`.
 
-## Kibana Views
+To confirm Kibana is capturing data:
 
-### Docs Index
+```bash
+curl -s -u elastic:password "http://127.0.0.1:9201/_cat/indices/guestbook-*?v"
+curl -s -u elastic:password "http://127.0.0.1:9201/guestbook-docs/_count"
+curl -s -u elastic:password "http://127.0.0.1:9201/guestbook-chat/_count"
+```
 
-1. **Discover** on `guestbook-docs` — one hit per heading chunk (`title`, `heading`, `href`, `body`, `public`). Filter `public: true` the way chat does when `FLAG_PUBLIC` is on. Keyword search in the bar is BM25 only (the lexical half of [`lexicalQuery`](/src/app/docs/chat/route.ts)).
+### Create Kibana Views
+
+Left sidebar > Management > **Stack Management** > Kibana > **Data Views** > **Create data view** (**Save data view to Kibana**):
+
+#### a. Docs Index
+
+- **Name:** `guestbook-docs`
+- **Index pattern:** `guestbook-docs`
+
+<!-- 1. **Discover** on `guestbook-docs` — one hit per heading chunk (`title`, `heading`, `href`, `body`, `public`). Filter `public: true` the way chat does when `FLAG_PUBLIC` is on. Keyword search in the bar is BM25 only (the lexical half of [`lexicalQuery`](/src/app/docs/chat/route.ts)).
 2. **Stack Management → Index Management → mappings** — English analyzer on `title` / `heading` / `body`; `embedding` is `dense_vector` cosine 768 from [`scripts/sync-docs.ts`](/scripts/sync-docs.ts).
 3. **Dev Tools** — replay the two searches chat runs in parallel: `multi_match` on title/heading/body, and `knn` on `embedding` (kNN needs a 768-float `query_vector` from Gemini `RETRIEVAL_QUERY`; paste from [`internal/elastic/query-embed-cache.json`](/internal/elastic/query-embed-cache.json) if present). Compare the two hit lists — that is what Node RRF merges. Kibana will not apply `pickRelevantGuides` unless you read the snapshot on the chat document.
-4. Optional **Lens**: count chunks by `section` or `public`.
+4. Optional **Lens**: count chunks by `section` or `public`. -->
 
-### Chat History
+#### b. Chat History
 
-5. **Discover** on `guestbook-chat` — filter `role: user` / `role: assistant`. Assistant `content` is the Summary text; `sources` is Relevant Guides. The retrieval snapshot is the less-manual compare (picked vs lexical/knn).
+- **Name:** `guestbook-chat`
+- **Index pattern:** `guestbook-chat`
+- **Timestamp field:** `created_at`
+
+<!-- 5. **Discover** on `guestbook-chat` — filter `role: user` / `role: assistant`. Assistant `content` is the Summary text; `sources` is Relevant Guides. The retrieval snapshot is the less-manual compare (picked vs lexical/knn).
 6. **Clear Chat** in the bubble removes that `session_id` from both Supabase and `guestbook-chat` (best-effort).
 
-Practical loop with `FLAG_KIBANA=true`: `kb.yml` up; `npm run sync-docs-kb`; ask the bubble (9201); Discover `guestbook-docs` and `guestbook-chat` in Kibana. You do not need `es.yml`. With the flag off, the bubble stays on 9200; Kibana only sees the last `sync-docs-kb` and any chat copies on 9201.
+Practical loop with `FLAG_KIBANA=true`: `kb.yml` up; `npm run sync-docs-kb`; ask the bubble (9201); Discover `guestbook-docs` and `guestbook-chat` in Kibana. You do not need `es.yml`. With the flag off, the bubble stays on 9200; Kibana only sees the last `sync-docs-kb` and any chat copies on 9201. -->
+
