@@ -21,7 +21,7 @@ From the guestbook repo root, call:
 
 ```bash
 # Start inspect Elasticsearch + Kibana with the `elastic` / `password` login
-docker compose -f docker-compose.esk.yml up -d
+docker compose -f docker-compose.kb.yml up -d
 ```
 
 <!-- You can leave `docker-compose.es.yml` running. This stack uses `127.0.0.1:9201` (Elasticsearch) and `127.0.0.1:5601` (Kibana UI). The chatbot stays on port `9200` unless `FLAG_KIBANA=true` in `.env.local` (see Reference). -->
