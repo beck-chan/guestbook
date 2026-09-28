@@ -59,7 +59,7 @@ docker compose -f docker-compose.kb.yml down -v
 
 ## Reference
 
-### kibana_system password
+### `kibana_system` password
 
 Kibana logs in as `kibana_system`. After the first Docker build, or after `down -v`, set that password to match Compose (`password`):
 
@@ -101,7 +101,7 @@ BRANCH=elastibot npm run sync-docs-kb
 - Unchanged chunks are not sent to Gemini again. You still bulk into port `9201`.
 <!-- - Keep `sync-docs` for port `9200`. If the flag is on, do not index with `sync-docs` — that still writes 9200 while the bubble reads 9201. -->
 
-#### Chat Copies
+#### Chat History Copy
 
 Each chat conversation turn is copied into `guestbook-chat` on port `9201`:
 

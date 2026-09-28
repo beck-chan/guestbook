@@ -1,9 +1,8 @@
 import { config } from "dotenv";
-
-config({ path: ".env.local" });
-
 import { kibanaStackClient } from "../src/lib/docs/elastic";
 import { indexDocsCorpus } from "./lib/index-docs-corpus";
+
+config({ path: ".env.local" });
 
 function isKibanaUiUrl(url: string) {
   try {

@@ -1,9 +1,8 @@
 import { config } from "dotenv";
-
-config({ path: ".env.local" });
-
 import { elasticClient } from "../src/lib/docs/elastic";
 import { indexDocsCorpus } from "./lib/index-docs-corpus";
+
+config({ path: ".env.local" });
 
 async function main() {
   const elasticUrl = process.env.ELASTIC_URL?.trim();
