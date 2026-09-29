@@ -159,3 +159,32 @@ Left sidebar > Management > **Stack Management** > Kibana > **Data Views** > **C
 
 Practical loop with `FLAG_KIBANA=true`: `kb.yml` up; `npm run sync-docs-kb`; ask the bubble (9201); Discover `guestbook-docs` and `guestbook-chat` in Kibana. You do not need `es.yml`. With the flag off, the bubble stays on 9200; Kibana only sees the last `sync-docs-kb` and any chat copies on 9201. -->
 
+
+### Create Visualizations
+
+Left sidebar > Analytics > **Visualize Library** > **Create new visualization** > **Lens**
+
+### Dev Tools
+
+Left sidebar > Management > **Dev Tools**:
+
+```bash
+# Word search
+GET guestbook-docs/_search
+{
+  "size": 20,
+  "_source": ["href", "title", "heading", "body"],
+  "query": {
+    "multi_match": {
+      "query": "rate limit",
+      "type": "best_fields",
+      "fields": ["title^5", "heading^3", "body"]
+    }
+  }
+}
+```
+
+
+
+
+
