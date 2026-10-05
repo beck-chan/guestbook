@@ -100,7 +100,7 @@ The API Library is a hybrid page ([`src/app/docs/api/page.tsx`](https://github.c
 
 The API explorer catalogs operations from a live PostgREST OpenAPI document. [`loadDatabaseOpenApi.ts`](https://github.com/beck-chan/guestbook/blob/main/src/lib/docs/loadDatabaseOpenApi.ts){.blank} fetches `{project}/rest/v1/` with the `service_role` key so admin tables and RPCs still appear. `FLAG_PUBLIC` picks which project to introspect:
 
-- `FLAG_PUBLIC=false` — `NEXT_PUBLIC_SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` (my custom install)
+- `FLAG_PUBLIC=false` — `NEXT_PUBLIC_SUPABASE_URL` and `SUPABASE_SECRET_KEY` (my custom install)
 - `FLAG_PUBLIC=true` — `API_PUBLIC_URL`, `API_SERVICE_ROLE_KEY`, and `API_ANON_KEY` so that public project is fully specified (example database for the packaged guestbook)
 
 ::: {.callout}

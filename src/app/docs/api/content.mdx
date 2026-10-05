@@ -21,7 +21,7 @@ To use the **Test Request** feature:
 
 # Unauthenticated Calls
 
-For calls that do not require a JWT, set **Authentication** `apikey` to your `NEXT_PUBLIC_SUPABASE_ANON_KEY`. Test Request sends it on every call.
+For calls that do not require a JWT, set **Authentication** `apikey` to your `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`. Test Request sends it on every call.
 
 # Authenticated Calls 
 
@@ -73,7 +73,7 @@ For example, in Chrome:
 
 7. When you're in the **Test Request** form, or after you set your Supabase Project ID in the section below:
 
-    a. Open **Authentication**, select `apikey`, and enter your `NEXT_PUBLIC_SUPABASE_ANON_KEY`.
+    a. Open **Authentication**, select `apikey`, and enter your `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`.
     b. Select `bearerAuth`, and enter your `Bearer Token: <your-admin-auth-token>`.
 
 8. Click **Send**.

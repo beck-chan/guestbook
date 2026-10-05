@@ -111,18 +111,18 @@ a. In the left sidebar, click **Project Settings**, then select **API Keys**.
 
 b. Under Publishable and secret API keys, copy the **Publishable key** to your clipboard. 
 
-    Hang on to this — we'll need to enter this into your `.env.local` file under your `NEXT_PUBLIC_SUPABASE_ANON_KEY`:
+    Hang on to this — we'll need to enter this into your `.env.local` file under your `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`:
 
     ```bash
-    NEXT_PUBLIC_SUPABASE_ANON_KEY=sb_publishable_<your-publishable-key>
+    NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=sb_publishable_<your-publishable-key>
     ```
 
-c. Click **Legacy anon, service_role, API keys**, then copy the `service_role` `secret` key to your clipboard. 
+c. Under Publishable and secret API keys, copy the **Secret key** to your clipboard.
 
-    Hang on to this — we'll need to enter this into your `.env.local` file under your `SUPABASE_SERVICE_ROLE_KEY`:
+    Hang on to this — we'll need to enter this into your `.env.local` file under your `SUPABASE_SECRET_KEY`:
 
     ```bash
-    SUPABASE_SERVICE_ROLE_KEY=<your-service-role-key>
+    SUPABASE_SECRET_KEY=sb_secret_<your-secret-key>
     ```
 
 # 3. Retrieve Supabase URLs

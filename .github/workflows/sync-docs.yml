@@ -37,12 +37,12 @@ jobs:
         env:
           SUPABOT_API_KEY: ${{ secrets.SUPABOT_API_KEY }}
           NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
-          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SECRET_KEY }}
           BRANCH: main
         run: |
           set -euo pipefail
-          if [ -z "${SUPABOT_API_KEY:-}" ] || [ -z "${NEXT_PUBLIC_SUPABASE_URL:-}" ] || [ -z "${SUPABASE_SERVICE_ROLE_KEY:-}" ]; then
-            echo "Missing GitHub secrets SUPABOT_API_KEY, NEXT_PUBLIC_SUPABASE_URL, and/or SUPABASE_SERVICE_ROLE_KEY"
+          if [ -z "${SUPABOT_API_KEY:-}" ] || [ -z "${NEXT_PUBLIC_SUPABASE_URL:-}" ] || [ -z "${SUPABASE_SECRET_KEY:-}" ]; then
+            echo "Missing GitHub secrets SUPABOT_API_KEY, NEXT_PUBLIC_SUPABASE_URL, and/or SUPABASE_SECRET_KEY"
             exit 1
           fi
           npm run sync-docs

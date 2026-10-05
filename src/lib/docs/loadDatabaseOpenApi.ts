@@ -65,8 +65,8 @@ function credentials(isPublic: boolean) {
       process.env.NEXT_PUBLIC_SUPABASE_URL,
     ),
     key: envOrThrow(
-      "SUPABASE_SERVICE_ROLE_KEY",
-      process.env.SUPABASE_SERVICE_ROLE_KEY,
+      "SUPABASE_SECRET_KEY",
+      process.env.SUPABASE_SECRET_KEY,
     ),
   };
 }
@@ -683,7 +683,7 @@ function overlayInfo(spec: OpenApiSpec, isPublic: boolean) {
     title: isPublic ? "y2k Guestbook API" : "Beck's y2k Guestbook API",
     version: spec.info?.version ?? "1.0.0",
     description: isPublic
-      ? "### The reference below reflects the calls you can make to your connected Supabase database when the guestbook is fully installed.\n\n1. To hook up the Test Request functionality to your instance of Supabase, you'll need to first [enter your Project ID above](#enter-supabase-connection-details).\n2. Then, under **Authentication**, set `apikey` to your `NEXT_PUBLIC_SUPABASE_ANON_KEY`. For admin calls also set `bearerAuth` to [your admin JWT](#your-supabase-tokens).\n\n> Project IDs and keys you enter on this page when testing requests stay in your browser — we do not collect them. Send goes from your browser direct to your Supabase project."
+      ? "### The reference below reflects the calls you can make to your connected Supabase database when the guestbook is fully installed.\n\n1. To hook up the Test Request functionality to your instance of Supabase, you'll need to first [enter your Project ID above](#enter-supabase-connection-details).\n2. Then, under **Authentication**, set `apikey` to your `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`. For admin calls also set `bearerAuth` to [your admin JWT](#your-supabase-tokens).\n\n> Project IDs and keys you enter on this page when testing requests stay in your browser — we do not collect them. Send goes from your browser direct to your Supabase project."
       : flags.apiTest
         ? "### The reference below reflects the functionality of Beck's custom guestbook install.\n\n> Testing functionality is turned on, and uses this project's Supabase URL from the environment."
         : "### The reference below reflects the functionality of Beck's custom guestbook install.\n\nYou cannot enter API keys or project IDs for testing.<br>\n\n> [View Public API Library](https://y2k-guestbook.vercel.app/docs/api)",
