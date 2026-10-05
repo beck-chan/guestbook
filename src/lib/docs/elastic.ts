@@ -1,5 +1,4 @@
 import { Client } from "@elastic/elasticsearch";
-import { flags } from "../flags";
 
 export const DOCS_INDEX = "guestbook-docs";
 export const CHAT_INDEX = "guestbook-chat";
@@ -13,17 +12,19 @@ export function elasticClient() {
   return new Client({ node, auth: { apiKey } });
 }
 
-function isKibanaUiUrl(url: string) {
+export function isKibanaUiUrl(url: string) {
   try {
-    return new URL(url).port === "5601";
+    const parsed = new URL(url);
+    if (parsed.port === "5601") return true;
+    return parsed.hostname.toLowerCase().split(".").includes("kb");
   } catch {
     return true;
   }
 }
 
-export function kibanaStackClient() {
-  const node = process.env.KIBANA_URL?.trim();
-  const apiKey = process.env.KIBANA_API_KEY?.trim();
+export function elasticCloudClient() {
+  const node = process.env.ELASTIC_CLOUD_URL?.trim();
+  const apiKey = process.env.ELASTIC_CLOUD_API_KEY?.trim();
   if (!node || !apiKey || isKibanaUiUrl(node)) {
     return null;
   }
@@ -31,15 +32,11 @@ export function kibanaStackClient() {
 }
 
 export function docsSearchClient() {
-  if (!flags.kibana) {
-    return elasticClient();
-  }
-  const client = kibanaStackClient();
+  const client = elasticCloudClient();
   if (!client) {
     throw new Error(
-      "FLAG_KIBANA is on but KIBANA_URL / KIBANA_API_KEY are missing or point at :5601",
+      "ELASTIC_CLOUD_URL / ELASTIC_CLOUD_API_KEY are missing or ELASTIC_CLOUD_URL points at the Kibana website",
     );
   }
   return client;
 }
-

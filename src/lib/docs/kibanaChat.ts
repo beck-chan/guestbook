@@ -1,4 +1,4 @@
-import { CHAT_INDEX, kibanaStackClient } from "./elastic";
+import { CHAT_INDEX, elasticCloudClient } from "./elastic";
 
 export type ChatCopySource = {
   href: string;
@@ -30,7 +30,7 @@ export type ChatCopyDoc = {
 let chatIndexReady = false;
 
 async function ensureChatIndex() {
-  const client = kibanaStackClient();
+  const client = elasticCloudClient();
   if (!client) return null;
   if (chatIndexReady) return client;
 
@@ -70,7 +70,7 @@ export async function copyChatMessage(doc: ChatCopyDoc) {
 }
 
 export async function deleteChatSessionCopy(sessionId: string) {
-  const client = kibanaStackClient();
+  const client = elasticCloudClient();
   if (!client) return;
   try {
     await client.deleteByQuery({
