@@ -185,8 +185,12 @@ function saveQueryCache(cache: QueryEmbedCache) {
       delete cache.vectors[key];
     }
   }
-  fs.mkdirSync(path.dirname(QUERY_CACHE_PATH), { recursive: true });
-  fs.writeFileSync(QUERY_CACHE_PATH, `${JSON.stringify(cache)}\n`);
+  try {
+    fs.mkdirSync(path.dirname(QUERY_CACHE_PATH), { recursive: true });
+    fs.writeFileSync(QUERY_CACHE_PATH, `${JSON.stringify(cache)}\n`);
+  } catch (err) {
+    console.error(err);
+  }
 }
 
 async function embedQuestion(question: string) {
