@@ -175,11 +175,11 @@ async function main() {
   const branch = process.env.BRANCH?.trim() || "main";
   const geminiKey = process.env.SUPABOT_API_KEY?.trim();
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL?.trim();
-  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY?.trim();
+  const serviceKey = process.env.SUPABASE_SECRET_KEY?.trim();
 
   if (!geminiKey || !supabaseUrl || !serviceKey) {
     console.error(
-      "Missing SUPABOT_API_KEY, NEXT_PUBLIC_SUPABASE_URL, or SUPABASE_SERVICE_ROLE_KEY in .env.local",
+      "Missing SUPABOT_API_KEY, NEXT_PUBLIC_SUPABASE_URL, or SUPABASE_SECRET_KEY in .env.local",
     );
     process.exit(1);
   }
