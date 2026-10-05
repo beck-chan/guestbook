@@ -9,6 +9,13 @@ on:
 permissions:
   contents: read
   pull-requests: write
+  issues: write
+
+# opened and labeled both fire when a PR is created with a release label.
+# Cancel the older run so only one of them posts.
+concurrency:
+  group: check-release-version-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
 
 jobs:
   check-version:
@@ -140,15 +147,22 @@ jobs:
               repo: context.repo.repo,
               issue_number: context.issue.number,
             });
-            const existing = comments.find((comment) => comment.body?.includes(marker));
+            const existing = comments.filter((comment) => comment.body?.includes(marker));
 
-            if (existing) {
+            if (existing.length > 0) {
               await github.rest.issues.updateComment({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
-                comment_id: existing.id,
+                comment_id: existing[0].id,
                 body,
               });
+              for (const extra of existing.slice(1)) {
+                await github.rest.issues.deleteComment({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  comment_id: extra.id,
+                });
+              }
             } else {
               await github.rest.issues.createComment({
                 owner: context.repo.owner,
