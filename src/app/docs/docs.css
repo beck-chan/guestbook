@@ -1020,6 +1020,21 @@ a[role="option"][data-docs-hide-heading="true"],
   display: flex !important;
 }
 
+/* Docs mobile: the embed is the reference. Scalar's menu only opens this sidebar. */
+@media (max-width: 720px) {
+  .docs-bot-api-host .scalar-app .t-doc__sidebar,
+  .docs-bot-api-host .t-doc__header {
+    display: none !important;
+  }
+
+  .docs-bot-api-host .references-layout {
+    --scalar-header-height: 0px;
+    grid-template-columns: minmax(0, 1fr) !important;
+    grid-template-rows: minmax(0, 1fr) !important;
+    grid-template-areas: "rendered" !important;
+  }
+}
+
 .docs-bot-api-host .references-rendered,
 .docs-bot-api-host .t-doc__sidebar {
   min-height: 0 !important;
