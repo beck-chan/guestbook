@@ -146,6 +146,7 @@ b. Set `NEXT_PUBLIC_GUESTBOOK_PATH` in `.env.local` according to where your publ
   - `app/page.tsx` — When the guestbook *is* the site, omit the variable (or set `NEXT_PUBLIC_GUESTBOOK_PATH=/`).
   - `app/guestbook/page.tsx` — When `/` (root) is already your site, set `NEXT_PUBLIC_GUESTBOOK_PATH=/guestbook`.
 
+  You'll also need to add `NEXT_PUBLIC_GUESTBOOK_PATH` to your [Vercel environment variables](https://vercel.com/docs/environment-variables){.blank} if you set a path that isn't the root of your domain.
 
 # 2. Add Admin Dashboard
 
@@ -161,6 +162,8 @@ b. Set `NEXT_PUBLIC_GUESTBOOK_PATH` in `.env.local` according to where your publ
 - To customize the path for the admin dashboard (for example `/guestbook/admin`):
 
   a. Set `NEXT_PUBLIC_GUESTBOOK_ADMIN_PATH=/guestbook/admin` in `.env.local` (no trailing slash).
+
+    You'll also need to add `NEXT_PUBLIC_GUESTBOOK_ADMIN_PATH` to your [Vercel environment variables](https://vercel.com/docs/environment-variables){.blank} if you set a path that isn't the root of your domain.
 
   b. Create the following re-exports under that directory:
 

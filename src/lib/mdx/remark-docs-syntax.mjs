@@ -110,6 +110,8 @@ const ROMAN_TOKEN =
 // Line-start marker for a./b. or i./ii. list items (indent captured).
 const STYLED_LIST_LINE =
   /^([ \t]*)(?:xx|xix|xviii|xvii|xvi|xv|xiv|xiii|xii|xi|x|ix|viii|vii|vi|v|iv|iii|ii|i|[a-z])\.[ \t]+/i;
+// Marks prose that was indented under an a./i. item. Stripped before render.
+const CONTINUATION_MARK = "docscont.";
 
 function encodeLinkAttrs(attrs) {
   // encodeURIComponent leaves A-Z a-z 0-9 - _ . ! ~ * ' ( ). Extra-encode
@@ -163,12 +165,8 @@ function isDocsFenceClose(trimmed) {
 }
 
 function listContinuationColumn(line) {
-  const styled = line.match(STYLED_LIST_LINE);
-  if (styled) {
-    const marker = line.slice(styled[1].length).match(/^\S+[ \t]+/);
-    return styled[1].length + (marker ? marker[0].length : 0);
-  }
-
+  // a./i. items are rebuilt later. Treating them as CommonMark markers pads
+  // fences to the marker width and strips that pad back out of the code.
   const decimal = line.match(/^([ \t]*)\d+\.[ \t]+/);
   if (decimal) {
     return decimal[0].length;
@@ -416,40 +414,64 @@ function transformSmallcapsMarks(tree) {
   });
 }
 
-function normalizeStyledListContinuationIndent(line, listIndent) {
-  if (!line.trim()) {
-    return { line, listIndent };
-  }
-
-  const styled = line.match(STYLED_LIST_LINE);
-  if (styled) {
-    return { line, listIndent: styled[1] };
-  }
-
-  if (listIndent == null) {
-    return { line, listIndent };
-  }
-
-  const indent = leadingIndent(line);
-  if (indent.length <= listIndent.length) {
-    // Left the indented a./i. block (sibling content or outer list text).
-    return { line, listIndent: null };
-  }
-
-  const rest = line.slice(indent.length);
-  // Keep nested decimal/bullet lists, fences, and pipe tables; only unwrap prose.
-  if (
+function isStructuralContinuation(rest) {
+  return (
     /^\d+\.[ \t]/.test(rest) ||
     /^[-*+][ \t]/.test(rest) ||
     rest.startsWith("```") ||
     rest.startsWith("~~~") ||
     rest.startsWith(":::") ||
-    rest.startsWith("|")
-  ) {
-    return { line, listIndent };
+    rest.startsWith("|") ||
+    rest.startsWith("#")
+  );
+}
+
+function isDeeperStyledProse(rawLine, listIndent) {
+  // Judge the author's indent, not spaces added so a parent bullet/decimal
+  // list stays open. Those pads made callout bodies look like continuations.
+  if (listIndent == null || !String(rawLine).trim() || STYLED_LIST_LINE.test(rawLine)) {
+    return false;
+  }
+  const indent = leadingIndent(rawLine);
+  if (indent.length <= listIndent.length) {
+    return false;
+  }
+  return !isStructuralContinuation(rawLine.slice(indent.length));
+}
+
+function normalizeStyledListContinuationIndent(line, listIndent, continuationOpen, mark) {
+  if (!line.trim()) {
+    return { line, listIndent, continuationOpen: false };
   }
 
-  return { line: listIndent + rest, listIndent };
+  const styled = line.match(STYLED_LIST_LINE);
+  if (styled) {
+    return { line, listIndent: styled[1], continuationOpen: false };
+  }
+
+  if (listIndent == null) {
+    return { line, listIndent, continuationOpen: false };
+  }
+
+  const indent = leadingIndent(line);
+  if (indent.length <= listIndent.length) {
+    // Left the indented a./i. block (sibling content or outer list text).
+    return { line, listIndent: null, continuationOpen: false };
+  }
+
+  const rest = line.slice(indent.length);
+  // Keep nested decimal/bullet lists, fences, and pipe tables; only unwrap prose.
+  if (isStructuralContinuation(rest)) {
+    return { line, listIndent, continuationOpen: false };
+  }
+
+  // One marker per paragraph. Later wrapped lines stay in the same paragraph.
+  const marked = mark && !continuationOpen ? `${CONTINUATION_MARK}${rest}` : rest;
+  return {
+    line: listIndent + marked,
+    listIndent,
+    continuationOpen: Boolean(mark),
+  };
 }
 
 function rewriteDocsMarkdown(value) {
@@ -458,7 +480,9 @@ function rewriteDocsMarkdown(value) {
   let inCode = false;
   let fenceChar = "";
   let fenceLen = 0;
+  let fencePad = 0;
   let styledListIndent = null;
+  let continuationOpen = false;
   let listContinueCol = 0;
 
   function push(line, isolate) {
@@ -492,14 +516,18 @@ function rewriteDocsMarkdown(value) {
 
     // 2-space fences or prose under `2. ` would otherwise close the list
     // (CommonMark needs indent >= the marker width). Pad to stay in the item.
+    // Content lines use the opener's pad so relative indent inside the fence
+    // survives when CommonMark strips the opening fence's indent.
     const extraPad =
+      !inCode &&
       listContinueCol > 0 &&
       trimmed &&
       indent.length > 0 &&
       indent.length < listContinueCol
         ? listContinueCol - indent.length
         : 0;
-    const line = extraPad > 0 ? `${" ".repeat(extraPad)}${rawLine}` : rawLine;
+    const pad = inCode ? fencePad : extraPad;
+    const line = pad > 0 ? `${" ".repeat(pad)}${rawLine}` : rawLine;
     const fence = line.match(CODE_FENCE_LINE);
     if (fence) {
       const mark = fence[1];
@@ -508,12 +536,15 @@ function rewriteDocsMarkdown(value) {
         inCode = true;
         fenceChar = mark[0];
         fenceLen = mark.length;
+        fencePad = extraPad;
         styledListIndent = null;
+        continuationOpen = false;
         push(line, false);
         continue;
       }
       if (mark[0] === fenceChar && mark.length >= fenceLen && info.trim() === "") {
         inCode = false;
+        fencePad = 0;
       }
       push(line, false);
       continue;
@@ -524,8 +555,14 @@ function rewriteDocsMarkdown(value) {
       continue;
     }
 
-    const normalized = normalizeStyledListContinuationIndent(line, styledListIndent);
+    const normalized = normalizeStyledListContinuationIndent(
+      line,
+      styledListIndent,
+      continuationOpen,
+      isDeeperStyledProse(rawLine, styledListIndent),
+    );
     styledListIndent = normalized.listIndent;
+    continuationOpen = normalized.continuationOpen;
     const rewritten = rewriteFenceLine(rewriteOutsideInlineCode(normalized.line));
     push(rewritten, isFenceControlLine(rewritten));
   }
@@ -964,7 +1001,56 @@ function nextNonEmptyNode(children, index) {
   return null;
 }
 
+function classList(value) {
+  if (Array.isArray(value)) {
+    return value.map(String).filter(Boolean);
+  }
+  if (typeof value === "string") {
+    return value.split(/\s+/).filter(Boolean);
+  }
+  return [];
+}
+
+function withClass(node, name) {
+  const current = node.data?.hProperties ?? {};
+  const names = classList(current.className);
+  if (!names.includes(name)) {
+    names.push(name);
+  }
+  node.data = {
+    ...node.data,
+    hProperties: { ...current, className: names },
+  };
+}
+
+function isMarkedContinuation(node) {
+  return classList(node?.data?.hProperties?.className).includes(
+    "docs-continuation",
+  );
+}
+
+function markContinuationParagraphs(tree) {
+  visit(tree, "paragraph", (node) => {
+    const first = node.children?.[0];
+    if (
+      first?.type !== "text" ||
+      typeof first.value !== "string" ||
+      !first.value.startsWith(CONTINUATION_MARK)
+    ) {
+      return;
+    }
+    first.value = first.value.slice(CONTINUATION_MARK.length);
+    if (!first.value) {
+      node.children.shift();
+    }
+    withClass(node, "docs-continuation");
+  });
+}
+
 function shouldAttachTrailingParagraph(node, children, index) {
+  if (isMarkedContinuation(node)) {
+    return true;
+  }
   if (extractStyledItemsFromParagraph(node) != null) {
     return false;
   }
@@ -1160,6 +1246,7 @@ function consumeStyledListRun(children, start) {
 }
 
 function transformStyledOrderedLists(tree) {
+  markContinuationParagraphs(tree);
   visit(tree, (node) => {
     if (
       node.type !== "listItem" &&

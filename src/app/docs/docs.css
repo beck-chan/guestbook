@@ -1394,11 +1394,10 @@ a[role="option"][data-docs-hide-heading="true"],
   margin-top: 0.55rem;
 }
 
-/* Extra-indented continuation under an a./i. item (blank line + deeper indent) */
-.docs-article ol.docs-ol-alpha > li > p + p,
-.docs-article ol.docs-ol-roman > li > p + p,
-.docs-article ol[type="a"] > li > p + p,
-.docs-article ol[type="i"] > li > p + p {
+/* Extra-indented continuation under an a./i. item (blank line + deeper indent).
+   Applies after nested lists and fences too, not only to the next paragraph. */
+.docs-article li > p.docs-continuation {
+  margin-top: 0.55rem;
   padding-left: 1.15em;
 }
 
