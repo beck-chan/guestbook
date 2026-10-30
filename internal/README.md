@@ -32,13 +32,12 @@ To setup a base Next.js project to test the instructions in "Install with npm" i
 4. When prompted with "? Would you like to use the recommended Next.js defaults? » - Use arrow-keys. Return to submit.", choose:
 
     ```bash
-    >   Yes, use recommended defaults - TypeScript, ESLint, No React Compiler, Tailwind CSS, No src/ directory, App Router, AGENTS.md
+    >   Yes, use recommended defaults - ...
     ```
 
-5. Confirm that get:
+5. Confirm that you get the following under your root (`/`) directory:
 
     ```
-    guestbook-install-test/
     app/
         layout.tsx
         page.tsx
