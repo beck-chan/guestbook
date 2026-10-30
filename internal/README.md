@@ -35,18 +35,7 @@ To setup a base Next.js project to test the instructions in "Install with npm" i
     >   Yes, use recommended defaults - ...
     ```
 
-5. Confirm that you get the following under your root (`/`) directory:
-
-    ```
-    app/
-        layout.tsx
-        page.tsx
-        globals.css
-    next.config.ts
-    package.json
-    ```
-
-Once you're done, you can proceed with following the instructions in [Install with npm](https://y2k-guestbook.vercel.app/docs/install).
+5. Proceed with following the instructions in [Install with npm](https://y2k-guestbook.vercel.app/docs/install).
 
 
 
