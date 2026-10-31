@@ -47,7 +47,7 @@ The Remark plugin also pulls page metadata out of the paired `content.mdx` so `p
 `next.config.ts` also registers [Rehype](https://www.npmjs.com/package/rehype){.blank} (HTML parsing and serialization) plugins:
 
 - [`rehype-slug`](https://www.npmjs.com/package/rehype-slug){.blank} adds `id` to each heading from its text so that anchor links are functional.
-- My custom plugin runs [`rehype-highlight`](https://www.npmjs.com/package/rehype-highlight){.blank} (our themed syntax highlighting) with a small language set we use in the docs.
+-  [`rehype-docs-highlight.mjs`](https://github.com/beck-chan/guestbook/blob/main/src/lib/mdx/rehype-docs-highlight.mjs){.blank}  runs [`rehype-highlight`](https://www.npmjs.com/package/rehype-highlight){.blank} (our themed syntax highlighting) with a small language set we use in the docs.
 
 # src/mdx-components.tsx
 

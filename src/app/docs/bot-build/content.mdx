@@ -39,7 +39,7 @@ public: false
 - Gemini (`gemini-embedding-001`, 768 dimensions, `RETRIEVAL_DOCUMENT`) turns chunks into vectors in batches of 20 for meaning search.
 - Each chunk is stored with a `content_hash` of that text. A matching hash skips Gemini and the write.
 - Title, heading, and body also fill a weighted `search_vector` (English full text, so "running" and "run" can match). A title match outranks a heading, and a heading outranks the body.
-- Rows are upserted with the Supabase `service_role` client. Chunk ids that disappeared from the corpus are deleted.
+- Rows are upserted with the Supabase `service_role` client. Chunk IDs that disappeared from the corpus are deleted.
 - Vectors already computed stay in `internal/supabot/embed-cache.json` (gitignored), so a machine that embedded a chunk can skip Gemini when the row is missing. A merged docs change on `main` runs the same script from GitHub Actions, which uses `content_hash` because that cache file is not in the repo.
 
 :::
