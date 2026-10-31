@@ -16,7 +16,7 @@ public: false
 
 ## Docs-Only Build
 
-Our custom `npm run docs` script starts Next with `FLAG_DOCSONLY=true` so the root `/` redirects into `/docs` and we don't render the guestbook application.
+My custom `npm run docs` script starts Next with `FLAG_DOCSONLY=true` so the root `/` redirects into `/docs` and we don't render the guestbook application.
 
 Defined as a [`package.json`](https://github.com/beck-chan/guestbook/blob/main/package.json){.blank} script, `npm run docs` calls [`scripts/docs-dev.mjs`](https://github.com/beck-chan/guestbook/blob/main/scripts/docs-dev.mjs){.blank}, which starts the same `next dev` as `npm run dev`, then sets `FLAG_DOCSONLY=true` on that process:
 
@@ -33,8 +33,8 @@ Documentation has its own custom theme, separate from the guestbook defined in  
 
 [`next.config.ts`](https://github.com/beck-chan/guestbook/blob/main/next.config.ts){.blank} registers [`remark-gfm`](https://www.npmjs.com/package/remark-gfm){.blank} (GitHub-flavoured markdown) and my custom [Remark](https://www.npmjs.com/package/remark){.blank} (Markdown parsing and serialization) plugin, which allows:
 
-- Defining subtitle and flag visibility within a YAML frontmatter block
-- Using `:::` fences for formatting content 
+- Defining subtitle and flag visibility within a YAML frontmatter block.
+- Using `:::` fences for formatting content.
 - Using shortcodes: `{.heart}` ({.heart}) / `{.lock}` ({.lock}) / `{.gear}` ({.gear}) / `{.select}` ({.select}) / `{.insert}` ({.insert}) / `{.update}` ({.update}) / `{.delete}` ({.delete}) / `{.get}` ({.get}) / `{.post}` ({.post}) / `{.put}` ({.put}) / `{.patch}` ({.patch}) / `{.button}` (button link) / `{.blank}` (`target="_blank"`) / `[text]{.smallcaps}` ([small caps]{.smallcaps}) 
 
 
@@ -47,7 +47,7 @@ The Remark plugin also pulls page metadata out of the paired `content.mdx` so `p
 `next.config.ts` also registers [Rehype](https://www.npmjs.com/package/rehype){.blank} (HTML parsing and serialization) plugins:
 
 - [`rehype-slug`](https://www.npmjs.com/package/rehype-slug){.blank} adds `id` to each heading from its text so that anchor links are functional.
-- My custom plugin runs [`rehype-highlight`](https://www.npmjs.com/package/rehype-highlight){.blank} (our themed syntax highlighting) with a small language set we use in the docs.
+-  [`rehype-docs-highlight.mjs`](https://github.com/beck-chan/guestbook/blob/main/src/lib/mdx/rehype-docs-highlight.mjs){.blank}  runs [`rehype-highlight`](https://www.npmjs.com/package/rehype-highlight){.blank} (our themed syntax highlighting) with a small language set we use in the docs.
 
 # src/mdx-components.tsx
 
